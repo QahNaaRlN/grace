@@ -7,17 +7,25 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseURL string
-	CORSOrigins []string
+	Port                    string
+	DatabaseURL             string
+	CORSOrigins             []string
+	AssistantRoutingEnabled bool
+	TypeSafeAPIKey          string
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		Port:        valueOrDefault("APP_PORT", "8080"),
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-		CORSOrigins: splitCSV(valueOrDefault("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")),
+		Port:           valueOrDefault("APP_PORT", "8080"),
+		DatabaseURL:    os.Getenv("DATABASE_URL"),
+		CORSOrigins:    splitCSV(valueOrDefault("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")),
+		TypeSafeAPIKey: strings.TrimSpace(os.Getenv("TYPESAFE_API_KEY")),
 	}
+	enabledValue := valueOrDefault("GRACE_ASSISTANT_ROUTING_ENABLED", "false")
+	if enabledValue != "true" && enabledValue != "false" {
+		return Config{}, fmt.Errorf("GRACE_ASSISTANT_ROUTING_ENABLED must be true or false")
+	}
+	cfg.AssistantRoutingEnabled = enabledValue == "true"
 	if cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("DATABASE_URL is required")
 	}

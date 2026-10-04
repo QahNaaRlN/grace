@@ -22,7 +22,18 @@ Purchase → Receipt → ReceiptItem:
 - чек вводится вручную, а его итог и связь с покупкой проверяются Go и
   PostgreSQL.
 
-ИИ, OCR, распознавание фотографий и обязательства пока не входят в ядро.
+Финансовое ядро и обычный API не зависят от LLM. Опциональный single-turn
+read-only router использует Jev только для выбора одного allowlisted tool;
+арифметика и финансовые данные остаются в Go/PostgreSQL. Router выключен по
+умолчанию. Для локального opt-in задайте на сервере:
+
+    export GRACE_ASSISTANT_ROUTING_ENABLED=true
+    export TYPESAFE_API_KEY=<server-only key>
+    make dev
+
+Текст текущего запроса, язык и reference time при этом передаются TypeSafe;
+финансовые записи и результаты tools провайдеру не отправляются. OCR,
+автономные записи и model-generated финансовые ответы не реализованы.
 
 ## Быстрый старт
 

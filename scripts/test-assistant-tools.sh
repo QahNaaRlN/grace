@@ -32,8 +32,8 @@ if rg -n --glob '*.go' '(SELECT|INSERT|UPDATE|DELETE)[[:space:]]' internal/assis
   exit 1
 fi
 
-if rg -n 'internal/assistant' internal/accounts internal/analytics internal/financialevents internal/obligations internal/receipts internal/platform; then
-  echo "financial or platform module imports internal/assistant" >&2
+if rg -n 'internal/assistant' internal/accounts internal/analytics internal/financialevents internal/obligations internal/receipts; then
+  echo "financial module imports internal/assistant" >&2
   exit 1
 fi
 

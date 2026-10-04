@@ -7,6 +7,7 @@ import (
 
 	"github.com/QahNaaRlN/grace/internal/accounts"
 	"github.com/QahNaaRlN/grace/internal/analytics"
+	"github.com/QahNaaRlN/grace/internal/assistant"
 	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/obligations"
@@ -28,12 +29,25 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key"},
 	}))
 
-	accountsHandler := accounts.NewHandler(accounts.NewRepository(pool))
+	accountsRepository := accounts.NewRepository(pool)
+	analyticsRepository := analytics.NewRepository(pool)
+	obligationsRepository := obligations.NewRepository(pool)
+	receiptsRepository := receipts.NewRepository(pool)
+	accountsHandler := accounts.NewHandler(accountsRepository)
 	categoriesHandler := categories.NewHandler(categories.NewRepository(pool))
 	financialEventsHandler := financialevents.NewHandler(financialevents.NewRepository(pool))
-	receiptsHandler := receipts.NewHandler(receipts.NewRepository(pool))
-	obligationsHandler := obligations.NewHandler(obligations.NewRepository(pool))
-	analyticsHandler := analytics.NewHandler(analytics.NewRepository(pool))
+	receiptsHandler := receipts.NewHandler(receiptsRepository)
+	obligationsHandler := obligations.NewHandler(obligationsRepository)
+	analyticsHandler := analytics.NewHandler(analyticsRepository)
+	assistantRouter := assistant.NewRouter(nil, nil)
+	if cfg.AssistantRoutingEnabled && cfg.TypeSafeAPIKey != "" {
+		provider, err := assistant.NewTypeSafeProvider(cfg.TypeSafeAPIKey, &http.Client{})
+		if err == nil {
+			executor := assistant.NewExecutor(accountsRepository, analyticsRepository, obligationsRepository, receiptsRepository)
+			assistantRouter = assistant.NewRouter(provider, executor)
+		}
+	}
+	assistantHandler := assistant.NewHandler(assistantRouter)
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -69,6 +83,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
 		router.Get("/analytics/period-summary", analyticsHandler.PeriodSummary)
 		router.Get("/analytics/cash-position", analyticsHandler.CashPosition)
+		router.Post("/assistant/query", assistantHandler.Query)
 	})
 
 	return &http.Server{

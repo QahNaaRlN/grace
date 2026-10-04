@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/jeveval"
+	"github.com/QahNaaRlN/grace/internal/routereval"
 )
 
 func main() {
@@ -54,6 +56,29 @@ func analyzeCommand(arguments []string) error {
 	if err := validateReportPath(*reportPath); err != nil {
 		return err
 	}
+	version, err := readDatasetVersion(*datasetPath)
+	if err != nil {
+		return err
+	}
+	if version == routereval.DatasetVersion {
+		dataset, err := routereval.LoadDataset(*datasetPath)
+		if err != nil {
+			return err
+		}
+		report, err := routereval.LoadReport(*inputPath)
+		if err != nil {
+			return err
+		}
+		report, err = routereval.Reanalyze(dataset, report)
+		if err != nil {
+			return err
+		}
+		if err := routereval.WriteReport(*reportPath, report); err != nil {
+			return err
+		}
+		fmt.Println(routereval.Summary(report))
+		return nil
+	}
 	dataset, err := jeveval.LoadDataset(*datasetPath)
 	if err != nil {
 		return err
@@ -82,6 +107,18 @@ func validateCommand(arguments []string) error {
 	}
 	if *datasetPath == "" {
 		return errors.New("--dataset is required")
+	}
+	version, err := readDatasetVersion(*datasetPath)
+	if err != nil {
+		return err
+	}
+	if version == routereval.DatasetVersion {
+		dataset, err := routereval.LoadDataset(*datasetPath)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("validated dataset=%s cases=%d\n", dataset.Version, len(dataset.Cases))
+		return nil
 	}
 	dataset, err := jeveval.LoadDataset(*datasetPath)
 	if err != nil {
@@ -118,7 +155,7 @@ func runCommand(arguments []string) error {
 	if strings.TrimSpace(apiKey) == "" {
 		return errors.New("TYPESAFE_API_KEY is required for live run")
 	}
-	dataset, err := jeveval.LoadDataset(*datasetPath)
+	version, err := readDatasetVersion(*datasetPath)
 	if err != nil {
 		return err
 	}
@@ -128,6 +165,31 @@ func runCommand(arguments []string) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if version == routereval.DatasetVersion {
+		dataset, err := routereval.LoadDataset(*datasetPath)
+		if err != nil {
+			return err
+		}
+		report, err := routereval.Evaluate(ctx, dataset, *model, provider, time.Now)
+		if err != nil {
+			return err
+		}
+		if err := routereval.WriteReport(*reportPath, report); err != nil {
+			return err
+		}
+		fmt.Println(routereval.Summary(report))
+		if report.MetricsByLanguage["ru"].Completed+report.MetricsByLanguage["en"].Completed == 0 {
+			return errors.New("report contains no completed evaluations")
+		}
+		if !report.GatePassed {
+			return errors.New("production routing gate failed")
+		}
+		return nil
+	}
+	dataset, err := jeveval.LoadDataset(*datasetPath)
+	if err != nil {
+		return err
+	}
 	report, err := jeveval.Evaluate(ctx, dataset, *model, provider, time.Now)
 	if err != nil {
 		return err
@@ -140,6 +202,20 @@ func runCommand(arguments []string) error {
 		return errors.New("report contains no completed evaluations")
 	}
 	return nil
+}
+
+func readDatasetVersion(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("read dataset version: %w", err)
+	}
+	var header struct {
+		Version string `json:"version"`
+	}
+	if err := json.Unmarshal(data, &header); err != nil {
+		return "", fmt.Errorf("decode dataset version: %w", err)
+	}
+	return header.Version, nil
 }
 
 func validateReportPath(path string) error {

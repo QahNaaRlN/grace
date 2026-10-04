@@ -1,13 +1,14 @@
 # SPEC-0008: production read-only router с Jev
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
-- Acceptance record: owner явно поручил приступить к реализации 2026-10-05
+- Acceptance record: owner явно поручил приступить к реализации 2026-10-05;
+  owner явно принял recovery question set v3 2026-10-05
 - Specification branch: `codex/spec-0008-read-only-router`
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/read-only-router`
+- Implementation commits: `a2c0dae`, `b9205f7`, `48f7e64`
 
 ## Проблема и пользовательский результат
 
@@ -165,7 +166,7 @@ endpoint. Для безопасных запросов он возвращает
 16. Отключение router, отсутствие key или outage provider не нарушает другие
     Grace API.
 
-## Jev question set v2
+## Jev question set v3
 
 State:
 
@@ -186,7 +187,7 @@ Argument mode — независимый `Choice`. Он отвечает не «
 tool, соответствующего смыслу utterance». Speculative ответ не используется,
 если route равен `clarify`/`unsupported`.
 
-Question set имеет version `v2`. Любая смысловая правка instructions/criteria
+Question set имеет version `v3`. Любая смысловая правка instructions/criteria
 требует новой версии и повторного benchmark.
 
 Документация TypeSafe, использованная для design:
@@ -335,9 +336,10 @@ production data flow при условиях:
 
 ## Dataset v2 и live gate
 
-До live run фиксируются question set `v2`, evaluator composition и новый
-synthetic dataset. После просмотра live результата cases и expected outcomes
-не изменяются в рамках того же baseline.
+До первого live run были зафиксированы question set `v2`, evaluator
+composition и новый synthetic dataset. После неуспешного v2 gate owner принял
+только semantic revision argument-mode criteria как question set `v3`.
+Dataset, cases и expected outcomes остались неизменными.
 
 Dataset minimum:
 
@@ -396,34 +398,35 @@ React behavior не меняется. Generated TypeScript contract обновл
 
 ## Критерии приёмки
 
-- [ ] Question set v2 имеет шесть tools, `clarify`, `unsupported` и шесть
+- [x] Question set v3 имеет шесть tools, `clarify`, `unsupported` и шесть
       argument modes с полными criteria.
-- [ ] Provider state содержит только utterance/language/reference time.
-- [ ] Exact model id и строгая response validation исключают model drift и
+- [x] Provider state содержит только utterance/language/reference time.
+- [x] Exact model id и строгая response validation исключают model drift и
       неизвестные ответы.
-- [ ] Confidence `0.70` и compatibility matrix применяются в Go до executor.
-- [ ] Auto-execution возможна только для четырёх принятых комбинаций.
-- [ ] Period/cash/named-category/explicit-modifier запросы не получают guessed
+- [x] Confidence `0.70` и compatibility matrix применяются в Go до executor.
+- [x] Auto-execution возможна только для четырёх принятых комбинаций.
+- [x] Period/cash/named-category/explicit-modifier запросы не получают guessed
       arguments.
-- [ ] Low confidence, incompatible answers и missing arguments дают typed
+- [x] Low confidence, incompatible answers и missing arguments дают typed
       `clarify`, а не tool call.
-- [ ] Provider failures/cancellation не вызывают executor и не возвращают
+- [x] Provider failures/cancellation не вызывают executor и не возвращают
       partial financial data.
-- [ ] Endpoint default-off; отсутствие key не ломает startup и остальные API.
-- [ ] API key, raw utterance и provider bodies отсутствуют в logs/responses.
-- [ ] Public OpenAPI и generated TypeScript точно описывают request и все
+- [x] Endpoint default-off; отсутствие key не ломает startup и остальные API.
+- [x] API key, raw utterance и provider bodies отсутствуют в logs/responses.
+- [x] Public OpenAPI и generated TypeScript точно описывают request и все
       response variants.
-- [ ] React behavior, migrations и финансовые модули не изменены.
-- [ ] Dataset v2 закрывает согласованный минимум и проходит offline validation.
-- [ ] Locked live benchmark `jev-1.13.0` выполняет все go/no-go gates.
-- [ ] Fake provider покрывает success, low-confidence, protocol, auth, rate
+- [x] React behavior, migrations и финансовые модули не изменены.
+- [x] Dataset v2 закрывает согласованный минимум и проходит offline validation.
+- [x] Locked live benchmark `jev-1.13.0` выполняет все go/no-go gates.
+- [x] Fake provider покрывает success, low-confidence, protocol, auth, rate
       limit, overload, timeout и cancellation.
-- [ ] PostgreSQL integration вызывает auto-executable routes через настоящий
+- [x] PostgreSQL integration вызывает auto-executable routes через настоящий
       Executor и доказывает отсутствие writes.
-- [ ] Dependency checks запрещают provider imports финансовыми модулями и
+- [x] Dependency checks запрещают provider imports финансовыми модулями и
       production import `internal/jeveval`.
 - [ ] `make test`, `make test-integration`, `go vet ./cmd/... ./internal/...`
-      и `git diff --check` проходят до и после merge.
+      и `git diff --check` проходят до merge. После merge проверки будут
+      повторены до статуса `integrated`.
 
 ## Исполняемые проверки
 
@@ -463,3 +466,16 @@ Owner поручил приступить к реализации 2026-10-05 и 
    за пределы owner;
 8. раскрытие выбранных `route` и `confidence` в public response для
    наблюдаемости первого production-среза.
+
+## Принятое recovery-решение после live gate
+
+Первый locked live benchmark question set v2 не прошёл coverage floor:
+после contract-correct reanalysis RU safe-decision coverage равна `0.4844`
+при требовании `0.65`; provider/composition errors и wrong auto-executions
+равны нулю. Подробности зафиксированы в `docs/specs/0008-evidence.md`.
+
+Question set v2 заморожен. Owner явно принял 2026-10-05 question set v3 на
+следующих условиях: route question, dataset v2, model, threshold,
+compatibility matrix и privacy contract остаются неизменными; меняются только
+argument-mode instructions/criteria, после чего выполняется новый locked live
+benchmark. Ветка не интегрируется, если повторный gate не пройдёт.

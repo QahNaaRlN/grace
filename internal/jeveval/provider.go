@@ -158,8 +158,8 @@ func decodeHTTPResponse(httpResponse *http.Response, request Request) (Response,
 }
 
 func ValidateResponse(request Request, response Response) error {
-	if response.Model == "" {
-		return errors.New("response model is required")
+	if response.Model != request.Model {
+		return errors.New("response model must match requested model")
 	}
 	if len(response.Answers) != len(request.Questions) {
 		return errors.New("response must contain exactly one answer per question")

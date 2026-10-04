@@ -1,0 +1,941 @@
+{
+  "version": "v2",
+  "cases": [
+    {
+      "id": "ru-accounts-1",
+      "language": "ru",
+      "utterance": "Покажи мои счета",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-2",
+      "language": "ru",
+      "utterance": "Какие у меня есть счета",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-3",
+      "language": "ru",
+      "utterance": "Выведи текущие балансы по счетам",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-4",
+      "language": "ru",
+      "utterance": "Список всех счетов Grace",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-5",
+      "language": "ru",
+      "utterance": "Сколько денег сейчас на моих счетах",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-6",
+      "language": "ru",
+      "utterance": "Покажи остатки по всем счетам",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-7",
+      "language": "ru",
+      "utterance": "Хочу увидеть счета и балансы",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-accounts-8",
+      "language": "ru",
+      "utterance": "Открой перечень моих счетов",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-period-1",
+      "language": "ru",
+      "utterance": "Сколько я потратил за этот месяц",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-2",
+      "language": "ru",
+      "utterance": "Покажи доходы с начала года",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-3",
+      "language": "ru",
+      "utterance": "Сводка расходов за прошлую неделю",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-4",
+      "language": "ru",
+      "utterance": "Доходы и расходы с первого по пятнадцатое сентября",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-5",
+      "language": "ru",
+      "utterance": "Какие были возвраты в августе",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-6",
+      "language": "ru",
+      "utterance": "Покажи движение денег за квартал",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-period-missing-1",
+      "language": "ru",
+      "utterance": "Сколько я потратил",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "missing",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "missing-argument"
+      ]
+    },
+    {
+      "id": "ru-period-missing-2",
+      "language": "ru",
+      "utterance": "Дай финансовую сводку",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "missing",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "missing-argument"
+      ]
+    },
+    {
+      "id": "ru-cash-1",
+      "language": "ru",
+      "utterance": "Сколько останется после платежей до конца месяца",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-2",
+      "language": "ru",
+      "utterance": "Что останется после обязательств до пятницы",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-3",
+      "language": "ru",
+      "utterance": "Свободные деньги после платежей на первое ноября",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-4",
+      "language": "ru",
+      "utterance": "Покажи доступный остаток до конца года",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-5",
+      "language": "ru",
+      "utterance": "Хватит ли денег на обязательства следующей недели",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-6",
+      "language": "ru",
+      "utterance": "Баланс за вычетом долгов до зарплаты",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-cash-missing-1",
+      "language": "ru",
+      "utterance": "Сколько свободных денег останется",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "missing",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "missing-argument"
+      ]
+    },
+    {
+      "id": "ru-cash-missing-2",
+      "language": "ru",
+      "utterance": "Что доступно после всех платежей",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "missing",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "missing-argument"
+      ]
+    },
+    {
+      "id": "ru-obligations-1",
+      "language": "ru",
+      "utterance": "Покажи мои обязательства",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-2",
+      "language": "ru",
+      "utterance": "Какие у меня долги",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-3",
+      "language": "ru",
+      "utterance": "Список платежей по рассрочкам",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-4",
+      "language": "ru",
+      "utterance": "Что сейчас просрочено по обязательствам",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-5",
+      "language": "ru",
+      "utterance": "Покажи графики платежей",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-6",
+      "language": "ru",
+      "utterance": "Какие обязательные платежи у меня есть",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-obligations-modifier-1",
+      "language": "ru",
+      "utterance": "Покажи обязательства на первое ноября",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "obligations",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-obligations-modifier-2",
+      "language": "ru",
+      "utterance": "Какие платежи были просрочены в сентябре",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "obligations",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-receipts-1",
+      "language": "ru",
+      "utterance": "Покажи последние чеки",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-2",
+      "language": "ru",
+      "utterance": "Список подтверждённых чеков",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-3",
+      "language": "ru",
+      "utterance": "Какие чеки сохранены",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-4",
+      "language": "ru",
+      "utterance": "Покажи недавние покупки по чекам",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-5",
+      "language": "ru",
+      "utterance": "Открой мои чеки",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-6",
+      "language": "ru",
+      "utterance": "Хочу увидеть позиции в последних чеках",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-receipts-modifier-1",
+      "language": "ru",
+      "utterance": "Покажи пять последних чеков",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "receipts",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-receipts-modifier-2",
+      "language": "ru",
+      "utterance": "Найди чеки из магазина за сентябрь",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "receipts",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "ru-income-1",
+      "language": "ru",
+      "utterance": "Сколько я потратил после последнего дохода",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-income-2",
+      "language": "ru",
+      "utterance": "Покажи расходы с последнего поступления",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-income-3",
+      "language": "ru",
+      "utterance": "Что изменилось в деньгах после последнего дохода",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-income-4",
+      "language": "ru",
+      "utterance": "Сводка с момента последнего зачисления",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-income-5",
+      "language": "ru",
+      "utterance": "Покажи движение денег после последнего дохода",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "ru-income-named-1",
+      "language": "ru",
+      "utterance": "Сколько потрачено после зарплаты",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "income-period",
+        "named-income-category"
+      ]
+    },
+    {
+      "id": "ru-income-named-2",
+      "language": "ru",
+      "utterance": "Покажи расходы после аванса",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "income-period",
+        "named-income-category"
+      ]
+    },
+    {
+      "id": "ru-income-named-3",
+      "language": "ru",
+      "utterance": "Сводка после выплаты премии",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "income-period",
+        "named-income-category"
+      ]
+    },
+    {
+      "id": "ru-clarify-1",
+      "language": "ru",
+      "utterance": "Покажи что-нибудь про мои деньги",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-2",
+      "language": "ru",
+      "utterance": "Мне нужна информация",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-3",
+      "language": "ru",
+      "utterance": "Расскажи про счета или долги",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-4",
+      "language": "ru",
+      "utterance": "Как у меня дела",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-5",
+      "language": "ru",
+      "utterance": "Покажи финансовые данные",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-6",
+      "language": "ru",
+      "utterance": "Что там с моими финансами",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-7",
+      "language": "ru",
+      "utterance": "Хочу посмотреть отчёт, но не знаю какой",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-clarify-8",
+      "language": "ru",
+      "utterance": "Счета, чеки или платежи",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-1",
+      "language": "ru",
+      "utterance": "Добавь покупку на сто рублей",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-2",
+      "language": "ru",
+      "utterance": "Удалить последний чек",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-3",
+      "language": "ru",
+      "utterance": "Посоветуй, куда вложить деньги",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-4",
+      "language": "ru",
+      "utterance": "Спрогнозируй курс валюты",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-5",
+      "language": "ru",
+      "utterance": "Распознай чек по фотографии",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-6",
+      "language": "ru",
+      "utterance": "Измени дату платежа",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-7",
+      "language": "ru",
+      "utterance": "Создай новый счёт",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "ru-unsupported-write-8",
+      "language": "ru",
+      "utterance": "Переведи деньги между счетами",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    },
+    {
+      "id": "en-accounts-1",
+      "language": "en",
+      "utterance": "Show my accounts",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_accounts",
+      "expectedArgumentMode": "none",
+      "expectedDecision": "completed",
+      "tags": [
+        "accounts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "en-period-1",
+      "language": "en",
+      "utterance": "How much did I spend this month",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_summary",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "period-summary",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "en-cash-1",
+      "language": "en",
+      "utterance": "How much remains after bills through Friday",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_cash_position",
+      "expectedArgumentMode": "needs_resolution",
+      "expectedDecision": "clarify",
+      "tags": [
+        "cash-position",
+        "explicit-modifier"
+      ]
+    },
+    {
+      "id": "en-obligations-1",
+      "language": "en",
+      "utterance": "List my current obligations",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_obligations",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "obligations",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "en-receipts-1",
+      "language": "en",
+      "utterance": "Show my recent receipts",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_receipts",
+      "expectedArgumentMode": "defaults",
+      "expectedDecision": "completed",
+      "tags": [
+        "receipts",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "en-income-1",
+      "language": "en",
+      "utterance": "Show spending since my latest income",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "get_period_since_income",
+      "expectedArgumentMode": "reference_time",
+      "expectedDecision": "completed",
+      "tags": [
+        "income-period",
+        "default-safe"
+      ]
+    },
+    {
+      "id": "en-clarify-1",
+      "language": "en",
+      "utterance": "Show me something about my finances",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "clarify",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "clarify",
+      "tags": [
+        "clarify",
+        "ambiguous-route"
+      ]
+    },
+    {
+      "id": "en-unsupported-1",
+      "language": "en",
+      "utterance": "Delete my latest purchase",
+      "referenceTime": "2026-10-05T12:00:00+05:00",
+      "expectedRoute": "unsupported",
+      "expectedArgumentMode": "not_applicable",
+      "expectedDecision": "unsupported",
+      "tags": [
+        "unsupported",
+        "unsupported-write"
+      ]
+    }
+  ]
+}

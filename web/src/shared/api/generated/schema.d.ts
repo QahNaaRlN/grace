@@ -260,10 +260,143 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assistant/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Route one natural-language request to an allowlisted read-only Grace capability. Disabled by default. */
+        post: operations["queryAssistant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AssistantQuery: {
+            utterance: string;
+            /** @enum {string} */
+            language: "ru" | "en";
+            /**
+             * Format: date-time
+             * @description RFC 3339 timestamp with an explicit UTC offset.
+             */
+            referenceTime: string;
+        };
+        /** @enum {string} */
+        AssistantRoute: "get_accounts" | "get_period_summary" | "get_cash_position" | "get_obligations" | "get_receipts" | "get_period_since_income" | "clarify" | "unsupported";
+        AssistantCompleted: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "AssistantCompleted";
+            /** @enum {string} */
+            route: "get_accounts" | "get_obligations" | "get_receipts" | "get_period_since_income";
+            confidence: number;
+            data: components["schemas"]["AssistantToolResult"];
+        };
+        AssistantClarify: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "AssistantClarify";
+            route: components["schemas"]["AssistantRoute"];
+            confidence: number;
+            /** @enum {string} */
+            clarificationCode: "low_confidence" | "clarification_required" | "composition_mismatch" | "arguments_required" | "income_category_required" | "no_income_anchor";
+            requiredArguments?: ("from" | "to" | "through" | "asOf" | "limit" | "categoryId")[];
+        };
+        AssistantUnsupported: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "AssistantUnsupported";
+            /** @constant */
+            route: "unsupported";
+            confidence: number;
+        };
+        AssistantUnavailable: {
+            /** @constant */
+            status: "unavailable";
+            /** @enum {string} */
+            errorCode: "assistant_unavailable" | "dependency_unavailable";
+        };
+        AssistantToolResult: components["schemas"]["AssistantAccountsToolResult"] | components["schemas"]["AssistantObligationsToolResult"] | components["schemas"]["AssistantReceiptsToolResult"] | components["schemas"]["AssistantIncomePeriodToolResult"];
+        AssistantAccountsToolResult: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            name: "AssistantAccountsToolResult";
+            data: components["schemas"]["AssistantAccountsResult"];
+        };
+        AssistantObligationsToolResult: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            name: "AssistantObligationsToolResult";
+            data: components["schemas"]["AssistantObligationsResult"];
+        };
+        AssistantReceiptsToolResult: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            name: "AssistantReceiptsToolResult";
+            data: components["schemas"]["AssistantReceiptsResult"];
+        };
+        AssistantIncomePeriodToolResult: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            name: "AssistantIncomePeriodToolResult";
+            data: components["schemas"]["IncomeRelativePeriod"];
+        };
+        AssistantAccountsResult: {
+            items: components["schemas"]["Account"][];
+        };
+        AssistantObligationsResult: {
+            /** Format: date */
+            asOf: string;
+            items: components["schemas"]["Obligation"][];
+        };
+        AssistantReceiptsResult: {
+            items: components["schemas"]["Receipt"][];
+        };
+        IncomeAnchorPosting: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: int64 */
+            amountMinor: number;
+            currency: string;
+        };
+        IncomeAnchor: {
+            /** Format: uuid */
+            eventId: string;
+            categoryId: string | null;
+            categoryName: string | null;
+            /** Format: date-time */
+            occurredAt: string;
+            postings: components["schemas"]["IncomeAnchorPosting"][];
+        };
+        IncomeRelativePeriod: {
+            anchor: components["schemas"]["IncomeAnchor"];
+            summary: components["schemas"]["PeriodSummary"];
+        };
         Meta: {
             service: string;
             version: string;
@@ -1057,6 +1190,40 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+        };
+    };
+    queryAssistant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantQuery"];
+            };
+        };
+        responses: {
+            /** @description Completed read-only result, clarification, or unsupported request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantCompleted"] | components["schemas"]["AssistantClarify"] | components["schemas"]["AssistantUnsupported"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            /** @description Assistant routing, provider, or a financial dependency is unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantUnavailable"];
+                };
+            };
         };
     };
 }
