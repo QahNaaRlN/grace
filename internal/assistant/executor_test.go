@@ -30,10 +30,14 @@ func (fake *fakeAccounts) List(ctx context.Context) ([]accounts.Account, error) 
 type fakeAnalytics struct {
 	period        analytics.PeriodSummary
 	cash          analytics.CashPosition
+	incomePeriod  analytics.IncomeRelativePeriod
 	err           error
 	periodCalls   int
 	cashCalls     int
+	incomeCalls   int
 	from, to      time.Time
+	incomeAsOf    time.Time
+	categoryID    *string
 	asOf, through string
 }
 
@@ -47,6 +51,12 @@ func (fake *fakeAnalytics) CashPosition(_ context.Context, asOf, through string)
 	fake.cashCalls++
 	fake.asOf, fake.through = asOf, through
 	return fake.cash, fake.err
+}
+
+func (fake *fakeAnalytics) IncomeRelativePeriod(_ context.Context, asOf time.Time, categoryID *string) (analytics.IncomeRelativePeriod, error) {
+	fake.incomeCalls++
+	fake.incomeAsOf, fake.categoryID = asOf, categoryID
+	return fake.incomePeriod, fake.err
 }
 
 type fakeObligations struct {
@@ -81,6 +91,10 @@ func newTestExecutor() (*Executor, *fakeAccounts, *fakeAnalytics, *fakeObligatio
 	analyticsReader := &fakeAnalytics{
 		period: analytics.PeriodSummary{Currencies: []analytics.CurrencyPeriodSummary{}},
 		cash:   analytics.CashPosition{Currencies: []analytics.CurrencyCashPosition{}},
+		incomePeriod: analytics.IncomeRelativePeriod{
+			Anchor:  analytics.IncomeAnchor{EventID: "income-1", Postings: []analytics.IncomeAnchorPosting{}},
+			Summary: analytics.PeriodSummary{Currencies: []analytics.CurrencyPeriodSummary{}},
+		},
 	}
 	obligationReader := &fakeObligations{items: []obligations.Obligation{}}
 	receiptReader := &fakeReceipts{items: []receipts.Receipt{}}
@@ -101,12 +115,14 @@ func TestDefinitionsAreStableStrictAndReadOnly(t *testing.T) {
 			t.Fatalf("tool %s has a non-strict schema: %#v", definition.Name, definition.InputSchema)
 		}
 	}
-	want := []string{"get_accounts", "get_period_summary", "get_cash_position", "get_obligations", "get_receipts"}
+	want := []string{"get_accounts", "get_period_summary", "get_cash_position", "get_obligations", "get_receipts", "get_period_since_income"}
 	if !reflect.DeepEqual(names, want) {
 		t.Fatalf("unexpected definition order: %v", names)
 	}
 	if !reflect.DeepEqual(definitions[1].InputSchema.Required, []string{"from", "to"}) ||
-		!reflect.DeepEqual(definitions[2].InputSchema.Required, []string{"through"}) {
+		!reflect.DeepEqual(definitions[2].InputSchema.Required, []string{"through"}) ||
+		!reflect.DeepEqual(definitions[5].InputSchema.Required, []string{"asOf"}) ||
+		definitions[5].InputSchema.Properties["categoryId"].Format != "uuid" {
 		t.Fatal("required fields do not match the accepted contract")
 	}
 	payload, err := json.Marshal(definitions)
@@ -150,6 +166,13 @@ func TestExecutorDispatchesCanonicalDependencies(t *testing.T) {
 	if err != nil || receiptReader.limit != 25 || receiptReader.calls != 2 {
 		t.Fatalf("unexpected receipts call: %#v %v", receiptReader, err)
 	}
+
+	incomeResult, err := executor.Call(ctx, "get_period_since_income", json.RawMessage(`{"asOf":"2026-10-05T12:00:00+05:00","categoryId":"20000000-0000-0000-0000-000000000004"}`))
+	if err != nil || analyticsReader.incomeCalls != 1 || analyticsReader.categoryID == nil ||
+		*analyticsReader.categoryID != "20000000-0000-0000-0000-000000000004" || analyticsReader.incomeAsOf.Location() == time.UTC ||
+		incomeResult.Data.(analytics.IncomeRelativePeriod).Anchor.EventID != "income-1" {
+		t.Fatalf("unexpected income-relative call: %#v %v", analyticsReader, err)
+	}
 }
 
 func TestInvalidCallsDoNotReachDependencies(t *testing.T) {
@@ -169,6 +192,11 @@ func TestInvalidCallsDoNotReachDependencies(t *testing.T) {
 		{name: "invalid asOf", tool: "get_obligations", arguments: `{"asOf":"2026-02-30"}`, code: CodeInvalidArguments},
 		{name: "small receipt limit", tool: "get_receipts", arguments: `{"limit":0}`, code: CodeInvalidArguments},
 		{name: "large receipt limit", tool: "get_receipts", arguments: `{"limit":101}`, code: CodeInvalidArguments},
+		{name: "missing income asOf", tool: "get_period_since_income", arguments: `{}`, code: CodeInvalidArguments},
+		{name: "income asOf without offset", tool: "get_period_since_income", arguments: `{"asOf":"2026-10-05T12:00:00"}`, code: CodeInvalidArguments},
+		{name: "malformed income category", tool: "get_period_since_income", arguments: `{"asOf":"2026-10-05T12:00:00Z","categoryId":"not-a-uuid"}`, code: CodeInvalidArguments},
+		{name: "null income category", tool: "get_period_since_income", arguments: `{"asOf":"2026-10-05T12:00:00Z","categoryId":null}`, code: CodeInvalidArguments},
+		{name: "numeric income category", tool: "get_period_since_income", arguments: `{"asOf":"2026-10-05T12:00:00Z","categoryId":42}`, code: CodeInvalidArguments},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -177,8 +205,29 @@ func TestInvalidCallsDoNotReachDependencies(t *testing.T) {
 			if code, ok := ErrorCodeOf(err); !ok || code != test.code {
 				t.Fatalf("expected %s, got %v", test.code, err)
 			}
-			if accountReader.calls+analyticsReader.periodCalls+analyticsReader.cashCalls+obligationReader.calls+receiptReader.calls != 0 {
+			if accountReader.calls+analyticsReader.periodCalls+analyticsReader.cashCalls+analyticsReader.incomeCalls+obligationReader.calls+receiptReader.calls != 0 {
 				t.Fatal("invalid call reached a dependency")
+			}
+		})
+	}
+}
+
+func TestIncomeAnchorErrorsHaveStableToolCodes(t *testing.T) {
+	tests := []struct {
+		name     string
+		anchor   analytics.IncomeAnchorErrorCode
+		expected ErrorCode
+	}{
+		{name: "invalid category", anchor: analytics.CodeInvalidAnchorCategory, expected: CodeInvalidAnchorCategory},
+		{name: "not found", anchor: analytics.CodeAnchorNotFound, expected: CodeAnchorNotFound},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			executor, _, analyticsReader, _, _ := newTestExecutor()
+			analyticsReader.err = &analytics.IncomeAnchorError{Code: test.anchor, Err: errors.New("test")}
+			result, err := executor.Call(context.Background(), "get_period_since_income", json.RawMessage(`{"asOf":"2026-10-05T12:00:00Z"}`))
+			if code, ok := ErrorCodeOf(err); !ok || code != test.expected || result.Data != nil {
+				t.Fatalf("expected %s without data, got %#v %v", test.expected, result, err)
 			}
 		})
 	}

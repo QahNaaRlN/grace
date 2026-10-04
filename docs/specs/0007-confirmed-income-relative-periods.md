@@ -1,12 +1,12 @@
 # SPEC-0007: периоды относительно подтверждённого дохода
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-05
 - Specification branch: `codex/spec-0007-event-relative-periods`
-- Implementation branch: отсутствует
+- Implementation branch: `codex/income-relative-periods`
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат

@@ -22,6 +22,7 @@ type AccountsReader interface {
 type AnalyticsReader interface {
 	PeriodSummary(context.Context, time.Time, time.Time) (analytics.PeriodSummary, error)
 	CashPosition(context.Context, string, string) (analytics.CashPosition, error)
+	IncomeRelativePeriod(context.Context, time.Time, *string) (analytics.IncomeRelativePeriod, error)
 }
 
 type ObligationsReader interface {
@@ -151,6 +152,33 @@ func (executor *Executor) Call(ctx context.Context, name string, arguments json.
 			return ToolResult{}, dependencyError(ctx, err)
 		}
 		return ToolResult{Name: name, Data: ReceiptsResult{Items: items}}, nil
+
+	case "get_period_since_income":
+		var input struct {
+			AsOf       string          `json:"asOf"`
+			CategoryID json.RawMessage `json:"categoryId"`
+		}
+		if err := decodeArguments(arguments, &input); err != nil {
+			return ToolResult{}, invalidArguments(err)
+		}
+		var categoryIDRaw string
+		if input.CategoryID != nil {
+			if bytes.Equal(bytes.TrimSpace(input.CategoryID), []byte("null")) {
+				return ToolResult{}, invalidArguments(fmt.Errorf("categoryId must be a UUID string"))
+			}
+			if err := json.Unmarshal(input.CategoryID, &categoryIDRaw); err != nil {
+				return ToolResult{}, invalidArguments(fmt.Errorf("categoryId must be a UUID string"))
+			}
+		}
+		asOf, categoryID, err := analytics.ParseIncomeAnchorQuery(input.AsOf, categoryIDRaw)
+		if err != nil {
+			return ToolResult{}, invalidArguments(err)
+		}
+		result, err := executor.analytics.IncomeRelativePeriod(ctx, asOf, categoryID)
+		if err != nil {
+			return ToolResult{}, dependencyError(ctx, err)
+		}
+		return ToolResult{Name: name, Data: result}, nil
 	default:
 		return ToolResult{}, &ToolError{Code: CodeUnknownTool, Err: fmt.Errorf("tool %q is not registered", name)}
 	}
@@ -180,6 +208,14 @@ func dependencyError(ctx context.Context, err error) error {
 	if errors.Is(ctx.Err(), context.Canceled) || errors.Is(ctx.Err(), context.DeadlineExceeded) ||
 		errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return &ToolError{Code: CodeCanceled, Err: err}
+	}
+	if code, ok := analytics.IncomeAnchorErrorCodeOf(err); ok {
+		switch code {
+		case analytics.CodeInvalidAnchorCategory:
+			return &ToolError{Code: CodeInvalidAnchorCategory, Err: err}
+		case analytics.CodeAnchorNotFound:
+			return &ToolError{Code: CodeAnchorNotFound, Err: err}
+		}
 	}
 	return &ToolError{Code: CodeDependencyFailure, Err: err}
 }

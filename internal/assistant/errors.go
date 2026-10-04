@@ -8,10 +8,12 @@ import (
 type ErrorCode string
 
 const (
-	CodeUnknownTool       ErrorCode = "unknown_tool"
-	CodeInvalidArguments  ErrorCode = "invalid_arguments"
-	CodeDependencyFailure ErrorCode = "dependency_failure"
-	CodeCanceled          ErrorCode = "canceled"
+	CodeUnknownTool           ErrorCode = "unknown_tool"
+	CodeInvalidArguments      ErrorCode = "invalid_arguments"
+	CodeInvalidAnchorCategory ErrorCode = "invalid_anchor_category"
+	CodeAnchorNotFound        ErrorCode = "anchor_not_found"
+	CodeDependencyFailure     ErrorCode = "dependency_failure"
+	CodeCanceled              ErrorCode = "canceled"
 )
 
 type ToolError struct {

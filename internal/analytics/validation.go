@@ -1,6 +1,7 @@
 package analytics
 
 import (
+	"encoding/hex"
 	"errors"
 	"strings"
 	"time"
@@ -9,8 +10,9 @@ import (
 const dateLayout = "2006-01-02"
 
 var (
-	ErrInvalidPeriod      = errors.New("invalid analytics period")
-	ErrInvalidCashHorizon = errors.New("invalid cash position horizon")
+	ErrInvalidPeriod            = errors.New("invalid analytics period")
+	ErrInvalidCashHorizon       = errors.New("invalid cash position horizon")
+	ErrInvalidIncomeAnchorQuery = errors.New("invalid income anchor query")
 )
 
 func ParsePeriod(fromRaw, toRaw string) (time.Time, time.Time, error) {
@@ -37,4 +39,29 @@ func ParseCashHorizon(asOfRaw, throughRaw string, now time.Time) (string, string
 		return "", "", ErrInvalidCashHorizon
 	}
 	return asOfRaw, throughRaw, nil
+}
+
+func ParseIncomeAnchorQuery(asOfRaw, categoryIDRaw string) (time.Time, *string, error) {
+	asOfRaw = strings.TrimSpace(asOfRaw)
+	asOf, err := time.Parse(time.RFC3339, asOfRaw)
+	if asOfRaw == "" || err != nil {
+		return time.Time{}, nil, ErrInvalidIncomeAnchorQuery
+	}
+	categoryIDRaw = strings.TrimSpace(categoryIDRaw)
+	if categoryIDRaw == "" {
+		return asOf, nil, nil
+	}
+	if !isCanonicalUUID(categoryIDRaw) {
+		return time.Time{}, nil, ErrInvalidIncomeAnchorQuery
+	}
+	return asOf, &categoryIDRaw, nil
+}
+
+func isCanonicalUUID(value string) bool {
+	if len(value) != 36 || value[8] != '-' || value[13] != '-' || value[18] != '-' || value[23] != '-' {
+		return false
+	}
+	compact := strings.ReplaceAll(value, "-", "")
+	_, err := hex.DecodeString(compact)
+	return err == nil
 }

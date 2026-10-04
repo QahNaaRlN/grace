@@ -58,6 +58,13 @@ func Definitions() []ToolDefinition {
 				"limit": {Type: "integer", Description: "Maximum number of receipts.", Minimum: &minLimit, Maximum: &maxLimit},
 			}, nil),
 		},
+		{
+			Name: "get_period_since_income", Description: "Return the confirmed income anchor and actual cash flow since it, separated by currency.", ReadOnly: true,
+			InputSchema: objectSchema(map[string]PropertySchema{
+				"asOf":       {Type: "string", Format: "date-time", Description: "Exclusive RFC 3339 boundary with an explicit UTC offset."},
+				"categoryId": {Type: "string", Format: "uuid", Description: "Optional exact Grace income-category identifier."},
+			}, []string{"asOf"}),
+		},
 	}
 }
 
