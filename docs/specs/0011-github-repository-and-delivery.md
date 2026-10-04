@@ -1,13 +1,15 @@
 # SPEC-0011: GitHub repository и CI/CD delivery
 
-- Статус: implementing
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner 2026-10-05 разрешил GitHub CLI authorization, private repository `QahNaaRlN/grace` и GHCR delivery как первую CD-фазу
 - Specification branch: `codex/github-delivery`
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/github-delivery`
+- Implementation commits: `2404133`, `42e34d3`
+- Integration commit: `c7a3f1da19a1032d67b953f08da65d469c8c76ee`
+- Evidence: `docs/specs/0011-evidence.md`
 
 ## Проблема и пользовательский результат
 
@@ -106,19 +108,19 @@ immutable и не удаляются автоматически. Runtime rollbac
 
 ## Критерии приёмки
 
-- [ ] Owner принял repository visibility и границу первой CD-фазы.
-- [ ] GitHub repository существует под owner account и `origin` указывает на него.
-- [ ] Локальный `main` опубликован без force push и соответствует remote `main`.
-- [ ] CI workflow имеет минимальные permissions и проходит на реальном GitHub run.
-- [ ] CI выполняет `make test`, integration gates и production Docker builds.
-- [ ] Delivery не запускается при failed CI и публикует API/Web images только из
+- [x] Owner принял repository visibility и границу первой CD-фазы.
+- [x] GitHub repository существует под owner account и `origin` указывает на него.
+- [x] Локальный `main` опубликован без force push и соответствует remote `main`.
+- [x] CI workflow имеет минимальные permissions и проходит на реальном GitHub run.
+- [x] CI выполняет `make test`, integration gates и production Docker builds.
+- [x] Delivery не запускается при failed CI и публикует API/Web images только из
       прошедшего commit.
-- [ ] GHCR содержит versioned SHA tags; `main` указывает на тот же immutable OCI
+- [x] GHCR содержит versioned SHA tags; `main` указывает на тот же immutable OCI
       digest/commit для соответствующего run.
-- [ ] Ни один runtime secret или `.env` не попал в Git, artifacts или logs.
-- [ ] Документация объясняет GitHub Actions, checks, packages и следующий шаг к
+- [x] Ни один runtime secret или `.env` не попал в Git, artifacts или logs.
+- [x] Документация объясняет GitHub Actions, checks, packages и следующий шаг к
       реальному deployment.
-- [ ] `make test`, `make test-integration`, `git diff --check` проходят локально.
+- [x] `make test`, `make test-integration`, `git diff --check` проходят локально.
 
 ## Исполняемые проверки
 
@@ -138,9 +140,9 @@ git ls-remote origin refs/heads/main
 
 ## Открытые решения
 
-1. Branch protection/ruleset для `main`: GitHub Free поддерживает разные
-   возможности для public/private repositories; точная настройка проверяется
-   после создания repository.
+1. Branch protection для private repository отклонён GitHub с HTTP 403:
+   требуется GitHub Pro либо public visibility. Repository оставлен private;
+   это ограничение тарифа зафиксировано в evidence.
 2. Реальный deployment target, domain, TLS, backups и migration gate будут
    определены отдельной спецификацией после выбора hosting.
 
