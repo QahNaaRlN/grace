@@ -1,4 +1,4 @@
-.PHONY: dev down logs test test-go test-web build generate-api
+.PHONY: dev down logs test test-go test-web test-integration build generate-api
 
 dev:
 	docker compose up --build
@@ -19,6 +19,9 @@ test-go:
 
 test-web:
 	cd web && npm run lint && npm run build
+
+test-integration:
+	./scripts/test-financial-events.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

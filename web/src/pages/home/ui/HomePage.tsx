@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { Activity, ArrowDownRight, WalletCards } from 'lucide-react'
+import { Activity, ArrowDownRight, ArrowRightLeft, WalletCards } from 'lucide-react'
 
-import { CreateTransactionForm } from '@/features/create-transaction'
+import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { apiClient } from '@/shared/api/client'
-import type { Account, Transaction } from '@/shared/api/types'
+import type { Account, FinancialEvent } from '@/shared/api/types'
 import { Badge } from '@/shared/ui/badge'
 import {
   Card,
@@ -14,11 +14,16 @@ import {
 } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 
+const kindLabels: Record<FinancialEvent['kind'], string> = {
+  purchase: 'Покупка',
+  income_received: 'Доход',
+  internal_transfer: 'Перевод',
+  refund: 'Возврат',
+  debt_payment: 'Платёж по обязательству',
+}
+
 function formatMoney(valueMinor: number, currency: string) {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency,
-  }).format(valueMinor / 100)
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(valueMinor / 100)
 }
 
 async function loadAccounts() {
@@ -33,9 +38,9 @@ async function loadCategories() {
   return data.items
 }
 
-async function loadTransactions() {
-  const { data } = await apiClient.GET('/api/v1/transactions')
-  if (!data) throw new Error('Не удалось загрузить операции')
+async function loadEvents() {
+  const { data } = await apiClient.GET('/api/v1/financial-events')
+  if (!data) throw new Error('Не удалось загрузить финансовые события')
   return data.items
 }
 
@@ -57,41 +62,58 @@ function Accounts({ items }: { items: Account[] }) {
   )
 }
 
-function Transactions({ items }: { items: Transaction[] }) {
+function Events({ items }: { items: FinancialEvent[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Последние операции</CardTitle>
+        <CardTitle>Финансовые события</CardTitle>
         <CardDescription>
-          Техническая операция хранится вместе с её финансовым смыслом.
+          Каждое событие объясняет одну или несколько связанных проводок.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Операций пока нет.</p>
+          <p className="text-sm text-muted-foreground">Событий пока нет.</p>
         ) : (
           <div className="divide-y">
-            {items.map((item) => (
-              <article key={item.id} className="flex items-center justify-between gap-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="rounded-full bg-muted p-2">
-                    <ArrowDownRight aria-hidden="true" className="size-4" />
+            {items.map((item) => {
+              const posting = item.postings[0]
+              const isTransfer = item.kind === 'internal_transfer'
+              const positive = posting?.direction === 'credit'
+              const sourcePosting = item.postings.find((value) => value.direction === 'debit')
+              const destinationPosting = item.postings.find((value) => value.direction === 'credit')
+              const accountDescription = isTransfer
+                ? `${sourcePosting?.accountName ?? 'Неизвестный счёт'} → ${destinationPosting?.accountName ?? 'Неизвестный счёт'}`
+                : posting?.accountName
+              return (
+                <article key={item.id} className="flex items-center justify-between gap-4 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="rounded-full bg-muted p-2">
+                      {isTransfer
+                        ? <ArrowRightLeft aria-hidden="true" className="size-4" />
+                        : <ArrowDownRight aria-hidden="true" className="size-4" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">
+                        {item.merchant || item.description || kindLabels[item.kind]}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.categoryName ?? kindLabels[item.kind]} · {accountDescription}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{item.merchant || item.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.categoryName ?? item.kind} · {item.accountName}
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-medium text-destructive">
-                    −{formatMoney(item.amountMinor, item.currency)}
-                  </p>
-                  <Badge variant="secondary">{item.kind}</Badge>
-                </div>
-              </article>
-            ))}
+                  {posting && (
+                    <div className="shrink-0 text-right">
+                      <p className={positive ? 'font-medium text-emerald-700' : 'font-medium text-destructive'}>
+                        {isTransfer ? '' : positive ? '+' : '−'}
+                        {formatMoney(posting.amountMinor, posting.currency)}
+                      </p>
+                      <Badge variant="secondary">{kindLabels[item.kind]}</Badge>
+                    </div>
+                  )}
+                </article>
+              )
+            })}
           </div>
         )}
       </CardContent>
@@ -102,10 +124,9 @@ function Transactions({ items }: { items: Transaction[] }) {
 export function HomePage() {
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: loadAccounts })
   const categories = useQuery({ queryKey: ['categories'], queryFn: loadCategories })
-  const transactions = useQuery({ queryKey: ['transactions'], queryFn: loadTransactions })
-
-  const error = accounts.error ?? categories.error ?? transactions.error
-  const isPending = accounts.isPending || categories.isPending || transactions.isPending
+  const events = useQuery({ queryKey: ['financial-events'], queryFn: loadEvents })
+  const error = accounts.error ?? categories.error ?? events.error
+  const isPending = accounts.isPending || categories.isPending || events.isPending
 
   return (
     <AppLayout>
@@ -131,12 +152,10 @@ export function HomePage() {
         )}
 
         {accounts.data && <Accounts items={accounts.data} />}
-
         {accounts.data && categories.data && (
-          <CreateTransactionForm accounts={accounts.data} categories={categories.data} />
+          <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />
         )}
-
-        {transactions.data && <Transactions items={transactions.data} />}
+        {events.data && <Events items={events.data} />}
       </section>
     </AppLayout>
   )

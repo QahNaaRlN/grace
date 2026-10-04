@@ -52,16 +52,96 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/transactions": {
+    "/api/v1/financial-events": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listTransactions"];
+        get: operations["listFinancialEvents"];
         put?: never;
-        post: operations["createTransaction"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPurchase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/incomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createIncome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/debt-payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createDebtPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createRefund"];
         delete?: never;
         options?: never;
         head?: never;
@@ -105,42 +185,63 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        Transaction: {
+        Posting: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             accountId: string;
             accountName: string;
-            categoryId?: string | null;
-            categoryName?: string | null;
+            /** @enum {string} */
+            direction: "credit" | "debit";
             /** Format: int64 */
             amountMinor: number;
             currency: string;
+        };
+        FinancialEvent: {
+            /** Format: uuid */
+            id: string;
             /** @enum {string} */
-            direction: "income" | "expense";
-            /** @enum {string} */
-            kind: "purchase" | "income_received" | "debt_payment" | "refund";
+            kind: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment";
             /** @enum {string} */
             source: "manual" | "bank_import" | "receipt";
+            categoryId?: string | null;
+            categoryName?: string | null;
+            originalEventId?: string | null;
             merchant: string;
             description: string;
             /** Format: date-time */
             occurredAt: string;
             /** Format: date-time */
             createdAt: string;
+            postings: components["schemas"]["Posting"][];
         };
-        CreateTransaction: {
+        CreateSingleAccountEvent: {
             /** Format: uuid */
             accountId: string;
             categoryId?: string | null;
             /** Format: int64 */
             amountMinor: number;
-            /** @enum {string} */
-            direction: "income" | "expense";
-            /** @enum {string} */
-            kind: "purchase" | "income_received" | "debt_payment" | "refund";
-            /** @enum {string} */
-            source: "manual" | "bank_import" | "receipt";
+            merchant: string;
+            description: string;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        CreateTransfer: {
+            /** Format: uuid */
+            sourceAccountId: string;
+            /** Format: uuid */
+            destinationAccountId: string;
+            /** Format: int64 */
+            amountMinor: number;
+            description: string;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        CreateRefund: {
+            /** Format: uuid */
+            originalEventId: string;
+            /** Format: int64 */
+            amountMinor: number;
             merchant: string;
             description: string;
             /** Format: date-time */
@@ -152,7 +253,16 @@ export interface components {
         };
     };
     responses: {
-        /** @description The request violates the public contract */
+        /** @description Created event or result of an idempotent retry */
+        Event: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["FinancialEvent"];
+            };
+        };
+        /** @description Request violates the financial contract */
         ValidationError: {
             headers: {
                 [name: string]: unknown;
@@ -161,8 +271,19 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description Idempotency key was used with another payload */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
     };
-    parameters: never;
+    parameters: {
+        IdempotencyKey: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -198,7 +319,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Accounts */
+            /** @description Accounts with balances derived from postings */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -258,7 +379,7 @@ export interface operations {
             };
         };
     };
-    listTransactions: {
+    listFinancialEvents: {
         parameters: {
             query?: never;
             header?: never;
@@ -267,41 +388,121 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Recent transactions */
+            /** @description Recent financial events with postings */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        items: components["schemas"]["Transaction"][];
+                        items: components["schemas"]["FinancialEvent"][];
                     };
                 };
             };
         };
     };
-    createTransaction: {
+    createPurchase: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateTransaction"];
+                "application/json": components["schemas"]["CreateSingleAccountEvent"];
             };
         };
         responses: {
-            /** @description Created transaction */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Transaction"];
-                };
+            200: components["responses"]["Event"];
+            201: components["responses"]["Event"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createIncome: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSingleAccountEvent"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Event"];
+            201: components["responses"]["Event"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createDebtPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSingleAccountEvent"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Event"];
+            201: components["responses"]["Event"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createTransfer: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransfer"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Event"];
+            201: components["responses"]["Event"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createRefund: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRefund"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Event"];
+            201: components["responses"]["Event"];
+            409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
         };
     };
