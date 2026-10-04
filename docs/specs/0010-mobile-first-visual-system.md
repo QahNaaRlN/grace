@@ -1,6 +1,6 @@
 # SPEC-0010: mobile-first визуальная система Web
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner

@@ -66,5 +66,17 @@ Vite сообщает не блокирующее предупреждение �
 ## Итог
 
 Все критерии SPEC-0010 закрыты исполняемыми и браузерными доказательствами.
-Implementation готова к интеграции, но этот документ сам по себе не означает,
-что commit уже достижим из `main`.
+Implementation commit `2c135f4` и verification commit `b544706` достижимы из
+`main`.
+
+## Post-merge verification
+
+В основной копии после fast-forward интеграции повторно выполнены:
+
+```text
+make test                                                  PASS
+git diff --check                                           PASS
+```
+
+Go tests, 16 Web tests, ESLint, TypeScript/Vite build и обе Jev datasets
+повторно прошли. SPEC-0010 имеет статус `integrated`.
