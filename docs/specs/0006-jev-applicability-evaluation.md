@@ -1,10 +1,10 @@
 # SPEC-0006: оценка применимости Jev
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: `codex/jev-role-evaluation`
 - Implementation commit: отсутствует
 
