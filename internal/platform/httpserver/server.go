@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/accounts"
+	"github.com/QahNaaRlN/grace/internal/analytics"
 	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/obligations"
@@ -32,6 +33,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	financialEventsHandler := financialevents.NewHandler(financialevents.NewRepository(pool))
 	receiptsHandler := receipts.NewHandler(receipts.NewRepository(pool))
 	obligationsHandler := obligations.NewHandler(obligations.NewRepository(pool))
+	analyticsHandler := analytics.NewHandler(analytics.NewRepository(pool))
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -46,7 +48,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	router.Get("/api/meta", func(w http.ResponseWriter, _ *http.Request) {
-		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.4.0-dev"})
+		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.5.0-dev"})
 	})
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Get("/accounts", accountsHandler.List)
@@ -65,6 +67,8 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Get("/obligations/{obligationId}", obligationsHandler.Get)
 		router.Post("/obligations", obligationsHandler.Create)
 		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
+		router.Get("/analytics/period-summary", analyticsHandler.PeriodSummary)
+		router.Get("/analytics/cash-position", analyticsHandler.CashPosition)
 	})
 
 	return &http.Server{

@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.4.0
-  description: Financial events, confirmed receipt details, and fixed obligation schedules. Money uses integer minor units.
+  version: 0.5.0
+  description: Deterministic financial events, receipts, obligations, and read-only analytics. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
 paths:
@@ -174,6 +174,44 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/analytics/period-summary:
+    get:
+      operationId: getPeriodSummary
+      parameters:
+        - name: from
+          in: query
+          required: true
+          description: Inclusive RFC 3339 boundary with an explicit UTC offset.
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          required: true
+          description: Exclusive RFC 3339 boundary with an explicit UTC offset.
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Actual cash-flow and balance summary, separated by currency
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PeriodSummary' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/analytics/cash-position:
+    get:
+      operationId: getCashPosition
+      parameters:
+        - { $ref: '#/components/parameters/AsOf' }
+        - name: through
+          in: query
+          required: true
+          description: Inclusive calendar horizon for outstanding scheduled payments.
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Current liquid balance less known outstanding obligations
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CashPosition' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/obligations:
     get:
       operationId: listObligations
@@ -356,6 +394,74 @@ components:
           type: array
           minItems: 1
           items: { $ref: '#/components/schemas/Posting' }
+    ExpenseCategorySummary:
+      type: object
+      required: [categoryId, categoryName, purchasesMinor, refundsMinor, netExpenseMinor]
+      properties:
+        categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
+        categoryName: { type: string }
+        purchasesMinor: { type: integer, format: int64, minimum: 0 }
+        refundsMinor: { type: integer, format: int64, minimum: 0 }
+        netExpenseMinor: { type: integer, format: int64 }
+    CurrencyPeriodSummary:
+      type: object
+      required: [currency, openingBalanceMinor, closingBalanceMinor, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, netExternalCashFlowMinor, internalTransferVolumeMinor, expenseCategories]
+      properties:
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        openingBalanceMinor: { type: integer, format: int64 }
+        closingBalanceMinor: { type: integer, format: int64 }
+        incomeMinor: { type: integer, format: int64, minimum: 0 }
+        purchasesMinor: { type: integer, format: int64, minimum: 0 }
+        refundsMinor: { type: integer, format: int64, minimum: 0 }
+        debtPaymentsMinor: { type: integer, format: int64, minimum: 0 }
+        netExternalCashFlowMinor: { type: integer, format: int64 }
+        internalTransferVolumeMinor: { type: integer, format: int64, minimum: 0 }
+        expenseCategories:
+          type: array
+          items: { $ref: '#/components/schemas/ExpenseCategorySummary' }
+    PeriodSummary:
+      type: object
+      required: [from, to, currencies]
+      properties:
+        from: { type: string, format: date-time }
+        to: { type: string, format: date-time }
+        currencies:
+          type: array
+          items: { $ref: '#/components/schemas/CurrencyPeriodSummary' }
+    CashScheduledPayment:
+      type: object
+      required: [scheduledPaymentId, obligationId, obligationName, dueOn, amountMinor, paidMinor, remainingMinor, timing]
+      properties:
+        scheduledPaymentId: { type: string, format: uuid }
+        obligationId: { type: string, format: uuid }
+        obligationName: { type: string }
+        dueOn: { type: string, format: date }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        paidMinor: { type: integer, format: int64, minimum: 0 }
+        remainingMinor: { type: integer, format: int64, minimum: 1 }
+        timing: { type: string, enum: [overdue, upcoming] }
+    CurrencyCashPosition:
+      type: object
+      required: [currency, liquidBalanceMinor, overdueObligationsMinor, upcomingObligationsMinor, obligationsThroughMinor, availableAfterObligationsMinor, scheduledPayments]
+      properties:
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        liquidBalanceMinor: { type: integer, format: int64 }
+        overdueObligationsMinor: { type: integer, format: int64, minimum: 0 }
+        upcomingObligationsMinor: { type: integer, format: int64, minimum: 0 }
+        obligationsThroughMinor: { type: integer, format: int64, minimum: 0 }
+        availableAfterObligationsMinor: { type: integer, format: int64 }
+        scheduledPayments:
+          type: array
+          items: { $ref: '#/components/schemas/CashScheduledPayment' }
+    CashPosition:
+      type: object
+      required: [asOf, through, currencies]
+      properties:
+        asOf: { type: string, format: date }
+        through: { type: string, format: date }
+        currencies:
+          type: array
+          items: { $ref: '#/components/schemas/CurrencyCashPosition' }
     CreateSingleAccountEvent:
       type: object
       additionalProperties: false

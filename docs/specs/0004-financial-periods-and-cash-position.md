@@ -1,12 +1,12 @@
 # SPEC-0004: денежные периоды и доступность денег
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/financial-period-summary
+- Implementation commit: `841edbd`
 
 ## Проблема и пользовательский результат
 
@@ -249,28 +249,28 @@ Rollback реализации состоит из удаления read-only rou
 
 ## Критерии приёмки
 
-- [ ] Period API принимает явный полуоткрытый RFC 3339 интервал.
-- [ ] События ровно на `from` включаются, ровно на `to` исключаются.
-- [ ] Результаты разделены по валютам и никогда не конвертируются скрыто.
-- [ ] Income, purchase, refund и debt payment агрегируются по отдельной
+- [x] Period API принимает явный полуоткрытый RFC 3339 интервал.
+- [x] События ровно на `from` включаются, ровно на `to` исключаются.
+- [x] Результаты разделены по валютам и никогда не конвертируются скрыто.
+- [x] Income, purchase, refund и debt payment агрегируются по отдельной
       семантике.
-- [ ] Internal transfer не меняет net external cash flow и считается один раз
+- [x] Internal transfer не меняет net external cash flow и считается один раз
       только как transfer volume.
-- [ ] Category breakdown корректно net-ит refunds против purchases.
-- [ ] Opening/closing balance согласованы с postings на границах периода.
-- [ ] Каждый ответ вычисляется из одного согласованного PostgreSQL snapshot и
+- [x] Category breakdown корректно net-ит refunds против purchases.
+- [x] Opening/closing balance согласованы с postings на границах периода.
+- [x] Каждый ответ вычисляется из одного согласованного PostgreSQL snapshot и
       сохраняет свои арифметические инварианты при конкурентных записях.
-- [ ] Cash-position включает только liquid debit/cash balances.
-- [ ] Overdue и upcoming obligations разделены относительно `asOf` и `through`.
-- [ ] Settlements уменьшают commitments, полностью оплаченный платёж исчезает.
-- [ ] Available after obligations вычисляется сервером и допускает минус.
-- [ ] Read-only analytics не создаёт и не изменяет финансовые записи.
-- [ ] Невалидные границы и чрезмерные диапазоны возвращают `422`.
-- [ ] OpenAPI и generated TypeScript проходят сборку.
-- [ ] React показывает периодную сводку и cash position отдельно по валютам.
-- [ ] Existing account/event/receipt/obligation пути не регрессируют.
-- [ ] Production dependency graph не содержит AI/LLM/provider модулей.
-- [ ] `make test`, предметный integration test и `git diff --check` проходят в
+- [x] Cash-position включает только liquid debit/cash balances.
+- [x] Overdue и upcoming obligations разделены относительно `asOf` и `through`.
+- [x] Settlements уменьшают commitments, полностью оплаченный платёж исчезает.
+- [x] Available after obligations вычисляется сервером и допускает минус.
+- [x] Read-only analytics не создаёт и не изменяет финансовые записи.
+- [x] Невалидные границы и чрезмерные диапазоны возвращают `422`.
+- [x] OpenAPI и generated TypeScript проходят сборку.
+- [x] React показывает периодную сводку и cash position отдельно по валютам.
+- [x] Existing account/event/receipt/obligation пути не регрессируют.
+- [x] Production dependency graph не содержит AI/LLM/provider модулей.
+- [x] `make test`, предметный integration test и `git diff --check` проходят в
       implementation worktree.
 - [ ] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.

@@ -24,6 +24,7 @@ test-integration:
 	./scripts/test-financial-events.sh
 	./scripts/test-receipts.sh
 	./scripts/test-obligations.sh
+	./scripts/test-analytics.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

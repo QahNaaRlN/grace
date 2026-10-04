@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, ArrowDownRight, ArrowRightLeft, CalendarClock, Link2, WalletCards } from 'lucide-react'
+import { Activity, ArrowDownRight, ArrowRightLeft, BarChart3, CalendarClock, Link2, WalletCards } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -7,7 +7,7 @@ import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { CreateObligationForm } from '@/features/create-obligation'
 import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
-import type { Account, FinancialEvent, Obligation, Receipt, ScheduledPayment } from '@/shared/api/types'
+import type { Account, CashPosition, FinancialEvent, Obligation, PeriodSummary, Receipt, ScheduledPayment } from '@/shared/api/types'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -18,6 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 import {
   Select,
@@ -37,6 +39,35 @@ const kindLabels: Record<FinancialEvent['kind'], string> = {
 
 function formatMoney(valueMinor: number, currency: string) {
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(valueMinor / 100)
+}
+
+function localDateValue(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function localBoundary(value: string) {
+  const date = new Date(`${value}T00:00:00`)
+  const offset = -date.getTimezoneOffset()
+  const sign = offset >= 0 ? '+' : '-'
+  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0')
+  const minutes = String(Math.abs(offset) % 60).padStart(2, '0')
+  return `${value}T00:00:00${sign}${hours}:${minutes}`
+}
+
+function initialPeriod() {
+  const now = new Date()
+  return {
+    from: localDateValue(new Date(now.getFullYear(), now.getMonth(), 1)),
+    to: localDateValue(new Date(now.getFullYear(), now.getMonth() + 1, 1)),
+  }
+}
+
+function initialThrough() {
+  const now = new Date()
+  return localDateValue(new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()))
 }
 
 async function loadAccounts() {
@@ -302,6 +333,107 @@ function Obligations({ items, events }: { items: Obligation[], events: Financial
   )
 }
 
+function Analytics() {
+  const defaults = initialPeriod()
+  const [fromDate, setFromDate] = useState(defaults.from)
+  const [toDate, setToDate] = useState(defaults.to)
+  const [through, setThrough] = useState(initialThrough)
+  const validPeriod = fromDate !== '' && toDate !== '' && fromDate < toDate
+  const period = useQuery<PeriodSummary>({
+    queryKey: ['period-summary', fromDate, toDate],
+    enabled: validPeriod,
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/analytics/period-summary', {
+        params: { query: { from: localBoundary(fromDate), to: localBoundary(toDate) } },
+      })
+      if (!data) throw new Error(error?.message ?? 'Не удалось загрузить сводку периода')
+      return data
+    },
+  })
+  const cash = useQuery<CashPosition>({
+    queryKey: ['cash-position', through],
+    enabled: through !== '',
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/analytics/cash-position', {
+        params: { query: { through } },
+      })
+      if (!data) throw new Error(error?.message ?? 'Не удалось загрузить доступность денег')
+      return data
+    },
+  })
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><BarChart3 className="size-5" /> Сводка периода</CardTitle>
+          <CardDescription>Фактический поток денег; конец периода не включается.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2"><Label htmlFor="summary-from">С даты</Label><Input id="summary-from" type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="summary-to">До даты, не включая</Label><Input id="summary-to" type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></div>
+          </div>
+          {!validPeriod && <p className="text-sm text-destructive">Дата окончания должна быть позже даты начала.</p>}
+          {period.error && <p className="text-sm text-destructive">{period.error.message}</p>}
+          {period.isPending && validPeriod && <p className="text-sm text-muted-foreground">Рассчитываю…</p>}
+          {period.data?.currencies.length === 0 && <p className="text-sm text-muted-foreground">За период нет финансовых данных.</p>}
+          {period.data?.currencies.map((item) => (
+            <article key={item.currency} className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between"><h3 className="font-semibold">{item.currency}</h3><Badge variant="outline">Итог {formatMoney(item.closingBalanceMinor, item.currency)}</Badge></div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-muted-foreground">Начальный остаток</span><span className="text-right">{formatMoney(item.openingBalanceMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Доходы</span><span className="text-right">{formatMoney(item.incomeMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Покупки</span><span className="text-right">{formatMoney(item.purchasesMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Возвраты</span><span className="text-right">{formatMoney(item.refundsMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Платежи по обязательствам</span><span className="text-right">{formatMoney(item.debtPaymentsMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Внешний денежный поток</span><span className="text-right font-medium">{formatMoney(item.netExternalCashFlowMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Внутренние переводы, справочно</span><span className="text-right">{formatMoney(item.internalTransferVolumeMinor, item.currency)}</span>
+              </div>
+              {item.expenseCategories.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="mb-2 text-sm font-medium">Категории покупок</p>
+                  <div className="space-y-1 text-sm">{item.expenseCategories.map((category) => (
+                    <div key={category.categoryId ?? category.categoryName} className="flex justify-between gap-3"><span className="text-muted-foreground">{category.categoryName}</span><span>{formatMoney(category.netExpenseMinor, item.currency)}</span></div>
+                  ))}</div>
+                </div>
+              )}
+            </article>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><WalletCards className="size-5" /> Доступно после обязательств</CardTitle>
+          <CardDescription>Текущие ликвидные счета минус известные платежи до выбранной даты.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2"><Label htmlFor="cash-through">Обязательства по дату включительно</Label><Input id="cash-through" type="date" value={through} onChange={(event) => setThrough(event.target.value)} /></div>
+          {cash.error && <p className="text-sm text-destructive">{cash.error.message}</p>}
+          {cash.isPending && <p className="text-sm text-muted-foreground">Рассчитываю…</p>}
+          {cash.data?.currencies.length === 0 && <p className="text-sm text-muted-foreground">Нет ликвидных счетов и обязательств до горизонта.</p>}
+          {cash.data?.currencies.map((item) => (
+            <article key={item.currency} className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between"><h3 className="font-semibold">{item.currency}</h3><Badge variant="outline">Доступно {formatMoney(item.availableAfterObligationsMinor, item.currency)}</Badge></div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-muted-foreground">Ликвидный остаток</span><span className="text-right">{formatMoney(item.liquidBalanceMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Просрочено</span><span className="text-right">{formatMoney(item.overdueObligationsMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Предстоит</span><span className="text-right">{formatMoney(item.upcomingObligationsMinor, item.currency)}</span>
+                <span className="font-medium">Всего обязательств</span><span className="text-right font-medium">{formatMoney(item.obligationsThroughMinor, item.currency)}</span>
+              </div>
+              {item.scheduledPayments.length > 0 && <div className="space-y-1 border-t pt-3 text-sm">{item.scheduledPayments.map((payment) => (
+                <div key={payment.scheduledPaymentId} className="flex justify-between gap-3"><span className="text-muted-foreground">{payment.obligationName} · {payment.dueOn}{payment.timing === 'overdue' ? ' · просрочен' : ''}</span><span className="shrink-0">{formatMoney(payment.remainingMinor, item.currency)}</span></div>
+              ))}</div>}
+            </article>
+          ))}
+          <p className="text-xs text-muted-foreground">Это арифметическая позиция по подтверждённым данным, а не бюджет, прогноз или рекомендация.</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export function HomePage() {
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: loadAccounts })
   const categories = useQuery({ queryKey: ['categories'], queryFn: loadCategories })
@@ -336,6 +468,7 @@ export function HomePage() {
         )}
 
         {accounts.data && <Accounts items={accounts.data} />}
+        <Analytics />
         {accounts.data && categories.data && (
           <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />
         )}
