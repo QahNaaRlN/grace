@@ -139,6 +139,9 @@ Grace должен вычислять обе сводки в Go/PostgreSQL по 
 13. Для любой валюты `closing = opening + net external cash flow`: internal
     transfers взаимно сокращаются. Нарушение означает ошибку данных или
     реализации.
+14. Все компоненты одного ответа вычисляются из одного согласованного snapshot
+    PostgreSQL. Конкурентно созданное событие не может попасть только в часть
+    агрегатов и временно нарушить инварианты ответа.
 
 Инварианты текущей ликвидной позиции:
 
@@ -149,8 +152,8 @@ Grace должен вычислять обе сводки в Go/PostgreSQL по 
 3. В commitments входят только outstanding части ScheduledPayment с
    `due_on <= through`.
 4. Outstanding часть вычисляется как scheduled amount минус все подтверждённые
-   settlements. Историческое состояние settlement задним числом не
-   реконструируется.
+   settlements на момент выполнения запроса. Историческое состояние settlement
+   задним числом не реконструируется.
 5. `overdue_obligations_minor` включает outstanding с `due_on < asOf`.
 6. `upcoming_obligations_minor` включает outstanding с
    `asOf <= due_on <= through`.
@@ -159,6 +162,11 @@ Grace должен вычислять обе сводки в Go/PostgreSQL по 
    отрицательное значение разрешено и не является рекомендацией.
 9. Полностью оплаченные scheduled payments не входят в commitments.
 10. Все расчёты выполняются сервером целыми minor units.
+11. `asOf` классифицирует due dates, но не является моментом исторического
+    snapshot данных: liquid balance и settlements берутся в их текущем
+    подтверждённом состоянии на момент выполнения запроса.
+12. Все компоненты одного ответа вычисляются из одного согласованного snapshot
+    PostgreSQL.
 
 ## API и OpenAPI
 
@@ -250,6 +258,8 @@ Rollback реализации состоит из удаления read-only rou
       только как transfer volume.
 - [ ] Category breakdown корректно net-ит refunds против purchases.
 - [ ] Opening/closing balance согласованы с postings на границах периода.
+- [ ] Каждый ответ вычисляется из одного согласованного PostgreSQL snapshot и
+      сохраняет свои арифметические инварианты при конкурентных записях.
 - [ ] Cash-position включает только liquid debit/cash balances.
 - [ ] Overdue и upcoming obligations разделены относительно `asOf` и `through`.
 - [ ] Settlements уменьшают commitments, полностью оплаченный платёж исчезает.
@@ -292,7 +302,8 @@ git diff --check
    opening balance и occurred_at проводок, не банковский snapshot.
 6. В liquid balance входят только debit и cash accounts; credit/installment
    accounts не считаются доступными деньгами.
-7. Cash position использует текущее подтверждённое settlement-состояние и не
-   реконструирует его историческую версию на `asOf`.
+7. Cash position использует текущие balance и подтверждённое
+   settlement-состояние; `asOf` только классифицирует due dates и не
+   реконструирует историческую версию финансовых данных.
 8. `availableAfterObligations` — арифметический факт, может быть отрицательным и
    не является бюджетом, прогнозом или советом.
