@@ -1,10 +1,10 @@
 # SPEC-0011: GitHub repository и CI/CD delivery
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-05
-- Acceptance owner:
-- Acceptance record: отсутствует
+- Acceptance owner: owner
+- Acceptance record: owner 2026-10-05 разрешил GitHub CLI authorization, private repository `QahNaaRlN/grace` и GHCR delivery как первую CD-фазу
 - Specification branch: `codex/github-delivery`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
@@ -137,16 +137,11 @@ git ls-remote origin refs/heads/main
 
 ## Открытые решения
 
-1. Visibility нового repository: `private` (рекомендуется для персонального
-   финансового приложения) или `public`.
-2. Первая CD-фаза:
-   - `delivery`: автоматически публиковать проверенные images в GHCR
-     (рекомендуемый безопасный первый шаг);
-   - `deployment`: дополнительно разворачивать на конкретный VPS/PaaS, для чего
-     owner должен назвать target, domain и допустимый способ доступа.
-3. Branch protection/ruleset для `main`: GitHub Free поддерживает разные
+1. Branch protection/ruleset для `main`: GitHub Free поддерживает разные
    возможности для public/private repositories; точная настройка проверяется
    после создания repository.
+2. Реальный deployment target, domain, TLS, backups и migration gate будут
+   определены отдельной спецификацией после выбора hosting.
 
 ## Нормативные ссылки
 
