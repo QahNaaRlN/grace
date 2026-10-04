@@ -1,0 +1,14 @@
+FROM golang:1.24-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -o /out/grace-api ./cmd/api
+
+FROM alpine:3.22
+RUN addgroup -S grace && adduser -S grace -G grace
+USER grace
+COPY --from=build /out/grace-api /usr/local/bin/grace-api
+EXPOSE 8080
+ENTRYPOINT ["grace-api"]
+

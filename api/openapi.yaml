@@ -1,0 +1,227 @@
+openapi: 3.1.0
+info:
+  title: Grace API
+  version: 0.1.0
+  description: Stable boundary for Grace clients. Monetary values use minor currency units.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/meta:
+    get:
+      operationId: getMeta
+      responses:
+        '200':
+          description: Service metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+  /api/v1/accounts:
+    get:
+      operationId: listAccounts
+      responses:
+        '200':
+          description: Accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Account'
+    post:
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+      responses:
+        '201':
+          description: Created account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/categories:
+    get:
+      operationId: listCategories
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+  /api/v1/transactions:
+    get:
+      operationId: listTransactions
+      responses:
+        '200':
+          description: Recent transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+    post:
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransaction'
+      responses:
+        '201':
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+components:
+  responses:
+    ValidationError:
+      description: The request violates the public contract
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Meta:
+      type: object
+      required: [service, version]
+      properties:
+        service: { type: string }
+        version: { type: string }
+    Account:
+      type: object
+      required: [id, name, type, currency, balanceMinor, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type:
+          type: string
+          enum: [debit, credit, installment, cash]
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        balanceMinor: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+    CreateAccount:
+      type: object
+      additionalProperties: false
+      required: [name, type, currency, openingBalanceMinor]
+      properties:
+        name: { type: string, minLength: 1 }
+        type:
+          type: string
+          enum: [debit, credit, installment, cash]
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        openingBalanceMinor: { type: integer, format: int64 }
+    Category:
+      type: object
+      required: [id, name, kind, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind:
+          type: string
+          enum: [expense, income]
+        createdAt: { type: string, format: date-time }
+    Transaction:
+      type: object
+      required:
+        - id
+        - accountId
+        - accountName
+        - amountMinor
+        - currency
+        - direction
+        - kind
+        - source
+        - merchant
+        - description
+        - occurredAt
+        - createdAt
+      properties:
+        id: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        accountName: { type: string }
+        categoryId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: 'null' }
+        categoryName:
+          oneOf:
+            - { type: string }
+            - { type: 'null' }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        currency: { type: string }
+        direction:
+          type: string
+          enum: [income, expense]
+        kind:
+          type: string
+          enum: [purchase, income_received, debt_payment, refund]
+        source:
+          type: string
+          enum: [manual, bank_import, receipt]
+        merchant: { type: string }
+        description: { type: string }
+        occurredAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+    CreateTransaction:
+      type: object
+      additionalProperties: false
+      required:
+        - accountId
+        - amountMinor
+        - direction
+        - kind
+        - source
+        - merchant
+        - description
+        - occurredAt
+      properties:
+        accountId: { type: string, format: uuid }
+        categoryId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: 'null' }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        direction:
+          type: string
+          enum: [income, expense]
+        kind:
+          type: string
+          enum: [purchase, income_received, debt_payment, refund]
+        source:
+          type: string
+          enum: [manual, bank_import, receipt]
+        merchant: { type: string }
+        description: { type: string }
+        occurredAt: { type: string, format: date-time }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }

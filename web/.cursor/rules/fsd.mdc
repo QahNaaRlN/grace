@@ -1,0 +1,31 @@
+---
+description: 'FSD: слои, импорты и публичный API web-клиента Grace'
+alwaysApply: true
+---
+
+# Feature-Sliced Design (Grace web)
+
+## Слои (сверху вниз)
+
+```text
+app → pages → widgets → features → entities → shared
+```
+
+Импорты разрешены **только вниз** по слоям. `shared` не импортирует из верхних слоёв.
+
+## Структура слайса
+
+```text
+pages/home/
+  ui/HomePage.tsx
+  index.ts          # публичный API слайса
+```
+
+## Правила
+
+- Публичный API слайса — только через `index.ts`.
+- Валидация API-ответов — Zod в `shared/api` или `entities/*/model`.
+- Типы из схем — `z.infer`, не дублировать вручную.
+- Серверное состояние — TanStack Query; UI-state — Zustand.
+- Семантическая разметка: `header`, `main`, `footer`, `section`, `article`.
+- Текст в UI — русский; идентификаторы в коде — английский.

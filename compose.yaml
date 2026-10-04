@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '55432:5432'
+    environment:
+      POSTGRES_USER: grace
+      POSTGRES_PASSWORD: grace
+      POSTGRES_DB: grace
+    volumes:
+      - grace-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U grace -d grace']
+      interval: 3s
+      timeout: 5s
+      retries: 15
+
+  migrate:
+    image: migrate/migrate:v4.18.2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database=postgres://grace:grace@postgres:5432/grace?sslmode=disable
+      - up
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - '8080:8080'
+    environment:
+      APP_PORT: '8080'
+      DATABASE_URL: postgres://grace:grace@postgres:5432/grace?sslmode=disable
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - api
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    volumes:
+      - ./web:/app
+      - grace-node-modules:/app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+volumes:
+  grace-postgres:
+  grace-node-modules:
