@@ -1,6 +1,6 @@
 # SPEC-0007: периоды относительно подтверждённого дохода
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
@@ -8,6 +8,7 @@
 - Specification branch: `codex/spec-0007-event-relative-periods`
 - Implementation branch: `codex/income-relative-periods`
 - Implementation commit: `a351d32`
+- Integration merge: `d69c8f1`
 - Verification date: 2026-10-05
 
 ## Проблема и пользовательский результат

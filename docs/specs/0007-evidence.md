@@ -1,8 +1,9 @@
 # SPEC-0007 — verification evidence
 
-- Состояние: `VERIFIED`
+- Состояние: `INTEGRATED`
 - Ветка: `codex/income-relative-periods`
 - Implementation commit: `a351d32`
+- Integration merge: `d69c8f1`
 - Дата проверки: 2026-10-05
 
 ## Реализованный контракт
@@ -66,6 +67,9 @@ multi-currency семантики `PeriodSummary` без скрытой конв
 | `./scripts/test-assistant-tools.sh` | PASS |
 | `go vet ./cmd/... ./internal/...` | PASS |
 | `git diff --check` | PASS |
+
+Тот же набор `make test`, `make test-integration`, `go vet` и
+`git diff --check` повторно прошёл в `main` после integration merge.
 
 Vite сохранил существующее предупреждение о chunk больше 500 kB; production
 build успешен, а SPEC-0007 не меняет React bundle.
