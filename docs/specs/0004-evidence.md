@@ -1,7 +1,8 @@
 # SPEC-0004 — verification evidence
 
-- Статус проверки: verified
+- Статус проверки: integrated
 - Implementation commit: `841edbd`
+- Integration merge: `1c97604`
 - Ветка: `codex/financial-period-summary`
 - Дата: 2026-10-04
 
@@ -56,4 +57,11 @@
 
 ## Post-merge verification
 
-Не выполнена: implementation commit ещё не интегрирован в `main`.
+На `main` после merge `1c97604` повторно прошли:
+
+- `make test`;
+- `make test-integration`, включая SPEC-0001, SPEC-0002, SPEC-0003 и SPEC-0004;
+- `git diff --check`.
+
+Основная копия после проверок оставалась чистой до фиксации этого evidence
+update. SPEC-0004 интегрирована.

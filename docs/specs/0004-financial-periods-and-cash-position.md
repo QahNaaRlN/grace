@@ -1,12 +1,13 @@
 # SPEC-0004: денежные периоды и доступность денег
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: codex/financial-period-summary
 - Implementation commit: `841edbd`
+- Integration merge: `1c97604`
 
 ## Проблема и пользовательский результат
 
@@ -272,7 +273,7 @@ Rollback реализации состоит из удаления read-only rou
 - [x] Production dependency graph не содержит AI/LLM/provider модулей.
 - [x] `make test`, предметный integration test и `git diff --check` проходят в
       implementation worktree.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят после
+- [x] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.
 
 ## Исполняемые проверки
