@@ -299,6 +299,10 @@ paths:
                   - { $ref: '#/components/schemas/AssistantUnsupported' }
                 discriminator:
                   propertyName: status
+                  mapping:
+                    completed: '#/components/schemas/AssistantCompleted'
+                    clarify: '#/components/schemas/AssistantClarify'
+                    unsupported: '#/components/schemas/AssistantUnsupported'
         '422': { $ref: '#/components/responses/ValidationError' }
         '503':
           description: Assistant routing, provider, or a financial dependency is unavailable
@@ -423,6 +427,11 @@ components:
         - { $ref: '#/components/schemas/AssistantIncomePeriodToolResult' }
       discriminator:
         propertyName: name
+        mapping:
+          get_accounts: '#/components/schemas/AssistantAccountsToolResult'
+          get_obligations: '#/components/schemas/AssistantObligationsToolResult'
+          get_receipts: '#/components/schemas/AssistantReceiptsToolResult'
+          get_period_since_income: '#/components/schemas/AssistantIncomePeriodToolResult'
     AssistantAccountsToolResult:
       type: object
       additionalProperties: false
