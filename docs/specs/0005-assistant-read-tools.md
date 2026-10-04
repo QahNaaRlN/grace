@@ -1,12 +1,13 @@
 # SPEC-0005: read-only инструменты ассистента
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: codex/assistant-read-tools
 - Implementation commit: `f7fe016`
+- Integration merge: `7cafa63`
 
 ## Проблема и пользовательский результат
 
@@ -253,7 +254,7 @@ Rollback удаляет `internal/assistant` и его тестовую комп
 - [x] Production dependency graph не содержит provider SDK/LLM client.
 - [x] `make test`, предметный PostgreSQL integration test, `go vet` и
       `git diff --check` проходят в implementation worktree.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят после
+- [x] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.
 
 ## Исполняемые проверки
