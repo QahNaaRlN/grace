@@ -27,6 +27,8 @@ Owner 2026-10-05 зафиксировал исходные параметры:
 
 - domain: `graceapp.ru`;
 - VPS: `195.133.195.190`, заявленная ОС Ubuntu Server 26.04 LTS;
+- делегированный IPv6 prefix: `2a12:bec4:1ac0:1181::/64`; точный host
+  address должен быть подтверждён на интерфейсе VPS до создания AAAA record;
 - доступ: только owner, временная защита HTTP Basic Auth;
 - backups: временно только на том же VPS.
 
@@ -88,6 +90,8 @@ Owner 2026-10-05 зафиксировал исходные параметры:
 ## Текущее поведение и доказательства
 
 - `graceapp.ru` на preflight 2026-10-05 не возвращает A или AAAA record;
+- owner сообщил IPv6 prefix `2a12:bec4:1ac0:1181::/64`, но это сеть, а не
+  публикуемый host address; фактически назначенный VPS IPv6 пока не подтверждён;
 - SSH host `195.133.195.190` уже присутствует в локальном `known_hosts`, но
   `ssh -o BatchMode=yes root@195.133.195.190` возвращает
   `Permission denied (publickey,password)`; ОС, Docker, RAM и disk пока не
@@ -177,6 +181,8 @@ Implementation должна выбрать и документировать б�
 ## Ошибки и негативные сценарии
 
 - DNS не указывает на `195.133.195.190`: TLS/deploy блокируется до исправления;
+- в AAAA записан prefix, network address или IPv6, которого нет на интерфейсе
+  VPS: IPv6 publication блокируется; A-only release остаётся допустимым;
 - SSH key не авторизован: никакой password не передаётся через chat или GitHub
   logs; bootstrap блокируется;
 - host key изменился: deploy останавливается, `StrictHostKeyChecking` не
@@ -199,8 +205,9 @@ Implementation должна выбрать и документировать б�
 ## Критерии приёмки
 
 - [ ] Owner явно принял SPEC-0012 и residual risk backup только на VPS.
-- [ ] DNS A record `graceapp.ru` указывает на `195.133.195.190`; лишний AAAA
-      отсутствует либо указывает на реально настроенный IPv6 VPS.
+- [ ] DNS A record `graceapp.ru` указывает на `195.133.195.190`; AAAA создаётся
+      только для конкретного адреса из `2a12:bec4:1ac0:1181::/64`, который
+      присутствует на VPS и проходит входящий IPv6 preflight.
 - [ ] VPS identity, Ubuntu version, CPU/RAM/disk и Docker Compose подтверждены
       executable preflight.
 - [ ] Deploy использует не-root dedicated user/key; host key pinning включён.
@@ -247,7 +254,9 @@ authenticated HTTPS smoke, certificate inspection, `pg_dump`,
 ## Открытые решения
 
 1. Owner должен явно принять draft до production implementation.
-2. DNS A record ещё нужно направить на `195.133.195.190`.
+2. DNS A record ещё нужно направить на `195.133.195.190`. IPv6 prefix известен,
+   но конкретный host address нужно получить из `ip -6 addr` и проверить извне;
+   значение `2a12:bec4:1ac0:1181::/64` нельзя записывать в AAAA как есть.
 3. Для bootstrap нужен рабочий SSH public key. Доступные локальные fingerprints:
    - `SHA256:V2Cyp4tLlpWZJgNQt2B75hzDvAEOzvF3Wr8Q53KXv74`;
    - `SHA256:6XxK53AVTq5rzvtvCbuRxLoBv5i3u6oAAbjfGaNpq4g`.
