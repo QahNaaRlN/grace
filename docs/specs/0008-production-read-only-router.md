@@ -7,7 +7,7 @@
 - Acceptance record: owner явно поручил приступить к реализации 2026-10-05
 - Specification branch: `codex/spec-0008-read-only-router`
 - Implementation branch: `codex/read-only-router`
-- Implementation commit: отсутствует
+- Implementation commit: `a2c0dae`
 
 ## Проблема и пользовательский результат
 
