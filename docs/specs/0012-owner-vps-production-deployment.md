@@ -1,11 +1,13 @@
 # SPEC-0012: Owner-only production deployment на VPS
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner 2026-10-05 явно принял SPEC-0012, owner-only Basic
-  Auth deployment и временный residual risk backups только на том же VPS
+  Auth deployment и временный residual risk backups только на том же VPS;
+  отдельным решением owner 2026-10-05 потребовал сохранить существующий
+  WireGuard и публичный UDP 51820
 - Specification branch: `codex/owner-vps-production`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
@@ -40,6 +42,8 @@ Owner 2026-10-05 зафиксировал исходные параметры:
   - Web, API и PostgreSQL только во внутренней Docker network;
   - именованный volume PostgreSQL без публикации database port;
   - restart policies, health checks и resource-safe logging;
+- сохранить существующие `wg0`, UDP 51820 и WireGuard nftables rules; bootstrap
+  не отключает VPN, не очищает ruleset и не заменяет firewall целиком;
 - обслуживать Web и API через один origin `https://graceapp.ru`:
   - `/api/*` направляется в API;
   - остальные запросы направляются в Web;
@@ -100,6 +104,8 @@ Owner 2026-10-05 зафиксировал исходные параметры:
   1.8 GiB swap и 30 GiB disk с 23 GiB свободного места;
 - интерфейс `eth0` имеет глобальный адрес `2a12:bec4:1ac0:1181::/64`;
 - Docker/Compose не установлены; порты 80/443 свободны, SSH слушает IPv4/IPv6;
+- `wg0` активно слушает UDP 51820 на IPv4/IPv6 и имеет используемый peer;
+  owner явно потребовал сохранить этот сервис;
 - GHCR содержит API/Web images с exact SHA tags;
 - `web/Dockerfile` по умолчанию компилирует
   `VITE_API_BASE_URL=http://localhost:8080`;
@@ -192,6 +198,8 @@ Implementation должна выбрать и документировать б�
 - host key изменился: deploy останавливается, `StrictHostKeyChecking` не
   отключается;
 - порты 80/443 закрыты или заняты: Caddy/TLS gate fails до migration;
+- bootstrap удаляет/перезаписывает WireGuard или его nftables rules: acceptance
+  gate fails; разрешены только additive правила для Grace;
 - Docker/Compose отсутствует или VPS не соответствует заявленной ОС: bootstrap
   выполняется отдельно и фиксируется в evidence;
 - GHCR login/pull failed: текущий release продолжает работать;
@@ -215,8 +223,8 @@ Implementation должна выбрать и документировать б�
 - [ ] VPS identity, Ubuntu version, CPU/RAM/disk и Docker Compose подтверждены
       executable preflight.
 - [ ] Deploy использует не-root dedicated user/key; host key pinning включён.
-- [ ] В Internet доступны только SSH policy port и 80/443; PostgreSQL, API и Web
-      host ports не опубликованы.
+- [ ] В Internet доступны SSH policy port, Grace 80/443 и ранее существовавший
+      WireGuard UDP 51820; PostgreSQL, API и Web host ports не опубликованы.
 - [ ] `https://graceapp.ru` имеет валидный автоматически обновляемый TLS.
 - [ ] Без Basic Auth Web и API возвращают 401; с owner credentials mobile Web и
       API работают.
