@@ -58,6 +58,12 @@ read-only результаты Grace. При выключенном router ст�
 
     make test
 
+На GitHub те же quality gates, PostgreSQL integration suites и production
+Docker builds выполняет GitHub Actions. После успешного CI для `main` workflow
+Delivery публикует versioned API/Web images в GHCR; это публикация artifacts, а
+не автоматический production deployment. Подробности:
+[docs/github-delivery.md](docs/github-delivery.md).
+
 После изменения api/openapi.yaml обновите клиентские типы:
 
     make generate-api
