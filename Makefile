@@ -1,4 +1,4 @@
-.PHONY: dev down logs test test-go test-web test-integration build generate-api
+.PHONY: dev down logs test test-go test-web test-jev-eval test-integration build generate-api
 
 dev:
 	docker compose up --build
@@ -12,13 +12,16 @@ logs:
 generate-api:
 	cd web && npm run generate:api
 
-test: test-go test-web
+test: test-go test-web test-jev-eval
 
 test-go:
 	go test ./cmd/... ./internal/...
 
 test-web:
 	cd web && npm run lint && npm run build
+
+test-jev-eval:
+	./scripts/test-jev-evaluation.sh
 
 test-integration:
 	./scripts/test-financial-events.sh
