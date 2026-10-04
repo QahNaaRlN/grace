@@ -1,6 +1,6 @@
 # SPEC-0011: GitHub repository и CI/CD delivery
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
@@ -29,8 +29,8 @@ requests получают обязательный CI verdict, а приняты
 - CI выполняет Go tests, Web tests, ESLint, generated OpenAPI types,
   TypeScript/Vite build, Jev offline validation и Docker builds;
 - добавить `.github/workflows/delivery.yml` для push в `main` и manual dispatch;
-- delivery публикует immutable API и Web images в GHCR с tag по commit SHA и
-  moving tag `main`;
+- delivery публикует API и Web images в GHCR с versioned tag по commit SHA,
+  moving tag `main` и фиксирует immutable OCI digest;
 - workflow использует минимальные permissions: CI `contents: read`, delivery
   `contents: read`, `packages: write`, provenance только если он будет реально
   генерироваться;
@@ -68,7 +68,7 @@ requests получают обязательный CI verdict, а приняты
   меняется.
 - CI имеет read-only доступ к исходникам и не получает runtime secrets.
 - Delivery публикует artifacts только из commit, прошедшего обязательные gates.
-- Один Git commit SHA однозначно соответствует published image tags.
+- Published workflow связывает Git commit SHA tag с immutable OCI digest.
 - Runtime deployment, migration execution и rollback остаются отдельной фазой с
   явным environment и human gate.
 
@@ -113,7 +113,8 @@ immutable и не удаляются автоматически. Runtime rollbac
 - [ ] CI выполняет `make test`, integration gates и production Docker builds.
 - [ ] Delivery не запускается при failed CI и публикует API/Web images только из
       прошедшего commit.
-- [ ] GHCR содержит immutable SHA tags; `main` указывает на тот же digest/commit.
+- [ ] GHCR содержит versioned SHA tags; `main` указывает на тот же immutable OCI
+      digest/commit для соответствующего run.
 - [ ] Ни один runtime secret или `.env` не попал в Git, artifacts или logs.
 - [ ] Документация объясняет GitHub Actions, checks, packages и следующий шаг к
       реальному deployment.
