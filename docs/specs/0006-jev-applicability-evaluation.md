@@ -1,11 +1,11 @@
 # SPEC-0006: оценка применимости Jev
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
-- Implementation branch: `codex/jev-role-evaluation`
+- Implementation branch: `codex/jev-evaluation-harness`
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат
@@ -142,8 +142,9 @@ Evaluator использует серверный HTTP endpoint TypeSafe
 проверяется до использования; неизвестные типы или отсутствующие ответы
 считаются provider protocol error.
 
-Конкретный package layout и CLI flags фиксируются при принятии спецификации,
-чтобы не создавать production entrypoint по ошибке.
+Development-only evaluator находится в `cmd/jev-eval`, а его код — в
+`internal/jeveval`. CLI предоставляет команды `validate` и `run`; `cmd/api` не
+импортирует evaluator.
 
 ## Данные, миграция и rollback
 
@@ -212,7 +213,7 @@ production runtime не меняются.
 make test
 go test ./...
 go vet ./cmd/... ./internal/...
-go run <accepted-evaluator-package> validate --dataset <accepted-dataset-path>
+go run ./cmd/jev-eval validate --dataset testdata/jev-evaluation/v1/cases.json
 git diff --check
 ```
 
@@ -220,15 +221,13 @@ Live benchmark после предоставления owner-controlled credenti
 
 ```bash
 TYPESAFE_API_KEY=<redacted> \
-go run <accepted-evaluator-package> run \
-  --dataset <accepted-dataset-path> \
+go run ./cmd/jev-eval run \
+  --dataset testdata/jev-evaluation/v1/cases.json \
   --model <versioned-model-id> \
   --report <path-outside-repository>
 ```
 
-Placeholder paths заменяются точными путями до принятия спецификации.
-
-## Открытые решения
+## Открытые решения на момент принятия
 
 1. Минимальное количество cases на tool/period/negative class.
 2. Точный package path и CLI интерфейс development-only evaluator.
@@ -245,3 +244,27 @@ Placeholder paths заменяются точными путями до прин
 9. Разрешено ли сохранять обезличенный baseline report в репозитории.
 10. Требуется ли отдельный privacy/legal review до любого эксперимента с
     реальными пользовательскими формулировками.
+
+## Решения для implementation
+
+Owner разрешил приступить к реализации в Codex-чате 2026-10-04. В рамках
+принятого scope открытые технические пункты разрешены так:
+
+1. Dataset содержит не менее пяти русскоязычных cases на каждый tool outcome,
+   `clarify` и `unsupported`, не менее пяти на каждый period shape и не менее
+   одного английского case на каждый tool outcome.
+2. CLI/package paths: `cmd/jev-eval` и `internal/jeveval`.
+3. Dataset и машиночитаемый report используют JSON; краткая сводка выводится в
+   stdout.
+4. Достаточность аргументов — закрытый `Choice` с вариантами `sufficient`,
+   `missing` и `not_applicable`, чтобы иметь распределение и confidence.
+5. Report сравнивает threshold candidates `0.50`, `0.60`, `0.70`, `0.80`,
+   `0.90`, `0.95`; ни один не становится production policy автоматически.
+6. Go/no-go error budget остаётся решением будущей production routing spec.
+7. Live run читает `TYPESAFE_API_KEY` только из локального окружения;
+   сохранение ключа или live report в Git запрещено.
+8. Один запуск проверяет один явный versioned model id; сравнение моделей
+   выполняется отдельными отчётами.
+9. Baseline report не добавляется в Git этим work item.
+10. Реальные пользовательские формулировки запрещены до отдельного
+    privacy/legal review.
