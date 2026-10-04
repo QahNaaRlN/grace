@@ -118,6 +118,16 @@ func evaluateCase(ctx context.Context, evaluationCase Case, model string, provid
 	if observation.ActualRoute != assistant.RouteClarify && observation.ActualRoute != assistant.RouteUnsupported && mode.Confidence < observation.EffectiveConfidence {
 		observation.EffectiveConfidence = mode.Confidence
 	}
+	applyProductionDecision(ctx, evaluationCase, &observation)
+	return observation
+}
+
+func applyProductionDecision(ctx context.Context, evaluationCase Case, observation *Observation) {
+	observation.EffectiveConfidence = observation.RouteConfidence
+	terminalRoute := observation.ActualRoute == assistant.RouteClarify || observation.ActualRoute == assistant.RouteUnsupported
+	if !terminalRoute && observation.ArgumentConfidence < observation.EffectiveConfidence {
+		observation.EffectiveConfidence = observation.ArgumentConfidence
+	}
 	parsed, _ := time.Parse(time.RFC3339, evaluationCase.ReferenceTime)
 	router := assistant.NewRouter(fixedProvider{judgment: assistant.RoutingJudgment{Route: observation.ActualRoute, RouteConfidence: observation.RouteConfidence, Arguments: observation.ActualArgumentMode, ArgumentConfidence: observation.ArgumentConfidence}}, successfulCaller{})
 	result := router.Query(ctx, assistant.Query{Utterance: evaluationCase.Utterance, Language: evaluationCase.Language, ReferenceTime: parsed})
@@ -125,8 +135,10 @@ func evaluateCase(ctx context.Context, evaluationCase Case, model string, provid
 	if result.Status == assistant.StatusUnavailable {
 		observation.ErrorClass = "composition_error"
 		observation.ErrorMessage = result.ErrorCode
+	} else if observation.ErrorClass == "composition_error" {
+		observation.ErrorClass = ""
+		observation.ErrorMessage = ""
 	}
-	return observation
 }
 
 type fixedProvider struct{ judgment assistant.RoutingJudgment }
@@ -155,7 +167,11 @@ func calculateMetrics(observations []Observation) map[string]Metrics {
 				continue
 			}
 			metric.Completed++
-			exact := observation.ActualRoute == observation.ExpectedRoute && observation.ActualArgumentMode == observation.ExpectedArgumentMode && observation.ActualDecision == observation.ExpectedDecision
+			argumentExact := observation.ActualArgumentMode == observation.ExpectedArgumentMode
+			if observation.ActualRoute == assistant.RouteClarify || observation.ActualRoute == assistant.RouteUnsupported {
+				argumentExact = true
+			}
+			exact := observation.ActualRoute == observation.ExpectedRoute && argumentExact && observation.ActualDecision == observation.ExpectedDecision
 			if exact {
 				metric.Exact++
 			}
@@ -226,6 +242,9 @@ func Reanalyze(dataset Dataset, report Report) (Report, error) {
 		observation.ExpectedRoute = evaluationCase.ExpectedRoute
 		observation.ExpectedArgumentMode = evaluationCase.ExpectedArgumentMode
 		observation.ExpectedDecision = evaluationCase.ExpectedDecision
+		if observation.ErrorClass == "" || observation.ErrorClass == "composition_error" {
+			applyProductionDecision(context.Background(), evaluationCase, observation)
+		}
 	}
 	report.MetricsByLanguage = calculateMetrics(report.Observations)
 	report.GatePassed = report.MetricsByLanguage["ru"].Pass && report.MetricsByLanguage["en"].Pass

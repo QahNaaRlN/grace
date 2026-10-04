@@ -81,6 +81,8 @@ func TestRouterFallbacksNeverCallExecutor(t *testing.T) {
 		{name: "modifier", judgment: RoutingJudgment{Route: RouteGetReceipts, RouteConfidence: .9, Arguments: ArgumentsNeedsResolution, ArgumentConfidence: .9}, status: StatusClarify, code: "arguments_required", required: []string{"limit"}},
 		{name: "composition", judgment: RoutingJudgment{Route: RouteGetAccounts, RouteConfidence: .9, Arguments: ArgumentsDefaults, ArgumentConfidence: .8}, status: StatusClarify, code: "composition_mismatch"},
 		{name: "unsupported", judgment: RoutingJudgment{Route: RouteUnsupported, RouteConfidence: .9, Arguments: ArgumentsNotApplicable, ArgumentConfidence: .1}, status: StatusUnsupported},
+		{name: "unsupported ignores speculative arguments", judgment: RoutingJudgment{Route: RouteUnsupported, RouteConfidence: .9, Arguments: ArgumentsNeedsResolution, ArgumentConfidence: .1}, status: StatusUnsupported},
+		{name: "clarify ignores speculative arguments", judgment: RoutingJudgment{Route: RouteClarify, RouteConfidence: .9, Arguments: ArgumentsReferenceTime, ArgumentConfidence: .1}, status: StatusClarify, code: "clarification_required"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

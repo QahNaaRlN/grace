@@ -118,15 +118,9 @@ func (router *Router) Query(ctx context.Context, query Query) QueryResult {
 		return clarify(judgment.Route, effective, "low_confidence", nil)
 	}
 	if judgment.Route == RouteClarify {
-		if judgment.Arguments != ArgumentsNotApplicable {
-			return clarify(judgment.Route, min(effective, judgment.ArgumentConfidence), "composition_mismatch", nil)
-		}
 		return clarify(judgment.Route, effective, "clarification_required", nil)
 	}
 	if judgment.Route == RouteUnsupported {
-		if judgment.Arguments != ArgumentsNotApplicable {
-			return clarify(judgment.Route, min(effective, judgment.ArgumentConfidence), "composition_mismatch", nil)
-		}
 		return QueryResult{Status: StatusUnsupported, Route: judgment.Route, Confidence: number(effective)}
 	}
 
