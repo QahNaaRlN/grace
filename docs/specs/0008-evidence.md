@@ -1,10 +1,12 @@
 # SPEC-0008 — implementation and live-gate evidence
 
-- Состояние: `VERIFIED`
+- Состояние: `INTEGRATED`
 - Ветка: `codex/read-only-router`
 - Implementation commit: `a2c0dae`
 - Composition correction: `b9205f7`
 - Question-set v3 implementation: `48f7e64`
+- Verification commit: `c7d3f9b`
+- Integration merge: `6b48ff0`
 - Dataset: `testdata/jev-evaluation/v2/cases.json`, version `v2`, 64 RU + 8 EN
 - Question set: version `v3`
 - Requested/actual model: `jev-1.13.0`
@@ -200,5 +202,17 @@ call.
 | `go vet ./cmd/... ./internal/...` | PASS |
 | `git diff --check` | PASS |
 
-Post-merge набор будет записан после integration merge; до него состояние
-остаётся `VERIFIED`, а не `INTEGRATED`.
+## Post-merge verification
+
+После integration merge `6b48ff0` в `main` повторно прошли:
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | PASS |
+| `make test-integration` | PASS: SPEC-0001..0005, 0007 и 0008 |
+| `./scripts/test-assistant-router.sh` | PASS в составе integration gate |
+| `go vet ./cmd/... ./internal/...` | PASS |
+| `git diff --check` | PASS |
+
+Implementation commit достижим из `main`; SPEC-0008 имеет состояние
+`INTEGRATED`.

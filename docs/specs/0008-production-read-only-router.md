@@ -1,6 +1,6 @@
 # SPEC-0008: production read-only router с Jev
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
@@ -424,9 +424,8 @@ React behavior не меняется. Generated TypeScript contract обновл
       Executor и доказывает отсутствие writes.
 - [x] Dependency checks запрещают provider imports финансовыми модулями и
       production import `internal/jeveval`.
-- [ ] `make test`, `make test-integration`, `go vet ./cmd/... ./internal/...`
-      и `git diff --check` проходят до merge. После merge проверки будут
-      повторены до статуса `integrated`.
+- [x] `make test`, `make test-integration`, `go vet ./cmd/... ./internal/...`
+      и `git diff --check` прошли до и после merge.
 
 ## Исполняемые проверки
 
