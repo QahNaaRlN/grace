@@ -74,7 +74,7 @@ if grep -REn 'Основная карта|12500000' "$bundle/migrations"; then
   exit 1
 fi
 
-if grep -En 'localhost:8080' "$repo_root/web/Dockerfile" \
+if grep -REn 'localhost:8080' "$repo_root/web/Dockerfile" \
   "$repo_root/web/src/shared/config"; then
   echo "production Web still embeds localhost API origin" >&2
   exit 1
