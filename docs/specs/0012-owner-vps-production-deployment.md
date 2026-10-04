@@ -257,10 +257,11 @@ authenticated HTTPS smoke, certificate inspection, `pg_dump`,
 2. DNS A record ещё нужно направить на `195.133.195.190`. IPv6 prefix известен,
    но конкретный host address нужно получить из `ip -6 addr` и проверить извне;
    значение `2a12:bec4:1ac0:1181::/64` нельзя записывать в AAAA как есть.
-3. Для bootstrap нужен рабочий SSH public key. Доступные локальные fingerprints:
-   - `SHA256:V2Cyp4tLlpWZJgNQt2B75hzDvAEOzvF3Wr8Q53KXv74`;
-   - `SHA256:6XxK53AVTq5rzvtvCbuRxLoBv5i3u6oAAbjfGaNpq4g`.
-   Owner выбирает/разрешает ключ; private key не передаётся.
+3. Для bootstrap owner выбрал отдельный существующий public key
+   `id_ed25519_ubuntu_t7.pub`, fingerprint
+   `SHA256:V2Cyp4tLlpWZJgNQt2B75hzDvAEOzvF3Wr8Q53KXv74`. Ключ
+   `ssh_working` уже используется для другого доступа и не добавляется на VPS.
+   Private keys не передаются и не копируются в repository.
 4. Basic Auth username предлагается `grace`; password owner создаёт вне chat,
    в Git/VPS хранится только bcrypt hash.
 5. После первого успешного release нужен отдельный work item для off-site backup
