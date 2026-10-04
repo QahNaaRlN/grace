@@ -6,7 +6,7 @@
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: `codex/jev-evaluation-harness`
-- Implementation commit: отсутствует
+- Implementation commit: `cc84b79`
 
 ## Проблема и пользовательский результат
 
@@ -182,27 +182,27 @@ production runtime не меняются.
 
 ## Критерии приёмки
 
-- [ ] Dataset schema и offline validation реализованы и покрыты unit tests.
-- [ ] Dataset содержит согласованный owner минимум русскоязычных примеров для
+- [x] Dataset schema и offline validation реализованы и покрыты unit tests.
+- [x] Dataset содержит согласованный owner минимум русскоязычных примеров для
       каждого tool, `clarify`, `unsupported` и каждого period shape.
-- [ ] Fixtures синтетические/обезличенные и проходят автоматическую проверку
+- [x] Fixtures синтетические/обезличенные и проходят автоматическую проверку
       запрещённых полей/паттернов.
-- [ ] Question set использует только типизированные Choice/Noul/Score и имеет
+- [x] Question set использует только типизированные Choice/Noul/Score и имеет
       явную version.
-- [ ] Live evaluator требует versioned model id и сохраняет фактический id из
+- [x] Live evaluator требует versioned model id и сохраняет фактический id из
       provider response.
-- [ ] Fake provider обеспечивает полностью offline unit tests success/error
+- [x] Fake provider обеспечивает полностью offline unit tests success/error
       paths.
-- [ ] Report содержит раздельные метрики для `ru` и `en`, confusion matrix,
+- [x] Report содержит раздельные метрики для `ru` и `en`, confusion matrix,
       coverage и high-confidence errors.
-- [ ] Ошибки provider отделены от ошибок model judgment и composition.
-- [ ] API key, authorization header и реальные финансовые данные отсутствуют в
+- [x] Ошибки provider отделены от ошибок model judgment и composition.
+- [x] API key, authorization header и реальные финансовые данные отсутствуют в
       fixtures, отчёте и логах.
-- [ ] Production API dependency graph не содержит TypeSafe adapter.
-- [ ] `api/openapi.yaml`, migrations и React не изменены.
+- [x] Production API dependency graph не содержит TypeSafe adapter.
+- [x] `api/openapi.yaml`, migrations и React не изменены.
 - [ ] В evidence записаны dataset/question/model versions, точная команда,
       итоговые метрики и разобранные high-confidence ошибки.
-- [ ] `make test`, offline evaluator checks, `go vet` и `git diff --check`
+- [x] `make test`, offline evaluator checks, `go vet` и `git diff --check`
       проходят без credentials и сети.
 
 ## Исполняемые проверки
