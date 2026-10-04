@@ -38,6 +38,7 @@ const kindLabels = {
   purchase: 'Покупка',
   income: 'Доход',
   transfer: 'Перевод между счетами',
+  debt_payment: 'Платёж по обязательству',
 } as const
 
 export function CreateFinancialEventForm({ accounts, categories }: Props) {
@@ -90,6 +91,19 @@ export function CreateFinancialEventForm({ accounts, categories }: Props) {
       error = result.error
     } else if (values.kind === 'income') {
       const result = await apiClient.POST('/api/v1/financial-events/incomes', {
+        params: { header: headers },
+        body: {
+          accountId: values.accountId,
+          categoryId: values.categoryId || null,
+          amountMinor,
+          merchant: values.merchant,
+          description: values.description,
+          occurredAt,
+        },
+      })
+      error = result.error
+    } else if (values.kind === 'debt_payment') {
+      const result = await apiClient.POST('/api/v1/financial-events/debt-payments', {
         params: { header: headers },
         body: {
           accountId: values.accountId,
