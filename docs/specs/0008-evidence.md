@@ -1,18 +1,20 @@
 # SPEC-0008 — implementation and live-gate evidence
 
-- Состояние: `NOT_VERIFIED`
+- Состояние: `VERIFIED`
 - Ветка: `codex/read-only-router`
 - Implementation commit: `a2c0dae`
 - Composition correction: `b9205f7`
+- Question-set v3 implementation: `48f7e64`
 - Dataset: `testdata/jev-evaluation/v2/cases.json`, version `v2`, 64 RU + 8 EN
-- Question set: version `v2`
+- Question set: version `v3`
 - Requested/actual model: `jev-1.13.0`
 - Дата проверки: 2026-10-05
 
-Production router реализован и прошёл все локальные и PostgreSQL gates, но
-обязательный live benchmark не достиг принятого coverage floor. Поэтому
-SPEC-0008 остаётся `implementing`, endpoint остаётся default-off, а ветка не
-интегрируется в `main`.
+Production router реализован и прошёл все локальные, PostgreSQL и locked live
+gates. Question set v3 поднял RU safe-decision coverage с `0.4844` до
+`0.8594`, сохранив нулевое число wrong auto-executions и provider/composition
+errors. SPEC-0008 имеет статус `verified`; endpoint по-прежнему default-off до
+явного включения operator.
 
 ## Реализованный контракт
 
@@ -46,7 +48,7 @@ PostgreSQL test провёл все четыре auto-executable routes чере
 `assistant.Executor` и подтвердил неизменность количества строк accounts,
 events, postings, receipts, obligations и schedules.
 
-## Locked live benchmark
+## Первый locked live benchmark — question set v2
 
 Команда:
 
@@ -143,5 +145,60 @@ Owner явно принял 2026-10-05 продолжение как question se
 4. сохранить threshold `0.70` и floor `0.65`;
 5. не интегрировать ветку, если повторный gate не пройдёт.
 
-До успешного повторного live gate реализация не имеет статуса `verified` или
-`integrated`.
+## Повторный locked live benchmark — question set v3
+
+Команда выполнена с тем же dataset v2, моделью и threshold; изменён только
+принятый argument-mode question set:
+
+```bash
+TYPESAFE_API_KEY=<redacted> \
+go run ./cmd/jev-eval run \
+  --dataset testdata/jev-evaluation/v2/cases.json \
+  --model jev-1.13.0 \
+  --report /tmp/grace-spec0008-jev-v3-report.json
+```
+
+Результат:
+
+- dataset `v2`, question set `v3`;
+- requested/actual model: `jev-1.13.0`;
+- EN exact `8/8`, safe-decision coverage `1.0000`;
+- RU exact `60/64`;
+- RU eligible exact at threshold `0.70`: `55/64`;
+- RU safe-decision coverage: `0.859375` при floor `0.65`;
+- provider/composition errors: 0;
+- wrong auto-executions: 0;
+- unsafe modifier executions: 0;
+- unsafe write executions: 0;
+- high-confidence mismatches: 0;
+- gate: passed.
+
+Raw report:
+
+- SHA-256:
+  `ea7424b4f012cec6a308c88f61cdc321457ba1ab272e8fdb7e5177828b310949`;
+- mode `0600`, size 41091 bytes;
+- secret markers `TYPESAFE_API_KEY`, `sk-` и `Bearer ` не обнаружены;
+- временный `/tmp/grace-typesafe-key` удалён сразу после benchmark.
+
+Три RU cases вместо expected completed ушли в безопасный `clarify` из-за
+route confidence ниже `0.70`. Один missing-argument case остался `clarify`, но
+через другую terminal route. Ещё два terminal cases имели неиспользуемый
+speculative argument answer; composition корректно его проигнорировала. Ни
+один mismatch не был high-confidence и ни один не разрешил ошибочный tool
+call.
+
+## Pre-merge verification
+
+После успешного v3 live gate повторно выполнены:
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | PASS |
+| `make test-integration` | PASS: SPEC-0001..0005, 0007 и 0008 |
+| `./scripts/test-assistant-router.sh` | PASS в составе integration gate |
+| `go vet ./cmd/... ./internal/...` | PASS |
+| `git diff --check` | PASS |
+
+Post-merge набор будет записан после integration merge; до него состояние
+остаётся `VERIFIED`, а не `INTEGRATED`.
