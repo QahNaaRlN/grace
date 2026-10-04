@@ -1,10 +1,11 @@
 # SPEC-0012: Owner-only production deployment на VPS
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: owner 2026-10-05 явно принял SPEC-0012, owner-only Basic
+  Auth deployment и временный residual risk backups только на том же VPS
 - Specification branch: `codex/owner-vps-production`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
@@ -89,13 +90,16 @@ Owner 2026-10-05 зафиксировал исходные параметры:
 
 ## Текущее поведение и доказательства
 
-- `graceapp.ru` на preflight 2026-10-05 не возвращает A или AAAA record;
+- `graceapp.ru` на preflight 2026-10-05 не делегирован из зоны `.ru` и не
+  возвращает NS, A или AAAA record; owner сообщил, что DNS настроен, поэтому
+  release ожидает завершения регистрации/делегирования;
 - owner сообщил IPv6 prefix `2a12:bec4:1ac0:1181::/64`, но это сеть, а не
   публикуемый host address; фактически назначенный VPS IPv6 пока не подтверждён;
-- SSH host `195.133.195.190` уже присутствует в локальном `known_hosts`, но
-  `ssh -o BatchMode=yes root@195.133.195.190` возвращает
-  `Permission denied (publickey,password)`; ОС, Docker, RAM и disk пока не
-  подтверждены с сервера;
+- SSH key `id_ed25519_ubuntu_t7` авторизован, pinned host key принят ранее;
+- VPS preflight подтвердил Ubuntu 26.04 LTS, x86_64, 1 vCPU, 1.6 GiB RAM,
+  1.8 GiB swap и 30 GiB disk с 23 GiB свободного места;
+- интерфейс `eth0` имеет глобальный адрес `2a12:bec4:1ac0:1181::/64`;
+- Docker/Compose не установлены; порты 80/443 свободны, SSH слушает IPv4/IPv6;
 - GHCR содержит API/Web images с exact SHA tags;
 - `web/Dockerfile` по умолчанию компилирует
   `VITE_API_BASE_URL=http://localhost:8080`;
@@ -204,7 +208,7 @@ Implementation должна выбрать и документировать б�
 
 ## Критерии приёмки
 
-- [ ] Owner явно принял SPEC-0012 и residual risk backup только на VPS.
+- [x] Owner явно принял SPEC-0012 и residual risk backup только на VPS.
 - [ ] DNS A record `graceapp.ru` указывает на `195.133.195.190`; AAAA создаётся
       только для конкретного адреса из `2a12:bec4:1ac0:1181::/64`, который
       присутствует на VPS и проходит входящий IPv6 preflight.
@@ -253,10 +257,10 @@ authenticated HTTPS smoke, certificate inspection, `pg_dump`,
 
 ## Открытые решения
 
-1. Owner должен явно принять draft до production implementation.
-2. DNS A record ещё нужно направить на `195.133.195.190`. IPv6 prefix известен,
-   но конкретный host address нужно получить из `ip -6 addr` и проверить извне;
-   значение `2a12:bec4:1ac0:1181::/64` нельзя записывать в AAAA как есть.
+1. Owner 2026-10-05 принял specification и residual risk local-only backup.
+2. Domain ещё не делегирован из `.ru`. После появления authoritative NS нужно
+   подтвердить A `195.133.195.190` и AAAA `2a12:bec4:1ac0:1181::`, затем
+   проверить оба маршрута извне до TLS issuance.
 3. Для bootstrap owner выбрал отдельный существующий public key
    `id_ed25519_ubuntu_t7.pub`, fingerprint
    `SHA256:V2Cyp4tLlpWZJgNQt2B75hzDvAEOzvF3Wr8Q53KXv74`. Ключ
