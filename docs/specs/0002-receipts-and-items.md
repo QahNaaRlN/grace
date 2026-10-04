@@ -1,10 +1,10 @@
 # SPEC-0002: подтверждённые чеки и позиции
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: явное указание owner «Приступить к реализации» в Codex-чате, 2026-10-04
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 
