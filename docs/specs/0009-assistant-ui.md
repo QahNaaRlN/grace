@@ -1,13 +1,13 @@
 # SPEC-0009: single-turn интерфейс read-only ассистента
 
-- Статус: implementing
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner явно принял спецификацию 2026-10-05
 - Specification branch: `codex/spec-0009-assistant-ui`
 - Implementation branch: `codex/assistant-ui`
-- Implementation commit: отсутствует
+- Implementation commit: `37e35ba`
 
 ## Проблема и пользовательский результат
 
@@ -222,31 +222,31 @@ focus не перемещается неожиданно, result announcement д
 
 ## Критерии приёмки
 
-- [ ] `/assistant` доступен из общей навигации; `/` не регрессирует.
-- [ ] Форма отправляет trimmed utterance, `ru` и browser-local RFC 3339
+- [x] `/assistant` доступен из общей навигации; `/` не регрессирует.
+- [x] Форма отправляет trimmed utterance, `ru` и browser-local RFC 3339
       reference time с explicit offset.
-- [ ] Blank, whitespace-only и >2000-byte input не вызывают API.
-- [ ] Pending state исключает двойной submit; navigation отменяет request.
-- [ ] Все четыре completed tool results имеют typed presentation и empty
+- [x] Blank, whitespace-only и >2000-byte input не вызывают API.
+- [x] Pending state исключает двойной submit; navigation отменяет request.
+- [x] Все четыре completed tool results имеют typed presentation и empty
       states без финансовой арифметики в React.
-- [ ] Все принятые clarify codes, unsupported, оба unavailable codes, 422,
+- [x] Все принятые clarify codes, unsupported, оба unavailable codes, 422,
       network и malformed response имеют безопасный локализованный UI.
-- [ ] Новый submit заменяет результат; utterance/history не попадают в URL,
+- [x] Новый submit заменяет результат; utterance/history не попадают в URL,
       storage, logs или query cache.
-- [ ] Privacy disclosure виден до отправки и точно описывает data flow
+- [x] Privacy disclosure виден до отправки и точно описывает data flow
       SPEC-0008.
-- [ ] OpenAPI discriminator mappings генерируют реальные wire literals для
+- [x] OpenAPI discriminator mappings генерируют реальные wire literals для
       `status` и `data.name`; ручных DTO и `any` нет.
-- [ ] Assistant UI не содержит write controls и вызывает только один
+- [x] Assistant UI не содержит write controls и вызывает только один
       allowlisted endpoint.
-- [ ] Interaction tests доказывают request payload, completed variants,
+- [x] Interaction tests доказывают request payload, completed variants,
       clarify/unsupported/unavailable/error states, validation, double-submit
       protection и отсутствие automatic request on mount.
-- [ ] `make test` включает Web tests, ESLint, TypeScript и production build.
-- [ ] Visual evidence подтверждает layout и keyboard flow при 390 px и 1280
+- [x] `make test` включает Web tests, ESLint, TypeScript и production build.
+- [x] Visual evidence подтверждает layout и keyboard flow при 390 px и 1280
       px.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят до и
-      после merge.
+- [ ] `make test`, `make test-integration` и `git diff --check` прошли до
+      merge; после merge будут повторены до статуса `integrated`.
 
 ## Исполняемые проверки
 
