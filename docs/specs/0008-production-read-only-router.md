@@ -4,7 +4,8 @@
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
-- Acceptance record: owner явно поручил приступить к реализации 2026-10-05
+- Acceptance record: owner явно поручил приступить к реализации 2026-10-05;
+  owner явно принял recovery question set v3 2026-10-05
 - Specification branch: `codex/spec-0008-read-only-router`
 - Implementation branch: `codex/read-only-router`
 - Implementation commit: `a2c0dae`
@@ -464,15 +465,15 @@ Owner поручил приступить к реализации 2026-10-05 и 
 8. раскрытие выбранных `route` и `confidence` в public response для
    наблюдаемости первого production-среза.
 
-## Pending recovery decision после live gate
+## Принятое recovery-решение после live gate
 
 Первый locked live benchmark question set v2 не прошёл coverage floor:
 после contract-correct reanalysis RU safe-decision coverage равна `0.4844`
 при требовании `0.65`; provider/composition errors и wrong auto-executions
 равны нулю. Подробности зафиксированы в `docs/specs/0008-evidence.md`.
 
-Question set v2 заморожен. Для продолжения требуется отдельное явное принятие
-owner на question set v3: route question, dataset v2, model, threshold,
+Question set v2 заморожен. Owner явно принял 2026-10-05 question set v3 на
+следующих условиях: route question, dataset v2, model, threshold,
 compatibility matrix и privacy contract остаются неизменными; меняются только
 argument-mode instructions/criteria, после чего выполняется новый locked live
-benchmark. До принятия этого recovery scope production-код v3 не реализуется.
+benchmark. Ветка не интегрируется, если повторный gate не пройдёт.

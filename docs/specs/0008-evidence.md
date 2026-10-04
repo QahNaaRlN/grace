@@ -131,8 +131,8 @@ Route judgment в большинстве проблемных cases был пр�
 Dataset v2 и expected outcomes после live run остаются неизменными. Threshold,
 model, compatibility matrix и privacy contract также не меняются.
 
-Предлагаемое продолжение требует явного owner acceptance, потому что
-семантическая правка criteria обязана создать question set `v3`:
+Owner явно принял 2026-10-05 продолжение как question set `v3`, потому что
+семантическая правка criteria требует новой версии:
 
 1. оставить route question без изменений;
 2. переписать только argument-mode instructions/criteria как приоритетный
@@ -143,4 +143,5 @@ model, compatibility matrix и privacy contract также не меняются
 4. сохранить threshold `0.70` и floor `0.65`;
 5. не интегрировать ветку, если повторный gate не пройдёт.
 
-До этого решения реализация не имеет статуса `verified` или `integrated`.
+До успешного повторного live gate реализация не имеет статуса `verified` или
+`integrated`.
