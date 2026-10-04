@@ -1,7 +1,8 @@
 # SPEC-0001 — verification evidence
 
-- Статус проверки: verified
+- Статус проверки: integrated
 - Implementation commit: `4dbb418`
+- Integration merge: `c2a27b4`
 - Ветка: `codex/financial-events-postings`
 - Дата: 2026-10-04
 
@@ -42,7 +43,12 @@
 1. браузерный API URL и CORS origin теперь следуют `API_PORT` и `WEB_PORT`;
 2. CORS разрешает обязательный заголовок `Idempotency-Key`.
 
-## Остаточный gate
+## Post-merge verification
 
-После merge нужно повторить `make test`, `make test-integration` и
-`git diff --check`, записать merge commit и перевести SPEC-0001 в `integrated`.
+На `main` после merge `c2a27b4` повторно прошли:
+
+- `make test`;
+- `make test-integration` с итогом `SPEC-0001 integration checks passed`;
+- `git diff --check`.
+
+Рабочее дерево `main` после проверок осталось чистым. SPEC-0001 интегрирована.

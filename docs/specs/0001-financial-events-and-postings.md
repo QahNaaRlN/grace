@@ -1,12 +1,13 @@
 # SPEC-0001: финансовые события и проводки
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: codex/financial-events-postings
 - Implementation commit: `4dbb418`
+- Integration merge: `c2a27b4`
 
 ## Проблема и пользовательский результат
 
@@ -162,7 +163,7 @@ Down-миграция разрешена только пока новые вид
 - [x] OpenAPI и generated TypeScript проходят сборку.
 - [x] React поддерживает три принятых пользовательских сценария.
 - [x] `make test` и `git diff --check` проходят в implementation worktree.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят после merge.
+- [x] `make test`, `make test-integration` и `git diff --check` проходят после merge.
 
 ## Исполняемые проверки
 
