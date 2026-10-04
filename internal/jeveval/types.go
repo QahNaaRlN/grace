@@ -74,6 +74,7 @@ type State struct {
 	Utterance     string `json:"utterance"`
 	Language      string `json:"language"`
 	ReferenceDate string `json:"reference_date,omitempty"`
+	ReferenceTime string `json:"reference_time,omitempty"`
 }
 
 type Question struct {

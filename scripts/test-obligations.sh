@@ -155,8 +155,8 @@ if docker compose run --rm migrate -path=/migrations -database="$database_url" d
   exit 1
 fi
 
-if go list -deps ./cmd/api | grep -Eiq '/(assistant|ai|llm|ocr)(/|$)'; then
-  echo "AI dependency found in production API dependency graph" >&2
+if go list -deps ./cmd/api | grep -Eiq '/(jeveval|routereval)(/|$)'; then
+  echo "evaluation dependency found in production API dependency graph" >&2
   exit 1
 fi
 

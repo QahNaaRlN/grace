@@ -30,6 +30,7 @@ test-integration:
 	./scripts/test-analytics.sh
 	./scripts/test-assistant-tools.sh
 	./scripts/test-income-relative-periods.sh
+	./scripts/test-assistant-router.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

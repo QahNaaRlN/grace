@@ -1,12 +1,12 @@
 # SPEC-0008: production read-only router с Jev
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner явно поручил приступить к реализации 2026-10-05
 - Specification branch: `codex/spec-0008-read-only-router`
-- Implementation branch: отсутствует
+- Implementation branch: `codex/read-only-router`
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат

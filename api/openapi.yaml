@@ -278,6 +278,33 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/assistant/query:
+    post:
+      operationId: queryAssistant
+      description: Route one natural-language request to an allowlisted read-only Grace capability. Disabled by default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssistantQuery' }
+      responses:
+        '200':
+          description: Completed read-only result, clarification, or unsupported request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: '#/components/schemas/AssistantCompleted' }
+                  - { $ref: '#/components/schemas/AssistantClarify' }
+                  - { $ref: '#/components/schemas/AssistantUnsupported' }
+                discriminator:
+                  propertyName: status
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503':
+          description: Assistant routing, provider, or a financial dependency is unavailable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AssistantUnavailable' }
 components:
   parameters:
     IdempotencyKey:
@@ -333,6 +360,136 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    AssistantQuery:
+      type: object
+      additionalProperties: false
+      required: [utterance, language, referenceTime]
+      properties:
+        utterance: { type: string, minLength: 1, maxLength: 2000 }
+        language: { type: string, enum: [ru, en] }
+        referenceTime:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with an explicit UTC offset.
+    AssistantRoute:
+      type: string
+      enum: [get_accounts, get_period_summary, get_cash_position, get_obligations, get_receipts, get_period_since_income, clarify, unsupported]
+    AssistantCompleted:
+      type: object
+      additionalProperties: false
+      required: [status, route, confidence, data]
+      properties:
+        status: { type: string, const: completed }
+        route:
+          type: string
+          enum: [get_accounts, get_obligations, get_receipts, get_period_since_income]
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        data: { $ref: '#/components/schemas/AssistantToolResult' }
+    AssistantClarify:
+      type: object
+      additionalProperties: false
+      required: [status, route, confidence, clarificationCode]
+      properties:
+        status: { type: string, const: clarify }
+        route: { $ref: '#/components/schemas/AssistantRoute' }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        clarificationCode:
+          type: string
+          enum: [low_confidence, clarification_required, composition_mismatch, arguments_required, income_category_required, no_income_anchor]
+        requiredArguments:
+          type: array
+          uniqueItems: true
+          items: { type: string, enum: [from, to, through, asOf, limit, categoryId] }
+    AssistantUnsupported:
+      type: object
+      additionalProperties: false
+      required: [status, route, confidence]
+      properties:
+        status: { type: string, const: unsupported }
+        route: { type: string, const: unsupported }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+    AssistantUnavailable:
+      type: object
+      additionalProperties: false
+      required: [status, errorCode]
+      properties:
+        status: { type: string, const: unavailable }
+        errorCode: { type: string, enum: [assistant_unavailable, dependency_unavailable] }
+    AssistantToolResult:
+      oneOf:
+        - { $ref: '#/components/schemas/AssistantAccountsToolResult' }
+        - { $ref: '#/components/schemas/AssistantObligationsToolResult' }
+        - { $ref: '#/components/schemas/AssistantReceiptsToolResult' }
+        - { $ref: '#/components/schemas/AssistantIncomePeriodToolResult' }
+      discriminator:
+        propertyName: name
+    AssistantAccountsToolResult:
+      type: object
+      additionalProperties: false
+      required: [name, data]
+      properties:
+        name: { type: string, const: get_accounts }
+        data: { $ref: '#/components/schemas/AssistantAccountsResult' }
+    AssistantObligationsToolResult:
+      type: object
+      additionalProperties: false
+      required: [name, data]
+      properties:
+        name: { type: string, const: get_obligations }
+        data: { $ref: '#/components/schemas/AssistantObligationsResult' }
+    AssistantReceiptsToolResult:
+      type: object
+      additionalProperties: false
+      required: [name, data]
+      properties:
+        name: { type: string, const: get_receipts }
+        data: { $ref: '#/components/schemas/AssistantReceiptsResult' }
+    AssistantIncomePeriodToolResult:
+      type: object
+      additionalProperties: false
+      required: [name, data]
+      properties:
+        name: { type: string, const: get_period_since_income }
+        data: { $ref: '#/components/schemas/IncomeRelativePeriod' }
+    AssistantAccountsResult:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Account' } }
+    AssistantObligationsResult:
+      type: object
+      required: [asOf, items]
+      properties:
+        asOf: { type: string, format: date }
+        items: { type: array, items: { $ref: '#/components/schemas/Obligation' } }
+    AssistantReceiptsResult:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Receipt' } }
+    IncomeAnchorPosting:
+      type: object
+      required: [accountId, accountName, amountMinor, currency]
+      properties:
+        accountId: { type: string, format: uuid }
+        accountName: { type: string }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+    IncomeAnchor:
+      type: object
+      required: [eventId, categoryId, categoryName, occurredAt, postings]
+      properties:
+        eventId: { type: string, format: uuid }
+        categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
+        categoryName: { oneOf: [{ type: string }, { type: 'null' }] }
+        occurredAt: { type: string, format: date-time }
+        postings: { type: array, minItems: 1, items: { $ref: '#/components/schemas/IncomeAnchorPosting' } }
+    IncomeRelativePeriod:
+      type: object
+      required: [anchor, summary]
+      properties:
+        anchor: { $ref: '#/components/schemas/IncomeAnchor' }
+        summary: { $ref: '#/components/schemas/PeriodSummary' }
     Meta:
       type: object
       required: [service, version]
