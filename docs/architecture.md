@@ -16,7 +16,7 @@ Grace — один продукт и один monorepo. Web и будущие н
 ## Организация backend
 
 Код группируется по предметным областям: accounts, financialevents, categories,
-позднее receipts, obligations, analytics, assistant. Техническая композиция
+receipts, позднее obligations, analytics, assistant. Техническая композиция
 находится в internal/platform.
 
 Внутри модуля новые слои выделяются только при появлении реальной сложности.
@@ -33,6 +33,10 @@ Grace — один продукт и один monorepo. Web и будущие н
   атомарными проводками и не считается расходом.
 - Текущий остаток вычисляется как opening balance + credits - debits.
 - Повтор изменяющей команды защищён Idempotency-Key.
+- Receipt детализирует существующую purchase, но не создаёт Posting.
+- Итог Receipt равен сумме line totals и debit-проводке связанной purchase.
+- Quantity хранится целым `quantityMilli`; деньги позиций остаются minor units.
+- Подтверждённые Receipt и ReceiptItem неизменяемы в текущем контракте.
 
 ## API
 
@@ -46,7 +50,11 @@ api/openapi.yaml — публичный контракт. TypeScript-клиен�
 Изменяющие инструменты требуют отдельной политики подтверждений. Интеграция с
 провайдером моделей начинается только после стабилизации финансового ядра.
 
-## Проверяемый первый срез
+## Проверяемое финансовое ядро
 
 Account → FinancialEvent → Posting → Category должен оставаться работоспособным через
 миграцию, Go API, OpenAPI, TypeScript-клиент и React.
+
+Purchase → Receipt → ReceiptItem расширяет этот путь подтверждённой детализацией
+без второго движения денег. Этот контракт также работает без AI, OCR и внешних
+провайдеров.

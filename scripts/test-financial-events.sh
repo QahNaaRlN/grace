@@ -38,12 +38,13 @@ docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 -c "
   WHERE id = '10000000-0000-0000-0000-000000000001';
 "
 
-docker compose run --rm migrate -path=/migrations -database="$database_url" up
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 3
 
 # Legacy-only state can roll back without data loss, then migrate forward again.
 docker compose run --rm migrate -path=/migrations -database="$database_url" down 1
 legacy_rows="$(docker compose exec -T postgres psql -U grace -d grace -Atc "SELECT count(*) FROM transactions WHERE id = '30000000-0000-0000-0000-000000000001'")"
 test "$legacy_rows" = "1"
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 3
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 
 docker compose up -d --build api
