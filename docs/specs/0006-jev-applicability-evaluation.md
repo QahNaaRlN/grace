@@ -1,12 +1,13 @@
 # SPEC-0006: оценка применимости Jev
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: `codex/jev-evaluation-harness`
 - Implementation commit: `3f12d8c`
+- Integration merge: `e242499`
 - Verification date: 2026-10-05
 
 ## Проблема и пользовательский результат

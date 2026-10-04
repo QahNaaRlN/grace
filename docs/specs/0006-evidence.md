@@ -1,8 +1,9 @@
 # SPEC-0006 — implementation and verification evidence
 
-- Состояние: `VERIFIED`
+- Состояние: `INTEGRATED`
 - Ветка: `codex/jev-evaluation-harness`
 - Implementation commit: `3f12d8c`
+- Integration merge: `e242499`
 - Dataset: `testdata/jev-evaluation/v1/cases.json`, version `v1`
 - Question set: version `v1`
 - Requested model: `jev-1.13.0`
@@ -189,5 +190,6 @@ Evaluator не читает PostgreSQL, не вызывает `assistant.Executo
 
 Все критерии SPEC-0006 закрыты исполняемыми проверками, versioned live report и
 метриками выше. Live artifacts намеренно сохранены вне Git. Состояние
-`VERIFIED` означает завершение принятого evaluation scope, но не интеграцию
-production routing и не принятие следующей спецификации.
+`INTEGRATED` означает завершение принятого evaluation scope и интеграцию
+development-only harness, но не интеграцию production routing и не принятие
+следующей спецификации.
