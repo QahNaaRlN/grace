@@ -11,7 +11,7 @@ import (
 
 const (
 	ProductionModel     = "jev-1.13.0"
-	QuestionSetVersion  = "v2"
+	QuestionSetVersion  = "v3"
 	ConfidenceThreshold = 0.70
 )
 

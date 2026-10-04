@@ -123,3 +123,19 @@ func TestValidateQuery(t *testing.T) {
 		}
 	}
 }
+
+func TestQuestionSetV3KeepsClosedArgumentModes(t *testing.T) {
+	if QuestionSetVersion != "v3" {
+		t.Fatalf("unexpected question set version %q", QuestionSetVersion)
+	}
+	question := RoutingQuestions()[QuestionArguments]
+	want := []ArgumentMode{ArgumentsNone, ArgumentsReferenceTime, ArgumentsDefaults, ArgumentsNeedsResolution, ArgumentsMissing, ArgumentsNotApplicable}
+	if len(question.Criteria) != len(want) {
+		t.Fatalf("unexpected criteria count: %d", len(question.Criteria))
+	}
+	for _, mode := range want {
+		if _, ok := question.Criteria[string(mode)]; !ok {
+			t.Fatalf("missing argument mode %s", mode)
+		}
+	}
+}
