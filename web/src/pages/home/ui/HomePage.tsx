@@ -2,8 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Activity, ArrowDownRight, ArrowRightLeft, WalletCards } from 'lucide-react'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
+import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
-import type { Account, FinancialEvent } from '@/shared/api/types'
+import type { Account, FinancialEvent, Receipt } from '@/shared/api/types'
 import { Badge } from '@/shared/ui/badge'
 import {
   Card,
@@ -44,6 +45,12 @@ async function loadEvents() {
   return data.items
 }
 
+async function loadReceipts() {
+  const { data } = await apiClient.GET('/api/v1/receipts')
+  if (!data) throw new Error('Не удалось загрузить чеки')
+  return data.items
+}
+
 function Accounts({ items }: { items: Account[] }) {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -62,7 +69,27 @@ function Accounts({ items }: { items: Account[] }) {
   )
 }
 
-function Events({ items }: { items: FinancialEvent[] }) {
+function ReceiptDetails({ receipt }: { receipt: Receipt }) {
+  return (
+    <div className="mt-3 rounded-lg bg-muted/50 p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span className="font-medium">Чек · {receipt.seller}</span>
+        <span>{formatMoney(receipt.totalMinor, receipt.currency)}</span>
+      </div>
+      <div className="space-y-1 text-sm text-muted-foreground">
+        {receipt.items.map((item) => (
+          <div key={item.id} className="flex items-start justify-between gap-3">
+            <span>{item.position}. {item.name} · {item.quantityMilli / 1000}</span>
+            <span className="shrink-0">{formatMoney(item.lineTotalMinor, receipt.currency)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Events({ items, receipts }: { items: FinancialEvent[], receipts: Receipt[] }) {
+  const receiptsByPurchase = new Map(receipts.map((receipt) => [receipt.purchaseEventId, receipt]))
   return (
     <Card>
       <CardHeader>
@@ -85,30 +112,39 @@ function Events({ items }: { items: FinancialEvent[] }) {
               const accountDescription = isTransfer
                 ? `${sourcePosting?.accountName ?? 'Неизвестный счёт'} → ${destinationPosting?.accountName ?? 'Неизвестный счёт'}`
                 : posting?.accountName
+              const receipt = receiptsByPurchase.get(item.id)
               return (
-                <article key={item.id} className="flex items-center justify-between gap-4 py-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="rounded-full bg-muted p-2">
-                      {isTransfer
-                        ? <ArrowRightLeft aria-hidden="true" className="size-4" />
-                        : <ArrowDownRight aria-hidden="true" className="size-4" />}
+                <article key={item.id} className="py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="rounded-full bg-muted p-2">
+                        {isTransfer
+                          ? <ArrowRightLeft aria-hidden="true" className="size-4" />
+                          : <ArrowDownRight aria-hidden="true" className="size-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">
+                          {item.merchant || item.description || kindLabels[item.kind]}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.categoryName ?? kindLabels[item.kind]} · {accountDescription}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {item.merchant || item.description || kindLabels[item.kind]}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {item.categoryName ?? kindLabels[item.kind]} · {accountDescription}
-                      </p>
-                    </div>
+                    {posting && (
+                      <div className="shrink-0 space-y-1 text-right">
+                        <p className={positive ? 'font-medium text-emerald-700' : 'font-medium text-destructive'}>
+                          {isTransfer ? '' : positive ? '+' : '−'}
+                          {formatMoney(posting.amountMinor, posting.currency)}
+                        </p>
+                        <Badge variant="secondary">{kindLabels[item.kind]}</Badge>
+                      </div>
+                    )}
                   </div>
-                  {posting && (
-                    <div className="shrink-0 text-right">
-                      <p className={positive ? 'font-medium text-emerald-700' : 'font-medium text-destructive'}>
-                        {isTransfer ? '' : positive ? '+' : '−'}
-                        {formatMoney(posting.amountMinor, posting.currency)}
-                      </p>
-                      <Badge variant="secondary">{kindLabels[item.kind]}</Badge>
+                  {receipt && <ReceiptDetails receipt={receipt} />}
+                  {item.kind === 'purchase' && !receipt && (
+                    <div className="mt-3 pl-11">
+                      <CreateReceiptForm purchase={item} />
                     </div>
                   )}
                 </article>
@@ -125,8 +161,9 @@ export function HomePage() {
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: loadAccounts })
   const categories = useQuery({ queryKey: ['categories'], queryFn: loadCategories })
   const events = useQuery({ queryKey: ['financial-events'], queryFn: loadEvents })
-  const error = accounts.error ?? categories.error ?? events.error
-  const isPending = accounts.isPending || categories.isPending || events.isPending
+  const receipts = useQuery({ queryKey: ['receipts'], queryFn: loadReceipts })
+  const error = accounts.error ?? categories.error ?? events.error ?? receipts.error
+  const isPending = accounts.isPending || categories.isPending || events.isPending || receipts.isPending
 
   return (
     <AppLayout>
@@ -155,7 +192,7 @@ export function HomePage() {
         {accounts.data && categories.data && (
           <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />
         )}
-        {events.data && <Events items={events.data} />}
+        {events.data && receipts.data && <Events items={events.data} receipts={receipts.data} />}
       </section>
     </AppLayout>
   )

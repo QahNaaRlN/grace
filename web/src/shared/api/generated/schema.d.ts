@@ -148,6 +148,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listReceipts"];
+        put?: never;
+        post: operations["createReceipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -247,6 +279,52 @@ export interface components {
             /** Format: date-time */
             occurredAt: string;
         };
+        ReceiptItem: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            name: string;
+            /** Format: int64 */
+            quantityMilli: number;
+            /** Format: int64 */
+            unitPriceMinor: number;
+            /** Format: int64 */
+            lineTotalMinor: number;
+        };
+        Receipt: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            purchaseEventId: string;
+            seller: string;
+            /** Format: date-time */
+            issuedAt: string;
+            currency: string;
+            /** Format: int64 */
+            totalMinor: number;
+            fiscalDocumentNumber: string;
+            /** Format: date-time */
+            createdAt: string;
+            items: components["schemas"]["ReceiptItem"][];
+        };
+        CreateReceiptItem: {
+            name: string;
+            /** Format: int64 */
+            quantityMilli: number;
+            /** Format: int64 */
+            unitPriceMinor: number;
+            /** Format: int64 */
+            lineTotalMinor: number;
+        };
+        CreateReceipt: {
+            /** Format: uuid */
+            purchaseEventId: string;
+            seller: string;
+            /** Format: date-time */
+            issuedAt: string;
+            fiscalDocumentNumber?: string;
+            items: components["schemas"]["CreateReceiptItem"][];
+        };
         Error: {
             code: string;
             message: string;
@@ -260,6 +338,15 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["FinancialEvent"];
+            };
+        };
+        /** @description Confirmed receipt */
+        Receipt: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Receipt"];
             };
         };
         /** @description Request violates the financial contract */
@@ -504,6 +591,73 @@ export interface operations {
             201: components["responses"]["Event"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+        };
+    };
+    listReceipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recent confirmed receipts with ordered items */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["Receipt"][];
+                    };
+                };
+            };
+        };
+    };
+    createReceipt: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReceipt"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Receipt"];
+            201: components["responses"]["Receipt"];
+            400: components["responses"]["ValidationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Receipt"];
+            /** @description Receipt not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
 }

@@ -9,6 +9,7 @@ import {
 } from '@/features/create-financial-event/model/create-financial-event.schema'
 import { apiClient } from '@/shared/api/client'
 import type { Account, Category } from '@/shared/api/types'
+import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import {
   Card,
@@ -38,11 +39,6 @@ const kindLabels = {
   income: 'Доход',
   transfer: 'Перевод между счетами',
 } as const
-
-function createIdempotencyKey() {
-  return globalThis.crypto?.randomUUID?.()
-    ?? `grace-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
 
 export function CreateFinancialEventForm({ accounts, categories }: Props) {
   const queryClient = useQueryClient()

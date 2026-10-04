@@ -22,6 +22,7 @@ test-web:
 
 test-integration:
 	./scripts/test-financial-events.sh
+	./scripts/test-receipts.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

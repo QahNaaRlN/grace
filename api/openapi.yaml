@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.2.0
-  description: Financial events and postings. Money uses integer minor units.
+  version: 0.3.0
+  description: Financial events, postings and confirmed receipt details. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
 paths:
@@ -129,6 +129,51 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateRefund' }
       responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /api/v1/receipts:
+    get:
+      operationId: listReceipts
+      responses:
+        '200':
+          description: Recent confirmed receipts with ordered items
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Receipt' }
+    post:
+      operationId: createReceipt
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateReceipt' }
+      responses:
+        '200': { $ref: '#/components/responses/Receipt' }
+        '201': { $ref: '#/components/responses/Receipt' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/receipts/{receiptId}:
+    get:
+      operationId: getReceipt
+      parameters:
+        - name: receiptId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { $ref: '#/components/responses/Receipt' }
+        '404':
+          description: Receipt not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 components:
   parameters:
     IdempotencyKey:
@@ -142,6 +187,11 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/FinancialEvent' }
+    Receipt:
+      description: Confirmed receipt
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Receipt' }
     ValidationError:
       description: Request violates the financial contract
       content:
@@ -245,6 +295,55 @@ components:
         merchant: { type: string }
         description: { type: string }
         occurredAt: { type: string, format: date-time }
+    ReceiptItem:
+      type: object
+      required: [id, position, name, quantityMilli, unitPriceMinor, lineTotalMinor]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, minimum: 1 }
+        name: { type: string }
+        quantityMilli: { type: integer, format: int64, minimum: 1 }
+        unitPriceMinor: { type: integer, format: int64, minimum: 1 }
+        lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+    Receipt:
+      type: object
+      required: [id, purchaseEventId, seller, issuedAt, currency, totalMinor, fiscalDocumentNumber, createdAt, items]
+      properties:
+        id: { type: string, format: uuid }
+        purchaseEventId: { type: string, format: uuid }
+        seller: { type: string }
+        issuedAt: { type: string, format: date-time }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        totalMinor: { type: integer, format: int64, minimum: 1 }
+        fiscalDocumentNumber: { type: string }
+        createdAt: { type: string, format: date-time }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/ReceiptItem' }
+    CreateReceiptItem:
+      type: object
+      additionalProperties: false
+      required: [name, quantityMilli, unitPriceMinor, lineTotalMinor]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 300 }
+        quantityMilli: { type: integer, format: int64, minimum: 1 }
+        unitPriceMinor: { type: integer, format: int64, minimum: 1 }
+        lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+    CreateReceipt:
+      type: object
+      additionalProperties: false
+      required: [purchaseEventId, seller, issuedAt, items]
+      properties:
+        purchaseEventId: { type: string, format: uuid }
+        seller: { type: string, minLength: 1, maxLength: 200 }
+        issuedAt: { type: string, format: date-time }
+        fiscalDocumentNumber: { type: string, maxLength: 160 }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: '#/components/schemas/CreateReceiptItem' }
     Error:
       type: object
       required: [code, message]
