@@ -1,12 +1,12 @@
 # SPEC-0009: single-turn интерфейс read-only ассистента
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner явно принял спецификацию 2026-10-05
 - Specification branch: `codex/spec-0009-assistant-ui`
-- Implementation branch: отсутствует
+- Implementation branch: `codex/assistant-ui`
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат

@@ -298,7 +298,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            status: "AssistantCompleted";
+            status: "completed";
             /** @enum {string} */
             route: "get_accounts" | "get_obligations" | "get_receipts" | "get_period_since_income";
             confidence: number;
@@ -309,7 +309,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            status: "AssistantClarify";
+            status: "clarify";
             route: components["schemas"]["AssistantRoute"];
             confidence: number;
             /** @enum {string} */
@@ -321,7 +321,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            status: "AssistantUnsupported";
+            status: "unsupported";
             /** @constant */
             route: "unsupported";
             confidence: number;
@@ -338,7 +338,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            name: "AssistantAccountsToolResult";
+            name: "get_accounts";
             data: components["schemas"]["AssistantAccountsResult"];
         };
         AssistantObligationsToolResult: {
@@ -346,7 +346,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            name: "AssistantObligationsToolResult";
+            name: "get_obligations";
             data: components["schemas"]["AssistantObligationsResult"];
         };
         AssistantReceiptsToolResult: {
@@ -354,7 +354,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            name: "AssistantReceiptsToolResult";
+            name: "get_receipts";
             data: components["schemas"]["AssistantReceiptsResult"];
         };
         AssistantIncomePeriodToolResult: {
@@ -362,7 +362,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            name: "AssistantIncomePeriodToolResult";
+            name: "get_period_since_income";
             data: components["schemas"]["IncomeRelativePeriod"];
         };
         AssistantAccountsResult: {
