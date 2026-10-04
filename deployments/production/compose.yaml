@@ -1,0 +1,126 @@
+name: grace-production
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: grace
+      POSTGRES_USER: grace
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - grace-postgres:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U grace -d grace]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *default-logging
+
+  migrate:
+    image: migrate/migrate:v4.18.2
+    profiles: [tools]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - >-
+        exec migrate -path=/migrations
+        -database="postgres://grace:$$(cat /run/secrets/postgres_password)@postgres:5432/grace?sslmode=disable"
+        up
+    secrets:
+      - postgres_password
+    volumes:
+      - ./migrations:/migrations:ro
+    networks:
+      - backend
+    logging: *default-logging
+
+  api:
+    image: ghcr.io/${GRACE_IMAGE_OWNER:?GRACE_IMAGE_OWNER is required}/grace-api:${RELEASE_TAG:?RELEASE_TAG is required}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PORT: '8080'
+      DATABASE_URL: postgres://grace:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/grace?sslmode=disable
+      CORS_ORIGINS: https://${GRACE_DOMAIN:?GRACE_DOMAIN is required}
+      GRACE_ASSISTANT_ROUTING_ENABLED: 'false'
+    networks:
+      - backend
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:8080/ready]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *default-logging
+
+  web:
+    image: ghcr.io/${GRACE_IMAGE_OWNER:?GRACE_IMAGE_OWNER is required}/grace-web:${RELEASE_TAG:?RELEASE_TAG is required}
+    restart: unless-stopped
+    networks:
+      - edge
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1/]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - >-
+        export GRACE_BASIC_AUTH_HASH="$$(cat /run/secrets/basic_auth_hash)";
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      GRACE_DOMAIN: ${GRACE_DOMAIN:?GRACE_DOMAIN is required}
+    secrets:
+      - basic_auth_hash
+    ports:
+      - ${GRACE_HTTP_PORT:?GRACE_HTTP_PORT is required}:80
+      - ${GRACE_HTTPS_PORT:?GRACE_HTTPS_PORT is required}:443
+      - ${GRACE_HTTPS_PORT:?GRACE_HTTPS_PORT is required}:443/udp
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - edge
+      - backend
+    logging: *default-logging
+
+secrets:
+  postgres_password:
+    file: ${GRACE_SECRETS_DIR:?GRACE_SECRETS_DIR is required}/postgres_password
+  basic_auth_hash:
+    file: ${GRACE_SECRETS_DIR:?GRACE_SECRETS_DIR is required}/basic_auth_hash
+
+volumes:
+  grace-postgres:
+  caddy-data:
+  caddy-config:
+
+networks:
+  edge:
+  backend:
+    internal: true

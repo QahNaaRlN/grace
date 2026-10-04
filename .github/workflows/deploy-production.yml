@@ -1,0 +1,124 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full main commit SHA to deploy (defaults to current main)
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy owner VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Check out deployment source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify release SHA and successful CI
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUESTED_SHA: ${{ inputs.release_sha }}
+        run: |
+          release_sha="${REQUESTED_SHA:-$GITHUB_SHA}"
+          if ! printf '%s' "$release_sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "release_sha must be a full lowercase commit SHA" >&2
+            exit 1
+          fi
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$release_sha" origin/main; then
+            echo "$release_sha is not reachable from main" >&2
+            exit 1
+          fi
+          successful_runs="$(gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$release_sha&status=success&event=push" \
+            --jq '.total_count')"
+          if [ "$successful_runs" -lt 1 ]; then
+            echo "No successful CI push run exists for $release_sha" >&2
+            exit 1
+          fi
+          echo "sha=$release_sha" >> "$GITHUB_OUTPUT"
+          echo "tag=sha-$release_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check out exact release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Build production bundle
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          mkdir -p /tmp/grace-release
+          ./scripts/build-production-bundle.sh /tmp/grace-release
+          {
+            echo 'GRACE_DOMAIN=graceapp.ru'
+            echo 'GRACE_IMAGE_OWNER=qahnaarln'
+            echo 'GRACE_SECRETS_DIR=/opt/grace/shared/secrets'
+            echo 'GRACE_HTTP_PORT=80'
+            echo 'GRACE_HTTPS_PORT=443'
+            echo "RELEASE_TAG=sha-$RELEASE_SHA"
+          } > /tmp/grace-release/release.env
+
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+
+      - name: Upload exact release bundle
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          ssh grace-deploy@195.133.195.190 \
+            "install -d -m 0750 /opt/grace/releases/$RELEASE_SHA"
+          scp -r /tmp/grace-release/. \
+            "grace-deploy@195.133.195.190:/opt/grace/releases/$RELEASE_SHA/"
+
+      - name: Authenticate VPS to GHCR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GH_TOKEN" | ssh grace-deploy@195.133.195.190 \
+            "docker login ghcr.io --username '$GITHUB_ACTOR' --password-stdin"
+
+      - name: Deploy and verify internal health
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          ssh grace-deploy@195.133.195.190 \
+            "/opt/grace/releases/$RELEASE_SHA/deploy.sh $RELEASE_SHA"
+
+      - name: Verify public authentication and application
+        env:
+          BASIC_AUTH_PASSWORD: ${{ secrets.PRODUCTION_BASIC_AUTH_PASSWORD }}
+        run: |
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            https://graceapp.ru/)"
+          test "$status" = '401'
+          curl --fail --silent --show-error \
+            --user "grace:$BASIC_AUTH_PASSWORD" \
+            https://graceapp.ru/api/meta | grep -q '"service":"grace"'
+
+      - name: Log out VPS from GHCR
+        if: always()
+        run: ssh grace-deploy@195.133.195.190 'docker logout ghcr.io || true'
