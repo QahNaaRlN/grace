@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, ArrowDownRight, ArrowRightLeft, BarChart3, CalendarClock, Link2, WalletCards } from 'lucide-react'
+import { Activity, ArrowDownRight, ArrowRightLeft, BarChart3, CalendarClock, CircleCheck, Link2, Sparkles, WalletCards } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -104,14 +104,15 @@ async function loadObligations(asOf: string) {
 
 function Accounts({ items }: { items: Account[] }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((account) => (
-        <Card key={account.id}>
-          <CardHeader className="pb-2">
-            <CardDescription>{account.type}</CardDescription>
-            <CardTitle className="text-lg">{account.name}</CardTitle>
+        <Card key={account.id} className="relative isolate overflow-hidden bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground ring-0">
+          <div className="absolute -top-16 -right-12 -z-10 size-40 rounded-full bg-white/10" />
+          <CardHeader className="pb-1">
+            <CardDescription className="text-primary-foreground/70">{account.type === 'debit' ? 'Дебетовый счёт' : account.type === 'credit' ? 'Кредитный счёт' : account.type === 'cash' ? 'Наличные' : 'Рассрочка'}</CardDescription>
+            <CardTitle className="text-lg text-primary-foreground">{account.name}</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="text-3xl font-semibold tracking-tight">
             {formatMoney(account.balanceMinor, account.currency)}
           </CardContent>
         </Card>
@@ -279,7 +280,7 @@ function SettlementControl({
           ))}
         </SelectContent>
       </Select>
-      <Button type="button" variant="outline" disabled={!eventID || isSubmitting} onClick={settle}>
+      <Button className="w-full sm:w-auto" type="button" variant="outline" disabled={!eventID || isSubmitting} onClick={settle}>
         <Link2 aria-hidden="true" className="mr-1 size-4" />
         {isSubmitting ? 'Связываю…' : 'Связать'}
       </Button>
@@ -446,36 +447,51 @@ export function HomePage() {
 
   return (
     <AppLayout>
-      <section className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Grace</p>
-            <h1 className="text-3xl font-semibold tracking-tight">Финансовая картина</h1>
+      <div className="space-y-8 sm:space-y-10">
+        <section className="relative overflow-hidden rounded-3xl bg-foreground px-5 py-6 text-background shadow-xl shadow-emerald-950/10 sm:px-8 sm:py-8">
+          <div className="absolute -top-24 -right-20 size-64 rounded-full bg-primary/35 blur-3xl" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-300"><Sparkles className="size-4" aria-hidden="true" /> Ваша финансовая картина</p>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Деньги — одним взглядом</h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-background/70 sm:text-base">Счета, обязательства и фактический денежный поток собраны в одном месте.</p>
+            </div>
+            <div className={error ? 'flex w-fit items-center gap-2 rounded-full bg-destructive/20 px-3 py-2 text-sm font-medium text-red-100' : 'flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-background'}>
+              {error ? <Activity aria-hidden="true" className="size-4" /> : <CircleCheck aria-hidden="true" className="size-4 text-emerald-300" />}
+              {error ? 'Часть данных не загрузилась' : isPending ? 'Обновляем данные…' : 'Данные актуальны'}
+            </div>
           </div>
-          <Badge variant={error ? 'destructive' : 'secondary'}>
-            <Activity aria-hidden="true" className="mr-1 size-3" />
-            {error ? 'API недоступен' : isPending ? 'Загрузка…' : 'Данные актуальны'}
-          </Badge>
-        </div>
+        </section>
 
         {error && (
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6 text-destructive">
+          <Card className="border border-destructive/20 bg-destructive/5 ring-0">
+            <CardContent className="flex items-start gap-3 text-destructive">
               <WalletCards aria-hidden="true" className="size-5" />
-              <p>{error instanceof Error ? error.message : 'Не удалось связаться с API'}</p>
+              <div><p className="font-semibold">Не все данные удалось обновить</p><p className="mt-1 text-muted-foreground">{error instanceof Error ? error.message : 'Повторите попытку чуть позже.'}</p></div>
             </CardContent>
           </Card>
         )}
 
-        {accounts.data && <Accounts items={accounts.data} />}
-        <Analytics />
-        {accounts.data && categories.data && (
-          <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />
-        )}
-        <CreateObligationForm />
-        {obligations.data && events.data && <Obligations items={obligations.data} events={events.data} />}
-        {events.data && receipts.data && <Events items={events.data} receipts={receipts.data} />}
-      </section>
+        {accounts.data && <section aria-labelledby="accounts-title" className="space-y-4"><div><p className="text-sm font-semibold text-primary">Сейчас</p><h2 id="accounts-title" className="text-2xl font-semibold tracking-tight">Ваши счета</h2></div><Accounts items={accounts.data} /></section>}
+
+        <section aria-labelledby="analytics-title" className="space-y-4"><div><p className="text-sm font-semibold text-primary">Понимание</p><h2 id="analytics-title" className="text-2xl font-semibold tracking-tight">Движение и доступность</h2></div><Analytics /></section>
+
+        <section aria-labelledby="actions-title" className="space-y-4">
+          <div><p className="text-sm font-semibold text-primary">Новое</p><h2 id="actions-title" className="text-2xl font-semibold tracking-tight">Добавить данные</h2><p className="mt-1 text-sm text-muted-foreground">Фиксируйте только подтверждённые события и планы.</p></div>
+          <div className="grid items-start gap-6 xl:grid-cols-2">
+            {accounts.data && categories.data && <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />}
+            <CreateObligationForm />
+          </div>
+        </section>
+
+        <section aria-labelledby="details-title" className="space-y-4">
+          <div><p className="text-sm font-semibold text-primary">Подробности</p><h2 id="details-title" className="text-2xl font-semibold tracking-tight">Обязательства и события</h2></div>
+          <div className="grid items-start gap-6 xl:grid-cols-2">
+            {obligations.data && events.data && <Obligations items={obligations.data} events={events.data} />}
+            {events.data && receipts.data && <Events items={events.data} receipts={receipts.data} />}
+          </div>
+        </section>
+      </div>
     </AppLayout>
   )
 }

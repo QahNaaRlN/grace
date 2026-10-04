@@ -223,7 +223,7 @@ export function CreateFinancialEventForm({ accounts, categories }: Props) {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isSubmitting || accounts.length === 0}>
+          <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting || accounts.length === 0}>
             {isSubmitting ? 'Сохранение…' : 'Сохранить событие'}
           </Button>
         </CardFooter>

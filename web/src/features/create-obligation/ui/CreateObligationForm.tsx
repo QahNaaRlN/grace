@@ -149,7 +149,7 @@ export function CreateObligationForm() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Сохранение…' : 'Сохранить обязательство'}</Button>
+          <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Сохранение…' : 'Сохранить обязательство'}</Button>
         </CardFooter>
       </form>
     </Card>

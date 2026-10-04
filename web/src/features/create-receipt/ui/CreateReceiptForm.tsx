@@ -162,7 +162,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Сохранение…' : 'Сохранить чек'}
             </Button>
           </DialogFooter>
