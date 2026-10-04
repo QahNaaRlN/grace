@@ -1,10 +1,10 @@
 # SPEC-0005: read-only инструменты ассистента
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 
@@ -271,9 +271,7 @@ git diff --check
 test-only Go integration binary внутри репозитория и очищать окружение через
 trap. Production binary и публичные routes от test harness не меняются.
 
-## Открытые решения
-
-До перехода спецификации в `accepted` owner должен явно подтвердить:
+## Принятые решения owner
 
 1. SPEC-0005 создаёт только внутренний Go tool registry/executor; публичный
    HTTP/OpenAPI, provider, chat и UI не добавляются.
