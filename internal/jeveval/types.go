@@ -135,6 +135,7 @@ type Report struct {
 	RequestedModel     string                  `json:"requestedModel"`
 	ActualModels       []string                `json:"actualModels"`
 	GeneratedAt        time.Time               `json:"generatedAt"`
+	AnalyzedAt         time.Time               `json:"analyzedAt"`
 	Observations       []EvaluationObservation `json:"observations"`
 	Metrics            map[string]Metrics      `json:"metricsByLanguage"`
 }

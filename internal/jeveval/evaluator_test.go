@@ -122,3 +122,48 @@ func TestEvaluateRequiresProvider(t *testing.T) {
 		t.Fatal("expected provider error")
 	}
 }
+
+func TestReanalyzeIgnoresUnusedSpeculativeAnswers(t *testing.T) {
+	dataset, err := LoadDataset(fixturePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedByUtterance := make(map[string]EvaluationCase, len(dataset.Cases))
+	for _, evaluationCase := range dataset.Cases {
+		expectedByUtterance[evaluationCase.Utterance] = evaluationCase
+	}
+	provider := fakeProvider{evaluate: func(request Request) (Response, error) {
+		expected := expectedByUtterance[request.State.Utterance]
+		return validResponse(request, map[string]string{
+			questionTool: string(expected.ExpectedTool), questionPeriod: string(expected.ExpectedPeriodShape),
+			questionArguments: string(expected.ExpectedArgumentPresence),
+		}), nil
+	}}
+	report, err := Evaluate(context.Background(), dataset, "jev-1.13.0", provider, time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for index := range report.Observations {
+		observation := &report.Observations[index]
+		if observation.CaseID != "ru-obligations-02" {
+			continue
+		}
+		answer := observation.Answers[questionArguments]
+		answer.Choice = string(ArgumentsMissing)
+		for option := range answer.Probabilities {
+			answer.Probabilities[option] = 0
+		}
+		answer.Probabilities[string(ArgumentsMissing)] = 1
+		observation.Answers[questionArguments] = answer
+		observation.ErrorClass = "composition_error"
+		observation.ErrorMessage = "legacy unused-branch error"
+	}
+
+	reanalyzed, err := Reanalyze(dataset, report, time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reanalyzed.Metrics["ru"].Completed != 42 || reanalyzed.Metrics["ru"].CompositionErrors != 0 {
+		t.Fatalf("reanalyzed metrics = %#v", reanalyzed.Metrics["ru"])
+	}
+}

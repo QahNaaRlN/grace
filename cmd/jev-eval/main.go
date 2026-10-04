@@ -25,16 +25,52 @@ func main() {
 
 func run(arguments []string) error {
 	if len(arguments) == 0 {
-		return errors.New("usage: jev-eval <validate|run> [flags]")
+		return errors.New("usage: jev-eval <validate|run|analyze> [flags]")
 	}
 	switch arguments[0] {
 	case "validate":
 		return validateCommand(arguments[1:])
 	case "run":
 		return runCommand(arguments[1:])
+	case "analyze":
+		return analyzeCommand(arguments[1:])
 	default:
-		return fmt.Errorf("unknown command %q; expected validate or run", arguments[0])
+		return fmt.Errorf("unknown command %q; expected validate, run, or analyze", arguments[0])
 	}
+}
+
+func analyzeCommand(arguments []string) error {
+	flags := flag.NewFlagSet("analyze", flag.ContinueOnError)
+	flags.SetOutput(os.Stderr)
+	datasetPath := flags.String("dataset", "", "path to the versioned JSON dataset")
+	inputPath := flags.String("input-report", "", "path to a raw or previously analyzed JSON report")
+	reportPath := flags.String("report", "", "absolute path outside the repository for the recalculated JSON report")
+	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	if *datasetPath == "" || *inputPath == "" || *reportPath == "" {
+		return errors.New("--dataset, --input-report, and --report are required")
+	}
+	if err := validateReportPath(*reportPath); err != nil {
+		return err
+	}
+	dataset, err := jeveval.LoadDataset(*datasetPath)
+	if err != nil {
+		return err
+	}
+	report, err := jeveval.LoadReport(*inputPath)
+	if err != nil {
+		return err
+	}
+	report, err = jeveval.Reanalyze(dataset, report, time.Now)
+	if err != nil {
+		return err
+	}
+	if err := jeveval.WriteReport(*reportPath, report); err != nil {
+		return err
+	}
+	fmt.Println(jeveval.Summary(report))
+	return nil
 }
 
 func validateCommand(arguments []string) error {

@@ -111,4 +111,14 @@ func TestRunCommandWritesReportAgainstFakeHTTPProvider(t *testing.T) {
 	if report.Metrics["ru"].ToolAccuracy != 1 || report.Metrics["en"].ToolAccuracy != 1 {
 		t.Fatalf("report metrics = %#v", report.Metrics)
 	}
+	reanalyzedPath := filepath.Join(t.TempDir(), "reanalyzed.json")
+	if err := analyzeCommand([]string{
+		"--dataset", "../../testdata/jev-evaluation/v1/cases.json",
+		"--input-report", reportPath, "--report", reanalyzedPath,
+	}); err != nil {
+		t.Fatalf("analyzeCommand() error = %v", err)
+	}
+	if _, err := os.Stat(reanalyzedPath); err != nil {
+		t.Fatalf("reanalyzed report: %v", err)
+	}
 }

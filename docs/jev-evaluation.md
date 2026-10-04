@@ -34,6 +34,16 @@ go run ./cmd/jev-eval run \
 Report path должен быть абсолютным и находиться вне репозитория. Новый файл
 создаётся с mode `0600`; существующий файл не перезаписывается.
 
+Сохранённые raw answers можно повторно проанализировать после исправления
+детерминированной composition/metrics логики без нового provider call:
+
+```bash
+go run ./cmd/jev-eval analyze \
+  --dataset testdata/jev-evaluation/v1/cases.json \
+  --input-report /tmp/grace-jev-evaluation-raw.json \
+  --report /tmp/grace-jev-evaluation-analyzed.json
+```
+
 Evaluator отправляет три независимых `Choice` в одном запросе:
 
 - read-only tool route, `clarify` или `unsupported`;

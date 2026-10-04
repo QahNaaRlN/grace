@@ -36,7 +36,7 @@ func Evaluate(ctx context.Context, dataset Dataset, model string, provider Provi
 
 	report := Report{
 		DatasetVersion: DatasetVersion, QuestionSetVersion: QuestionSetVersion,
-		RequestedModel: model, GeneratedAt: now().UTC(),
+		RequestedModel: model, GeneratedAt: now().UTC(), AnalyzedAt: now().UTC(),
 		Observations: make([]EvaluationObservation, 0, len(dataset.Cases)),
 	}
 	models := make(map[string]struct{})
@@ -77,6 +77,14 @@ func evaluateCase(ctx context.Context, evaluationCase EvaluationCase, model stri
 		return observation
 	}
 
+	applyResponse(&observation, response)
+	return observation
+}
+
+func applyResponse(observation *EvaluationObservation, response Response) {
+	observation.ErrorClass = ""
+	observation.ErrorMessage = ""
+	observation.CompositionNote = ""
 	observation.Answers = response.Answers
 	observation.ActualModel = response.Model
 	observation.Usage = response.Usage
@@ -95,11 +103,66 @@ func evaluateCase(ctx context.Context, evaluationCase EvaluationCase, model stri
 			observation.ErrorClass = "composition_error"
 			observation.ErrorMessage = "period-sensitive route cannot have not_applicable arguments"
 		}
-	} else if observation.PredictedArgumentPresence != ArgumentsNotApplicable && observation.RawToolChoice != ToolClarify {
-		observation.ErrorClass = "composition_error"
-		observation.ErrorMessage = "non-period route must have not_applicable arguments"
 	}
-	return observation
+}
+
+func Reanalyze(dataset Dataset, report Report, now func() time.Time) (Report, error) {
+	if err := ValidateDataset(dataset); err != nil {
+		return Report{}, err
+	}
+	if report.DatasetVersion != dataset.Version || report.QuestionSetVersion != QuestionSetVersion {
+		return Report{}, errors.New("report versions do not match the current dataset and question set")
+	}
+	if err := ValidateModelID(report.RequestedModel); err != nil {
+		return Report{}, err
+	}
+	if len(report.Observations) != len(dataset.Cases) {
+		return Report{}, errors.New("report observation count does not match dataset")
+	}
+	if now == nil {
+		now = time.Now
+	}
+	cases := make(map[string]EvaluationCase, len(dataset.Cases))
+	for _, evaluationCase := range dataset.Cases {
+		cases[evaluationCase.ID] = evaluationCase
+	}
+	seen := make(map[string]struct{}, len(report.Observations))
+	models := make(map[string]struct{})
+	for index := range report.Observations {
+		observation := &report.Observations[index]
+		evaluationCase, ok := cases[observation.CaseID]
+		if !ok {
+			return Report{}, fmt.Errorf("report contains unknown case %q", observation.CaseID)
+		}
+		if _, duplicate := seen[observation.CaseID]; duplicate {
+			return Report{}, fmt.Errorf("report contains duplicate case %q", observation.CaseID)
+		}
+		seen[observation.CaseID] = struct{}{}
+		observation.Language = evaluationCase.Language
+		observation.ExpectedTool = evaluationCase.ExpectedTool
+		observation.ExpectedPeriodShape = evaluationCase.ExpectedPeriodShape
+		observation.ExpectedArgumentPresence = evaluationCase.ExpectedArgumentPresence
+		if observation.ErrorClass != "" && observation.ErrorClass != "composition_error" {
+			continue
+		}
+		request := requestFor(evaluationCase, report.RequestedModel)
+		response := Response{Model: observation.ActualModel, Answers: observation.Answers, Usage: observation.Usage}
+		if err := ValidateResponse(request, response); err != nil {
+			observation.ErrorClass = ErrorProtocol
+			observation.ErrorMessage = err.Error()
+			continue
+		}
+		applyResponse(observation, response)
+		models[observation.ActualModel] = struct{}{}
+	}
+	report.ActualModels = report.ActualModels[:0]
+	for modelID := range models {
+		report.ActualModels = append(report.ActualModels, modelID)
+	}
+	sort.Strings(report.ActualModels)
+	report.AnalyzedAt = now().UTC()
+	report.Metrics = calculateMetrics(report.Observations)
+	return report, nil
 }
 
 func calculateMetrics(observations []EvaluationObservation) map[string]Metrics {

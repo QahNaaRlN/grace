@@ -30,4 +30,11 @@ func TestWriteReportCreatesPrivateFileAndRefusesOverwrite(t *testing.T) {
 	if err := WriteReport(path, report); err == nil {
 		t.Fatal("expected overwrite refusal")
 	}
+	loaded, err := LoadReport(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.RequestedModel != report.RequestedModel {
+		t.Fatalf("loaded model = %q", loaded.RequestedModel)
+	}
 }
