@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.3.0
-  description: Financial events, postings and confirmed receipt details. Money uses integer minor units.
+  version: 0.4.0
+  description: Financial events, confirmed receipt details, and fixed obligation schedules. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
 paths:
@@ -174,6 +174,72 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/obligations:
+    get:
+      operationId: listObligations
+      parameters:
+        - { $ref: '#/components/parameters/AsOf' }
+      responses:
+        '200':
+          description: Fixed obligations with derived schedule state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [asOf, items]
+                properties:
+                  asOf: { type: string, format: date }
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Obligation' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    post:
+      operationId: createObligation
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateObligation' }
+      responses:
+        '200': { $ref: '#/components/responses/Obligation' }
+        '201': { $ref: '#/components/responses/Obligation' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/obligations/{obligationId}:
+    get:
+      operationId: getObligation
+      parameters:
+        - { $ref: '#/components/parameters/ObligationId' }
+        - { $ref: '#/components/parameters/AsOf' }
+      responses:
+        '200': { $ref: '#/components/responses/Obligation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements:
+    post:
+      operationId: createScheduledPaymentSettlement
+      parameters:
+        - { $ref: '#/components/parameters/ObligationId' }
+        - name: paymentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateScheduledPaymentSettlement' }
+      responses:
+        '200': { $ref: '#/components/responses/Settlement' }
+        '201': { $ref: '#/components/responses/Settlement' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
 components:
   parameters:
     IdempotencyKey:
@@ -181,6 +247,17 @@ components:
       in: header
       required: true
       schema: { type: string, minLength: 1, maxLength: 160 }
+    AsOf:
+      name: asOf
+      in: query
+      required: false
+      description: Calendar date used to derive overdue state; defaults to current UTC date.
+      schema: { type: string, format: date }
+    ObligationId:
+      name: obligationId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
   responses:
     Event:
       description: Created event or result of an idempotent retry
@@ -192,6 +269,16 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Receipt' }
+    Obligation:
+      description: Fixed obligation with its derived schedule state
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Obligation' }
+    Settlement:
+      description: Link from one debt payment to one scheduled payment
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ScheduledPaymentSettlement' }
     ValidationError:
       description: Request violates the financial contract
       content:
@@ -199,6 +286,11 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     Conflict:
       description: Idempotency key was used with another payload
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Requested resource was not found
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -344,6 +436,74 @@ components:
           minItems: 1
           maxItems: 200
           items: { $ref: '#/components/schemas/CreateReceiptItem' }
+    ScheduledPaymentSettlement:
+      type: object
+      required: [id, scheduledPaymentId, financialEventId, amountMinor, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        scheduledPaymentId: { type: string, format: uuid }
+        financialEventId: { type: string, format: uuid }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+    ScheduledPayment:
+      type: object
+      required: [id, position, dueOn, amountMinor, paidMinor, remainingMinor, status, isOverdue, settlements]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, minimum: 1 }
+        dueOn: { type: string, format: date }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        paidMinor: { type: integer, format: int64, minimum: 0 }
+        remainingMinor: { type: integer, format: int64, minimum: 0 }
+        status: { type: string, enum: [planned, overdue, partially_paid, paid] }
+        isOverdue: { type: boolean }
+        settlements:
+          type: array
+          items: { $ref: '#/components/schemas/ScheduledPaymentSettlement' }
+    Obligation:
+      type: object
+      required: [id, name, kind, currency, totalMinor, paidMinor, remainingMinor, status, createdAt, payments]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind: { type: string, enum: [loan, installment, other_fixed] }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        totalMinor: { type: integer, format: int64, minimum: 1 }
+        paidMinor: { type: integer, format: int64, minimum: 0 }
+        remainingMinor: { type: integer, format: int64, minimum: 0 }
+        status: { type: string, enum: [active, completed] }
+        createdAt: { type: string, format: date-time }
+        payments:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/ScheduledPayment' }
+    CreateScheduledPayment:
+      type: object
+      additionalProperties: false
+      required: [dueOn, amountMinor]
+      properties:
+        dueOn: { type: string, format: date }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+    CreateObligation:
+      type: object
+      additionalProperties: false
+      required: [name, kind, currency, totalMinor, payments]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        kind: { type: string, enum: [loan, installment, other_fixed] }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        totalMinor: { type: integer, format: int64, minimum: 1 }
+        payments:
+          type: array
+          minItems: 1
+          maxItems: 600
+          items: { $ref: '#/components/schemas/CreateScheduledPayment' }
+    CreateScheduledPaymentSettlement:
+      type: object
+      additionalProperties: false
+      required: [financialEventId]
+      properties:
+        financialEventId: { type: string, format: uuid }
     Error:
       type: object
       required: [code, message]

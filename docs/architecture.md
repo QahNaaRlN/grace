@@ -37,6 +37,12 @@ receipts, позднее obligations, analytics, assistant. Техническа
 - Итог Receipt равен сумме line totals и debit-проводке связанной purchase.
 - Quantity хранится целым `quantityMilli`; деньги позиций остаются minor units.
 - Подтверждённые Receipt и ReceiptItem неизменяемы в текущем контракте.
+- Obligation и ScheduledPayment описывают план и не создают Posting.
+- Фактическая оплата обязательства существует только как `debt_payment`;
+  Settlement связывает это событие с одним ScheduledPayment и не меняет баланс
+  повторно.
+- Состояния графика, paid/remaining и просрочка вычисляются детерминированно в
+  финансовом модуле относительно явной календарной даты.
 
 ## API
 
@@ -58,3 +64,7 @@ Account → FinancialEvent → Posting → Category должен остават�
 Purchase → Receipt → ReceiptItem расширяет этот путь подтверждённой детализацией
 без второго движения денег. Этот контракт также работает без AI, OCR и внешних
 провайдеров.
+
+Obligation → ScheduledPayment → Settlement связывает будущий план с уже
+состоявшимся `debt_payment`. График не является бухгалтерской проводкой и не
+дублирует расход.

@@ -8,6 +8,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/accounts"
 	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
+	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/QahNaaRlN/grace/internal/receipts"
@@ -30,6 +31,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	categoriesHandler := categories.NewHandler(categories.NewRepository(pool))
 	financialEventsHandler := financialevents.NewHandler(financialevents.NewRepository(pool))
 	receiptsHandler := receipts.NewHandler(receipts.NewRepository(pool))
+	obligationsHandler := obligations.NewHandler(obligations.NewRepository(pool))
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -44,7 +46,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	router.Get("/api/meta", func(w http.ResponseWriter, _ *http.Request) {
-		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.3.0-dev"})
+		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.4.0-dev"})
 	})
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Get("/accounts", accountsHandler.List)
@@ -59,6 +61,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Get("/receipts", receiptsHandler.List)
 		router.Get("/receipts/{receiptId}", receiptsHandler.Get)
 		router.Post("/receipts", receiptsHandler.Create)
+		router.Get("/obligations", obligationsHandler.List)
+		router.Get("/obligations/{obligationId}", obligationsHandler.Get)
+		router.Post("/obligations", obligationsHandler.Create)
+		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
 	})
 
 	return &http.Server{

@@ -1,11 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
-import { Activity, ArrowDownRight, ArrowRightLeft, WalletCards } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Activity, ArrowDownRight, ArrowRightLeft, CalendarClock, Link2, WalletCards } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
+import { CreateObligationForm } from '@/features/create-obligation'
 import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
-import type { Account, FinancialEvent, Receipt } from '@/shared/api/types'
+import type { Account, FinancialEvent, Obligation, Receipt, ScheduledPayment } from '@/shared/api/types'
+import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import {
   Card,
   CardContent,
@@ -14,6 +19,13 @@ import {
   CardTitle,
 } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 
 const kindLabels: Record<FinancialEvent['kind'], string> = {
   purchase: 'Покупка',
@@ -48,6 +60,14 @@ async function loadEvents() {
 async function loadReceipts() {
   const { data } = await apiClient.GET('/api/v1/receipts')
   if (!data) throw new Error('Не удалось загрузить чеки')
+  return data.items
+}
+
+async function loadObligations(asOf: string) {
+  const { data } = await apiClient.GET('/api/v1/obligations', {
+    params: { query: { asOf } },
+  })
+  if (!data) throw new Error('Не удалось загрузить обязательства')
   return data.items
 }
 
@@ -157,13 +177,140 @@ function Events({ items, receipts }: { items: FinancialEvent[], receipts: Receip
   )
 }
 
+const obligationKindLabels: Record<Obligation['kind'], string> = {
+  loan: 'Кредит',
+  installment: 'Рассрочка',
+  other_fixed: 'Другое',
+}
+
+const paymentStatusLabels: Record<ScheduledPayment['status'], string> = {
+  planned: 'Запланирован',
+  overdue: 'Просрочен',
+  partially_paid: 'Частично оплачен',
+  paid: 'Оплачен',
+}
+
+function SettlementControl({
+  obligation,
+  payment,
+  events,
+  usedEventIDs,
+}: {
+  obligation: Obligation
+  payment: ScheduledPayment
+  events: FinancialEvent[]
+  usedEventIDs: Set<string>
+}) {
+  const queryClient = useQueryClient()
+  const [eventID, setEventID] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const candidates = events.filter((event) => {
+    const posting = event.postings[0]
+    return event.kind === 'debt_payment' && event.postings.length === 1 &&
+      !usedEventIDs.has(event.id) && posting?.currency === obligation.currency &&
+      posting.direction === 'debit' && posting.amountMinor <= payment.remainingMinor
+  })
+
+  if (payment.remainingMinor === 0) return null
+  if (candidates.length === 0) {
+    return <p className="mt-2 text-xs text-muted-foreground">Сначала создайте подходящий платёж по обязательству.</p>
+  }
+
+  async function settle() {
+    if (!eventID) return
+    setIsSubmitting(true)
+    const result = await apiClient.POST('/api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements', {
+      params: {
+        path: { obligationId: obligation.id, paymentId: payment.id },
+        header: { 'Idempotency-Key': createIdempotencyKey() },
+      },
+      body: { financialEventId: eventID },
+    })
+    setIsSubmitting(false)
+    if (result.error) {
+      toast.error(result.error.message)
+      return
+    }
+    setEventID('')
+    await queryClient.invalidateQueries({ queryKey: ['obligations'] })
+    toast.success('Фактический платёж связан с графиком')
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      <Select value={eventID} onValueChange={setEventID}>
+        <SelectTrigger className="min-w-56 flex-1"><SelectValue placeholder="Выберите фактический платёж" /></SelectTrigger>
+        <SelectContent>
+          {candidates.map((event) => (
+            <SelectItem key={event.id} value={event.id}>
+              {event.merchant || event.description || 'Платёж'} · {formatMoney(event.postings[0].amountMinor, event.postings[0].currency)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button type="button" variant="outline" disabled={!eventID || isSubmitting} onClick={settle}>
+        <Link2 aria-hidden="true" className="mr-1 size-4" />
+        {isSubmitting ? 'Связываю…' : 'Связать'}
+      </Button>
+    </div>
+  )
+}
+
+function Obligations({ items, events }: { items: Obligation[], events: FinancialEvent[] }) {
+  const usedEventIDs = new Set(items.flatMap((item) => item.payments.flatMap((payment) => payment.settlements.map((settlement) => settlement.financialEventId))))
+  const remainingByCurrency = items.reduce<Record<string, number>>((totals, item) => {
+    totals[item.currency] = (totals[item.currency] ?? 0) + item.remainingMinor
+    return totals
+  }, {})
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><CalendarClock className="size-5" /> Обязательства</CardTitle>
+        <CardDescription>
+          Осталось: {Object.entries(remainingByCurrency).map(([currency, amount]) => formatMoney(amount, currency)).join(' · ') || 'нет обязательств'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {items.length === 0 ? <p className="text-sm text-muted-foreground">Обязательств пока нет.</p> : items.map((item) => (
+          <article key={item.id} className="rounded-lg border p-4">
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="font-semibold">{item.name}</h3>
+                <p className="text-sm text-muted-foreground">{obligationKindLabels[item.kind]} · оплачено {formatMoney(item.paidMinor, item.currency)} из {formatMoney(item.totalMinor, item.currency)}</p>
+              </div>
+              <Badge variant={item.status === 'completed' ? 'secondary' : 'outline'}>{item.status === 'completed' ? 'Завершено' : `Осталось ${formatMoney(item.remainingMinor, item.currency)}`}</Badge>
+            </div>
+            <div className="space-y-3">
+              {item.payments.map((payment) => (
+                <div key={payment.id} className="rounded-md bg-muted/50 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <div>
+                      <span className="font-medium">{new Date(`${payment.dueOn}T00:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'UTC' })}</span>
+                      <span className="text-muted-foreground"> · осталось {formatMoney(payment.remainingMinor, item.currency)}</span>
+                    </div>
+                    <Badge variant={payment.isOverdue ? 'destructive' : 'secondary'}>{paymentStatusLabels[payment.status]}{payment.isOverdue && payment.status === 'partially_paid' ? ' · просрочен' : ''}</Badge>
+                  </div>
+                  <SettlementControl obligation={item} payment={payment} events={events} usedEventIDs={usedEventIDs} />
+                </div>
+              ))}
+            </div>
+          </article>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function HomePage() {
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: loadAccounts })
   const categories = useQuery({ queryKey: ['categories'], queryFn: loadCategories })
   const events = useQuery({ queryKey: ['financial-events'], queryFn: loadEvents })
   const receipts = useQuery({ queryKey: ['receipts'], queryFn: loadReceipts })
-  const error = accounts.error ?? categories.error ?? events.error ?? receipts.error
-  const isPending = accounts.isPending || categories.isPending || events.isPending || receipts.isPending
+  const asOf = new Date().toISOString().slice(0, 10)
+  const obligations = useQuery({ queryKey: ['obligations', asOf], queryFn: () => loadObligations(asOf) })
+  const error = accounts.error ?? categories.error ?? events.error ?? receipts.error ?? obligations.error
+  const isPending = accounts.isPending || categories.isPending || events.isPending || receipts.isPending || obligations.isPending
 
   return (
     <AppLayout>
@@ -192,6 +339,8 @@ export function HomePage() {
         {accounts.data && categories.data && (
           <CreateFinancialEventForm accounts={accounts.data} categories={categories.data} />
         )}
+        <CreateObligationForm />
+        {obligations.data && events.data && <Obligations items={obligations.data} events={events.data} />}
         {events.data && receipts.data && <Events items={events.data} receipts={receipts.data} />}
       </section>
     </AppLayout>

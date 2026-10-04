@@ -27,8 +27,9 @@ done
 database_url='postgres://grace:grace@postgres:5432/grace?sslmode=disable'
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 
-# Empty receipt schema rolls back safely and can be applied again.
-docker compose run --rm migrate -path=/migrations -database="$database_url" down 1
+# Empty receipt schema rolls back safely and can be applied again. Use the
+# explicit pre-receipt version so later migrations do not change this proof.
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 3
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 
 docker compose up -d --build api
@@ -127,7 +128,7 @@ concurrent_statuses="$(sort "$result_dir/a.status" "$result_dir/b.status" | tr '
 test "$concurrent_statuses" = "201 409 "
 
 # Confirmed receipt data makes schema rollback refuse instead of losing data.
-if docker compose run --rm migrate -path=/migrations -database="$database_url" down 1 >/dev/null 2>&1; then
+if docker compose run --rm migrate -path=/migrations -database="$database_url" goto 3 >/dev/null 2>&1; then
   echo "receipt migration rollback unexpectedly removed confirmed data" >&2
   exit 1
 fi

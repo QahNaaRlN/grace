@@ -1,11 +1,11 @@
 # SPEC-0003: обязательства и график платежей
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное указание owner «SPEC-0003 принимаю, приступай к реализации» в Codex-чате, 2026-10-04
-- Implementation branch: отсутствует
+- Implementation branch: codex/obligations
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат
@@ -278,9 +278,9 @@ git diff --check
 использовать автоматически назначенные host ports и очищать своё окружение
 через trap.
 
-## Открытые решения
+## Принятые решения owner
 
-До перехода спецификации в `accepted` owner должен явно подтвердить:
+Owner явно принял следующие решения:
 
 1. Первый контракт охватывает только обязательства с фиксированной общей
    суммой и конечным графиком. Credit card, recurring bills и подписки

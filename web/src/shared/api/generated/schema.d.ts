@@ -180,6 +180,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/obligations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listObligations"];
+        put?: never;
+        post: operations["createObligation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/obligations/{obligationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getObligation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createScheduledPaymentSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -325,6 +373,73 @@ export interface components {
             fiscalDocumentNumber?: string;
             items: components["schemas"]["CreateReceiptItem"][];
         };
+        ScheduledPaymentSettlement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            scheduledPaymentId: string;
+            /** Format: uuid */
+            financialEventId: string;
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ScheduledPayment: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            /** Format: date */
+            dueOn: string;
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: int64 */
+            paidMinor: number;
+            /** Format: int64 */
+            remainingMinor: number;
+            /** @enum {string} */
+            status: "planned" | "overdue" | "partially_paid" | "paid";
+            isOverdue: boolean;
+            settlements: components["schemas"]["ScheduledPaymentSettlement"][];
+        };
+        Obligation: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            kind: "loan" | "installment" | "other_fixed";
+            currency: string;
+            /** Format: int64 */
+            totalMinor: number;
+            /** Format: int64 */
+            paidMinor: number;
+            /** Format: int64 */
+            remainingMinor: number;
+            /** @enum {string} */
+            status: "active" | "completed";
+            /** Format: date-time */
+            createdAt: string;
+            payments: components["schemas"]["ScheduledPayment"][];
+        };
+        CreateScheduledPayment: {
+            /** Format: date */
+            dueOn: string;
+            /** Format: int64 */
+            amountMinor: number;
+        };
+        CreateObligation: {
+            name: string;
+            /** @enum {string} */
+            kind: "loan" | "installment" | "other_fixed";
+            currency: string;
+            /** Format: int64 */
+            totalMinor: number;
+            payments: components["schemas"]["CreateScheduledPayment"][];
+        };
+        CreateScheduledPaymentSettlement: {
+            /** Format: uuid */
+            financialEventId: string;
+        };
         Error: {
             code: string;
             message: string;
@@ -349,6 +464,24 @@ export interface components {
                 "application/json": components["schemas"]["Receipt"];
             };
         };
+        /** @description Fixed obligation with its derived schedule state */
+        Obligation: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Obligation"];
+            };
+        };
+        /** @description Link from one debt payment to one scheduled payment */
+        Settlement: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ScheduledPaymentSettlement"];
+            };
+        };
         /** @description Request violates the financial contract */
         ValidationError: {
             headers: {
@@ -367,9 +500,21 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description Requested resource was not found */
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
     };
     parameters: {
         IdempotencyKey: string;
+        /** @description Calendar date used to derive overdue state; defaults to current UTC date. */
+        AsOf: string;
+        ObligationId: string;
     };
     requestBodies: never;
     headers: never;
@@ -658,6 +803,101 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    listObligations: {
+        parameters: {
+            query?: {
+                /** @description Calendar date used to derive overdue state; defaults to current UTC date. */
+                asOf?: components["parameters"]["AsOf"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fixed obligations with derived schedule state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date */
+                        asOf: string;
+                        items: components["schemas"]["Obligation"][];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createObligation: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateObligation"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Obligation"];
+            201: components["responses"]["Obligation"];
+            400: components["responses"]["ValidationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getObligation: {
+        parameters: {
+            query?: {
+                /** @description Calendar date used to derive overdue state; defaults to current UTC date. */
+                asOf?: components["parameters"]["AsOf"];
+            };
+            header?: never;
+            path: {
+                obligationId: components["parameters"]["ObligationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Obligation"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createScheduledPaymentSettlement: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                obligationId: components["parameters"]["ObligationId"];
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateScheduledPaymentSettlement"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Settlement"];
+            201: components["responses"]["Settlement"];
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
         };
     };
 }

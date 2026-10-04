@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const CreateFinancialEventSchema = z
   .object({
-    kind: z.enum(['purchase', 'income', 'transfer']),
+    kind: z.enum(['purchase', 'income', 'transfer', 'debt_payment']),
     accountId: z.string().min(1, 'Выберите счёт'),
     destinationAccountId: z.string(),
     categoryId: z.string(),
@@ -29,4 +29,3 @@ export const CreateFinancialEventSchema = z
   })
 
 export type CreateFinancialEventValues = z.infer<typeof CreateFinancialEventSchema>
-
