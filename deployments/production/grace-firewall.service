@@ -1,0 +1,14 @@
+[Unit]
+Description=Grace additive host input firewall
+After=network-pre.target
+Before=network.target docker.service
+Wants=network-pre.target
+ConditionPathExists=/opt/grace/current/install-firewall.sh
+
+[Service]
+Type=oneshot
+ExecStart=/opt/grace/current/install-firewall.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

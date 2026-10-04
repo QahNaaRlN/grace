@@ -48,6 +48,9 @@ jobs:
       - name: Verify patch whitespace
         run: git diff --check
 
+      - name: Validate production deployment bundle
+        run: make test-production
+
   integration:
     name: PostgreSQL integration gates
     needs: quality

@@ -1,0 +1,11 @@
+{$GRACE_DOMAIN} {
+	encode zstd gzip
+
+	basic_auth {
+		grace {$GRACE_BASIC_AUTH_HASH}
+	}
+
+	@api path /api/*
+	reverse_proxy @api api:8080
+	reverse_proxy web:80
+}

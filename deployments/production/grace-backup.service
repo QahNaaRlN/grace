@@ -1,0 +1,14 @@
+[Unit]
+Description=Grace daily PostgreSQL backup
+Requires=docker.service
+After=docker.service
+ConditionPathExists=/opt/grace/current/backup.sh
+
+[Service]
+Type=oneshot
+User=grace-deploy
+Group=grace-deploy
+ExecStart=/opt/grace/current/backup.sh daily
+
+[Install]
+WantedBy=multi-user.target

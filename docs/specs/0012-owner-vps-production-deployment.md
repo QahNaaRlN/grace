@@ -150,8 +150,8 @@ network.
 
 ### Production database
 
-- отдельный сильный PostgreSQL password находится в `/opt/grace/.env` с mode
-  `0600`;
+- отдельный сильный PostgreSQL password находится в
+  `/opt/grace/shared/secrets/postgres_password` с mode `0600`;
 - database port не публикуется;
 - persistent volume не удаляется командами deploy/rollback;
 - production migration source не создаёт development account.
@@ -165,7 +165,8 @@ Implementation должна выбрать и документировать б�
 ### Backup
 
 - перед первой migration и каждым release создаётся custom-format `pg_dump`;
-- backup path: `/opt/grace/backups/<UTC timestamp>-<release SHA>.dump`;
+- pre-release backup path:
+  `/opt/grace/backups/pre-release-<UTC timestamp>-sha-<release SHA>.dump`;
 - permissions не шире `0600`;
 - минимум один restore drill выполняется в отдельную временную database;
 - retention первого этапа: последние 7 daily backups и все manual pre-release

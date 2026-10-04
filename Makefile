@@ -1,4 +1,4 @@
-.PHONY: dev down logs test test-go test-web test-jev-eval test-integration build generate-api
+.PHONY: dev down logs test test-go test-web test-jev-eval test-integration test-production build generate-api
 
 dev:
 	docker compose up --build
@@ -31,6 +31,9 @@ test-integration:
 	./scripts/test-assistant-tools.sh
 	./scripts/test-income-relative-periods.sh
 	./scripts/test-assistant-router.sh
+
+test-production:
+	./scripts/test-production-deployment.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

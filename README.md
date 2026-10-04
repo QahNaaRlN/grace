@@ -64,6 +64,9 @@ Delivery публикует versioned API/Web images в GHCR; это публи�
 не автоматический production deployment. Подробности:
 [docs/github-delivery.md](docs/github-delivery.md).
 
+Owner-only deployment на `graceapp.ru`, ручной release, backup и rollback
+описаны в [docs/production-deployment.md](docs/production-deployment.md).
+
 После изменения api/openapi.yaml обновите клиентские типы:
 
     make generate-api
