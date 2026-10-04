@@ -1,10 +1,10 @@
 # SPEC-0008: production read-only router с Jev
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: owner явно поручил приступить к реализации 2026-10-05
 - Specification branch: `codex/spec-0008-read-only-router`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
@@ -446,19 +446,20 @@ go run ./cmd/jev-eval run \
   --report <path-outside-repository>
 ```
 
-## Открытые решения
+## Принятые решения owner
 
-1. Принять ли threshold `0.70` и RU coverage floor `0.65` для первого
-   read-only production среза.
-2. Принять ли четыре auto-executable комбинации и обязательный clarify для
-   period/cash/named-category/explicit-modifier cases.
-3. Принять ли публичный single-turn endpoint сейчас, оставив React UI
-   отдельным этапом.
-4. Принять ли 5-second total deadline и максимум два attempts для `429`/`529`.
-5. Принять ли exact production model `jev-1.13.0` без aliases и env override.
-6. Достаточен ли minimum 64 RU + 8 EN synthetic cases для первого low-risk
-   read-only gate.
-7. Принимает ли owner описанный minimal production data flow в TypeSafe при
-   default-off configuration и отсутствии raw logging.
-8. Должен ли response раскрывать route/confidence клиенту либо оставить их
-   server-only и вернуть только status/data/clarificationCode.
+Owner поручил приступить к реализации 2026-10-05 и тем самым явно принял весь
+контракт этой спецификации, включая:
+
+1. threshold `0.70` и RU coverage floor `0.65`;
+2. четыре auto-executable комбинации и обязательный clarify для
+   period/cash/named-category/explicit-modifier cases;
+3. публичный single-turn endpoint сейчас и отдельный будущий этап для React UI;
+4. 5-second total deadline и максимум два attempts для `429`/`529`;
+5. exact production model `jev-1.13.0` без aliases и env override;
+6. minimum 64 RU + 8 EN synthetic cases для первого low-risk read-only gate;
+7. minimal production data flow в TypeSafe при default-off configuration,
+   отсутствии raw logging и отдельном privacy/legal gate до расширения rollout
+   за пределы owner;
+8. раскрытие выбранных `route` и `confidence` в public response для
+   наблюдаемости первого production-среза.
