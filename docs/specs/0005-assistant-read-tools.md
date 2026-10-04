@@ -1,12 +1,12 @@
 # SPEC-0005: read-only инструменты ассистента
 
-- Статус: implementing
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: codex/assistant-read-tools
-- Implementation commit: отсутствует
+- Implementation commit: `f7fe016`
 
 ## Проблема и пользовательский результат
 
@@ -229,29 +229,29 @@ Rollback удаляет `internal/assistant` и его тестовую комп
 
 ## Критерии приёмки
 
-- [ ] Реестр возвращает пять стабильных read-only definitions в принятом
+- [x] Реестр возвращает пять стабильных read-only definitions в принятом
       порядке.
-- [ ] Каждая definition имеет строгую JSON Schema с
+- [x] Каждая definition имеет строгую JSON Schema с
       `additionalProperties=false`.
-- [ ] Unknown tool и все классы invalid arguments отклоняются до dependency.
-- [ ] `get_accounts` возвращает canonical computed balances.
-- [ ] `get_period_summary` сохраняет `[from,to)`, timezone и multi-currency
+- [x] Unknown tool и все классы invalid arguments отклоняются до dependency.
+- [x] `get_accounts` возвращает canonical computed balances.
+- [x] `get_period_summary` сохраняет `[from,to)`, timezone и multi-currency
       семантику analytics.
-- [ ] `get_cash_position` возвращает canonical current liquid position и
+- [x] `get_cash_position` возвращает canonical current liquid position и
       commitments.
-- [ ] `get_obligations` использует canonical schedule state для явного/default
+- [x] `get_obligations` использует canonical schedule state для явного/default
       `asOf`.
-- [ ] `get_receipts` возвращает только подтверждённые receipts и соблюдает
+- [x] `get_receipts` возвращает только подтверждённые receipts и соблюдает
       limit 1..100.
-- [ ] Tool results сохраняют integer minor units и явную валюту.
-- [ ] Dependency failure/cancellation имеют стабильные error codes и не
+- [x] Tool results сохраняют integer minor units и явную валюту.
+- [x] Dependency failure/cancellation имеют стабильные error codes и не
       возвращают partial data.
-- [ ] Ни один tool call не создаёт и не изменяет финансовые записи.
-- [ ] `internal/assistant` не содержит SQL и не импортируется финансовыми
+- [x] Ни один tool call не создаёт и не изменяет финансовые записи.
+- [x] `internal/assistant` не содержит SQL и не импортируется финансовыми
       модулями.
-- [ ] Публичный OpenAPI и React не меняются.
-- [ ] Production dependency graph не содержит provider SDK/LLM client.
-- [ ] `make test`, предметный PostgreSQL integration test, `go vet` и
+- [x] Публичный OpenAPI и React не меняются.
+- [x] Production dependency graph не содержит provider SDK/LLM client.
+- [x] `make test`, предметный PostgreSQL integration test, `go vet` и
       `git diff --check` проходят в implementation worktree.
 - [ ] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.
