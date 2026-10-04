@@ -180,6 +180,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analytics/period-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPeriodSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/cash-position": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCashPosition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/obligations": {
         parameters: {
             query?: never;
@@ -294,6 +326,81 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             postings: components["schemas"]["Posting"][];
+        };
+        ExpenseCategorySummary: {
+            categoryId: string | null;
+            categoryName: string;
+            /** Format: int64 */
+            purchasesMinor: number;
+            /** Format: int64 */
+            refundsMinor: number;
+            /** Format: int64 */
+            netExpenseMinor: number;
+        };
+        CurrencyPeriodSummary: {
+            currency: string;
+            /** Format: int64 */
+            openingBalanceMinor: number;
+            /** Format: int64 */
+            closingBalanceMinor: number;
+            /** Format: int64 */
+            incomeMinor: number;
+            /** Format: int64 */
+            purchasesMinor: number;
+            /** Format: int64 */
+            refundsMinor: number;
+            /** Format: int64 */
+            debtPaymentsMinor: number;
+            /** Format: int64 */
+            netExternalCashFlowMinor: number;
+            /** Format: int64 */
+            internalTransferVolumeMinor: number;
+            expenseCategories: components["schemas"]["ExpenseCategorySummary"][];
+        };
+        PeriodSummary: {
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            currencies: components["schemas"]["CurrencyPeriodSummary"][];
+        };
+        CashScheduledPayment: {
+            /** Format: uuid */
+            scheduledPaymentId: string;
+            /** Format: uuid */
+            obligationId: string;
+            obligationName: string;
+            /** Format: date */
+            dueOn: string;
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: int64 */
+            paidMinor: number;
+            /** Format: int64 */
+            remainingMinor: number;
+            /** @enum {string} */
+            timing: "overdue" | "upcoming";
+        };
+        CurrencyCashPosition: {
+            currency: string;
+            /** Format: int64 */
+            liquidBalanceMinor: number;
+            /** Format: int64 */
+            overdueObligationsMinor: number;
+            /** Format: int64 */
+            upcomingObligationsMinor: number;
+            /** Format: int64 */
+            obligationsThroughMinor: number;
+            /** Format: int64 */
+            availableAfterObligationsMinor: number;
+            scheduledPayments: components["schemas"]["CashScheduledPayment"][];
+        };
+        CashPosition: {
+            /** Format: date */
+            asOf: string;
+            /** Format: date */
+            through: string;
+            currencies: components["schemas"]["CurrencyCashPosition"][];
         };
         CreateSingleAccountEvent: {
             /** Format: uuid */
@@ -803,6 +910,58 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    getPeriodSummary: {
+        parameters: {
+            query: {
+                /** @description Inclusive RFC 3339 boundary with an explicit UTC offset. */
+                from: string;
+                /** @description Exclusive RFC 3339 boundary with an explicit UTC offset. */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual cash-flow and balance summary, separated by currency */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodSummary"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getCashPosition: {
+        parameters: {
+            query: {
+                /** @description Calendar date used to derive overdue state; defaults to current UTC date. */
+                asOf?: components["parameters"]["AsOf"];
+                /** @description Inclusive calendar horizon for outstanding scheduled payments. */
+                through: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current liquid balance less known outstanding obligations */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashPosition"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
         };
     };
     listObligations: {

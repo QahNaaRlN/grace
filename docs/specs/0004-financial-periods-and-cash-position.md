@@ -1,11 +1,11 @@
 # SPEC-0004: денежные периоды и доступность денег
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
-- Implementation branch: отсутствует
+- Implementation branch: codex/financial-period-summary
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат
