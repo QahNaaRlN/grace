@@ -14,8 +14,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const dateLayout = "2006-01-02"
-
 type Handler struct{ repo *Repository }
 
 func NewHandler(repo *Repository) *Handler { return &Handler{repo: repo} }
@@ -138,16 +136,12 @@ func (handler *Handler) CreateSettlement(w http.ResponseWriter, r *http.Request)
 }
 
 func requestAsOf(w http.ResponseWriter, r *http.Request) (string, bool) {
-	raw := strings.TrimSpace(r.URL.Query().Get("asOf"))
-	if raw == "" {
-		return time.Now().UTC().Format(dateLayout), true
-	}
-	parsed, err := time.Parse(dateLayout, raw)
-	if err != nil || parsed.Format(dateLayout) != raw {
+	asOf, err := ParseAsOf(r.URL.Query().Get("asOf"), time.Now())
+	if err != nil {
 		web.WriteError(w, http.StatusUnprocessableEntity, "validation_error", "asOf должен быть календарной датой YYYY-MM-DD.")
 		return "", false
 	}
-	return raw, true
+	return asOf, true
 }
 
 func requestIdempotencyKey(w http.ResponseWriter, r *http.Request) (string, bool) {

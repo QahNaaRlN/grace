@@ -1,11 +1,11 @@
 # SPEC-0005: read-only инструменты ассистента
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
-- Implementation branch: отсутствует
+- Implementation branch: codex/assistant-read-tools
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат
