@@ -7,9 +7,9 @@ import (
 
 	"github.com/QahNaaRlN/grace/internal/accounts"
 	"github.com/QahNaaRlN/grace/internal/categories"
+	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
-	"github.com/QahNaaRlN/grace/internal/transactions"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,12 +22,12 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: cfg.CORSOrigins,
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key"},
 	}))
 
 	accountsHandler := accounts.NewHandler(accounts.NewRepository(pool))
 	categoriesHandler := categories.NewHandler(categories.NewRepository(pool))
-	transactionsHandler := transactions.NewHandler(transactions.NewRepository(pool))
+	financialEventsHandler := financialevents.NewHandler(financialevents.NewRepository(pool))
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -42,14 +42,18 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	router.Get("/api/meta", func(w http.ResponseWriter, _ *http.Request) {
-		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.1.0-dev"})
+		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.2.0-dev"})
 	})
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Get("/accounts", accountsHandler.List)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Get("/categories", categoriesHandler.List)
-		router.Get("/transactions", transactionsHandler.List)
-		router.Post("/transactions", transactionsHandler.Create)
+		router.Get("/financial-events", financialEventsHandler.List)
+		router.Post("/financial-events/purchases", financialEventsHandler.CreatePurchase)
+		router.Post("/financial-events/incomes", financialEventsHandler.CreateIncome)
+		router.Post("/financial-events/transfers", financialEventsHandler.CreateTransfer)
+		router.Post("/financial-events/refunds", financialEventsHandler.CreateRefund)
+		router.Post("/financial-events/debt-payments", financialEventsHandler.CreateDebtPayment)
 	})
 
 	return &http.Server{

@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.1.0
-  description: Stable boundary for Grace clients. Monetary values use minor currency units.
+  version: 0.2.0
+  description: Financial events and postings. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
 paths:
@@ -14,14 +14,13 @@ paths:
           description: Service metadata
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Meta'
+              schema: { $ref: '#/components/schemas/Meta' }
   /api/v1/accounts:
     get:
       operationId: listAccounts
       responses:
         '200':
-          description: Accounts
+          description: Accounts with balances derived from postings
           content:
             application/json:
               schema:
@@ -30,25 +29,21 @@ paths:
                 properties:
                   items:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Account'
+                    items: { $ref: '#/components/schemas/Account' }
     post:
       operationId: createAccount
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAccount'
+            schema: { $ref: '#/components/schemas/CreateAccount' }
       responses:
         '201':
           description: Created account
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-        '422':
-          $ref: '#/components/responses/ValidationError'
+              schema: { $ref: '#/components/schemas/Account' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/categories:
     get:
       operationId: listCategories
@@ -63,14 +58,13 @@ paths:
                 properties:
                   items:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Category'
-  /api/v1/transactions:
+                    items: { $ref: '#/components/schemas/Category' }
+  /api/v1/financial-events:
     get:
-      operationId: listTransactions
+      operationId: listFinancialEvents
       responses:
         '200':
-          description: Recent transactions
+          description: Recent financial events with postings
           content:
             application/json:
               schema:
@@ -79,33 +73,85 @@ paths:
                 properties:
                   items:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Transaction'
+                    items: { $ref: '#/components/schemas/FinancialEvent' }
+  /api/v1/financial-events/purchases:
     post:
-      operationId: createTransaction
+      operationId: createPurchase
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTransaction'
-      responses:
-        '201':
-          description: Created transaction
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Transaction'
-        '422':
-          $ref: '#/components/responses/ValidationError'
+            schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /api/v1/financial-events/incomes:
+    post:
+      operationId: createIncome
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /api/v1/financial-events/debt-payments:
+    post:
+      operationId: createDebtPayment
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /api/v1/financial-events/transfers:
+    post:
+      operationId: createTransfer
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTransfer' }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /api/v1/financial-events/refunds:
+    post:
+      operationId: createRefund
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRefund' }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
 components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 160 }
   responses:
-    ValidationError:
-      description: The request violates the public contract
+    Event:
+      description: Created event or result of an idempotent retry
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+          schema: { $ref: '#/components/schemas/FinancialEvent' }
+    ValidationError:
+      description: Request violates the financial contract
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Idempotency key was used with another payload
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
     Meta:
       type: object
@@ -119,9 +165,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-        type:
-          type: string
-          enum: [debit, credit, installment, cash]
+        type: { type: string, enum: [debit, credit, installment, cash] }
         currency: { type: string, minLength: 3, maxLength: 3 }
         balanceMinor: { type: integer, format: int64 }
         createdAt: { type: string, format: date-time }
@@ -131,9 +175,7 @@ components:
       required: [name, type, currency, openingBalanceMinor]
       properties:
         name: { type: string, minLength: 1 }
-        type:
-          type: string
-          enum: [debit, credit, installment, cash]
+        type: { type: string, enum: [debit, credit, installment, cash] }
         currency: { type: string, minLength: 3, maxLength: 3 }
         openingBalanceMinor: { type: integer, format: int64 }
     Category:
@@ -142,80 +184,64 @@ components:
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-        kind:
-          type: string
-          enum: [expense, income]
+        kind: { type: string, enum: [expense, income] }
         createdAt: { type: string, format: date-time }
-    Transaction:
+    Posting:
       type: object
-      required:
-        - id
-        - accountId
-        - accountName
-        - amountMinor
-        - currency
-        - direction
-        - kind
-        - source
-        - merchant
-        - description
-        - occurredAt
-        - createdAt
+      required: [id, accountId, accountName, direction, amountMinor, currency]
       properties:
         id: { type: string, format: uuid }
         accountId: { type: string, format: uuid }
         accountName: { type: string }
-        categoryId:
-          oneOf:
-            - { type: string, format: uuid }
-            - { type: 'null' }
-        categoryName:
-          oneOf:
-            - { type: string }
-            - { type: 'null' }
+        direction: { type: string, enum: [credit, debit] }
         amountMinor: { type: integer, format: int64, minimum: 1 }
         currency: { type: string }
-        direction:
-          type: string
-          enum: [income, expense]
-        kind:
-          type: string
-          enum: [purchase, income_received, debt_payment, refund]
-        source:
-          type: string
-          enum: [manual, bank_import, receipt]
+    FinancialEvent:
+      type: object
+      required: [id, kind, source, merchant, description, occurredAt, createdAt, postings]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] }
+        source: { type: string, enum: [manual, bank_import, receipt] }
+        categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
+        categoryName: { oneOf: [{ type: string }, { type: 'null' }] }
+        originalEventId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         merchant: { type: string }
         description: { type: string }
         occurredAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
-    CreateTransaction:
+        postings:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Posting' }
+    CreateSingleAccountEvent:
       type: object
       additionalProperties: false
-      required:
-        - accountId
-        - amountMinor
-        - direction
-        - kind
-        - source
-        - merchant
-        - description
-        - occurredAt
+      required: [accountId, amountMinor, merchant, description, occurredAt]
       properties:
         accountId: { type: string, format: uuid }
-        categoryId:
-          oneOf:
-            - { type: string, format: uuid }
-            - { type: 'null' }
+        categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         amountMinor: { type: integer, format: int64, minimum: 1 }
-        direction:
-          type: string
-          enum: [income, expense]
-        kind:
-          type: string
-          enum: [purchase, income_received, debt_payment, refund]
-        source:
-          type: string
-          enum: [manual, bank_import, receipt]
+        merchant: { type: string }
+        description: { type: string }
+        occurredAt: { type: string, format: date-time }
+    CreateTransfer:
+      type: object
+      additionalProperties: false
+      required: [sourceAccountId, destinationAccountId, amountMinor, description, occurredAt]
+      properties:
+        sourceAccountId: { type: string, format: uuid }
+        destinationAccountId: { type: string, format: uuid }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        description: { type: string }
+        occurredAt: { type: string, format: date-time }
+    CreateRefund:
+      type: object
+      additionalProperties: false
+      required: [originalEventId, amountMinor, merchant, description, occurredAt]
+      properties:
+        originalEventId: { type: string, format: uuid }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
         merchant: { type: string }
         description: { type: string }
         occurredAt: { type: string, format: date-time }

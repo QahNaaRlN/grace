@@ -36,8 +36,22 @@ func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: po
 
 func (repo *Repository) List(ctx context.Context) ([]Account, error) {
 	rows, err := repo.pool.Query(ctx, `
-		SELECT id::text, name, type::text, currency, balance_minor, created_at
-		FROM accounts ORDER BY created_at, name`)
+		SELECT
+			a.id::text,
+			a.name,
+			a.type::text,
+			a.currency,
+			a.opening_balance_minor + COALESCE(SUM(
+				CASE p.direction
+					WHEN 'credit' THEN p.amount_minor
+					ELSE -p.amount_minor
+				END
+			), 0) AS balance_minor,
+			a.created_at
+		FROM accounts a
+		LEFT JOIN postings p ON p.account_id = a.id
+		GROUP BY a.id
+		ORDER BY a.created_at, a.name`)
 	if err != nil {
 		return nil, fmt.Errorf("list accounts: %w", err)
 	}
@@ -57,9 +71,9 @@ func (repo *Repository) List(ctx context.Context) ([]Account, error) {
 func (repo *Repository) Create(ctx context.Context, request CreateRequest) (Account, error) {
 	var item Account
 	err := repo.pool.QueryRow(ctx, `
-		INSERT INTO accounts (name, type, currency, balance_minor)
+		INSERT INTO accounts (name, type, currency, opening_balance_minor)
 		VALUES ($1, $2, $3, $4)
-		RETURNING id::text, name, type::text, currency, balance_minor, created_at`,
+		RETURNING id::text, name, type::text, currency, opening_balance_minor, created_at`,
 		request.Name, request.Type, request.Currency, request.OpeningBalanceMinor,
 	).Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.CreatedAt)
 	if err != nil {
