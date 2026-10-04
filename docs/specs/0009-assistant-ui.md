@@ -1,6 +1,6 @@
 # SPEC-0009: single-turn интерфейс read-only ассистента
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
@@ -245,8 +245,8 @@ focus не перемещается неожиданно, result announcement д
 - [x] `make test` включает Web tests, ESLint, TypeScript и production build.
 - [x] Visual evidence подтверждает layout и keyboard flow при 390 px и 1280
       px.
-- [ ] `make test`, `make test-integration` и `git diff --check` прошли до
-      merge; после merge будут повторены до статуса `integrated`.
+- [x] `make test`, `make test-integration` и `git diff --check` прошли до и
+      после merge.
 
 ## Исполняемые проверки
 

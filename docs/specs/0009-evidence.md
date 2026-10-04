@@ -1,8 +1,10 @@
 # SPEC-0009 — verification evidence
 
-- Состояние: `VERIFIED`
+- Состояние: `INTEGRATED`
 - Ветка: `codex/assistant-ui`
 - Implementation commit: `37e35ba`
+- Verification commit: `3975de0`
+- Integration merge: `d64da1e`
 - Дата проверки: 2026-10-05
 
 ## Реализованный контракт
@@ -88,5 +90,18 @@ Viewport после проверки сброшен, временный Vite ser
 | `git diff --check` | PASS |
 
 Vite сохранил существующее предупреждение о chunk больше 500 kB; production
-build успешен. Post-merge gates будут записаны после integration merge; до
-этого SPEC-0009 имеет статус `verified`, а не `integrated`.
+build успешен.
+
+## Post-merge verification
+
+После integration merge `d64da1e` в `main` повторно прошли:
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | PASS: Go, 16 Web tests, ESLint, TypeScript/Vite, Jev offline |
+| `make test-integration` | PASS: SPEC-0001..0005, 0007 и 0008 |
+| `go vet ./cmd/... ./internal/...` | PASS |
+| `git diff --check` | PASS |
+
+Implementation commit достижим из `main`; SPEC-0009 имеет состояние
+`INTEGRATED`.
