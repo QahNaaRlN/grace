@@ -9,8 +9,8 @@
   отдельным решением owner 2026-10-05 потребовал сохранить существующий
   WireGuard и публичный UDP 51820
 - Specification branch: `codex/owner-vps-production`
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/owner-vps-production-implementation`
+- Implementation commit: `3a0c436`
 
 ## Проблема и пользовательский результат
 
