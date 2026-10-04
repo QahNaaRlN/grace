@@ -1,10 +1,10 @@
 # SPEC-0004: денежные периоды и доступность денег
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
-- Acceptance record: отсутствует
+- Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 
@@ -287,9 +287,7 @@ git diff --check
 `test-analytics.sh` должен создавать уникальный compose-project, использовать
 автоматически назначенные host ports и очищать своё окружение через trap.
 
-## Открытые решения
-
-До перехода спецификации в `accepted` owner должен явно подтвердить:
+## Принятые решения owner
 
 1. Фактический period summary и текущий cash position являются двумя разными
    read-only endpoints, а не одним смешанным показателем.
