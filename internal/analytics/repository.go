@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -20,9 +21,23 @@ func (repo *Repository) PeriodSummary(ctx context.Context, from, to time.Time) (
 		return PeriodSummary{}, fmt.Errorf("begin period summary: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	result, err := periodSummary(ctx, tx, from, to)
+	if err != nil {
+		return PeriodSummary{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return PeriodSummary{}, fmt.Errorf("commit period summary snapshot: %w", err)
+	}
+	return result, nil
+}
 
+type periodQuerier interface {
+	Query(context.Context, string, ...any) (pgx.Rows, error)
+}
+
+func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (PeriodSummary, error) {
 	byCurrency := make(map[string]*CurrencyPeriodSummary)
-	rows, err := tx.Query(ctx, `
+	rows, err := db.Query(ctx, `
 		WITH account_opening AS (
 			SELECT currency, SUM(opening_balance_minor)::bigint AS opening_minor
 			FROM accounts GROUP BY currency
@@ -63,7 +78,7 @@ func (repo *Repository) PeriodSummary(ctx context.Context, from, to time.Time) (
 	}
 	rows.Close()
 
-	rows, err = tx.Query(ctx, `
+	rows, err = db.Query(ctx, `
 		SELECT p.currency,
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'income_received' AND p.direction = 'credit'), 0)::bigint,
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'purchase' AND p.direction = 'debit'), 0)::bigint,
@@ -101,7 +116,7 @@ func (repo *Repository) PeriodSummary(ctx context.Context, from, to time.Time) (
 	}
 	rows.Close()
 
-	rows, err = tx.Query(ctx, `
+	rows, err = db.Query(ctx, `
 		SELECT p.currency, e.category_id::text, COALESCE(c.name, 'Без категории'),
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'purchase'), 0)::bigint,
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'refund'), 0)::bigint
@@ -136,15 +151,87 @@ func (repo *Repository) PeriodSummary(ctx context.Context, from, to time.Time) (
 	}
 	rows.Close()
 
-	if err := tx.Commit(ctx); err != nil {
-		return PeriodSummary{}, fmt.Errorf("commit period summary snapshot: %w", err)
-	}
 	currencies := make([]CurrencyPeriodSummary, 0, len(byCurrency))
 	keys := sortedKeys(byCurrency)
 	for _, currency := range keys {
 		currencies = append(currencies, *byCurrency[currency])
 	}
 	return PeriodSummary{From: from, To: to, Currencies: currencies}, nil
+}
+
+func (repo *Repository) IncomeRelativePeriod(ctx context.Context, asOf time.Time, categoryID *string) (IncomeRelativePeriod, error) {
+	tx, err := repo.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return IncomeRelativePeriod{}, fmt.Errorf("begin income relative period: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if categoryID != nil {
+		var kind string
+		err := tx.QueryRow(ctx, "SELECT kind::text FROM categories WHERE id = $1", *categoryID).Scan(&kind)
+		if errors.Is(err, pgx.ErrNoRows) || (err == nil && kind != "income") {
+			return IncomeRelativePeriod{}, &IncomeAnchorError{Code: CodeInvalidAnchorCategory, Err: errors.New("category must exist and have income kind")}
+		}
+		if err != nil {
+			return IncomeRelativePeriod{}, fmt.Errorf("validate income anchor category: %w", err)
+		}
+	}
+
+	lowerBound := asOf.AddDate(-5, 0, 0)
+	anchor := IncomeAnchor{Postings: make([]IncomeAnchorPosting, 0)}
+	var categoryArgument any
+	if categoryID != nil {
+		categoryArgument = *categoryID
+	}
+	err = tx.QueryRow(ctx, `
+		SELECT e.id::text, e.category_id::text, c.name, e.occurred_at
+		FROM financial_events e
+		LEFT JOIN categories c ON c.id = e.category_id
+		WHERE e.kind = 'income_received'
+			AND e.occurred_at >= $1 AND e.occurred_at < $2
+			AND ($3::uuid IS NULL OR e.category_id = $3::uuid)
+		ORDER BY e.occurred_at DESC, e.created_at DESC, e.id DESC
+		LIMIT 1`, lowerBound, asOf, categoryArgument).Scan(
+		&anchor.EventID, &anchor.CategoryID, &anchor.CategoryName, &anchor.OccurredAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return IncomeRelativePeriod{}, &IncomeAnchorError{Code: CodeAnchorNotFound, Err: errors.New("no confirmed income in the five-year lookup window")}
+	}
+	if err != nil {
+		return IncomeRelativePeriod{}, fmt.Errorf("find income anchor: %w", err)
+	}
+
+	rows, err := tx.Query(ctx, `
+		SELECT p.account_id::text, a.name, p.amount_minor, p.currency
+		FROM postings p
+		JOIN accounts a ON a.id = p.account_id
+		WHERE p.financial_event_id = $1 AND p.direction = 'credit'
+		ORDER BY p.created_at, p.id`, anchor.EventID)
+	if err != nil {
+		return IncomeRelativePeriod{}, fmt.Errorf("query income anchor postings: %w", err)
+	}
+	for rows.Next() {
+		var posting IncomeAnchorPosting
+		if err := rows.Scan(&posting.AccountID, &posting.AccountName, &posting.AmountMinor, &posting.Currency); err != nil {
+			rows.Close()
+			return IncomeRelativePeriod{}, fmt.Errorf("scan income anchor posting: %w", err)
+		}
+		anchor.Postings = append(anchor.Postings, posting)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return IncomeRelativePeriod{}, fmt.Errorf("read income anchor postings: %w", err)
+	}
+	rows.Close()
+
+	summary, err := periodSummary(ctx, tx, anchor.OccurredAt, asOf)
+	if err != nil {
+		return IncomeRelativePeriod{}, fmt.Errorf("summarize income relative period: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return IncomeRelativePeriod{}, fmt.Errorf("commit income relative period snapshot: %w", err)
+	}
+	return IncomeRelativePeriod{Anchor: anchor, Summary: summary}, nil
 }
 
 func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) (CashPosition, error) {

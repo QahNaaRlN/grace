@@ -8,6 +8,26 @@ type PeriodSummary struct {
 	Currencies []CurrencyPeriodSummary `json:"currencies"`
 }
 
+type IncomeAnchorPosting struct {
+	AccountID   string `json:"accountId"`
+	AccountName string `json:"accountName"`
+	AmountMinor int64  `json:"amountMinor"`
+	Currency    string `json:"currency"`
+}
+
+type IncomeAnchor struct {
+	EventID      string                `json:"eventId"`
+	CategoryID   *string               `json:"categoryId"`
+	CategoryName *string               `json:"categoryName"`
+	OccurredAt   time.Time             `json:"occurredAt"`
+	Postings     []IncomeAnchorPosting `json:"postings"`
+}
+
+type IncomeRelativePeriod struct {
+	Anchor  IncomeAnchor  `json:"anchor"`
+	Summary PeriodSummary `json:"summary"`
+}
+
 type CurrencyPeriodSummary struct {
 	Currency                    string                   `json:"currency"`
 	OpeningBalanceMinor         int64                    `json:"openingBalanceMinor"`

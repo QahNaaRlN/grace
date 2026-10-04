@@ -1,13 +1,14 @@
 # SPEC-0007: периоды относительно подтверждённого дохода
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-05
 - Specification branch: `codex/spec-0007-event-relative-periods`
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/income-relative-periods`
+- Implementation commit: `a351d32`
+- Verification date: 2026-10-05
 
 ## Проблема и пользовательский результат
 
@@ -206,26 +207,26 @@ React не меняется. Создание и выбор income-катего�
 
 ## Критерии приёмки
 
-- [ ] Последний `income_received` до `asOf` находится детерминированно.
-- [ ] Точная income-категория ограничивает anchor; expense/unknown category
+- [x] Последний `income_received` до `asOf` находится детерминированно.
+- [x] Точная income-категория ограничивает anchor; expense/unknown category
       отклоняется.
-- [ ] Без категории учитываются категоризированные и некатегоризированные
+- [x] Без категории учитываются категоризированные и некатегоризированные
       доходы.
-- [ ] Одинаковые timestamps разрешаются через принятый стабильный tie-breaker.
-- [ ] Summary использует `[anchor.occurredAt, asOf)` и включает anchor income.
-- [ ] Anchor и summary вычисляются в одном согласованном snapshot.
-- [ ] Multi-currency результаты не смешиваются и сохраняют integer minor
+- [x] Одинаковые timestamps разрешаются через принятый стабильный tie-breaker.
+- [x] Summary использует `[anchor.occurredAt, asOf)` и включает anchor income.
+- [x] Anchor и summary вычисляются в одном согласованном snapshot.
+- [x] Multi-currency результаты не смешиваются и сохраняют integer minor
       units.
-- [ ] Отсутствие anchor возвращает typed error без guessed date или partial
+- [x] Отсутствие anchor возвращает typed error без guessed date или partial
       result.
-- [ ] Assistant registry содержит ровно шесть tools в принятом порядке, а
+- [x] Assistant registry содержит ровно шесть tools в принятом порядке, а
       новый tool имеет строгую JSON Schema.
-- [ ] Invalid tool arguments отклоняются до вызова analytics dependency.
-- [ ] Capability не создаёт и не изменяет финансовые данные.
-- [ ] Provider/Jev не появляется в production dependency graph.
-- [ ] `api/openapi.yaml`, migrations и React не изменены.
-- [ ] Unit, PostgreSQL integration и dependency-direction tests проходят.
-- [ ] `make test`, `make test-integration`, `go vet ./cmd/... ./internal/...`
+- [x] Invalid tool arguments отклоняются до вызова analytics dependency.
+- [x] Capability не создаёт и не изменяет финансовые данные.
+- [x] Provider/Jev не появляется в production dependency graph.
+- [x] `api/openapi.yaml`, migrations и React не изменены.
+- [x] Unit, PostgreSQL integration и dependency-direction tests проходят.
+- [x] `make test`, `make test-integration`, `go vet ./cmd/... ./internal/...`
       и `git diff --check` проходят в implementation worktree и после merge.
 
 ## Исполняемые проверки
