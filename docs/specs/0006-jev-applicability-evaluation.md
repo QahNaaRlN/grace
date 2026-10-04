@@ -1,12 +1,13 @@
 # SPEC-0006: оценка применимости Jev
 
-- Статус: implementing
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное согласие owner в Codex-чате, 2026-10-04
 - Implementation branch: `codex/jev-evaluation-harness`
-- Implementation commit: `cc84b79`
+- Implementation commit: `3f12d8c`
+- Verification date: 2026-10-05
 
 ## Проблема и пользовательский результат
 
@@ -143,8 +144,8 @@ Evaluator использует серверный HTTP endpoint TypeSafe
 считаются provider protocol error.
 
 Development-only evaluator находится в `cmd/jev-eval`, а его код — в
-`internal/jeveval`. CLI предоставляет команды `validate` и `run`; `cmd/api` не
-импортирует evaluator.
+`internal/jeveval`. CLI предоставляет команды `validate`, `run` и `analyze`;
+`cmd/api` не импортирует evaluator.
 
 ## Данные, миграция и rollback
 
@@ -200,7 +201,7 @@ production runtime не меняются.
       fixtures, отчёте и логах.
 - [x] Production API dependency graph не содержит TypeSafe adapter.
 - [x] `api/openapi.yaml`, migrations и React не изменены.
-- [ ] В evidence записаны dataset/question/model versions, точная команда,
+- [x] В evidence записаны dataset/question/model versions, точная команда,
       итоговые метрики и разобранные high-confidence ошибки.
 - [x] `make test`, offline evaluator checks, `go vet` и `git diff --check`
       проходят без credentials и сети.
