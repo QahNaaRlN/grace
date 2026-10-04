@@ -32,11 +32,11 @@ test -f "$bundle/grace-backup.timer"
 test -f "$bundle/grace-firewall.service"
 test -f "$bundle/grace-firewall.nft"
 
-rg -q 'pre-release-' "$bundle/deploy.sh"
-rg -q "name 'daily-\\*.dump'" "$bundle/backup.sh"
-rg -q '8,\$p' "$bundle/backup.sh"
-rg -q 'udp dport \{ 443, 51820 \} accept' "$bundle/grace-firewall.nft"
-rg -q 'iifname "wg0" accept' "$bundle/grace-firewall.nft"
+grep -q 'pre-release-' "$bundle/deploy.sh"
+grep -q "name 'daily-\\*.dump'" "$bundle/backup.sh"
+grep -q '8,\$p' "$bundle/backup.sh"
+grep -q 'udp dport { 443, 51820 } accept' "$bundle/grace-firewall.nft"
+grep -q 'iifname "wg0" accept' "$bundle/grace-firewall.nft"
 
 rotation_root="$tmp_dir/rotation-root"
 rotation_bin="$tmp_dir/rotation-bin"
@@ -69,12 +69,12 @@ test -f "$rotation_root/backups/manual-keep.dump"
 
 test ! -e "$bundle/migrations/000002_development_seed.up.sql"
 test -e "$bundle/migrations/000002_reference_categories.up.sql"
-if rg -n 'Основная карта|12500000' "$bundle/migrations"; then
+if grep -REn 'Основная карта|12500000' "$bundle/migrations"; then
   echo "production migrations contain development account data" >&2
   exit 1
 fi
 
-if rg -n 'localhost:8080' "$repo_root/web/Dockerfile" \
+if grep -En 'localhost:8080' "$repo_root/web/Dockerfile" \
   "$repo_root/web/src/shared/config"; then
   echo "production Web still embeds localhost API origin" >&2
   exit 1
