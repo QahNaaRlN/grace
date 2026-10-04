@@ -1,8 +1,8 @@
 # SPEC-0003 — verification evidence
 
-- Статус проверки: verified
+- Статус проверки: integrated
 - Implementation commit: `dce34e5`
-- Integration merge: отсутствует
+- Integration merge: `f14c251`
 - Ветка: `codex/obligations`
 - Дата: 2026-10-04
 
@@ -54,4 +54,11 @@
 
 ## Post-merge verification
 
-Ожидает интеграции implementation commit в `main`.
+На `main` после merge `f14c251` повторно прошли:
+
+- `make test`;
+- `make test-integration`, включая SPEC-0001, SPEC-0002 и SPEC-0003;
+- `git diff --check`.
+
+Основная копия после проверок осталась чистой до фиксации этого evidence update.
+SPEC-0003 интегрирована.

@@ -1,12 +1,13 @@
 # SPEC-0003: обязательства и график платежей
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное указание owner «SPEC-0003 принимаю, приступай к реализации» в Codex-чате, 2026-10-04
 - Implementation branch: codex/obligations
 - Implementation commit: `dce34e5`
+- Integration merge: `f14c251`
 
 ## Проблема и пользовательский результат
 
@@ -262,7 +263,7 @@ obligations/scheduled_payments/scheduled_payment_settlements; при налич�
 - [x] Production dependency graph не содержит AI/LLM/provider модулей.
 - [x] `make test`, предметный integration test и `git diff --check` проходят в
       implementation worktree.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят после
+- [x] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.
 
 ## Исполняемые проверки
