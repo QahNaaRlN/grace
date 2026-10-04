@@ -1,12 +1,12 @@
 # SPEC-0003: обязательства и график платежей
 
-- Статус: implementing
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное указание owner «SPEC-0003 принимаю, приступай к реализации» в Codex-чате, 2026-10-04
 - Implementation branch: codex/obligations
-- Implementation commit: отсутствует
+- Implementation commit: `dce34e5`
 
 ## Проблема и пользовательский результат
 
@@ -240,27 +240,27 @@ obligations/scheduled_payments/scheduled_payment_settlements; при налич�
 
 ## Критерии приёмки
 
-- [ ] Миграции с нуля создают obligations, scheduled payments и settlements.
-- [ ] Обязательство и полный график создаются атомарно.
-- [ ] Порядок и даты платежей стабильно сохраняются и возвращаются.
-- [ ] Сумма графика обязана точно совпадать с total обязательства.
-- [ ] Создание обязательства не меняет остаток и число проводок.
-- [ ] API вычисляет paid/remaining/status/isOverdue для явного `asOf`.
-- [ ] Только однопроводочный debit `debt_payment` нужной валюты принимается как
+- [x] Миграции с нуля создают obligations, scheduled payments и settlements.
+- [x] Обязательство и полный график создаются атомарно.
+- [x] Порядок и даты платежей стабильно сохраняются и возвращаются.
+- [x] Сумма графика обязана точно совпадать с total обязательства.
+- [x] Создание обязательства не меняет остаток и число проводок.
+- [x] API вычисляет paid/remaining/status/isOverdue для явного `asOf`.
+- [x] Только однопроводочный debit `debt_payment` нужной валюты принимается как
       settlement.
-- [ ] Частичные settlements поддерживаются; переплата отклоняется.
-- [ ] Один financial event нельзя связать дважды.
-- [ ] Settlement не меняет остаток и число проводок второй раз.
-- [ ] Идемпотентные повторы создания и settlement не создают дубликаты.
-- [ ] Конфликтующий payload существующего ключа возвращает `409`.
-- [ ] Конкурентные запросы сохраняют ограничения settlement.
-- [ ] Rollback пустой схемы проходит, rollback с данными отказывается.
-- [ ] OpenAPI и generated TypeScript проходят сборку.
-- [ ] React позволяет создать fixed obligation, увидеть график, создать
+- [x] Частичные settlements поддерживаются; переплата отклоняется.
+- [x] Один financial event нельзя связать дважды.
+- [x] Settlement не меняет остаток и число проводок второй раз.
+- [x] Идемпотентные повторы создания и settlement не создают дубликаты.
+- [x] Конфликтующий payload существующего ключа возвращает `409`.
+- [x] Конкурентные запросы сохраняют ограничения settlement.
+- [x] Rollback пустой схемы проходит, rollback с данными отказывается.
+- [x] OpenAPI и generated TypeScript проходят сборку.
+- [x] React позволяет создать fixed obligation, увидеть график, создать
       `debt_payment` и связать его с одним платежом.
-- [ ] Existing purchase/income/transfer/refund/receipt пути не регрессируют.
-- [ ] Production dependency graph не содержит AI/LLM/provider модулей.
-- [ ] `make test`, предметный integration test и `git diff --check` проходят в
+- [x] Existing purchase/income/transfer/refund/receipt пути не регрессируют.
+- [x] Production dependency graph не содержит AI/LLM/provider модулей.
+- [x] `make test`, предметный integration test и `git diff --check` проходят в
       implementation worktree.
 - [ ] `make test`, `make test-integration` и `git diff --check` проходят после
       merge.
