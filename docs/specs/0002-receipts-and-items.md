@@ -1,12 +1,13 @@
 # SPEC-0002: подтверждённые чеки и позиции
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-04
 - Acceptance owner: owner
 - Acceptance record: явное указание owner «Приступить к реализации» в Codex-чате, 2026-10-04
 - Implementation branch: codex/receipt-items
 - Implementation commit: `0c73746`
+- Integration merge: `f493284`
 
 ## Проблема и пользовательский результат
 
@@ -185,7 +186,7 @@ PostgreSQL-транзакции после `FOR UPDATE` исходного со�
 - [x] Production dependency graph не содержит AI/LLM/provider/OCR модулей.
 - [x] `make test`, предметный integration test и `git diff --check` проходят в
       implementation worktree.
-- [ ] `make test`, `make test-integration` и `git diff --check` проходят после merge.
+- [x] `make test`, `make test-integration` и `git diff --check` проходят после merge.
 
 ## Исполняемые проверки
 

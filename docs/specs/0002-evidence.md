@@ -1,7 +1,8 @@
 # SPEC-0002 — verification evidence
 
-- Статус проверки: verified
+- Статус проверки: integrated
 - Implementation commit: `0c73746`
+- Integration merge: `f493284`
 - Ветка: `codex/receipt-items`
 - Дата: 2026-10-04
 
@@ -46,7 +47,12 @@ Regression script SPEC-0001 теперь явно проверяет грани�
 - отображение позиций в исходном порядке у финансового события;
 - неизменный остаток `124 650,10 ₽` до и после добавления чека.
 
-## Остаточный gate
+## Post-merge verification
 
-После merge нужно повторить `make test`, `make test-integration` и
-`git diff --check`, записать merge commit и перевести SPEC-0002 в `integrated`.
+На `main` после merge `f493284` повторно прошли:
+
+- `make test`;
+- `make test-integration`, включая SPEC-0001 и SPEC-0002;
+- `git diff --check`.
+
+Рабочее дерево `main` после проверок осталось чистым. SPEC-0002 интегрирована.
