@@ -29,8 +29,9 @@ func NewTelegramProvider(clientID, secret, callback string) *OIDCProvider {
 }
 
 func newOIDCProvider(issuer, clientID, secret, callback string) *OIDCProvider {
-	keyContext := oidc.ClientContext(context.Background(), &http.Client{Timeout: 10 * time.Second})
-	keys := oidc.NewRemoteKeySet(keyContext, issuer+"/.well-known/jwks.json")
+	keyURL := issuer + "/.well-known/jwks.json"
+	keyContext := oidc.ClientContext(context.Background(), &http.Client{Timeout: 10 * time.Second, Transport: rs256KeyTransport{base: http.DefaultTransport, url: keyURL}})
+	keys := oidc.NewRemoteKeySet(keyContext, keyURL)
 	return &OIDCProvider{
 		issuer: issuer,
 		config: oauth2.Config{ClientID: clientID, ClientSecret: secret, RedirectURL: callback,

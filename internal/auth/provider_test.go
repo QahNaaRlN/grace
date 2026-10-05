@@ -28,7 +28,9 @@ func TestOIDCValidationAndPKCE(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/.well-known/jwks.json" {
-			_ = json.NewEncoder(w).Encode(jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{Key: &key.PublicKey, KeyID: "test", Algorithm: "RS256", Use: "sig"}}})
+			// Telegram publishes secp256k1 alongside RSA. go-jose cannot
+			// decode that curve, but it must still verify the RSA signature.
+			_ = json.NewEncoder(w).Encode(map[string]any{"keys": []any{jose.JSONWebKey{Key: &key.PublicKey, KeyID: "test", Algorithm: "RS256", Use: "sig"}, map[string]string{"kty": "EC", "alg": "ES256K", "crv": "secp256k1", "kid": "unrelated", "x": "invalid", "y": "invalid"}}})
 			return
 		}
 		if r.URL.Path != "/token" {
