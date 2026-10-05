@@ -20,4 +20,8 @@ Use these stages to find and repair the live first-login incompatibility. Every 
 
 ## Rollout
 
+### Confirmed compatibility repair
+
+The live callback reached signature_verification. Parsing Telegram's public JWKS with the exact project dependency reproduces `unsupported elliptic curve 'secp256k1'`: a key for ES256K prevents the library from decoding the whole key set, including the required RS256 key. Before the library decodes this public JWKS, select only RSA keys explicitly marked RS256 and intended for signatures. Keep the original key material and kid, HTTPS endpoint, bounded response size, timeout, remote refresh/cache and RS256 cryptographic verification. Malformed responses, absence of eligible keys and invalid signatures fail closed. Tests must prove mixed-algorithm compatibility and rejection behavior. This is within the accepted corrective scope and does not change the authentication security contract.
+
 Use the established protected server environment and release pipeline. Reuse the existing unconsumed owner invitation; do not rotate or consume it merely for diagnostics. Production and interactive results must be recorded honestly; stay implementing while live acceptance is pending.
