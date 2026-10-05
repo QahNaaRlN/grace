@@ -1,6 +1,8 @@
 # SPEC-0015: Safe diagnosis and repair of Telegram first-login failures
 
-- Статус: implementing
+- Статус: integrated
+- Implementation commits: db59287 (diagnostics), 799c702 (mixed-JWKS repair).
+- Live acceptance: owner confirmed successful login on 2026-10-06 Asia/Yekaterinburg; database checks confirmed an admin identity, active session and consumed invitation.
 - Acceptance owner: owner
 - Acceptance record: owner requested complete Telegram setup and authorized publication/deployment after CI; first live login returned Grace authentication_failed after Telegram success. This is corrective work within accepted SPEC-0013 security contracts.
 - Implementation branch: codex/telegram-login-repair
@@ -15,8 +17,8 @@ Use these stages to find and repair the live first-login incompatibility. Every 
 
 - [x] Tests prove safe failure stages and no sensitive values in logs; invalid credentials/tokens still fail closed.
 - [x] Token fixture requires Basic authentication, client_id, PKCE and exact redirect URI.
-- [ ] make test, make test-production, git diff --check; CI/Delivery before live update.
-- [ ] Live failure stage identified; owner first login succeeds after the corrective update, with Telegram consent performed by owner.
+- [x] make test, make test-production, git diff --check; CI/Delivery before live update.
+- [x] Live failure stage identified; owner first login succeeds after the corrective update, with Telegram consent performed by owner.
 
 ## Rollout
 

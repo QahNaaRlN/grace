@@ -1,6 +1,6 @@
 # Roadmap Grace
 
-Актуализация: 2026-10-05. Основание — интегрированные SPEC-0001–0013 и их evidence; production rollout SPEC-0013 ещё не выполнялся.
+Актуализация: 2026-10-06. Основание — интегрированные SPEC-0001–0015 и их evidence; production Telegram-вход владельца подтверждён.
 Документ разделяет реализованные этапы и целевое развитие из [видения](vision.md).
 Архитектурные правила определяет [контракт](architecture.md).
 
@@ -24,11 +24,13 @@
 | 0011 | GitHub CI и публикация versioned API/Web images в GHCR | [Scope](specs/0011-github-repository-and-delivery.md) | [Evidence](specs/0011-evidence.md) |
 | 0012 | Owner-only production, ручной release, backup/restore и механизм rollback | [Scope](specs/0012-owner-vps-production-deployment.md) | [Evidence](specs/0012-evidence.md) |
 | 0013 | Telegram OIDC, приглашения, серверные сессии и изоляция финансовых данных | [Scope](specs/0013-telegram-authentication-and-ownership.md) | [Evidence](specs/0013-evidence.md) |
+| 0014 | Постоянная production-конфигурация Telegram и исходящий HTTPS API | [Scope](specs/0014-telegram-production-configuration.md) | [Evidence](specs/0014-evidence.md) |
+| 0015 | Безопасная диагностика входа и совместимость со смешанным JWKS Telegram | [Scope](specs/0015-telegram-login-repair.md) | [Evidence](specs/0015-evidence.md) |
 
-Статусы и результаты проверок взяты из репозитория. Эта актуализация
-не повторяет live benchmark, CI, проверку production или восстановление БД.
-В SPEC-0012 фактический деплой и restore подтверждены отчётом; rollback
-отмечен как проверенный статически и локально.
+Статусы и результаты проверок зафиксированы в evidence. Production rollout
+Telegram проверен через CI, развёртывание точных images, backup/restore drill,
+проверку сохранности финансовых данных и первый вход владельца. Live benchmark
+не повторялся; rollback проверен статически и локально.
 
 ## Текущие возможности и ограничения
 
@@ -48,7 +50,7 @@
   TypeSafe получает запрос, язык и reference time; финансовые записи и
   результаты tools ему не отправляются. Истории диалога и генеративных
   финансовых объяснений нет.
-- В новой версии реализован Telegram-вход по приглашениям, admin/member и изоляция данных. Production rollout ещё не выполнен; по умолчанию API закрыт (`locked`). Basic Auth сохраняется как внешняя защита. Резервные копии
+- Telegram-вход по приглашениям, admin/member и изоляция данных работают в production; первый вход владельца подтверждён. По умолчанию без конфигурации API закрыт (`locked`). Basic Auth сохраняется как внешняя защита. Резервные копии
   находятся на том же VPS; off-site backup не реализован.
 
 ## Оставшиеся направления

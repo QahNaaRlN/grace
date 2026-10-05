@@ -1,12 +1,12 @@
 # SPEC-0014: Production configuration for Telegram login
 
-- Статус: implementing
+- Статус: integrated
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner requested Telegram configuration and explicitly authorized production publication/deployment after CI. This corrective scope makes the accepted SPEC-0013 usable on that target, without changing authentication or financial contracts.
 - Implementation branch: codex/telegram-production-configuration
 - Implementation commit: 767c026
-- Local verification: make test, make test-production, git diff --check PASS; production checks require publication/deployment of this candidate.
+- Verification: local and post-merge checks, CI/Delivery/deployment, migration and first owner login PASS; see [evidence](0014-evidence.md).
 
 ## Problem and result
 
@@ -25,8 +25,8 @@ Removing Basic Auth, public registration, a second identity provider, modifying 
 - [x] Rendered API configuration has an outbound network; API/Postgres host ports stay private.
 - [x] deploy.sh reads the protected optional Telegram environment without logging values; subsequent releases preserve operator configuration.
 - [x] make test, make test-production, git diff --check; post-merge checks.
-- [ ] CI/Delivery succeeds for the exact deployment SHA; production API reaches Telegram JWKS after deployment.
-- [ ] Database migration, anonymous session rejection and first owner login are checked; interactive Telegram consent is performed by the owner.
+- [x] CI/Delivery succeeds for the exact deployment SHA; production API reaches Telegram JWKS after deployment.
+- [x] Database migration, anonymous session rejection and first owner login are checked; interactive Telegram consent is performed by the owner.
 
 ## Rollout and rollback
 
