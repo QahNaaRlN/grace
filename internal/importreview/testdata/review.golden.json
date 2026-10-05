@@ -1,0 +1,907 @@
+{
+  "schemaVersion": "grace.import-review.v1",
+  "source": {
+    "sourceId": "synthetic-workbook",
+    "capturedAt": "2026-10-06T00:00:00+05:00",
+    "locale": "ru_RU",
+    "declaredTimeZone": "America/Los_Angeles",
+    "confirmedTimeZone": "Asia/Yekaterinburg"
+  },
+  "payloadSha256": "04bc602f47cb8d9489b79c733a02c2bc7c64bc455b12b7bcb22d71a6bb8a3aa4",
+  "records": [
+    {
+      "id": "a5062b5c7109ee672c836b978ee108f6680d3d489a7c7937a07a28db3175839f",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 5,
+      "domain": "transaction",
+      "originalId": "main-a",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-15"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-15"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Погашение долга"
+          },
+          "effectiveValue": {
+            "stringValue": "Погашение долга"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Долг A"
+          },
+          "effectiveValue": {
+            "stringValue": "Долг A"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 5500
+          },
+          "effectiveValue": {
+            "numberValue": 5500
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Получатель A"
+          },
+          "effectiveValue": {
+            "stringValue": "Получатель A"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "main-a"
+          },
+          "effectiveValue": {
+            "stringValue": "main-a"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "debt_payment",
+        "date": {
+          "local": "2026-08-15",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 550000,
+        "description": "Долг A",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Получатель A"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A5",
+          "message": "Only a calendar date is known; no event time is invented."
+        },
+        {
+          "code": "unresolved_debt_target",
+          "severity": "warning",
+          "coordinate": "Операции!K5",
+          "message": "Debt target and principal/interest allocation require evidence."
+        }
+      ]
+    },
+    {
+      "id": "0fa002b19a46612d44b463ca2d7ec16d59fac4cdf53561d818112e0e9bf12d1c",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 6,
+      "domain": "transaction",
+      "originalId": "main-b",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-15"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-15"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Погашение долга"
+          },
+          "effectiveValue": {
+            "stringValue": "Погашение долга"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Долг B"
+          },
+          "effectiveValue": {
+            "stringValue": "Долг B"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 5500
+          },
+          "effectiveValue": {
+            "numberValue": 5500
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Получатель B"
+          },
+          "effectiveValue": {
+            "stringValue": "Получатель B"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "main-b"
+          },
+          "effectiveValue": {
+            "stringValue": "main-b"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "debt_payment",
+        "date": {
+          "local": "2026-08-15",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 550000,
+        "description": "Долг B",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Получатель B"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A6",
+          "message": "Only a calendar date is known; no event time is invented."
+        },
+        {
+          "code": "unresolved_debt_target",
+          "severity": "warning",
+          "coordinate": "Операции!K6",
+          "message": "Debt target and principal/interest allocation require evidence."
+        }
+      ]
+    },
+    {
+      "id": "7d0e69ebf54cb83961188e18e5fedf5336d7c7708a06aecec0a892a3d177a934",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 7,
+      "domain": "transaction",
+      "originalId": "main-c",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-25"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-25"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Расход"
+          },
+          "effectiveValue": {
+            "stringValue": "Расход"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Молоко"
+          },
+          "effectiveValue": {
+            "stringValue": "Молоко"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 144.97
+          },
+          "effectiveValue": {
+            "numberValue": 144.97
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Магазин"
+          },
+          "effectiveValue": {
+            "stringValue": "Магазин"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "main-c"
+          },
+          "effectiveValue": {
+            "stringValue": "main-c"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "purchase",
+        "date": {
+          "local": "2026-08-25",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 14497,
+        "description": "Молоко",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Магазин"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A7",
+          "message": "Only a calendar date is known; no event time is invented."
+        }
+      ]
+    },
+    {
+      "id": "36eeb8bbe7613c42bbb04317b62ac830c4d572d393070a6f0efda3af17d4002f",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 305,
+      "domain": "transaction",
+      "originalId": "legacy-a",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-15"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-15"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Погашение"
+          },
+          "effectiveValue": {
+            "stringValue": "Погашение"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Долг A"
+          },
+          "effectiveValue": {
+            "stringValue": "Долг A"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 5500
+          },
+          "effectiveValue": {
+            "numberValue": 5500
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Получатель A"
+          },
+          "effectiveValue": {
+            "stringValue": "Получатель A"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "legacy-a"
+          },
+          "effectiveValue": {
+            "stringValue": "legacy-a"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "debt_payment",
+        "date": {
+          "local": "2026-08-15",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 550000,
+        "description": "Долг A",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Получатель A"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A305",
+          "message": "Only a calendar date is known; no event time is invented."
+        },
+        {
+          "code": "outside_formula_scope",
+          "severity": "warning",
+          "coordinate": "Операции!A305",
+          "message": "Row lies outside the current summary formula range; review individually."
+        },
+        {
+          "code": "unresolved_debt_target",
+          "severity": "warning",
+          "coordinate": "Операции!K305",
+          "message": "Debt target and principal/interest allocation require evidence."
+        },
+        {
+          "code": "duplicate_candidate",
+          "severity": "warning",
+          "coordinate": "Операции!A305",
+          "message": "Possible overlap requires individual confirmation; records are not merged."
+        }
+      ]
+    },
+    {
+      "id": "b83edc8546a15a651183bb32bea394b310ce0ba8628f47eb784096246d31e4d5",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 306,
+      "domain": "transaction",
+      "originalId": "legacy-b",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-15"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-15"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Погашение"
+          },
+          "effectiveValue": {
+            "stringValue": "Погашение"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Долг B"
+          },
+          "effectiveValue": {
+            "stringValue": "Долг B"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 5500
+          },
+          "effectiveValue": {
+            "numberValue": 5500
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Получатель B"
+          },
+          "effectiveValue": {
+            "stringValue": "Получатель B"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "legacy-b"
+          },
+          "effectiveValue": {
+            "stringValue": "legacy-b"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "debt_payment",
+        "date": {
+          "local": "2026-08-15",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 550000,
+        "description": "Долг B",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Получатель B"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A306",
+          "message": "Only a calendar date is known; no event time is invented."
+        },
+        {
+          "code": "outside_formula_scope",
+          "severity": "warning",
+          "coordinate": "Операции!A306",
+          "message": "Row lies outside the current summary formula range; review individually."
+        },
+        {
+          "code": "unresolved_debt_target",
+          "severity": "warning",
+          "coordinate": "Операции!K306",
+          "message": "Debt target and principal/interest allocation require evidence."
+        },
+        {
+          "code": "duplicate_candidate",
+          "severity": "warning",
+          "coordinate": "Операции!A306",
+          "message": "Possible overlap requires individual confirmation; records are not merged."
+        }
+      ]
+    },
+    {
+      "id": "20cf6288ba80859c63be4d1f30ff92ce8b9acafde4729ccb2fcdae715ffb8a60",
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 307,
+      "domain": "transaction",
+      "originalId": "legacy-c",
+      "raw": {
+        "A": {
+          "userEnteredValue": {
+            "stringValue": "2026-08-27"
+          },
+          "effectiveValue": {
+            "stringValue": "2026-08-27"
+          }
+        },
+        "B": {
+          "userEnteredValue": {
+            "stringValue": "Расход"
+          },
+          "effectiveValue": {
+            "stringValue": "Расход"
+          }
+        },
+        "C": {
+          "userEnteredValue": {
+            "stringValue": "Молоко"
+          },
+          "effectiveValue": {
+            "stringValue": "Молоко"
+          }
+        },
+        "D": {
+          "userEnteredValue": {
+            "stringValue": "Продукты"
+          },
+          "effectiveValue": {
+            "stringValue": "Продукты"
+          }
+        },
+        "E": {},
+        "F": {
+          "userEnteredValue": {
+            "numberValue": 144.97
+          },
+          "effectiveValue": {
+            "numberValue": 144.97
+          }
+        },
+        "G": {
+          "userEnteredValue": {
+            "stringValue": "Собственные средства"
+          },
+          "effectiveValue": {
+            "stringValue": "Собственные средства"
+          }
+        },
+        "H": {
+          "userEnteredValue": {
+            "stringValue": "Карта A"
+          },
+          "effectiveValue": {
+            "stringValue": "Карта A"
+          }
+        },
+        "I": {},
+        "J": {
+          "userEnteredValue": {
+            "stringValue": "Нет"
+          },
+          "effectiveValue": {
+            "stringValue": "Нет"
+          }
+        },
+        "K": {
+          "userEnteredValue": {
+            "stringValue": "Магазин"
+          },
+          "effectiveValue": {
+            "stringValue": "Магазин"
+          }
+        },
+        "L": {},
+        "M": {},
+        "N": {},
+        "O": {
+          "userEnteredValue": {
+            "stringValue": "legacy-c"
+          },
+          "effectiveValue": {
+            "stringValue": "legacy-c"
+          }
+        }
+      },
+      "normalized": {
+        "kind": "purchase",
+        "date": {
+          "local": "2026-08-27",
+          "precision": "date",
+          "timeZone": "Asia/Yekaterinburg"
+        },
+        "currency": "RUB",
+        "amountMinor": 14497,
+        "description": "Молоко",
+        "category": "Продукты",
+        "categoryId": "category-food",
+        "account": "Карта A",
+        "accountId": "account-a",
+        "funding": {
+          "kind": "own"
+        },
+        "recurring": false,
+        "recipient": "Магазин"
+      },
+      "issues": [
+        {
+          "code": "date_precision",
+          "severity": "info",
+          "coordinate": "Операции!A307",
+          "message": "Only a calendar date is known; no event time is invented."
+        },
+        {
+          "code": "outside_formula_scope",
+          "severity": "warning",
+          "coordinate": "Операции!A307",
+          "message": "Row lies outside the current summary formula range; review individually."
+        },
+        {
+          "code": "date_conflict",
+          "severity": "warning",
+          "coordinate": "Операции!A307",
+          "message": "A candidate has the same description/kind/amount but another date; source evidence is required."
+        },
+        {
+          "code": "duplicate_candidate",
+          "severity": "warning",
+          "coordinate": "Операции!A307",
+          "message": "Possible overlap requires individual confirmation; records are not merged."
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "recordId": "36eeb8bbe7613c42bbb04317b62ac830c4d572d393070a6f0efda3af17d4002f",
+      "otherRecordId": "a5062b5c7109ee672c836b978ee108f6680d3d489a7c7937a07a28db3175839f",
+      "rule": "date_kind_amount",
+      "matched": [
+        "kind",
+        "amountMinor",
+        "localDate",
+        "description"
+      ],
+      "differences": [
+        "O"
+      ],
+      "decision": "needs_confirmation"
+    },
+    {
+      "recordId": "36eeb8bbe7613c42bbb04317b62ac830c4d572d393070a6f0efda3af17d4002f",
+      "otherRecordId": "0fa002b19a46612d44b463ca2d7ec16d59fac4cdf53561d818112e0e9bf12d1c",
+      "rule": "date_kind_amount",
+      "matched": [
+        "kind",
+        "amountMinor",
+        "localDate"
+      ],
+      "differences": [
+        "C",
+        "K",
+        "O"
+      ],
+      "decision": "needs_confirmation"
+    },
+    {
+      "recordId": "b83edc8546a15a651183bb32bea394b310ce0ba8628f47eb784096246d31e4d5",
+      "otherRecordId": "a5062b5c7109ee672c836b978ee108f6680d3d489a7c7937a07a28db3175839f",
+      "rule": "date_kind_amount",
+      "matched": [
+        "kind",
+        "amountMinor",
+        "localDate"
+      ],
+      "differences": [
+        "C",
+        "K",
+        "O"
+      ],
+      "decision": "needs_confirmation"
+    },
+    {
+      "recordId": "b83edc8546a15a651183bb32bea394b310ce0ba8628f47eb784096246d31e4d5",
+      "otherRecordId": "0fa002b19a46612d44b463ca2d7ec16d59fac4cdf53561d818112e0e9bf12d1c",
+      "rule": "date_kind_amount",
+      "matched": [
+        "kind",
+        "amountMinor",
+        "localDate",
+        "description"
+      ],
+      "differences": [
+        "O"
+      ],
+      "decision": "needs_confirmation"
+    },
+    {
+      "recordId": "20cf6288ba80859c63be4d1f30ff92ce8b9acafde4729ccb2fcdae715ffb8a60",
+      "otherRecordId": "7d0e69ebf54cb83961188e18e5fedf5336d7c7708a06aecec0a892a3d177a934",
+      "rule": "description_kind_amount_date_conflict",
+      "matched": [
+        "kind",
+        "amountMinor",
+        "description"
+      ],
+      "differences": [
+        "A",
+        "O"
+      ],
+      "decision": "needs_confirmation"
+    }
+  ],
+  "issues": [
+    {
+      "code": "timezone_override",
+      "severity": "warning",
+      "coordinate": "metadata",
+      "message": "Confirmed operator timezone overrides source metadata; raw dates are retained."
+    }
+  ],
+  "domainCounts": {
+    "transaction": 6
+  }
+}

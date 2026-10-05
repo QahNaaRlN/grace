@@ -1,0 +1,363 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Grace offline import review v1",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": "grace.import-review.v1"
+    },
+    "source": {
+      "$ref": "#/$defs/metadata"
+    },
+    "payloadSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/candidate"
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    },
+    "domainCounts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "source",
+    "payloadSha256",
+    "records",
+    "candidates",
+    "issues",
+    "domainCounts"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "value": {
+      "type": "object",
+      "properties": {
+        "numberValue": {
+          "type": "number"
+        },
+        "stringValue": {
+          "type": "string"
+        },
+        "boolValue": {
+          "type": "boolean"
+        },
+        "formulaValue": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1
+    },
+    "cell": {
+      "type": "object",
+      "properties": {
+        "userEnteredValue": {
+          "$ref": "#/$defs/value"
+        },
+        "effectiveValue": {
+          "$ref": "#/$defs/value"
+        },
+        "formattedValue": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "dataValidation": {}
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "funding": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "own",
+            "borrowed",
+            "unknown"
+          ]
+        },
+        "facilityId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "date": {
+      "type": "object",
+      "properties": {
+        "local": {
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "date",
+            "minute",
+            "second",
+            "serial_second",
+          "serial_fraction"
+          ]
+        },
+        "timeZone": {
+          "type": "string"
+        },
+        "utc": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "local",
+        "precision",
+        "timeZone"
+      ],
+      "additionalProperties": false
+    },
+    "issue": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "coordinate": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "coordinate",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amountMinor": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "subcategory": {
+          "type": "string"
+        },
+        "categoryId": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "funding": {
+          "$ref": "#/$defs/funding"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "recurring": {
+          "type": "boolean"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "amounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "dates": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "record": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sheetId": {
+          "type": "integer"
+        },
+        "sheet": {
+          "type": "string"
+        },
+        "row": {
+          "type": "integer"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "originalId": {
+          "type": "string"
+        },
+        "raw": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/cell"
+          }
+        },
+        "normalized": {
+          "$ref": "#/$defs/fields"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/issue"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "sheetId",
+        "sheet",
+        "row",
+        "domain",
+        "raw",
+        "normalized",
+        "issues"
+      ],
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "properties": {
+        "recordId": {
+          "type": "string"
+        },
+        "otherRecordId": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        },
+        "matched": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "differences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "decision": {
+          "const": "needs_confirmation"
+        }
+      },
+      "required": [
+        "recordId",
+        "otherRecordId",
+        "rule",
+        "matched",
+        "differences",
+        "decision"
+      ],
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": "string"
+        },
+        "capturedAt": {
+          "type": "string"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "declaredTimeZone": {
+          "type": "string"
+        },
+        "confirmedTimeZone": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sourceId",
+        "capturedAt",
+        "locale",
+        "declaredTimeZone",
+        "confirmedTimeZone"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

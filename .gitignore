@@ -6,4 +6,5 @@ coverage.out
 .vscode/
 web/node_modules/
 web/dist/
+*.private.json
 

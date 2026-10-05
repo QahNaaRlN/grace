@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Grace offline sheet snapshot v1",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": "grace.sheet-snapshot.v1"
+    },
+    "sourceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locale": {
+      "const": "ru_RU"
+    },
+    "declaredTimeZone": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confirmedTimeZone": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sheets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sheet"
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "mappings": {
+      "$ref": "#/$defs/mappings"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "sourceId",
+    "capturedAt",
+    "locale",
+    "declaredTimeZone",
+    "confirmedTimeZone",
+    "sheets"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "value": {
+      "type": "object",
+      "properties": {
+        "numberValue": {
+          "type": "number"
+        },
+        "stringValue": {
+          "type": "string"
+        },
+        "boolValue": {
+          "type": "boolean"
+        },
+        "formulaValue": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1
+    },
+    "cell": {
+      "type": "object",
+      "properties": {
+        "userEnteredValue": {
+          "$ref": "#/$defs/value"
+        },
+        "effectiveValue": {
+          "$ref": "#/$defs/value"
+        },
+        "formattedValue": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "dataValidation": {}
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "row": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cell"
+          },
+          "maxItems": 26
+        }
+      },
+      "required": [
+        "values"
+      ],
+      "additionalProperties": false
+    },
+    "range": {
+      "type": "object",
+      "properties": {
+        "startRow": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "startColumn": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 26
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        }
+      },
+      "required": [
+        "startRow",
+        "startColumn",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "sheet": {
+      "type": "object",
+      "properties": {
+        "sheetId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rowCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "columnCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 26
+        },
+        "ranges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/range"
+          }
+        }
+      },
+      "required": [
+        "sheetId",
+        "title",
+        "rowCount",
+        "columnCount",
+        "ranges"
+      ],
+      "additionalProperties": false
+    },
+    "funding": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "own",
+            "borrowed",
+            "unknown"
+          ]
+        },
+        "facilityId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "mappings": {
+      "type": "object",
+      "properties": {
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "categories": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "funding": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/funding"
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  }
+}

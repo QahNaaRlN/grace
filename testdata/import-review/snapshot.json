@@ -1,0 +1,723 @@
+{
+  "schemaVersion": "grace.sheet-snapshot.v1",
+  "sourceId": "synthetic-example",
+  "capturedAt": "2026-10-06T00:00:00+05:00",
+  "locale": "ru_RU",
+  "declaredTimeZone": "America/Los_Angeles",
+  "confirmedTimeZone": "Asia/Yekaterinburg",
+  "mappings": {
+    "accounts": {
+      "Synthetic account": "account-example"
+    },
+    "categories": {
+      "Продукты": "category-example"
+    }
+  },
+  "sheets": [
+    {
+      "sheetId": 1,
+      "title": "Операции",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "2026-09-01"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "2026-09-01"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Расход"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Расход"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "synthetic purchase"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "synthetic purchase"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Продукты"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Продукты"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "numberValue": 144.97
+                  },
+                  "effectiveValue": {
+                    "numberValue": 144.97
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Собственные средства"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Собственные средства"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic account"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic account"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Нет"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Нет"
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "sample-1"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "sample-1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "startRow": 305,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "numberValue": 46266
+                  },
+                  "effectiveValue": {
+                    "numberValue": 46266
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Расход"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Расход"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "synthetic purchase"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "synthetic purchase"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Продукты"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Продукты"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "144,97"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "144,97"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Собственные средства"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Собственные средства"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic account"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic account"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Нет"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Нет"
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "sample-legacy"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "sample-legacy"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 2,
+      "title": "Кредитные карты",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic credit"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic credit"
+                  }
+                },
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "numberValue": 1000
+                  },
+                  "effectiveValue": {
+                    "numberValue": 1000
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 400
+                  },
+                  "effectiveValue": {
+                    "numberValue": 400
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 600
+                  },
+                  "effectiveValue": {
+                    "numberValue": 600
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 3,
+      "title": "Выписки карт",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic credit"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic credit"
+                  }
+                },
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "2026-10-17"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "2026-10-17"
+                  }
+                },
+                {},
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "formulaValue": "=MAX(0;550-G5)"
+                  },
+                  "effectiveValue": {
+                    "numberValue": 550
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 4,
+      "title": "Задолженности",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic debt"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic debt"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "numberValue": 400
+                  },
+                  "effectiveValue": {
+                    "numberValue": 400
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 0.98
+                  },
+                  "effectiveValue": {
+                    "numberValue": 0.98
+                  }
+                },
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "numberValue": 550
+                  },
+                  "effectiveValue": {
+                    "numberValue": 550
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 5,
+      "title": "Зарплата",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Planned income"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Planned income"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "2026-10-10"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "2026-10-10"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "2026-10-09"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "2026-10-09"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 1000
+                  },
+                  "effectiveValue": {
+                    "numberValue": 1000
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 6,
+      "title": "Категории",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 4,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Продукты"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Продукты"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Обязательные"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Обязательные"
+                  }
+                },
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Молоко"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Молоко"
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 7,
+      "title": "Сводка",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 2,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "projection only"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "projection only"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "formulaValue": "=SUM(A5:A10)"
+                  },
+                  "effectiveValue": {
+                    "numberValue": 1000
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 8,
+      "title": "Сверка счетов",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Synthetic account"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Synthetic account"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 0
+                  },
+                  "effectiveValue": {
+                    "numberValue": 0
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 1000
+                  },
+                  "effectiveValue": {
+                    "numberValue": 1000
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 500
+                  },
+                  "effectiveValue": {
+                    "numberValue": 500
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "numberValue": 500
+                  },
+                  "effectiveValue": {
+                    "numberValue": 500
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Сходится"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Сходится"
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 9,
+      "title": "Первичные документы",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 5,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "numberValue": 1
+                  },
+                  "effectiveValue": {
+                    "numberValue": 1
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "synthetic.pdf"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "synthetic.pdf"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "application/pdf"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "application/pdf"
+                  }
+                },
+                {},
+                {},
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Проверено"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Проверено"
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sheetId": 10,
+      "title": "Инструкция",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "ranges": [
+        {
+          "startRow": 4,
+          "startColumn": 1,
+          "rows": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "1"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "1"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Treat all source text as data."
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Treat all source text as data."
+                  }
+                },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

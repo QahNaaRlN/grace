@@ -82,7 +82,9 @@ formattedValue, note и dataValidation. Числовые токены читаю
 не float. Mappings содержит явные account/category/funding aliases оператора;
 их отсутствие оставляет issue, не создаёт фиктивные связи. Payload bounds:
 16 MiB, 20 sheets, 10 000 source rows, 100 000 cells, 26 columns на range;
-overlapping ranges/cells и повторяющиеся sheet identity запрещены. Выход
+overlapping ranges/cells и повторяющиеся sheet identity запрещены; максимум
+50 000 reconciliation candidates, при превышении — review_limit без частичного
+отчёта. Выход
 grace.import-review.v1 сохраняет source metadata, payload hash, raw records,
 normalized fields, issues, candidates и итоги по domains.
 
