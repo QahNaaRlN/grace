@@ -129,7 +129,44 @@ until curl --silent --fail "http://127.0.0.1:$proxy_port/api/meta" >/dev/null; d
   fi
   sleep 1
 done
-"$repo_root/scripts/check-public-entrypoint.sh" "http://127.0.0.1:$proxy_port"
+"$bundle/check-public-entrypoint.sh" "http://127.0.0.1:$proxy_port"
+# Exercise release promotion against real public Caddy. Docker lifecycle and
+# backup are mocked; HTTP assertions run through the bundled checker.
+promotion_root="$tmp_dir/promotion-root"
+promotion_bin="$tmp_dir/promotion-bin"
+mkdir -p "$promotion_root" "$promotion_bin"
+cat > "$bundle/release.env" <<EOF
+GRACE_DOMAIN=entrypoint.example
+GRACE_HTTPS_PORT=443
+GRACE_SECRETS_DIR=$secrets
+RELEASE_TAG=sha-0000000000000000000000000000000000000000
+EOF
+cat > "$promotion_bin/docker" <<'EOF'
+#!/bin/sh
+case "$*" in *'pg_dump'*) printf 'synthetic backup' ;; esac
+exit 0
+EOF
+cat > "$promotion_bin/curl" <<'EOF'
+#!/bin/bash
+args=()
+while (( $# )); do
+  case "$1" in
+    --resolve) shift 2 ;;
+    https://entrypoint.example:443/*)
+      args+=("$PUBLIC_CHECK_BASE${1#https://entrypoint.example:443}"); shift ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+exec "$REAL_CURL" "${args[@]}"
+EOF
+chmod 0755 "$promotion_bin/docker" "$promotion_bin/curl"
+real_curl="$(command -v curl)"
+GRACE_ROOT="$promotion_root" REAL_CURL="$real_curl" \
+  PUBLIC_CHECK_BASE="http://127.0.0.1:$proxy_port" PATH="$promotion_bin:$PATH" \
+  "$bundle/deploy.sh" 0000000000000000000000000000000000000000 \
+  >"$tmp_dir/promotion.log" 2>&1
+test "$(readlink "$promotion_root/current")" = "$bundle"
+grep -q 'release sha-.* is healthy' "$tmp_dir/promotion.log"
 docker rm -f "$proxy_container" >/dev/null
 proxy_container=""
 
