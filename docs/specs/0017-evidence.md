@@ -2,7 +2,7 @@
 
 Accepted scope: [SPEC-0017](0017-persistent-import-drafts.md), acceptance commit
 deba6ae, local integration 2cfbca3. Branch: `codex/persistent-import-drafts`.
-Implementation commit and final gates are recorded after verification.
+Implementation commit: a1ea19d. All local mandatory gates passed on 2026-10-06.
 Remote publication, CI, main integration and production rollout are pending.
 
 ## Delivered behavior
