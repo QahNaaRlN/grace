@@ -41,8 +41,8 @@ func TestOIDCValidationAndPKCE(t *testing.T) {
 			t.Error("client authentication missing")
 		}
 		_ = r.ParseForm()
-		if r.Form.Get("code_verifier") != f.Verifier || r.Form.Get("grant_type") != "authorization_code" {
-			t.Error("PKCE verifier missing")
+		if r.Form.Get("code_verifier") != f.Verifier || r.Form.Get("grant_type") != "authorization_code" || r.Form.Get("client_id") != "client" || r.Form.Get("redirect_uri") != "https://grace.test/api/auth/callback" {
+			t.Error("token exchange does not match Telegram contract")
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"access_token": "opaque", "token_type": "Bearer", "id_token": raw})
 	}))
@@ -55,7 +55,7 @@ func TestOIDCValidationAndPKCE(t *testing.T) {
 	if u.Query().Get("state") != f.State || u.Query().Get("nonce") != f.Nonce || u.Query().Get("code_challenge_method") != "S256" || u.Query().Get("code_challenge") == "" || u.Query().Get("scope") != "openid profile" {
 		t.Fatalf("unsafe authorization URL: %s", u)
 	}
-	for _, test := range []string{"valid", "issuer", "audience", "expired", "nonce", "signature", "subject"} {
+	for _, test := range []string{"valid", "issuer", "audience", "expired", "nonce", "missing_nonce", "signature", "subject"} {
 		t.Run(test, func(t *testing.T) {
 			claims := map[string]any{"iss": server.URL, "aud": "client", "sub": "stable-subject", "exp": time.Now().Add(time.Hour).Unix(), "iat": time.Now().Unix(), "nonce": f.Nonce, "name": "Alice"}
 			signingKey := key
@@ -68,6 +68,8 @@ func TestOIDCValidationAndPKCE(t *testing.T) {
 				claims["exp"] = time.Now().Add(-time.Hour).Unix()
 			case "nonce":
 				claims["nonce"] = "wrong"
+			case "missing_nonce":
+				delete(claims, "nonce")
 			case "signature":
 				signingKey = wrongKey
 			case "subject":
@@ -93,6 +95,11 @@ func TestOIDCValidationAndPKCE(t *testing.T) {
 				}
 			} else if err == nil {
 				t.Fatal("invalid token accepted")
+			} else {
+				want := map[string]string{"issuer": "issuer_mismatch", "audience": "audience_mismatch", "expired": "token_expired", "nonce": "nonce_mismatch", "missing_nonce": "nonce_missing", "signature": "signature_verification", "subject": "subject_missing"}[test]
+				if failureStage(err) != want {
+					t.Fatalf("unsafe or incorrect failure stage: %s", failureStage(err))
+				}
 			}
 		})
 	}

@@ -1,13 +1,48 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 )
+
+func TestCallbackDiagnosticDoesNotLogSensitiveInputs(t *testing.T) {
+	var output bytes.Buffer
+	previous := slog.Default()
+	slog.SetDefault(slog.New(slog.NewJSONHandler(&output, nil)))
+	defer slog.SetDefault(previous)
+	for _, providerError := range []error{errors.New("private-provider-response"), failure("private-provider-response"), failure("nonce_missing")} {
+		output.Reset()
+		f := Flow{State: randomToken(), Browser: randomToken(), Verifier: randomToken(), Nonce: randomToken(), InvitationHash: "private-invitation", Expires: time.Now().Add(time.Minute)}
+		s := &stubStore{flow: f}
+		h := NewHandler(s, stubProvider{err: providerError}, "telegram", "https://grace.test")
+		r := httptest.NewRequest("GET", "/api/auth/callback?state="+f.State+"&code=private-authorization-code", nil)
+		r.AddCookie(&http.Cookie{Name: flowCookie, Value: f.Browser})
+		w := httptest.NewRecorder()
+		h.Callback(w, r)
+		if s.loggedIn || w.Header().Get("Location") != "/login?error=authentication_failed" {
+			t.Fatal("failure did not remain fail closed")
+		}
+		for _, sensitive := range []string{f.State, f.Browser, f.Verifier, f.Nonce, f.InvitationHash, "private-authorization-code", "private-provider-response"} {
+			if strings.Contains(output.String(), sensitive) {
+				t.Fatal("diagnostic leaked a sensitive input")
+			}
+		}
+		want := "provider_failure"
+		if providerError == failure("nonce_missing") {
+			want = "nonce_missing"
+		}
+		if !strings.Contains(output.String(), `"stage":"`+want+`"`) {
+			t.Fatal("diagnostic stage missing")
+		}
+	}
+}
 
 type stubStore struct {
 	session   Session

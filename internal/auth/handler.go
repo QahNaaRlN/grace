@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -98,27 +99,30 @@ func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 	noStore(w)
 	browser := tokenCookie(r, flowCookie)
 	setCookie(w, flowCookie, "", -1)
-	fail := func() { http.Redirect(w, r, "/login?error=authentication_failed", http.StatusSeeOther) }
+	fail := func(stage string) {
+		slog.Warn("authentication callback rejected", "stage", stage)
+		http.Redirect(w, r, "/login?error=authentication_failed", http.StatusSeeOther)
+	}
 	state, code := r.URL.Query().Get("state"), r.URL.Query().Get("code")
 	if h.mode != "telegram" || h.provider == nil || browser == "" || len(state) != 43 || code == "" || len(code) > 4096 || r.URL.Query().Get("error") != "" {
-		fail()
+		fail("browser_or_callback")
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 	f, err := h.store.TakeFlow(ctx, state, browser)
 	if err != nil {
-		fail()
+		fail("login_flow")
 		return
 	}
 	identity, err := h.provider.Exchange(ctx, code, f)
 	if err != nil {
-		fail()
+		fail(failureStage(err))
 		return
 	}
 	token := randomToken()
 	if _, err = h.store.Login(ctx, identity, f.InvitationHash, token, csrfToken(token)); err != nil {
-		fail()
+		fail("identity_or_invitation")
 		return
 	}
 	setCookie(w, sessionCookie, token, 7*24*3600)
