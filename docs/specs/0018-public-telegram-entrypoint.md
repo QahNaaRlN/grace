@@ -1,12 +1,12 @@
 # SPEC-0018: Публичный экран Telegram-входа без старого Basic Auth
 
-- Статус: accepted
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-06
 - Acceptance owner: owner
 - Acceptance record: владелец поручил «устранить баг» после диагноза и конкретного предложения убрать внешний Basic Auth, сохранив Telegram-вход, приглашения и защиту API, и обновить deployment-проверки.
 - Implementation branch: codex/public-telegram-entrypoint
-- Implementation commit: отсутствует
+- Implementation commit: 0d7138f; release promotion correction 9640c51; production release f9875f525b6be06eb7cf08700e67201c539e845b
 
 ## Проблема и пользовательский результат
 
@@ -80,15 +80,15 @@ GitHub secret остаются нетронутыми. Предыдущий immu
 
 ## Критерии приёмки
 
-- [ ] AC1: Реальный Caddy пропускает Web/login/meta без Basic credentials;
+- [x] AC1: Реальный Caddy пропускает Web/login/meta без Basic credentials;
   ответы не содержат Basic challenge.
-- [ ] AC2: Анонимные me/accounts через Caddy возвращают 401 JSON приложения;
+- [x] AC2: Анонимные me/accounts через Caddy возвращают 401 JSON приложения;
   существующие auth/isolation tests проходят.
-- [ ] AC3: Production Compose валиден без basic_auth_hash; host ports только
+- [x] AC3: Production Compose валиден без basic_auth_hash; host ports только
   у Caddy; credentials Telegram и locked mode сохраняют прежнее поведение.
-- [ ] AC4: Deploy smoke проверяет AC1/2 без Basic password; CI/Delivery проходят
+- [x] AC4: Deploy smoke проверяет AC1/2 без Basic password; CI/Delivery проходят
   до публикации; на production повторены анонимные проверки.
-- [ ] AC5: make test, make test-production, git diff --check проходят;
+- [x] AC5: make test, make test-production, git diff --check проходят;
   evidence связывает AC с исполняемыми результатами и release SHA.
 
 ## Исполняемые проверки
