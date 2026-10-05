@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Bot, HeartPulse, WalletCards } from 'lucide-react'
+import { Bot, HeartPulse, WalletCards, Import } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { cn } from '@/shared/lib/utils'
@@ -38,9 +38,10 @@ export function AppLayout({ children }: AppLayoutProps) {
             aria-label="Основная навигация"
             className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/90 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none"
           >
-            <div className="mx-auto grid max-w-md grid-cols-2 gap-2 rounded-2xl bg-muted/80 p-1 md:flex">
+            <div className="mx-auto grid max-w-md grid-cols-3 gap-1 rounded-2xl bg-muted/80 p-1 md:flex">
               <NavLink to="/" end className={navClass}><WalletCards className="size-4" aria-hidden="true" />Финансы</NavLink>
               <NavLink to="/assistant" className={navClass}><Bot className="size-4" aria-hidden="true" />Ассистент</NavLink>
+              <NavLink to="/imports" className={navClass}><Import className="size-4" aria-hidden="true" />Импорт</NavLink>
             </div>
           </nav>
         </div>

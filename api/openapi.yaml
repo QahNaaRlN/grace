@@ -1,13 +1,572 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.6.0
-  description: Deterministic financial events, receipts, obligations, and read-only analytics. Money uses integer minor units.
+  version: 0.7.0
+  description: Deterministic financial events, receipts, obligations, confirmed import drafts, and read-only analytics. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
 security:
   - SessionCookie: []
 paths:
+  "/api/imports/batches":
+    "get":
+      "operationId": "listImportBatches"
+      "parameters": [{"name":"cursor","in":"query","required":false,"schema":{"type":"string","format":"uuid"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportBatchPage"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+    "post":
+      "operationId": "uploadImportSnapshot"
+      "parameters": [{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"}]
+      "responses":
+        "201":
+          "description": "New draft saved"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportBatch"
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportBatch"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ImportSnapshot"
+  "/api/imports/batches/{batchId}":
+    "get":
+      "operationId": "getImportBatch"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportBatch"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+  "/api/imports/batches/{batchId}/records":
+    "get":
+      "operationId": "listImportRecords"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string","format":"uuid"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}},{"name":"domain","in":"query","required":false,"schema":{"type":"string"}},{"name":"status","in":"query","required":false,"schema":{"type":"string"}}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportRecordPage"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+  "/api/imports/batches/{batchId}/records/{recordId}":
+    "get":
+      "operationId": "getImportRecord"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"recordId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportRecord"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+    "patch":
+      "operationId": "editImportRecord"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"recordId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportBatch"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ImportEdit"
+  "/api/imports/batches/{batchId}/previews":
+    "post":
+      "operationId": "previewImport"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportPreview"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ImportSelection"
+  "/api/imports/batches/{batchId}/confirmations":
+    "post":
+      "operationId": "confirmImport"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportReceipt"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ImportConfirmation"
+  "/api/imports/batches/{batchId}/confirmations/{confirmationId}":
+    "get":
+      "operationId": "getImportConfirmation"
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"confirmationId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      "responses":
+        "200":
+          "description": "Owner-scoped result or idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ImportReceipt"
+        "400":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "413":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "422":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "Safe import error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
   /api/auth/login:
     post:
       operationId: startTelegramLogin
@@ -676,6 +1235,569 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    "ImportResolution":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["candidateId","reason"]
+      "properties":
+        "candidateId":
+          "type": "string"
+        "reason":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 2000
+    "ImportFields":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["kind","currency","amountMinor","occurredAt","merchant","description"]
+      "properties":
+        "kind":
+          "type": "string"
+          "enum": ["purchase","income_received","debt_payment","internal_transfer","refund"]
+        "currency":
+          "type": "string"
+          "pattern": "^[A-Z]{3}$"
+        "amountMinor":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "accountId":
+          "type": "string"
+          "format": "uuid"
+        "destinationAccountId":
+          "type": "string"
+          "format": "uuid"
+        "categoryId":
+          "type": ["string","null"]
+          "format": "uuid"
+        "originalEventId":
+          "type": "string"
+          "format": "uuid"
+        "occurredAt":
+          "type": "string"
+          "format": "date-time"
+        "merchant":
+          "type": "string"
+        "description":
+          "type": "string"
+        "timeReason":
+          "type": "string"
+          "maxLength": 2000
+    "ImportDecision":
+      "oneOf": [{"type":"object","additionalProperties":false,"required":["action"],"properties":{"action":{"type":"string","enum":["unresolved"]},"reason":{"type":"string","maxLength":2000},"resolutions":{"type":"array","items":{"$ref":"#/components/schemas/ImportResolution"},"maxItems":1000}}},{"type":"object","additionalProperties":false,"required":["action","reason"],"properties":{"action":{"type":"string","enum":["exclude"]},"reason":{"type":"string","maxLength":2000},"resolutions":{"type":"array","items":{"$ref":"#/components/schemas/ImportResolution"},"maxItems":1000}}},{"type":"object","additionalProperties":false,"required":["action","fields"],"properties":{"action":{"type":"string","enum":["create"]},"reason":{"type":"string","maxLength":2000},"resolutions":{"type":"array","items":{"$ref":"#/components/schemas/ImportResolution"},"maxItems":1000},"fields":{"$ref":"#/components/schemas/ImportFields"}}},{"type":"object","additionalProperties":false,"required":["action","eventId","reason"],"properties":{"action":{"type":"string","enum":["link_existing"]},"reason":{"type":"string","maxLength":2000},"resolutions":{"type":"array","items":{"$ref":"#/components/schemas/ImportResolution"},"maxItems":1000},"eventId":{"type":"string","format":"uuid"}}},{"type":"object","additionalProperties":false,"required":["action","canonicalRecordId","reason"],"properties":{"action":{"type":"string","enum":["duplicate_of"]},"reason":{"type":"string","maxLength":2000},"resolutions":{"type":"array","items":{"$ref":"#/components/schemas/ImportResolution"},"maxItems":1000},"canonicalRecordId":{"type":"string","format":"uuid"}}}]
+      "discriminator":
+        "propertyName": "action"
+    "ImportDate":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["local","precision","timeZone"]
+      "properties":
+        "local":
+          "type": "string"
+        "precision":
+          "type": "string"
+        "timeZone":
+          "type": "string"
+        "utc":
+          "type": "string"
+    "ImportMetadata":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["sourceId","capturedAt","locale","declaredTimeZone","confirmedTimeZone"]
+      "properties":
+        "sourceId":
+          "type": "string"
+        "capturedAt":
+          "type": "string"
+          "format": "date-time"
+        "locale":
+          "type": "string"
+        "declaredTimeZone":
+          "type": "string"
+        "confirmedTimeZone":
+          "type": "string"
+    "ImportIssue":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["code","severity","coordinate","message"]
+      "properties":
+        "code":
+          "type": "string"
+        "severity":
+          "type": "string"
+        "coordinate":
+          "type": "string"
+        "message":
+          "type": "string"
+    "ImportNormalized":
+      "type": "object"
+      "additionalProperties": false
+      "required": []
+      "properties":
+        "kind":
+          "type": "string"
+        "currency":
+          "type": "string"
+        "amountMinor":
+          "type": ["integer","null"]
+          "format": "int64"
+        "date":
+          "$ref": "#/components/schemas/ImportDate"
+        "description":
+          "type": "string"
+        "category":
+          "type": "string"
+        "subcategory":
+          "type": "string"
+        "categoryId":
+          "type": "string"
+        "account":
+          "type": "string"
+        "accountId":
+          "type": "string"
+        "funding":
+          "type": "object"
+          "additionalProperties": false
+          "required": ["kind"]
+          "properties":
+            "kind":
+              "type": "string"
+            "facilityId":
+              "type": "string"
+        "priority":
+          "type": "string"
+        "recurring":
+          "type": "boolean"
+        "recipient":
+          "type": "string"
+        "amounts":
+          "type": "object"
+          "additionalProperties":
+            "type": ["integer","null"]
+            "format": "int64"
+        "dates":
+          "type": "object"
+          "additionalProperties":
+            "$ref": "#/components/schemas/ImportDate"
+        "labels":
+          "type": "object"
+          "additionalProperties":
+            "type": "string"
+    "ImportSourceRecord":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","sheetId","sheet","row","domain","raw","normalized","issues"]
+      "properties":
+        "id":
+          "type": "string"
+        "sheetId":
+          "type": "integer"
+          "format": "int64"
+        "sheet":
+          "type": "string"
+        "row":
+          "type": "integer"
+        "domain":
+          "type": "string"
+        "originalId":
+          "type": "string"
+        "raw":
+          "type": "object"
+          "additionalProperties":
+            "$ref": "#/components/schemas/ImportCell"
+        "normalized":
+          "$ref": "#/components/schemas/ImportNormalized"
+        "issues":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportIssue"
+    "ImportValue":
+      "type": "object"
+      "additionalProperties": false
+      "required": []
+      "properties":
+        "numberValue":
+          "type": "number"
+          "description": "Original decimal token; upload original bytes to avoid JavaScript numeric rounding."
+        "stringValue":
+          "type": "string"
+        "boolValue":
+          "type": "boolean"
+        "formulaValue":
+          "type": "string"
+    "ImportCell":
+      "type": "object"
+      "additionalProperties": false
+      "required": []
+      "properties":
+        "userEnteredValue":
+          "$ref": "#/components/schemas/ImportValue"
+        "effectiveValue":
+          "$ref": "#/components/schemas/ImportValue"
+        "formattedValue":
+          "type": "string"
+        "note":
+          "type": "string"
+        "dataValidation":
+          "type": "object"
+          "additionalProperties": true
+    "ImportSnapshot":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["schemaVersion","sourceId","capturedAt","locale","declaredTimeZone","confirmedTimeZone","sheets"]
+      "properties":
+        "schemaVersion":
+          "type": "string"
+          "enum": ["grace.sheet-snapshot.v1"]
+        "sourceId":
+          "type": "string"
+        "capturedAt":
+          "type": "string"
+          "format": "date-time"
+        "locale":
+          "type": "string"
+          "enum": ["ru_RU"]
+        "declaredTimeZone":
+          "type": "string"
+        "confirmedTimeZone":
+          "type": "string"
+          "enum": ["Asia/Yekaterinburg"]
+        "sheets":
+          "type": "array"
+          "items":
+            "type": "object"
+            "additionalProperties": false
+            "required": ["sheetId","title","rowCount","columnCount","ranges"]
+            "properties":
+              "sheetId":
+                "type": "integer"
+                "format": "int64"
+              "title":
+                "type": "string"
+              "rowCount":
+                "type": "integer"
+              "columnCount":
+                "type": "integer"
+              "ranges":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "additionalProperties": false
+                  "required": ["startRow","startColumn","rows"]
+                  "properties":
+                    "startRow":
+                      "type": "integer"
+                      "minimum": 1
+                    "startColumn":
+                      "type": "integer"
+                      "minimum": 1
+                    "rows":
+                      "type": "array"
+                      "items":
+                        "type": "object"
+                        "additionalProperties": false
+                        "required": ["values"]
+                        "properties":
+                          "values":
+                            "type": "array"
+                            "items":
+                              "$ref": "#/components/schemas/ImportCell"
+          "minItems": 1
+          "maxItems": 20
+        "mappings":
+          "type": "object"
+          "additionalProperties": false
+          "required": []
+          "properties":
+            "accounts":
+              "type": "object"
+              "additionalProperties":
+                "type": "string"
+            "categories":
+              "type": "object"
+              "additionalProperties":
+                "type": "string"
+            "funding":
+              "type": "object"
+              "additionalProperties":
+                "type": "object"
+                "additionalProperties": false
+                "required": ["kind"]
+                "properties":
+                  "kind":
+                    "type": "string"
+                  "facilityId":
+                    "type": "string"
+    "ImportBatch":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","source","payloadHash","revision","status","createdAt","counts","domainCounts"]
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "source":
+          "$ref": "#/components/schemas/ImportMetadata"
+        "payloadHash":
+          "type": "string"
+        "revision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "status":
+          "type": "string"
+          "enum": ["reviewing","completed"]
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "counts":
+          "type": "object"
+          "additionalProperties":
+            "type": "integer"
+        "domainCounts":
+          "type": "object"
+          "additionalProperties":
+            "type": "integer"
+    "ImportCandidate":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","rule","differences"]
+      "properties":
+        "source": { "$ref": "#/components/schemas/ImportSourceRecord" }
+        "event": { "$ref": "#/components/schemas/FinancialEvent" }
+        "id":
+          "type": "string"
+        "recordId":
+          "type": "string"
+          "format": "uuid"
+        "eventId":
+          "type": "string"
+          "format": "uuid"
+        "rule":
+          "type": "string"
+        "differences":
+          "type": "array"
+          "items":
+            "type": "string"
+    "ImportAudit":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["revision","actorId","createdAt","decision"]
+      "properties":
+        "revision":
+          "type": "integer"
+          "format": "int64"
+        "actorId":
+          "type": "string"
+          "format": "uuid"
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "decision":
+          "$ref": "#/components/schemas/ImportDecision"
+    "ImportRecord":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","source","decision","published","candidates","history","eventId"]
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "source":
+          "$ref": "#/components/schemas/ImportSourceRecord"
+        "decision":
+          "$ref": "#/components/schemas/ImportDecision"
+        "published":
+          "type": "boolean"
+        "candidates":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportCandidate"
+        "history":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportAudit"
+        "eventId":
+          "type": ["string","null"]
+          "format": "uuid"
+    "ImportChange":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["accountId","accountName","currency","deltaMinor"]
+      "properties":
+        "accountName": { "type": "string" }
+        "accountId":
+          "type": "string"
+          "format": "uuid"
+        "currency":
+          "type": "string"
+        "deltaMinor":
+          "type": "integer"
+          "format": "int64"
+    "ImportLine":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["recordId","sourceSheet","sourceRow","decision","candidates","blockers","warnings","postings"]
+      "properties":
+        "sourceSheet": { "type": "string" }
+        "sourceRow": { "type": "integer" }
+        "recordId":
+          "type": "string"
+          "format": "uuid"
+        "decision":
+          "$ref": "#/components/schemas/ImportDecision"
+        "sourceDate":
+          "$ref": "#/components/schemas/ImportDate"
+        "candidates":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportCandidate"
+        "blockers":
+          "type": "array"
+          "items":
+            "type": "string"
+        "warnings":
+          "type": "array"
+          "items":
+            "type": "string"
+        "postings":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportChange"
+    "ImportPreview":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","batchId","revision","hash","expiresAt","lines","changes","blockers","newEvents","links","exclusions"]
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "batchId":
+          "type": "string"
+          "format": "uuid"
+        "revision":
+          "type": "integer"
+          "format": "int64"
+        "hash":
+          "type": "string"
+        "expiresAt":
+          "type": "string"
+          "format": "date-time"
+        "lines":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportLine"
+        "changes":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportChange"
+        "blockers":
+          "type": "array"
+          "items":
+            "type": "string"
+        "newEvents":
+          "type": "integer"
+        "links":
+          "type": "integer"
+        "exclusions":
+          "type": "integer"
+    "ImportReceipt":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","batchId","previewId","createdAt","outcomes"]
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "batchId":
+          "type": "string"
+          "format": "uuid"
+        "previewId":
+          "type": "string"
+          "format": "uuid"
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "outcomes":
+          "type": "array"
+          "items":
+            "type": "object"
+            "additionalProperties": false
+            "required": ["recordId","action","eventId"]
+            "properties":
+              "recordId":
+                "type": "string"
+                "format": "uuid"
+              "event": { "$ref": "#/components/schemas/FinancialEvent" }
+              "action":
+                "type": "string"
+                "enum": ["create","link_existing","duplicate_of","exclude"]
+              "eventId":
+                "type": ["string","null"]
+                "format": "uuid"
+    "ImportEdit":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["expectedRevision","decision"]
+      "properties":
+        "expectedRevision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "decision":
+          "$ref": "#/components/schemas/ImportDecision"
+    "ImportSelection":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["expectedRevision","recordIds"]
+      "properties":
+        "expectedRevision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "recordIds":
+          "type": "array"
+          "items":
+            "type": "string"
+            "format": "uuid"
+          "minItems": 1
+          "maxItems": 100
+          "uniqueItems": true
+    "ImportConfirmation":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["previewId","previewHash"]
+      "properties":
+        "previewId":
+          "type": "string"
+          "format": "uuid"
+        "previewHash":
+          "type": "string"
+          "pattern": "^[0-9a-f]{64}$"
+    "ImportBatchPage":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["items"]
+      "properties":
+        "items":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportBatch"
+        "nextCursor":
+          "type": "string"
+          "format": "uuid"
+    "ImportRecordPage":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["items"]
+      "properties":
+        "items":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ImportRecord"
+        "nextCursor":
+          "type": "string"
+          "format": "uuid"
     AuthUser:
       type: object
       required:
@@ -920,7 +2042,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         kind: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] }
-        source: { type: string, enum: [manual, bank_import, receipt] }
+        source: { type: string, enum: [manual, bank_import, receipt, import] }
         categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         categoryName: { oneOf: [{ type: string }, { type: 'null' }] }
         originalEventId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }

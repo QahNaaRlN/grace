@@ -11,6 +11,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/auth"
 	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
+	"github.com/QahNaaRlN/grace/internal/imports"
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
@@ -26,7 +27,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   cfg.CORSOrigins,
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key", "X-CSRF-Token"},
 		AllowCredentials: true,
 	}))
@@ -85,6 +86,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	})
 	router.Get("/api/meta", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.6.0-dev"})
+	})
+	router.Route("/api/imports", func(router chi.Router) {
+		router.Use(authHandler.Require)
+		imports.NewHandler(imports.NewRepository(pool)).Routes(router)
 	})
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Use(authHandler.Require)

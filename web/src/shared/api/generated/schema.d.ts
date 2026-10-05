@@ -4,6 +4,118 @@
  */
 
 export interface paths {
+    "/api/imports/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listImportBatches"];
+        put?: never;
+        post: operations["uploadImportSnapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getImportBatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listImportRecords"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/records/{recordId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getImportRecord"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["editImportRecord"];
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/confirmations/{confirmationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getImportConfirmation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -393,6 +505,310 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ImportResolution: {
+            candidateId: string;
+            reason: string;
+        };
+        ImportFields: {
+            /** @enum {string} */
+            kind: "purchase" | "income_received" | "debt_payment" | "internal_transfer" | "refund";
+            currency: string;
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: uuid */
+            accountId?: string;
+            /** Format: uuid */
+            destinationAccountId?: string;
+            /** Format: uuid */
+            categoryId?: string | null;
+            /** Format: uuid */
+            originalEventId?: string;
+            /** Format: date-time */
+            occurredAt: string;
+            merchant: string;
+            description: string;
+            timeReason?: string;
+        };
+        ImportDecision: {
+            /** @enum {string} */
+            action: "unresolved";
+            reason?: string;
+            resolutions?: components["schemas"]["ImportResolution"][];
+        } | {
+            /** @enum {string} */
+            action: "exclude";
+            reason: string;
+            resolutions?: components["schemas"]["ImportResolution"][];
+        } | {
+            /** @enum {string} */
+            action: "create";
+            reason?: string;
+            resolutions?: components["schemas"]["ImportResolution"][];
+            fields: components["schemas"]["ImportFields"];
+        } | {
+            /** @enum {string} */
+            action: "link_existing";
+            reason: string;
+            resolutions?: components["schemas"]["ImportResolution"][];
+            /** Format: uuid */
+            eventId: string;
+        } | {
+            /** @enum {string} */
+            action: "duplicate_of";
+            reason: string;
+            resolutions?: components["schemas"]["ImportResolution"][];
+            /** Format: uuid */
+            canonicalRecordId: string;
+        };
+        ImportDate: {
+            local: string;
+            precision: string;
+            timeZone: string;
+            utc?: string;
+        };
+        ImportMetadata: {
+            sourceId: string;
+            /** Format: date-time */
+            capturedAt: string;
+            locale: string;
+            declaredTimeZone: string;
+            confirmedTimeZone: string;
+        };
+        ImportIssue: {
+            code: string;
+            severity: string;
+            coordinate: string;
+            message: string;
+        };
+        ImportNormalized: {
+            kind?: string;
+            currency?: string;
+            /** Format: int64 */
+            amountMinor?: number | null;
+            date?: components["schemas"]["ImportDate"];
+            description?: string;
+            category?: string;
+            subcategory?: string;
+            categoryId?: string;
+            account?: string;
+            accountId?: string;
+            funding?: {
+                kind: string;
+                facilityId?: string;
+            };
+            priority?: string;
+            recurring?: boolean;
+            recipient?: string;
+            amounts?: {
+                [key: string]: number | null;
+            };
+            dates?: {
+                [key: string]: components["schemas"]["ImportDate"];
+            };
+            labels?: {
+                [key: string]: string;
+            };
+        };
+        ImportSourceRecord: {
+            id: string;
+            /** Format: int64 */
+            sheetId: number;
+            sheet: string;
+            row: number;
+            domain: string;
+            originalId?: string;
+            raw: {
+                [key: string]: components["schemas"]["ImportCell"];
+            };
+            normalized: components["schemas"]["ImportNormalized"];
+            issues: components["schemas"]["ImportIssue"][];
+        };
+        ImportValue: {
+            /** @description Original decimal token; upload original bytes to avoid JavaScript numeric rounding. */
+            numberValue?: number;
+            stringValue?: string;
+            boolValue?: boolean;
+            formulaValue?: string;
+        };
+        ImportCell: {
+            userEnteredValue?: components["schemas"]["ImportValue"];
+            effectiveValue?: components["schemas"]["ImportValue"];
+            formattedValue?: string;
+            note?: string;
+            dataValidation?: {
+                [key: string]: unknown;
+            };
+        };
+        ImportSnapshot: {
+            /** @enum {string} */
+            schemaVersion: "grace.sheet-snapshot.v1";
+            sourceId: string;
+            /** Format: date-time */
+            capturedAt: string;
+            /** @enum {string} */
+            locale: "ru_RU";
+            declaredTimeZone: string;
+            /** @enum {string} */
+            confirmedTimeZone: "Asia/Yekaterinburg";
+            sheets: {
+                /** Format: int64 */
+                sheetId: number;
+                title: string;
+                rowCount: number;
+                columnCount: number;
+                ranges: {
+                    startRow: number;
+                    startColumn: number;
+                    rows: {
+                        values: components["schemas"]["ImportCell"][];
+                    }[];
+                }[];
+            }[];
+            mappings?: {
+                accounts?: {
+                    [key: string]: string;
+                };
+                categories?: {
+                    [key: string]: string;
+                };
+                funding?: {
+                    [key: string]: {
+                        kind: string;
+                        facilityId?: string;
+                    };
+                };
+            };
+        };
+        ImportBatch: {
+            /** Format: uuid */
+            id: string;
+            source: components["schemas"]["ImportMetadata"];
+            payloadHash: string;
+            /** Format: int64 */
+            revision: number;
+            /** @enum {string} */
+            status: "reviewing" | "completed";
+            /** Format: date-time */
+            createdAt: string;
+            counts: {
+                [key: string]: number;
+            };
+            domainCounts: {
+                [key: string]: number;
+            };
+        };
+        ImportCandidate: {
+            source?: components["schemas"]["ImportSourceRecord"];
+            event?: components["schemas"]["FinancialEvent"];
+            id: string;
+            /** Format: uuid */
+            recordId?: string;
+            /** Format: uuid */
+            eventId?: string;
+            rule: string;
+            differences: string[];
+        };
+        ImportAudit: {
+            /** Format: int64 */
+            revision: number;
+            /** Format: uuid */
+            actorId: string;
+            /** Format: date-time */
+            createdAt: string;
+            decision: components["schemas"]["ImportDecision"];
+        };
+        ImportRecord: {
+            /** Format: uuid */
+            id: string;
+            source: components["schemas"]["ImportSourceRecord"];
+            decision: components["schemas"]["ImportDecision"];
+            published: boolean;
+            candidates: components["schemas"]["ImportCandidate"][];
+            history: components["schemas"]["ImportAudit"][];
+            /** Format: uuid */
+            eventId: string | null;
+        };
+        ImportChange: {
+            accountName: string;
+            /** Format: uuid */
+            accountId: string;
+            currency: string;
+            /** Format: int64 */
+            deltaMinor: number;
+        };
+        ImportLine: {
+            sourceSheet: string;
+            sourceRow: number;
+            /** Format: uuid */
+            recordId: string;
+            decision: components["schemas"]["ImportDecision"];
+            sourceDate?: components["schemas"]["ImportDate"];
+            candidates: components["schemas"]["ImportCandidate"][];
+            blockers: string[];
+            warnings: string[];
+            postings: components["schemas"]["ImportChange"][];
+        };
+        ImportPreview: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            batchId: string;
+            /** Format: int64 */
+            revision: number;
+            hash: string;
+            /** Format: date-time */
+            expiresAt: string;
+            lines: components["schemas"]["ImportLine"][];
+            changes: components["schemas"]["ImportChange"][];
+            blockers: string[];
+            newEvents: number;
+            links: number;
+            exclusions: number;
+        };
+        ImportReceipt: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            batchId: string;
+            /** Format: uuid */
+            previewId: string;
+            /** Format: date-time */
+            createdAt: string;
+            outcomes: {
+                /** Format: uuid */
+                recordId: string;
+                event?: components["schemas"]["FinancialEvent"];
+                /** @enum {string} */
+                action: "create" | "link_existing" | "duplicate_of" | "exclude";
+                /** Format: uuid */
+                eventId: string | null;
+            }[];
+        };
+        ImportEdit: {
+            /** Format: int64 */
+            expectedRevision: number;
+            decision: components["schemas"]["ImportDecision"];
+        };
+        ImportSelection: {
+            /** Format: int64 */
+            expectedRevision: number;
+            recordIds: string[];
+        };
+        ImportConfirmation: {
+            /** Format: uuid */
+            previewId: string;
+            previewHash: string;
+        };
+        ImportBatchPage: {
+            items: components["schemas"]["ImportBatch"][];
+            /** Format: uuid */
+            nextCursor?: string;
+        };
+        ImportRecordPage: {
+            items: components["schemas"]["ImportRecord"][];
+            /** Format: uuid */
+            nextCursor?: string;
+        };
         AuthUser: {
             /** Format: uuid */
             id: string;
@@ -585,7 +1001,7 @@ export interface components {
             /** @enum {string} */
             kind: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment";
             /** @enum {string} */
-            source: "manual" | "bank_import" | "receipt";
+            source: "manual" | "bank_import" | "receipt" | "import";
             categoryId?: string | null;
             categoryName?: string | null;
             originalEventId?: string | null;
@@ -910,6 +1326,900 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listImportBatches: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchPage"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    uploadImportSnapshot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportSnapshot"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatch"];
+                };
+            };
+            /** @description New draft saved */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatch"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getImportBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatch"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listImportRecords: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                domain?: string;
+                status?: string;
+            };
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRecordPage"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getImportRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRecord"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    editImportRecord: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                batchId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportEdit"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatch"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    previewImport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportSelection"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreview"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    confirmImport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportConfirmation"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReceipt"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getImportConfirmation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+                confirmationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result or idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReceipt"];
+                };
+            };
+            /** @description Safe import error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Safe import error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     startTelegramLogin: {
         parameters: {
             query?: never;
