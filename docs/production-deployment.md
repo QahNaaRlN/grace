@@ -1,15 +1,15 @@
 # Production deployment Grace
 
 После SPEC-0013 новая версия API закрыта по умолчанию (`GRACE_AUTH_MODE=locked`).
-Basic Auth не заменяет серверную сессию. До релиза настроить Telegram OIDC,
+По SPEC-0018 публичный экран входа не требует Basic Auth. До релиза настроить Telegram OIDC,
 применить миграцию 000006 после backup и выполнить первый вход owner по
 [authentication runbook](authentication.md). Историческая проверка SPEC-0012
 относится к версии без пользовательских сессий.
 
-Этот runbook реализует принятую
-`docs/specs/0012-owner-vps-production-deployment.md`. Production является
-owner-only: Caddy закрывает Web и API Basic Auth, PostgreSQL остаётся во
-внутренней Docker network, assistant router выключен.
+Этот runbook реализует SPEC-0012 с обновлениями SPEC-0013–0015 и SPEC-0018.
+Caddy открывает Web shell и Telegram-вход; API закрывает финансовые данные
+серверными сессиями и tenant isolation. Доступ новых пользователей — по
+приглашению. PostgreSQL остаётся во внутренней Docker network, assistant router выключен.
 
 ## Production topology
 
@@ -94,29 +94,30 @@ Dedicated deployment public key записывается в
 
 ```text
 /opt/grace/shared/secrets/postgres_password
-/opt/grace/shared/secrets/basic_auth_hash
 ```
 
-PostgreSQL password генерируется как URL-safe random value. Basic Auth password
-owner сохраняет в password manager; VPS хранит только bcrypt hash. Рекомендуемая
-генерация через stdin, чтобы password не попал в shell history:
+PostgreSQL password генерируется как URL-safe random value. Telegram credentials
+хранятся отдельно в защищённом `telegram.env`, см. authentication runbook.
 
 ```bash
 umask 077
 openssl rand -hex 32 > /opt/grace/shared/secrets/postgres_password
-read -r -s -p 'Grace password: ' GRACE_PASSWORD
-printf '\n'
-printf '%s' "$GRACE_PASSWORD" |
-  htpasswd -niBC 14 grace |
-  cut -d: -f2 > /opt/grace/shared/secrets/basic_auth_hash
-unset GRACE_PASSWORD
 chown grace-deploy:grace-deploy /opt/grace/shared/secrets/*
 chmod 0600 /opt/grace/shared/secrets/*
 ```
 
-Plaintext Basic Auth password также записывается как masked GitHub Actions
-secret `PRODUCTION_BASIC_AUTH_PASSWORD`. Dedicated SSH private key записывается
-как `PRODUCTION_SSH_KEY`. Ни один secret не добавляется в repository.
+Dedicated SSH private key записывается как `PRODUCTION_SSH_KEY`.
+Ни один secret не добавляется в repository. Старые `basic_auth_hash` и
+`PRODUCTION_BASIC_AUTH_PASSWORD` больше не используются новым релизом;
+сохранить их для rollback, не удалять автоматически.
+
+После выпуска проверить без cookies и общих credentials:
+
+```bash
+./scripts/check-public-entrypoint.sh https://graceapp.ru
+```
+
+Web/login/meta должны вернуть 200 без Basic challenge; me/accounts — 401 JSON.
 
 ## Release bundle
 
