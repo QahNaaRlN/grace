@@ -319,6 +319,9 @@ func TestGoldenReport(t *testing.T) {
 			}
 		}
 		want, e := os.ReadFile(path)
+		// Git may check out textual fixtures with CRLF on Windows. Physical line
+		// endings do not change the JSON values or the Markdown report contract.
+		want = bytes.ReplaceAll(want, []byte("\r\n"), []byte("\n"))
 		if e != nil || !bytes.Equal(want, got) {
 			t.Fatalf("golden mismatch %s: %v", name, e)
 		}
