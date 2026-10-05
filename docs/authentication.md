@@ -115,3 +115,17 @@ Origin и Web auth boundary. `make test-integration` включает
 В Windows запуск shell targets требует Git Bash (например,
 `make SHELL=bash test`). POSIX 0600 для evaluator reports проверяется на Unix;
 в Windows доступ к таким файлам определяется ACL каталога оператора.
+
+## Постоянная production-конфигурация Telegram
+
+Оператор хранит GRACE_AUTH_MODE=telegram, TELEGRAM_CLIENT_ID и
+TELEGRAM_CLIENT_SECRET в /opt/grace/shared/secrets/telegram.env (mode 600,
+владелец grace-deploy). deploy.sh загружает этот файл перед Compose, поэтому
+последующие релизы сохраняют настройку. Credentials не входят в GitHub secrets
+или release bundle. Файл является доверенным shell environment: редактировать
+его может только оператор; не записывать туда данные посетителей.
+
+Production API подключён к backend для PostgreSQL и edge для исходящих HTTPS
+запросов Telegram. Host ports API/БД не публикуются. Внешний Basic Auth пока
+остаётся включённым. После миграции 000006 operator создаёт owner invitation,
+а владелец лично подтверждает Telegram login.

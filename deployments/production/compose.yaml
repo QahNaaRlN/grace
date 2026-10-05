@@ -65,6 +65,7 @@ services:
       GRACE_ASSISTANT_ROUTING_ENABLED: 'false'
     networks:
       - backend
+      - edge
     healthcheck:
       test: [CMD, wget, -qO-, http://127.0.0.1:8080/ready]
       interval: 5s

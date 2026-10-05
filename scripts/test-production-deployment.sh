@@ -87,11 +87,60 @@ published_ports="$(POSTGRES_PASSWORD=test-postgres-password GRACE_SECRETS_DIR="$
     process.stdin.on("data", chunk => input += chunk);
     process.stdin.on("end", () => {
       const config = JSON.parse(input);
+      const apiNetworks = Object.keys(config.services.api.networks || {});
+      if (!apiNetworks.some(name => config.networks[name]?.internal !== true)) {
+        throw new Error("Production API cannot reach Telegram token/JWKS endpoints");
+      }
       for (const [name, service] of Object.entries(config.services)) {
         if (service.ports) process.stdout.write(`${name}\n`);
       }
     });
   ')"
 test "$published_ports" = "caddy"
+
+# Exercise credential loading before a mock Docker stops the deployment.
+credential_root="$tmp_dir/credential-root"
+credential_bin="$tmp_dir/credential-bin"
+mkdir -p "$credential_root/shared/secrets" "$credential_bin"
+cp "$bundle/deploy.sh" "$credential_root/deploy.sh"
+cat > "$credential_root/release.env" <<EOF
+GRACE_SECRETS_DIR=$secrets
+RELEASE_TAG=sha-0000000000000000000000000000000000000000
+EOF
+cat > "$credential_root/shared/secrets/telegram.env" <<'EOF'
+GRACE_AUTH_MODE=telegram
+TELEGRAM_CLIENT_ID=test-client
+TELEGRAM_CLIENT_SECRET=test-only-credential
+EOF
+cat > "$credential_bin/docker" <<'EOF'
+#!/bin/sh
+case "$*" in
+  *'pull --policy'*)
+    test "${GRACE_AUTH_MODE:-}" = telegram || exit 43
+    test "${TELEGRAM_CLIENT_ID:-}" = test-client || exit 43
+    test "${TELEGRAM_CLIENT_SECRET:-}" = test-only-credential || exit 43
+    touch "$CREDENTIAL_CHECK_MARKER"
+    exit 42 ;;
+  *) exit 0 ;;
+esac
+EOF
+chmod 0755 "$credential_bin/docker"
+chmod 0644 "$credential_root/shared/secrets/telegram.env"
+if GRACE_ROOT="$credential_root" PATH="$credential_bin:$PATH" "$credential_root/deploy.sh" \
+  0000000000000000000000000000000000000000 >"$tmp_dir/credential-error" 2>&1; then
+  echo "deployment accepted a public credential file" >&2; exit 1
+fi
+grep -q 'Telegram environment must have mode 400 or 600' "$tmp_dir/credential-error"
+test ! -e "$tmp_dir/credential-loaded"
+chmod 0600 "$credential_root/shared/secrets/telegram.env"
+if GRACE_ROOT="$credential_root" CREDENTIAL_CHECK_MARKER="$tmp_dir/credential-loaded" \
+  PATH="$credential_bin:$PATH" "$credential_root/deploy.sh" \
+  0000000000000000000000000000000000000000 >"$tmp_dir/credential-output" 2>&1; then
+  echo "mock deployment unexpectedly succeeded" >&2; exit 1
+fi
+test -f "$tmp_dir/credential-loaded"
+if grep -q 'test-only-credential' "$tmp_dir/credential-output"; then
+  echo "deployment leaked credentials" >&2; exit 1
+fi
 
 echo "SPEC-0012 production deployment checks passed"

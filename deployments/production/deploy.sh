@@ -36,6 +36,23 @@ if ! grep -qx "RELEASE_TAG=sha-$release_sha" "$release_env"; then
   exit 1
 fi
 
+# Operator configuration survives releases; credentials never enter the bundle.
+telegram_env="$grace_root/shared/secrets/telegram.env"
+if [ -f "$telegram_env" ]; then
+  case "$(stat -c '%a' "$telegram_env")" in
+    400|600) ;;
+    *) echo "Telegram environment must have mode 400 or 600" >&2; exit 1 ;;
+  esac
+  telegram_owner="$(stat -c '%u' "$telegram_env")"
+  if [ "$telegram_owner" != "$(id -u)" ] && [ "$telegram_owner" != "0" ]; then
+    echo "Telegram environment must belong to the deployment operator or root" >&2
+    exit 1
+  fi
+  set -a
+  . "$telegram_env"
+  set +a
+fi
+
 postgres_password_file="$(sed -n 's/^GRACE_SECRETS_DIR=//p' "$release_env")/postgres_password"
 if [ ! -r "$postgres_password_file" ]; then
   echo "PostgreSQL password file is not readable" >&2

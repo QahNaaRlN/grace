@@ -90,7 +90,7 @@ Dedicated deployment public key записывается в
 
 ## Runtime secrets
 
-Нужны два файла без завершающих комментариев:
+Базовые файлы без завершающих комментариев:
 
 ```text
 /opt/grace/shared/secrets/postgres_password
@@ -190,3 +190,6 @@ docker compose --project-name grace-production --env-file release.env \
 
 Не использовать `docker compose down -v`: production volumes не удаляются во
 время release или rollback.
+
+
+Для Telegram deploy.sh дополнительно загружает защищённый /opt/grace/shared/secrets/telegram.env; см. docs/authentication.md. API имеет исходящий HTTPS-доступ через edge, PostgreSQL остаётся на внутренней backend network.
