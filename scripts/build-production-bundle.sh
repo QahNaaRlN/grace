@@ -19,6 +19,7 @@ mkdir -p "$output/migrations"
 cp "$repo_root/deployments/production/compose.yaml" "$output/compose.yaml"
 cp "$repo_root/deployments/production/Caddyfile" "$output/Caddyfile"
 cp "$repo_root/deployments/production/deploy.sh" "$output/deploy.sh"
+cp "$repo_root/scripts/check-public-entrypoint.sh" "$output/check-public-entrypoint.sh"
 cp "$repo_root/deployments/production/backup.sh" "$output/backup.sh"
 cp "$repo_root/deployments/production/restore-drill.sh" "$output/restore-drill.sh"
 cp "$repo_root/deployments/production/grace-backup.service" "$output/grace-backup.service"
@@ -40,5 +41,5 @@ done
 cp "$repo_root"/deployments/production/migrations/000002_reference_categories.* \
   "$output/migrations/"
 
-chmod 0755 "$output/deploy.sh" "$output/backup.sh" "$output/restore-drill.sh" \
+chmod 0755 "$output/deploy.sh" "$output/check-public-entrypoint.sh" "$output/backup.sh" "$output/restore-drill.sh" \
   "$output/install-firewall.sh"

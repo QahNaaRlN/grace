@@ -93,15 +93,8 @@ services:
         condition: service_healthy
       web:
         condition: service_healthy
-    entrypoint: [/bin/sh, -ec]
-    command:
-      - >-
-        export GRACE_BASIC_AUTH_HASH="$$(cat /run/secrets/basic_auth_hash)";
-        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     environment:
       GRACE_DOMAIN: ${GRACE_DOMAIN:?GRACE_DOMAIN is required}
-    secrets:
-      - basic_auth_hash
     ports:
       - ${GRACE_HTTP_PORT:?GRACE_HTTP_PORT is required}:80
       - ${GRACE_HTTPS_PORT:?GRACE_HTTPS_PORT is required}:443
@@ -118,8 +111,6 @@ services:
 secrets:
   postgres_password:
     file: ${GRACE_SECRETS_DIR:?GRACE_SECRETS_DIR is required}/postgres_password
-  basic_auth_hash:
-    file: ${GRACE_SECRETS_DIR:?GRACE_SECRETS_DIR is required}/basic_auth_hash
 
 volumes:
   grace-postgres:

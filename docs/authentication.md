@@ -90,9 +90,9 @@ Cookie `__Host-grace_session` имеет Secure, HttpOnly, Path=/, SameSite=Lax 
 вперёд или восстанавливать согласованный backup. Не обходить guard и не
 откатываться на старый общий API после подключения других пользователей.
 
-Production Caddy Basic Auth пока сохраняется как дополнительная внешняя
-граница. Сам по себе Basic Auth больше не открывает финансовый API. В production
-Telegram включён оператором, первый вход владельца подтверждён 2026-10-06.
+SPEC-0018 убирает production Caddy Basic Auth: Web shell и экран входа доступны
+без общего пароля. Финансовый API по-прежнему требует серверную сессию.
+В production Telegram включён оператором, первый вход владельца подтверждён 2026-10-06.
 Без явной конфигурации сохраняется режим `locked`.
 
 ## Восстановление owner
@@ -126,8 +126,8 @@ TELEGRAM_CLIENT_SECRET в /opt/grace/shared/secrets/telegram.env (mode 600,
 его может только оператор; не записывать туда данные посетителей.
 
 Production API подключён к backend для PostgreSQL и edge для исходящих HTTPS
-запросов Telegram. Host ports API/БД не публикуются. Внешний Basic Auth пока
-остаётся включённым. После миграции 000006 operator создаёт owner invitation,
+запросов Telegram. Host ports API/БД не публикуются. По SPEC-0018 внешний Basic
+Auth удалён из новой конфигурации. После миграции 000006 operator создаёт owner invitation,
 а владелец лично подтверждает Telegram login.
 
 Telegram публикует в JWKS ключи разных алгоритмов, включая ES256K, не

@@ -109,15 +109,7 @@ jobs:
             "/opt/grace/releases/$RELEASE_SHA/deploy.sh $RELEASE_SHA"
 
       - name: Verify public authentication and application
-        env:
-          BASIC_AUTH_PASSWORD: ${{ secrets.PRODUCTION_BASIC_AUTH_PASSWORD }}
-        run: |
-          status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
-            https://graceapp.ru/)"
-          test "$status" = '401'
-          curl --fail --silent --show-error \
-            --user "grace:$BASIC_AUTH_PASSWORD" \
-            https://graceapp.ru/api/meta | grep -q '"service":"grace"'
+        run: ./scripts/check-public-entrypoint.sh https://graceapp.ru
 
       - name: Log out VPS from GHCR
         if: always()
