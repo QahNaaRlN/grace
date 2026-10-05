@@ -9,7 +9,8 @@ ledger. Следующий этап roadmap — сохраняемые черн�
 Scope [SPEC-0017 — сохраняемые черновики и подтверждение
 импорта](0017-persistent-import-drafts.md) принят 2026-10-06; реализация a1ea19d
 проверена локально (`verified`) в `codex/persistent-import-drafts`.
-Публикация, интеграция в remote main и post-merge CI ещё не выполнены.
+Открыт [draft PR #7](https://github.com/QahNaaRlN/grace/pull/7);
+интеграция в main и post-merge CI ещё не выполнены.
 Результаты: [evidence](0017-evidence.md), [инструкция](../imports.md).
 Банковские PDF, фото чеков, кредитная модель и LLM API ещё не реализованы.
 

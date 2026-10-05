@@ -3,7 +3,10 @@
 Accepted scope: [SPEC-0017](0017-persistent-import-drafts.md), acceptance commit
 deba6ae, local integration 2cfbca3. Branch: `codex/persistent-import-drafts`.
 Implementation commit: a1ea19d. All local mandatory gates passed on 2026-10-06.
-Remote publication, CI, main integration and production rollout are pending.
+Review branch is published in [draft PR #7](https://github.com/QahNaaRlN/grace/pull/7).
+GitHub CI, main integration and production rollout are pending. After merging
+current main's SPEC-0018 repair into the review branch, make test/go vet passed
+again (24 Web tests); the preserved production entrypoint is included.
 
 ## Delivered behavior
 
