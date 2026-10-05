@@ -1,12 +1,12 @@
 # SPEC-0013: Telegram OIDC, сессии и владение финансовыми данными
 
-- Статус: implementing
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
 - Acceptance record: owner поручил «Определить следующую спеку и приступить к реализации» после рекомендации Telegram OIDC напрямую, серверных сессий и доступа по приглашению. Это разрешение на реализацию описанного варианта; production rollout требует отдельной настройки Telegram и проверки владельцем.
 - Implementation branch: codex/telegram-auth
-- Implementation commit: ещё не создан
+- Implementation commit: 6395e5b268a5c3753c38615d8e5d69a579d953ef
 
 ## Проблема и пользовательский результат
 
@@ -143,15 +143,15 @@ uninvited identity, отключённого пользователя, CSRF/Orig
 
 ## Критерии приёмки
 
-- [ ] Валидный OIDC flow создаёт сессию; негативные callbacks отвергаются.
-- [ ] Без приглашения новая identity не получает доступ; invite одноразовый.
-- [ ] Logout, expiry, revoke и disable закрывают доступ; mutations защищены CSRF.
-- [ ] Два владельца изолированы во всех модулях, аналитике и assistant tools.
-- [ ] Чужие связи запрещены БД; идемпотентность разделена по владельцу.
-- [ ] Миграция сохраняет остатки и факты; unsafe down запрещён.
-- [ ] Web показывает login/logout, очищает cache и переживает 401.
-- [ ] OpenAPI/types и конфигурация соответствуют поведению; секреты не в Git.
-- [ ] Общие gates и PostgreSQL auth integration suite имеют исполняемое evidence.
+- [x] Валидный OIDC flow создаёт сессию; негативные callbacks отвергаются.
+- [x] Без приглашения новая identity не получает доступ; invite одноразовый.
+- [x] Logout, expiry, revoke и disable закрывают доступ; mutations защищены CSRF.
+- [x] Два владельца изолированы во всех модулях, аналитике и assistant tools.
+- [x] Чужие связи запрещены БД; идемпотентность разделена по владельцу.
+- [x] Миграция сохраняет остатки и факты; unsafe down запрещён.
+- [x] Web показывает login/logout, очищает cache и переживает 401.
+- [x] OpenAPI/types и конфигурация соответствуют поведению; секреты не в Git.
+- [x] Общие gates и PostgreSQL auth integration suite имеют исполняемое evidence.
 
 ## Исполняемые проверки
 
