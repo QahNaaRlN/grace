@@ -5,6 +5,9 @@ repo_root="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 tmp_dir="$(mktemp -d)"
 
 cleanup() {
+  if [ -n "${proxy_container:-}" ]; then
+    docker rm -f "$proxy_container" >/dev/null 2>&1 || true
+  fi
   case "$tmp_dir" in
     /tmp/*) rm -rf "$tmp_dir" ;;
   esac
@@ -15,7 +18,6 @@ bundle="$tmp_dir/bundle"
 secrets="$tmp_dir/secrets"
 mkdir -p "$bundle" "$secrets"
 printf '%s\n' 'test-postgres-password' > "$secrets/postgres_password"
-printf '%s\n' '$2a$14$test-only-placeholder-hash' > "$secrets/basic_auth_hash"
 
 "$repo_root/scripts/build-production-bundle.sh" "$bundle"
 cp "$repo_root/deployments/production/release.env.example" "$bundle/release.env"
@@ -97,6 +99,76 @@ published_ports="$(POSTGRES_PASSWORD=test-postgres-password GRACE_SECRETS_DIR="$
     });
   ')"
 test "$published_ports" = "caddy"
+
+# Exercise the production proxy routes with real Caddy and deterministic upstreams.
+# Only replace upstream addresses and use HTTP on a private ephemeral test port.
+sed -e 's/api:8080/127.0.0.1:18080/' -e 's/web:80/127.0.0.1:18081/' \
+  "$bundle/Caddyfile" > "$tmp_dir/Caddyfile"
+cat >> "$tmp_dir/Caddyfile" <<'EOF'
+
+:18080 {
+  header Content-Type application/json
+  @meta path /api/meta
+  respond @meta `{"service":"grace"}` 200
+  respond `{"code":"unauthenticated","message":"Login required"}` 401
+}
+:18081 {
+  header Content-Type text/html
+  respond `<html><div id="root"></div></html>` 200
+}
+EOF
+proxy_container="$(docker create -e GRACE_DOMAIN=:80 -p 127.0.0.1::80 caddy:2-alpine)"
+docker cp "$tmp_dir/Caddyfile" "$proxy_container:/etc/caddy/Caddyfile"
+docker start "$proxy_container" >/dev/null
+proxy_port="$(docker inspect --format '{{(index (index .NetworkSettings.Ports "80/tcp") 0).HostPort}}' "$proxy_container")"
+attempt=0
+until curl --silent --fail "http://127.0.0.1:$proxy_port/api/meta" >/dev/null; do
+  attempt=$((attempt + 1))
+  if [ "$attempt" -ge 20 ]; then
+    echo "test Caddy did not become ready" >&2; exit 1
+  fi
+  sleep 1
+done
+"$bundle/check-public-entrypoint.sh" "http://127.0.0.1:$proxy_port"
+# Exercise release promotion against real public Caddy. Docker lifecycle and
+# backup are mocked; HTTP assertions run through the bundled checker.
+promotion_root="$tmp_dir/promotion-root"
+promotion_bin="$tmp_dir/promotion-bin"
+mkdir -p "$promotion_root" "$promotion_bin"
+cat > "$bundle/release.env" <<EOF
+GRACE_DOMAIN=entrypoint.example
+GRACE_HTTPS_PORT=443
+GRACE_SECRETS_DIR=$secrets
+RELEASE_TAG=sha-0000000000000000000000000000000000000000
+EOF
+cat > "$promotion_bin/docker" <<'EOF'
+#!/bin/sh
+case "$*" in *'pg_dump'*) printf 'synthetic backup' ;; esac
+exit 0
+EOF
+cat > "$promotion_bin/curl" <<'EOF'
+#!/bin/bash
+args=()
+while (( $# )); do
+  case "$1" in
+    --resolve) shift 2 ;;
+    https://entrypoint.example:443/*)
+      args+=("$PUBLIC_CHECK_BASE${1#https://entrypoint.example:443}"); shift ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+exec "$REAL_CURL" "${args[@]}"
+EOF
+chmod 0755 "$promotion_bin/docker" "$promotion_bin/curl"
+real_curl="$(command -v curl)"
+GRACE_ROOT="$promotion_root" REAL_CURL="$real_curl" \
+  PUBLIC_CHECK_BASE="http://127.0.0.1:$proxy_port" PATH="$promotion_bin:$PATH" \
+  "$bundle/deploy.sh" 0000000000000000000000000000000000000000 \
+  >"$tmp_dir/promotion.log" 2>&1
+test "$(readlink "$promotion_root/current")" = "$bundle"
+grep -q 'release sha-.* is healthy' "$tmp_dir/promotion.log"
+docker rm -f "$proxy_container" >/dev/null
+proxy_container=""
 
 # Exercise credential loading before a mock Docker stops the deployment.
 credential_root="$tmp_dir/credential-root"

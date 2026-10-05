@@ -108,10 +108,10 @@ Obligation → ScheduledPayment → Settlement связывает будущий
 ликвидную позицию, но не прогнозирует будущие доходы и расходы.
 
 React Web — реализованный клиент; iOS остаётся направлением развития.
-Production Caddy пока сохраняет внешнюю Basic Auth границу. Новая версия API
-дополнительно требует собственную сессию; rollout Telegram описан отдельно и
-не выполняется автоматически. API, Web и PostgreSQL доступны только во
-внутренней Docker network.
+По SPEC-0018 Caddy открывает Web shell и экран Telegram-входа без Basic Auth.
+Финансовый API требует собственную сессию; приглашения, CSRF/Origin и RLS
+сохраняются. Публикация исправления проходит через отдельный release pipeline.
+API, Web и PostgreSQL доступны только во внутренней Docker network.
 
 Статусы этапов и ограничения: [roadmap](roadmap.md). Эксплуатация:
 [production runbook](production-deployment.md).

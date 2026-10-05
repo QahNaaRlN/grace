@@ -136,12 +136,11 @@ done
 domain="$(sed -n 's/^GRACE_DOMAIN=//p' "$release_env")"
 https_port="$(sed -n 's/^GRACE_HTTPS_PORT=//p' "$release_env")"
 attempt=0
-until [ "$(curl --silent --insecure --output /dev/null --write-out '%{http_code}' \
-  --resolve "$domain:$https_port:127.0.0.1" \
-  "https://$domain:$https_port/")" = "401" ]; do
+until "$release_dir/check-public-entrypoint.sh" "https://$domain:$https_port" \
+  "$domain:$https_port:127.0.0.1" >/dev/null 2>&1; do
   attempt=$((attempt + 1))
   if [ "$attempt" -ge 45 ]; then
-    echo "Caddy did not expose the authenticated HTTPS boundary" >&2
+    echo "Caddy did not expose the public Telegram entrypoint and protected API" >&2
     exit 1
   fi
   sleep 2
