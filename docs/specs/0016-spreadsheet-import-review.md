@@ -1,11 +1,11 @@
 # SPEC-0016: Нормализация финансовой таблицы и отчёт сверки
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex
 - Дата: 2026-10-06
 - Acceptance owner: owner
-- Acceptance record: отсутствует; пользователь запросил анализ схемы и интеграции. Подтверждены построчная сверка дополнительного блока и Asia/Yekaterinburg.
-- Implementation branch: отсутствует
+- Acceptance record: 2026-10-06 владелец поручил продолжить реализацию («газуй на все бабки») после представления SPEC-0016 как следующего этапа roadmap. Подтверждены построчная сверка дополнительного блока и Asia/Yekaterinburg. Scope ограничен офлайн-анализом; публикация финансовых фактов не разрешена этой спецификацией.
+- Implementation branch: codex/spreadsheet-import-review
 - Implementation commit: отсутствует
 
 ## Проблема и пользовательский результат
@@ -73,6 +73,19 @@ main 249eb2a: Event поддерживает пять kind; Posting требуе
 
 ## API и OpenAPI
 
+Входной контракт v1: schemaVersion, sourceId, capturedAt (RFC3339), locale,
+declaredTimeZone, confirmedTimeZone, sheets и опциональные mappings.
+Sheet: sheetId, title, rowCount, columnCount, ranges. Range: startRow,
+startColumn (1-based), rows с CellData values. CellData: userEnteredValue,
+effectiveValue (typed numberValue/stringValue/boolValue/formulaValue),
+formattedValue, note и dataValidation. Числовые токены читаются как decimal,
+не float. Mappings содержит явные account/category/funding aliases оператора;
+их отсутствие оставляет issue, не создаёт фиктивные связи. Payload bounds:
+16 MiB, 20 sheets, 10 000 source rows, 100 000 cells, 26 columns на range;
+overlapping ranges/cells и повторяющиеся sheet identity запрещены. Выход
+grace.import-review.v1 сохраняет source metadata, payload hash, raw records,
+normalized fields, issues, candidates и итоги по domains.
+
 HTTP API не меняется. CLI: `grace-import-review --input <snapshot.json>
 --output-dir <operator-directory>`. JSON-схемы входа/выхода versioned и
 документированы; ошибки возвращаются в JSON/exit code, без dumping исходных
@@ -129,11 +142,10 @@ Golden comparison нормализованного JSON/отчёта на син
 
 ## Открытые решения
 
-1. Принять этот первый scope или сначала реализовать CreditFacility и
-   финансирование. Рекомендуется начать с нормализации/сверки, чтобы уточнить
-   кредитный scope на достоверном наборе кандидатов.
-2. Уточнить при review минимальную JSON schema и лимиты размеров/строк;
-   полученный оператором снимок нужно привести к окончательному контракту.
+1. Первый scope выбран: нормализация/сверка перед CreditFacility и финансовой
+   публикацией; кредитные изменения остаются отдельными спецификациями.
+2. Минимальный контракт и лимиты зафиксированы выше; полученный оператором
+   снимок приводится к нему локально, без повторного чтения Google или ledger.
 3. Решение о публикации каждой записи и необходимые реальные документы
    остаются за владельцем; текущие кандидаты не являются approval переноса.
 4. Онлайн-синхронизация, импорт в API, устойчивые связи между повторными
