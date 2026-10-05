@@ -1,6 +1,6 @@
 # SPEC-0012: Owner-only production deployment на VPS
 
-- Статус: implementing
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
@@ -10,7 +10,8 @@
   WireGuard и публичный UDP 51820
 - Specification branch: `codex/owner-vps-production`
 - Implementation branch: `codex/owner-vps-production-implementation`
-- Implementation commit: `3a0c436`
+- Implementation commits: `bd408c1..23f2a72`
+- Integration commit: `a9bc3ac47cf5f363d39737d6eb0b1e7a740180c1`
 
 ## Проблема и пользовательский результат
 
@@ -218,31 +219,31 @@ Implementation должна выбрать и документировать б�
 ## Критерии приёмки
 
 - [x] Owner явно принял SPEC-0012 и residual risk backup только на VPS.
-- [ ] DNS A record `graceapp.ru` указывает на `195.133.195.190`; AAAA создаётся
+- [x] DNS A record `graceapp.ru` указывает на `195.133.195.190`; AAAA создаётся
       только для конкретного адреса из `2a12:bec4:1ac0:1181::/64`, который
       присутствует на VPS и проходит входящий IPv6 preflight.
-- [ ] VPS identity, Ubuntu version, CPU/RAM/disk и Docker Compose подтверждены
+- [x] VPS identity, Ubuntu version, CPU/RAM/disk и Docker Compose подтверждены
       executable preflight.
-- [ ] Deploy использует не-root dedicated user/key; host key pinning включён.
-- [ ] В Internet доступны SSH policy port, Grace 80/443 и ранее существовавший
+- [x] Deploy использует не-root dedicated user/key; host key pinning включён.
+- [x] В Internet доступны SSH policy port, Grace 80/443 и ранее существовавший
       WireGuard UDP 51820; PostgreSQL, API и Web host ports не опубликованы.
-- [ ] `https://graceapp.ru` имеет валидный автоматически обновляемый TLS.
-- [ ] Без Basic Auth Web и API возвращают 401; с owner credentials mobile Web и
+- [x] `https://graceapp.ru` имеет валидный автоматически обновляемый TLS.
+- [x] Без Basic Auth Web и API возвращают 401; с owner credentials mobile Web и
       API работают.
-- [ ] Web не содержит `localhost` API origin и использует same-origin HTTPS.
-- [ ] Fresh production migration не создаёт фиктивный development account.
-- [ ] Production database сохраняется после container recreation.
-- [ ] Pre-deploy dump создан, проходит `pg_restore --list`, имеет mode 0600;
+- [x] Web не содержит `localhost` API origin и использует same-origin HTTPS.
+- [x] Fresh production migration не создаёт фиктивный development account.
+- [x] Production database сохраняется после container recreation.
+- [x] Pre-deploy dump создан, проходит `pg_restore --list`, имеет mode 0600;
       restore drill в отдельную database успешен.
-- [ ] Manual deploy принимает только exact SHA с successful CI и запускает
+- [x] Manual deploy принимает только exact SHA с successful CI и запускает
       соответствующие GHCR images.
-- [ ] Failed smoke test проверяемо возвращает предыдущий application release без
+- [x] Failed smoke test проверяемо возвращает предыдущий application release без
       автоматического destructive database rollback.
-- [ ] Runtime secrets отсутствуют в Git, workflow logs и image layers.
-- [ ] Assistant router выключен в первом release.
-- [ ] `make test`, production Compose validation, config secret scan и
+- [x] Runtime secrets отсутствуют в Git, workflow logs и image layers.
+- [x] Assistant router выключен в первом release.
+- [x] `make test`, production Compose validation, config secret scan и
       `git diff --check` проходят.
-- [ ] Первый production release и post-deploy smoke evidence записаны отдельно.
+- [x] Первый production release и post-deploy smoke evidence записаны отдельно.
 
 ## Исполняемые проверки
 
@@ -267,16 +268,16 @@ authenticated HTTPS smoke, certificate inspection, `pg_dump`,
 ## Открытые решения
 
 1. Owner 2026-10-05 принял specification и residual risk local-only backup.
-2. Domain ещё не делегирован из `.ru`. После появления authoritative NS нужно
-   подтвердить A `195.133.195.190` и AAAA `2a12:bec4:1ac0:1181::`, затем
-   проверить оба маршрута извне до TLS issuance.
+2. Domain делегирован; authoritative DNS и публичные resolvers возвращают A
+   `195.133.195.190` и AAAA `2a12:bec4:1ac0:1181::`. VPS слушает HTTPS на IPv4
+   и IPv6, а Caddy получил публичный сертификат Let's Encrypt.
 3. Для bootstrap owner выбрал отдельный существующий public key
    `id_ed25519_ubuntu_t7.pub`, fingerprint
    `SHA256:V2Cyp4tLlpWZJgNQt2B75hzDvAEOzvF3Wr8Q53KXv74`. Ключ
    `ssh_working` уже используется для другого доступа и не добавляется на VPS.
    Private keys не передаются и не копируются в repository.
-4. Basic Auth username предлагается `grace`; password owner создаёт вне chat,
-   в Git/VPS хранится только bcrypt hash.
+4. Basic Auth username — `grace`; password создан вне chat и repository,
+   GitHub хранит masked secret, VPS хранит только bcrypt hash.
 5. После первого успешного release нужен отдельный work item для off-site backup
    до того, как Grace станет единственным местом хранения реальных финансовых
    данных.
