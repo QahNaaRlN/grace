@@ -52,4 +52,4 @@ Basic Auth остаётся внешней защитой до отдельно�
 
 ## Post-merge
 
-Ожидается интеграция и повтор обязательных gates в основной копии.
+Интеграция fast-forward в локальный `main`: `5aa84fe` (implementation достижим из main). После интеграции в `C:/PersonalProjects/grace` повторены `make SHELL=bash test` (20 Web tests), PostgreSQL auth suite, `go vet`, `git diff --check` и OpenAPI generation drift — PASS. Production suite проверен из основной копии в Linux-контейнере. GitHub push, CI и production deployment не выполнялись.

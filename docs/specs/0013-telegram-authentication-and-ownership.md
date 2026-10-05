@@ -1,6 +1,6 @@
 # SPEC-0013: Telegram OIDC, сессии и владение финансовыми данными
 
-- Статус: verified
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-05
 - Acceptance owner: owner
