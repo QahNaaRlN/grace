@@ -40,7 +40,8 @@ delay was not independently reproduced. No arbitrary timeout changes were made.
 
 ## Integration gate
 
-Automatic approval review rejected a direct push to main. The patch is prepared
-on a feature branch for PR review; merge and deployment require explicit owner
-authorization. After authorized integration, record exact SHA, CI/Delivery/deploy
+Automatic approval review rejected a direct push to main and then feature-branch
+publication, requesting explicit owner authorization for GitHub egress. The patch
+is committed locally; no PR or production release has been published. Publication,
+merge and deployment require explicit owner authorization. After authorized integration, record exact SHA, CI/Delivery/deploy
 run links and anonymous live smoke here; only then mark SPEC-0018 integrated.
