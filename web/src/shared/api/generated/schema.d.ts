@@ -4,6 +4,118 @@
  */
 
 export interface paths {
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startTelegramLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["completeTelegramLogin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCurrentSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/revoke-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revokeOwnSessions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/users/{userId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["disableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta": {
         parameters: {
             query?: never;
@@ -281,6 +393,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AuthUser: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            role: "admin" | "member";
+        };
+        AuthSession: {
+            user: components["schemas"]["AuthUser"];
+            csrfToken: string;
+            /** @enum {string} */
+            mode: "telegram" | "development";
+        };
+        AuthInvitation: {
+            token: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        AuthLogin: {
+            invitation?: string;
+        };
+        AuthLoginResult: {
+            /** Format: uri */
+            authorizationUrl: string;
+        };
         AssistantQuery: {
             utterance: string;
             /** @enum {string} */
@@ -686,6 +823,15 @@ export interface components {
         };
     };
     responses: {
+        /** @description Authentication/authorization error */
+        AuthenticationError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Created event or result of an idempotent retry */
         Event: {
             headers: {
@@ -751,6 +897,8 @@ export interface components {
         };
     };
     parameters: {
+        /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+        CSRF: string;
         IdempotencyKey: string;
         /** @description Calendar date used to derive overdue state; defaults to current UTC date. */
         AsOf: string;
@@ -762,6 +910,336 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    startTelegramLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthLogin"];
+            };
+        };
+        responses: {
+            /** @description Authorization URL; login-flow cookie is set */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthLoginResult"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    completeTelegramLogin: {
+        parameters: {
+            query: {
+                code: string;
+                state: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fixed redirect to / or /login?error=authentication_failed; session cookie is set only on success */
+            303: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getCurrentSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authenticated session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current session revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication/authorization error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    revokeOwnSessions: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All own sessions revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication/authorization error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    createInvitation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description One-time invitation for a new member; admin only */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthInvitation"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    disableUser: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Member disabled and sessions revoked; admin only */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication/authorization error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication/authorization error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getMeta: {
         parameters: {
             query?: never;
@@ -802,12 +1280,17 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createAccount: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -826,7 +1309,10 @@ export interface operations {
                     "application/json": components["schemas"]["Account"];
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     listCategories: {
@@ -849,6 +1335,8 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     listFinancialEvents: {
@@ -871,12 +1359,16 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createPurchase: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -890,14 +1382,19 @@ export interface operations {
         responses: {
             200: components["responses"]["Event"];
             201: components["responses"]["Event"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createIncome: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -911,14 +1408,19 @@ export interface operations {
         responses: {
             200: components["responses"]["Event"];
             201: components["responses"]["Event"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createDebtPayment: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -932,14 +1434,19 @@ export interface operations {
         responses: {
             200: components["responses"]["Event"];
             201: components["responses"]["Event"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createTransfer: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -953,14 +1460,19 @@ export interface operations {
         responses: {
             200: components["responses"]["Event"];
             201: components["responses"]["Event"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createRefund: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -974,8 +1486,11 @@ export interface operations {
         responses: {
             200: components["responses"]["Event"];
             201: components["responses"]["Event"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     listReceipts: {
@@ -998,12 +1513,16 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createReceipt: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -1018,8 +1537,11 @@ export interface operations {
             200: components["responses"]["Receipt"];
             201: components["responses"]["Receipt"];
             400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     getReceipt: {
@@ -1034,6 +1556,7 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Receipt"];
+            401: components["responses"]["AuthenticationError"];
             /** @description Receipt not found */
             404: {
                 headers: {
@@ -1043,6 +1566,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            503: components["responses"]["AuthenticationError"];
         };
     };
     getPeriodSummary: {
@@ -1068,7 +1592,9 @@ export interface operations {
                     "application/json": components["schemas"]["PeriodSummary"];
                 };
             };
+            401: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     getCashPosition: {
@@ -1094,7 +1620,9 @@ export interface operations {
                     "application/json": components["schemas"]["CashPosition"];
                 };
             };
+            401: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     listObligations: {
@@ -1122,13 +1650,17 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createObligation: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path?: never;
@@ -1143,8 +1675,11 @@ export interface operations {
             200: components["responses"]["Obligation"];
             201: components["responses"]["Obligation"];
             400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     getObligation: {
@@ -1162,14 +1697,18 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Obligation"];
+            401: components["responses"]["AuthenticationError"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     createScheduledPaymentSettlement: {
         parameters: {
             query?: never;
             header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path: {
@@ -1187,15 +1726,21 @@ export interface operations {
             200: components["responses"]["Settlement"];
             201: components["responses"]["Settlement"];
             400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     queryAssistant: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -1214,6 +1759,8 @@ export interface operations {
                     "application/json": components["schemas"]["AssistantCompleted"] | components["schemas"]["AssistantClarify"] | components["schemas"]["AssistantUnsupported"];
                 };
             };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
             /** @description Assistant routing, provider, or a financial dependency is unavailable */
             503: {

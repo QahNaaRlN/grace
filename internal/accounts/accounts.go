@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -30,9 +31,9 @@ type CreateRequest struct {
 	OpeningBalanceMinor int64  `json:"openingBalanceMinor"`
 }
 
-type Repository struct{ pool *pgxpool.Pool }
+type Repository struct{ pool *database.TenantPool }
 
-func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: pool} }
+func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 func (repo *Repository) List(ctx context.Context) ([]Account, error) {
 	rows, err := repo.pool.Query(ctx, `

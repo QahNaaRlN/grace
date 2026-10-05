@@ -10,7 +10,7 @@ import (
 )
 
 func TestAssistantEndpointIsUnavailableWithoutExplicitOptInAndKey(t *testing.T) {
-	for _, cfg := range []config.Config{{}, {AssistantRoutingEnabled: true}} {
+	for _, cfg := range []config.Config{{AuthMode: "development"}, {AuthMode: "development", AssistantRoutingEnabled: true}} {
 		server := New(cfg, nil)
 		recorder := httptest.NewRecorder()
 		request := httptest.NewRequest(http.MethodPost, "/api/v1/assistant/query", bytes.NewBufferString(`{"utterance":"Покажи счета","language":"ru","referenceTime":"2026-10-05T12:00:00+05:00"}`))

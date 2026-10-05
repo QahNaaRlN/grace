@@ -55,6 +55,11 @@ services:
         condition: service_healthy
     environment:
       APP_PORT: '8080'
+      APP_ENV: production
+      GRACE_AUTH_MODE: ${GRACE_AUTH_MODE:-locked}
+      GRACE_PUBLIC_URL: https://${GRACE_DOMAIN:?GRACE_DOMAIN is required}
+      TELEGRAM_CLIENT_ID: ${TELEGRAM_CLIENT_ID:-}
+      TELEGRAM_CLIENT_SECRET: ${TELEGRAM_CLIENT_SECRET:-}
       DATABASE_URL: postgres://grace:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/grace?sslmode=disable
       CORS_ORIGINS: https://${GRACE_DOMAIN:?GRACE_DOMAIN is required}
       GRACE_ASSISTANT_ROUTING_ENABLED: 'false'

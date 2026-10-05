@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,9 +17,9 @@ var (
 	ErrPurchaseHasReceipt  = errors.New("purchase already has a receipt")
 )
 
-type Repository struct{ pool *pgxpool.Pool }
+type Repository struct{ pool *database.TenantPool }
 
-func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: pool} }
+func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 type queryer interface {
 	Query(context.Context, string, ...any) (pgx.Rows, error)

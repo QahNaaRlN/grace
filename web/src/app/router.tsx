@@ -2,6 +2,8 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import { HomePage } from '@/pages/home'
 import { AssistantPage } from '@/pages/assistant'
+import { LoginPage } from '@/pages/login/LoginPage'
+import { AuthBoundary } from './AuthBoundary'
 
 /**
  * Маршрутизатор приложения с корневой страницей разработки.
@@ -9,10 +11,11 @@ import { AssistantPage } from '@/pages/assistant'
 export const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <AuthBoundary><HomePage /></AuthBoundary>,
   },
   {
     path: '/assistant',
-    element: <AssistantPage />,
+    element: <AuthBoundary><AssistantPage /></AuthBoundary>,
   },
+  { path: '/login', element: <LoginPage /> },
 ])

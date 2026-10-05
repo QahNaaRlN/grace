@@ -28,7 +28,7 @@ database_url='postgres://grace:grace@postgres:5432/grace?sslmode=disable'
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 
 # Empty obligation schema rolls back safely and can be applied again.
-docker compose run --rm migrate -path=/migrations -database="$database_url" down 1
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 4
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 
 docker compose up -d --build api
@@ -150,7 +150,7 @@ wait "$first_pid"
 wait "$second_pid"
 test "$(sort "$result_dir/a.status" "$result_dir/b.status" | tr '\n' ' ')" = "201 422 "
 
-if docker compose run --rm migrate -path=/migrations -database="$database_url" down 1 >/dev/null 2>&1; then
+if docker compose run --rm migrate -path=/migrations -database="$database_url" goto 4 >/dev/null 2>&1; then
   echo "obligation migration rollback unexpectedly removed user data" >&2
   exit 1
 fi

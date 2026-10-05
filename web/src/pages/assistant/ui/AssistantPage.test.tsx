@@ -140,7 +140,8 @@ function renderPage(submitAssistant: SubmitAssistant) {
 async function ask(submitAssistant: SubmitAssistant, text = '  Покажи мои счета  ') {
   const user = userEvent.setup()
   renderPage(submitAssistant)
-  await user.type(screen.getByLabelText('Вопрос'), text)
+  await user.click(screen.getByLabelText('Вопрос'))
+  await user.paste(text)
   await user.click(screen.getByRole('button', { name: 'Спросить Grace' }))
   return user
 }

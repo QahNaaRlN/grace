@@ -9,6 +9,7 @@ import {
   type CreateObligationValues,
 } from '@/features/create-obligation/model/create-obligation.schema'
 import { apiClient } from '@/shared/api/client'
+import { csrfToken } from '@/shared/model/auth-session'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import {
@@ -63,7 +64,7 @@ export function CreateObligationForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await apiClient.POST('/api/v1/obligations', {
-      params: { header: { 'Idempotency-Key': createIdempotencyKey() } },
+      params: { header: { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken } },
       body: {
         name: values.name,
         kind: values.kind,

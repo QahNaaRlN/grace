@@ -16,7 +16,7 @@ Grace — один продукт и один monorepo. Web и будущие н
 ## Организация backend
 
 Код группируется по предметным областям: accounts, financialevents, categories,
-receipts, obligations, analytics, assistant. Эти модули уже реализованы.
+receipts, obligations, analytics, assistant, auth. Эти модули уже реализованы.
 Development-only оценка модели и маршрутизации находится в jeveval и routereval;
 интеграционные проверки инструментов — в assistanttest. Техническая композиция
 находится в internal/platform.
@@ -47,6 +47,18 @@ Development-only оценка модели и маршрутизации нах�
   финансовом модуле относительно явной календарной даты.
 
 ## API
+
+Финансовый API требует principal, полученный из серверной сессии. Все
+финансовые таблицы изолированы по owner_id с RLS под ограниченной PostgreSQL
+ролью; SET LOCAL внутри транзакции не оставляет identity в pooled connection.
+Общие категории доступны только для чтения. Составные FK не допускают
+связей финансовых объектов разных владельцев. Admin управляет доступом,
+но не получает финансовых привилегий другого пользователя.
+
+Вход использует Telegram OIDC Code Flow/PKCE; сессии непрозрачны и хранятся
+на сервере. Mutations требуют CSRF token и точный Origin. Без настроенного
+входа действует locked mode; development bypass разрешён только явно в
+локальной development-конфигурации. См. [authentication](authentication.md).
 
 api/openapi.yaml — публичный контракт. TypeScript-клиент не объявляет DTO
 вручную. Изменение API считается завершённым только после обновления контракта
@@ -96,8 +108,10 @@ Obligation → ScheduledPayment → Settlement связывает будущий
 ликвидную позицию, но не прогнозирует будущие доходы и расходы.
 
 React Web — реализованный клиент; iOS остаётся направлением развития.
-Production рассчитан на владельца: Caddy закрывает Web/API Basic Auth,
-а API, Web и PostgreSQL доступны только во внутренней Docker network.
+Production Caddy пока сохраняет внешнюю Basic Auth границу. Новая версия API
+дополнительно требует собственную сессию; rollout Telegram описан отдельно и
+не выполняется автоматически. API, Web и PostgreSQL доступны только во
+внутренней Docker network.
 
 Статусы этапов и ограничения: [roadmap](roadmap.md). Эксплуатация:
 [production runbook](production-deployment.md).

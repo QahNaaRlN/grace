@@ -1,5 +1,11 @@
 # Production deployment Grace
 
+После SPEC-0013 новая версия API закрыта по умолчанию (`GRACE_AUTH_MODE=locked`).
+Basic Auth не заменяет серверную сессию. До релиза настроить Telegram OIDC,
+применить миграцию 000006 после backup и выполнить первый вход owner по
+[authentication runbook](authentication.md). Историческая проверка SPEC-0012
+относится к версии без пользовательских сессий.
+
 Этот runbook реализует принятую
 `docs/specs/0012-owner-vps-production-deployment.md`. Production является
 owner-only: Caddy закрывает Web и API Basic Auth, PostgreSQL остаётся во

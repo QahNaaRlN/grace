@@ -1,14 +1,232 @@
 openapi: 3.1.0
 info:
   title: Grace API
-  version: 0.5.0
+  version: 0.6.0
   description: Deterministic financial events, receipts, obligations, and read-only analytics. Money uses integer minor units.
 servers:
   - url: http://localhost:8080
+security:
+  - SessionCookie: []
 paths:
+  /api/auth/login:
+    post:
+      operationId: startTelegramLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLogin'
+      responses:
+        '200':
+          description: Authorization URL; login-flow cookie is set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthLoginResult'
+        '400':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/callback:
+    get:
+      operationId: completeTelegramLogin
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '303':
+          description: Fixed redirect to / or /login?error=authentication_failed; session cookie is set only on success
+  /api/auth/me:
+    get:
+      operationId: getCurrentSession
+      responses:
+        '200':
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '401':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/logout:
+    post:
+      operationId: logout
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204':
+          description: Current session revoked
+        '401':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/revoke-sessions:
+    post:
+      operationId: revokeOwnSessions
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204':
+          description: All own sessions revoked
+        '401':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/invitations:
+    post:
+      operationId: createInvitation
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+      responses:
+        '201':
+          description: One-time invitation for a new member; admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthInvitation'
+        '400':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/users/{userId}/disable:
+    post:
+      operationId: disableUser
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Member disabled and sessions revoked; admin only
+        '401':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication/authorization error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/meta:
     get:
       operationId: getMeta
+      security: []
       responses:
         '200':
           description: Service metadata
@@ -19,6 +237,10 @@ paths:
     get:
       operationId: listAccounts
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Accounts with balances derived from postings
           content:
@@ -32,12 +254,19 @@ paths:
                     items: { $ref: '#/components/schemas/Account' }
     post:
       operationId: createAccount
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateAccount' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '201':
           description: Created account
           content:
@@ -48,6 +277,10 @@ paths:
     get:
       operationId: listCategories
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Categories
           content:
@@ -63,6 +296,10 @@ paths:
     get:
       operationId: listFinancialEvents
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Recent financial events with postings
           content:
@@ -78,61 +315,70 @@ paths:
     post:
       operationId: createPurchase
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
-      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/AuthenticationError' }, '403': { $ref: '#/components/responses/AuthenticationError' }, '503': { $ref: '#/components/responses/AuthenticationError' } }
   /api/v1/financial-events/incomes:
     post:
       operationId: createIncome
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
-      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/AuthenticationError' }, '403': { $ref: '#/components/responses/AuthenticationError' }, '503': { $ref: '#/components/responses/AuthenticationError' } }
   /api/v1/financial-events/debt-payments:
     post:
       operationId: createDebtPayment
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateSingleAccountEvent' }
-      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/AuthenticationError' }, '403': { $ref: '#/components/responses/AuthenticationError' }, '503': { $ref: '#/components/responses/AuthenticationError' } }
   /api/v1/financial-events/transfers:
     post:
       operationId: createTransfer
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateTransfer' }
-      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/AuthenticationError' }, '403': { $ref: '#/components/responses/AuthenticationError' }, '503': { $ref: '#/components/responses/AuthenticationError' } }
   /api/v1/financial-events/refunds:
     post:
       operationId: createRefund
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateRefund' }
-      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      responses: { '200': { $ref: '#/components/responses/Event' }, '201': { $ref: '#/components/responses/Event' }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/AuthenticationError' }, '403': { $ref: '#/components/responses/AuthenticationError' }, '503': { $ref: '#/components/responses/AuthenticationError' } }
   /api/v1/receipts:
     get:
       operationId: listReceipts
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Recent confirmed receipts with ordered items
           content:
@@ -147,6 +393,7 @@ paths:
     post:
       operationId: createReceipt
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
@@ -154,6 +401,12 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateReceipt' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200': { $ref: '#/components/responses/Receipt' }
         '201': { $ref: '#/components/responses/Receipt' }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -168,6 +421,10 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200': { $ref: '#/components/responses/Receipt' }
         '404':
           description: Receipt not found
@@ -189,6 +446,10 @@ paths:
           description: Exclusive RFC 3339 boundary with an explicit UTC offset.
           schema: { type: string, format: date-time }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Actual cash-flow and balance summary, separated by currency
           content:
@@ -206,6 +467,10 @@ paths:
           description: Inclusive calendar horizon for outstanding scheduled payments.
           schema: { type: string, format: date }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Current liquid balance less known outstanding obligations
           content:
@@ -218,6 +483,10 @@ paths:
       parameters:
         - { $ref: '#/components/parameters/AsOf' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Fixed obligations with derived schedule state
           content:
@@ -234,6 +503,7 @@ paths:
     post:
       operationId: createObligation
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
@@ -241,6 +511,12 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateObligation' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200': { $ref: '#/components/responses/Obligation' }
         '201': { $ref: '#/components/responses/Obligation' }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -253,6 +529,10 @@ paths:
         - { $ref: '#/components/parameters/ObligationId' }
         - { $ref: '#/components/parameters/AsOf' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200': { $ref: '#/components/responses/Obligation' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
@@ -260,6 +540,7 @@ paths:
     post:
       operationId: createScheduledPaymentSettlement
       parameters:
+        - { $ref: '#/components/parameters/CSRF' }
         - { $ref: '#/components/parameters/ObligationId' }
         - name: paymentId
           in: path
@@ -272,6 +553,12 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateScheduledPaymentSettlement' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
         '200': { $ref: '#/components/responses/Settlement' }
         '201': { $ref: '#/components/responses/Settlement' }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -281,6 +568,7 @@ paths:
   /api/v1/assistant/query:
     post:
       operationId: queryAssistant
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
       description: Route one natural-language request to an allowlisted read-only Grace capability. Disabled by default.
       requestBody:
         required: true
@@ -288,6 +576,10 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/AssistantQuery' }
       responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
         '200':
           description: Completed read-only result, clarification, or unsupported request
           content:
@@ -310,7 +602,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AssistantUnavailable' }
 components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-grace_session
   parameters:
+    CSRF:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: >-
+        CSRF token from GET /api/auth/me, required with the exact browser Origin for
+        mutations.
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -328,6 +634,12 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    AuthenticationError:
+      description: Authentication/authorization error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     Event:
       description: Created event or result of an idempotent retry
       content:
@@ -364,6 +676,66 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    AuthUser:
+      type: object
+      required:
+        - id
+        - name
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+            - admin
+            - member
+    AuthSession:
+      type: object
+      required:
+        - user
+        - csrfToken
+        - mode
+      properties:
+        user:
+          $ref: '#/components/schemas/AuthUser'
+        csrfToken:
+          type: string
+        mode:
+          type: string
+          enum:
+            - telegram
+            - development
+    AuthInvitation:
+      type: object
+      required:
+        - token
+        - expiresAt
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AuthLogin:
+      type: object
+      additionalProperties: false
+      properties:
+        invitation:
+          type: string
+          minLength: 43
+          maxLength: 43
+    AuthLoginResult:
+      type: object
+      required:
+        - authorizationUrl
+      properties:
+        authorizationUrl:
+          type: string
+          format: uri
     AssistantQuery:
       type: object
       additionalProperties: false

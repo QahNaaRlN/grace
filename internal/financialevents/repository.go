@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -15,9 +16,9 @@ var (
 	ErrInvalid  = errors.New("financial event is invalid")
 )
 
-type Repository struct{ pool *pgxpool.Pool }
+type Repository struct{ pool *database.TenantPool }
 
-func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: pool} }
+func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 type queryer interface {
 	Query(context.Context, string, ...any) (pgx.Rows, error)

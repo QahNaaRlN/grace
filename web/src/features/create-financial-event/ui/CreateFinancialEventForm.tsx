@@ -8,6 +8,7 @@ import {
   type CreateFinancialEventValues,
 } from '@/features/create-financial-event/model/create-financial-event.schema'
 import { apiClient } from '@/shared/api/client'
+import { csrfToken } from '@/shared/model/auth-session'
 import type { Account, Category } from '@/shared/api/types'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
@@ -71,7 +72,7 @@ export function CreateFinancialEventForm({ accounts, categories }: Props) {
   )
 
   const onSubmit = handleSubmit(async (values) => {
-    const headers = { 'Idempotency-Key': createIdempotencyKey() }
+    const headers = { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken }
     const occurredAt = new Date().toISOString()
     const amountMinor = Math.round(values.amount * 100)
 

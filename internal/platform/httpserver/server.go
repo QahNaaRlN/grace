@@ -8,6 +8,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/accounts"
 	"github.com/QahNaaRlN/grace/internal/analytics"
 	"github.com/QahNaaRlN/grace/internal/assistant"
+	"github.com/QahNaaRlN/grace/internal/auth"
 	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/obligations"
@@ -24,9 +25,10 @@ var ErrServerClosed = http.ErrServerClosed
 func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: cfg.CORSOrigins,
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key"},
+		AllowedOrigins:   cfg.CORSOrigins,
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key", "X-CSRF-Token"},
+		AllowCredentials: true,
 	}))
 
 	accountsRepository := accounts.NewRepository(pool)
@@ -48,6 +50,26 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		}
 	}
 	assistantHandler := assistant.NewHandler(assistantRouter)
+	var identityProvider auth.Provider
+	if cfg.AuthMode == "telegram" {
+		identityProvider = auth.NewTelegramProvider(cfg.TelegramClientID, cfg.TelegramClientSecret, cfg.PublicURL+"/api/auth/callback")
+	}
+	authHandler := auth.NewHandler(auth.NewRepository(pool), identityProvider, cfg.AuthMode, cfg.PublicURL)
+	router.Route("/api/auth", func(router chi.Router) {
+		router.Post("/login", authHandler.Login)
+		router.Get("/callback", authHandler.Callback)
+		router.Group(func(router chi.Router) {
+			router.Use(authHandler.Require)
+			router.Get("/me", authHandler.Me)
+			router.Post("/logout", authHandler.Logout)
+			router.Post("/revoke-sessions", authHandler.RevokeSessions)
+			router.Post("/invitations", authHandler.Invite)
+			router.Post("/users/{userId}/disable", func(w http.ResponseWriter, r *http.Request) {
+				r.SetPathValue("userId", chi.URLParam(r, "userId"))
+				authHandler.Disable(w, r)
+			})
+		})
+	})
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -62,9 +84,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		web.WriteJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	router.Get("/api/meta", func(w http.ResponseWriter, _ *http.Request) {
-		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.5.0-dev"})
+		web.WriteJSON(w, http.StatusOK, map[string]string{"service": "grace", "version": "0.6.0-dev"})
 	})
 	router.Route("/api/v1", func(router chi.Router) {
+		router.Use(authHandler.Require)
 		router.Get("/accounts", accountsHandler.List)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Get("/categories", categoriesHandler.List)

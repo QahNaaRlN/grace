@@ -3,6 +3,7 @@ import { Bot, HeartPulse, WalletCards } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { cn } from '@/shared/lib/utils'
+import { AuthActions } from './AuthActions'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -32,6 +33,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <p className="text-sm font-semibold sm:text-base">Финансовое здоровье</p>
             </div>
           </div>
+          <AuthActions />
           <nav
             aria-label="Основная навигация"
             className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/90 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none"

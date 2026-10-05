@@ -17,6 +17,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/assistant"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/obligations"
+	"github.com/QahNaaRlN/grace/internal/platform/access"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/receipts"
 )
@@ -28,6 +29,7 @@ func TestIncomeRelativePeriodsAgainstPostgreSQL(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
+	ctx = access.WithPrincipal(ctx, access.Principal{ID: access.BootstrapOwnerID, Role: "admin"})
 	pool, err := database.Open(ctx, databaseURL)
 	if err != nil {
 		t.Fatalf("open integration database: %v", err)

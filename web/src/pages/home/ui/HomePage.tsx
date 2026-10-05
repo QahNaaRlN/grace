@@ -7,6 +7,7 @@ import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { CreateObligationForm } from '@/features/create-obligation'
 import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
+import { csrfToken } from '@/shared/model/auth-session'
 import type { Account, CashPosition, FinancialEvent, Obligation, PeriodSummary, Receipt, ScheduledPayment } from '@/shared/api/types'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Badge } from '@/shared/ui/badge'
@@ -254,7 +255,7 @@ function SettlementControl({
     const result = await apiClient.POST('/api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements', {
       params: {
         path: { obligationId: obligation.id, paymentId: payment.id },
-        header: { 'Idempotency-Key': createIdempotencyKey() },
+        header: { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken },
       },
       body: { financialEventId: eventID },
     })

@@ -8,6 +8,16 @@ Grace — персональная система финансового здо�
 [roadmap](docs/roadmap.md). [Видение](docs/vision.md) задаёт целевой продукт,
 а [архитектурный контракт](docs/architecture.md) — правила реализации.
 
+## Вход и доступ
+
+Telegram OIDC, одноразовые приглашения и серверные сессии реализованы в
+SPEC-0013. Каждый пользователь получает доступ только к своим финансовым
+данным; административная роль не открывает чужие финансы. Настройка первого
+входа и ограничения: [docs/authentication.md](docs/authentication.md).
+По умолчанию API закрыт (`locked`); development Compose явно включает
+локальный режим разработки. Настоящий Telegram вход требует HTTPS и
+server-only credentials из BotFather.
+
 ## Финансовое ядро
 
 Текущая версия реализует пути Account → FinancialEvent → Posting → Category и
@@ -93,6 +103,7 @@ Owner-only deployment на `graceapp.ru`, ручной release, backup и rollba
     internal/obligations/ фиксированные обязательства, графики и оплаты
     internal/analytics/   периоды и ликвидная позиция
     internal/assistant/   инструменты чтения и опциональный Jev router
+    internal/auth/        Telegram OIDC, приглашения и серверные сессии
     internal/jeveval/     development-only оценка применимости Jev
     internal/routereval/ проверка production routing policy
     internal/platform/    конфигурация, БД и HTTP-композиция

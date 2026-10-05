@@ -24,6 +24,7 @@ test-jev-eval:
 	./scripts/test-jev-evaluation.sh
 
 test-integration:
+	./scripts/test-authentication.sh
 	./scripts/test-financial-events.sh
 	./scripts/test-receipts.sh
 	./scripts/test-obligations.sh
