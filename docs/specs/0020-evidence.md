@@ -2,7 +2,7 @@
 
 Specification: [0020-home-redesign.md](0020-home-redesign.md), accepted 2026-10-06.
 Implementation branch: `codex/home-design-audit`.
-Status: local verification complete; remote CI/release pending.
+Status: integrated and deployed to graceapp.ru on 2026-10-06. Release: 7b108dfae3ae5449b2f9f36e77398da20aab4460.
 
 | Criterion | Executable evidence |
 | --- | --- |
@@ -41,3 +41,18 @@ submitted for a new CI run before merging.
 Additional empty-state regression test: first-account action is available with
 zero accounts, no invented balance section, and opening the form sends no POST.
 The complete Web suite now has 24 passing tests.
+
+
+## Final remote and post-merge evidence
+
+- Final PR CI, 24 Web tests and all gates: https://github.com/QahNaaRlN/grace/actions/runs/37476896509 — success on 1f72730.
+- PR 8 merged: https://github.com/QahNaaRlN/grace/pull/8 — merge 7b108df.
+- Main CI: https://github.com/QahNaaRlN/grace/actions/runs/37477866791 — success.
+- Exact SHA image delivery: https://github.com/QahNaaRlN/grace/actions/runs/37478357907 — success.
+- Production deploy: https://github.com/QahNaaRlN/grace/actions/runs/37478764197 — success, including backup/migration/readiness/public entrypoint gates.
+- Primary integration checkout: make test (Go, 24 Web tests, lint/build, offline Jev), git diff --check — passed; existing local SPEC-0017 documentation commits preserved, not published by this release.
+- External checks: graceapp.ru returns 200; no Basic Auth challenge; anonymous financial accounts API returns 401. Live CSS is /assets/index-6lJtijDf.css, JS /assets/index-SukfoGOn.js, matching the verified build. Indigo #4338ca present.
+- No production financial test records were created. Owner smoke-test checklist: [0020-smoke-checklist.md](0020-smoke-checklist.md).
+
+This final documentation update records the deployed release; it does not
+change deployed application behavior or advance SPEC-0017/0019.

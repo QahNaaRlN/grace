@@ -1,12 +1,12 @@
 # SPEC-0020: главная страница, индиго и идентификация карт
 
-- Статус: accepted
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-06
 - Acceptance owner: владелец Grace
 - Acceptance record: «Отлично, давай реализуем этот макет, после этого я начну полноценный smoke-тест»; публикация и развёртывание на graceapp.ru подтверждены отдельным ответом в этом чате.
 - Implementation branch: codex/home-design-audit
-- Implementation commit: фиксируется в 0020-evidence.md
+- Implementation commit: 1f72730f46ead89c2259e268a85cb10b0954c946; merge/release 7b108dfae3ae5449b2f9f36e77398da20aab4460
 
 ## Проблема и пользовательский результат
 
