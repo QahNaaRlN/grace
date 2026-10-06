@@ -1,25 +1,16 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-
-import {
-  CreateFinancialEventSchema,
-  type CreateFinancialEventValues,
-} from '@/features/create-financial-event/model/create-financial-event.schema'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
-import type { Account, Category } from '@/shared/api/types'
+import type { Account, Category, FinancialEvent } from '@/shared/api/types'
+import {
+  accountLabel,
+  formatMoney,
+  parseMinor,
+} from '@/shared/lib/finance-display'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
@@ -30,205 +21,413 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 
-type Props = {
-  accounts: Account[]
-  categories: Category[]
-}
-
-const kindLabels = {
+const kinds = {
   purchase: 'Покупка',
   income: 'Доход',
-  transfer: 'Перевод между счетами',
+  transfer: 'Перевод',
+  refund: 'Возврат',
   debt_payment: 'Платёж по обязательству',
-} as const
-
-export function CreateFinancialEventForm({ accounts, categories }: Props) {
-  const queryClient = useQueryClient()
-  const {
-    control,
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<CreateFinancialEventValues>({
-    resolver: zodResolver(CreateFinancialEventSchema),
-    defaultValues: {
-      kind: 'purchase',
-      accountId: accounts[0]?.id ?? '',
-      destinationAccountId: accounts[1]?.id ?? '',
-      categoryId: categories.find((category) => category.kind === 'expense')?.id ?? '',
-      amount: Number.NaN,
-      merchant: '',
-      description: '',
-    },
+}
+type Kind = keyof typeof kinds
+type Review = {
+  amountMinor: number
+  merchant: string
+  description: string
+  occurredAt: string
+  key: string
+}
+export function CreateFinancialEventForm({
+  accounts,
+  categories,
+  events = [],
+  onSaved,
+}: {
+  accounts: Account[]
+  categories: Category[]
+  events?: FinancialEvent[]
+  onSaved?: () => void
+}) {
+  const query = useQueryClient()
+  const [initialDate] = useState(() => {
+    const now = new Date()
+    return new Date(now.valueOf() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16)
   })
-  const kind = useWatch({ control, name: 'kind' })
-  const accountID = useWatch({ control, name: 'accountId' })
-  const destinationAccountID = useWatch({ control, name: 'destinationAccountId' })
-  const categoryID = useWatch({ control, name: 'categoryId' })
-  const visibleCategories = categories.filter((category) =>
-    kind === 'income' ? category.kind === 'income' : category.kind === 'expense',
+  const [kind, setKind] = useState<Kind>('purchase')
+  const [account, setAccount] = useState(accounts[0]?.id ?? '')
+  const [target, setTarget] = useState(accounts[1]?.id ?? '')
+  const [category, setCategory] = useState(
+    categories.find((c) => c.kind === 'expense')?.id ?? 'none',
   )
-
-  const onSubmit = handleSubmit(async (values) => {
-    const headers = { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken }
-    const occurredAt = new Date().toISOString()
-    const amountMinor = Math.round(values.amount * 100)
-
-    let error: { message: string } | undefined
-    if (values.kind === 'purchase') {
-      const result = await apiClient.POST('/api/v1/financial-events/purchases', {
-        params: { header: headers },
-        body: {
-          accountId: values.accountId,
-          categoryId: values.categoryId,
-          amountMinor,
-          merchant: values.merchant,
-          description: values.description,
-          occurredAt,
-        },
-      })
-      error = result.error
-    } else if (values.kind === 'income') {
-      const result = await apiClient.POST('/api/v1/financial-events/incomes', {
-        params: { header: headers },
-        body: {
-          accountId: values.accountId,
-          categoryId: values.categoryId || null,
-          amountMinor,
-          merchant: values.merchant,
-          description: values.description,
-          occurredAt,
-        },
-      })
-      error = result.error
-    } else if (values.kind === 'debt_payment') {
-      const result = await apiClient.POST('/api/v1/financial-events/debt-payments', {
-        params: { header: headers },
-        body: {
-          accountId: values.accountId,
-          categoryId: values.categoryId || null,
-          amountMinor,
-          merchant: values.merchant,
-          description: values.description,
-          occurredAt,
-        },
-      })
-      error = result.error
-    } else {
-      const result = await apiClient.POST('/api/v1/financial-events/transfers', {
-        params: { header: headers },
-        body: {
-          sourceAccountId: values.accountId,
-          destinationAccountId: values.destinationAccountId,
-          amountMinor,
-          description: values.description,
-          occurredAt,
-        },
-      })
-      error = result.error
+  const [original, setOriginal] = useState('')
+  const [review, setReview] = useState<Review | null>(null)
+  const [failure, setFailure] = useState('')
+  const [pending, setPending] = useState(false)
+  const inFlight = useRef(false)
+  const selected = accounts.find((a) => a.id === account)
+  const originalPurchase = events.find((e) => e.id === original)
+  const currency =
+    kind === 'refund'
+      ? originalPurchase?.postings[0]?.currency
+      : selected?.currency
+  const categoriesVisible = categories.filter(
+    (c) => c.kind === (kind === 'income' ? 'income' : 'expense'),
+  )
+  const eventAccount =
+    kind === 'refund'
+      ? accounts.find((a) => a.id === originalPurchase?.postings[0]?.accountId)
+      : selected
+  async function save() {
+    if (!review || inFlight.current) return
+    inFlight.current = true
+    setPending(true)
+    setFailure('')
+    const headers = { 'Idempotency-Key': review.key, 'X-CSRF-Token': csrfToken }
+    const common = {
+      amountMinor: review.amountMinor,
+      merchant: review.merchant,
+      description: review.description,
+      occurredAt: review.occurredAt,
     }
-
-    if (error) {
-      toast.error(error.message)
-      return
+    try {
+      let error: { message: string } | undefined
+      if (kind === 'purchase')
+        error = (
+          await apiClient.POST('/api/v1/financial-events/purchases', {
+            params: { header: headers },
+            body: {
+              ...common,
+              accountId: account,
+              categoryId: category === 'none' ? null : category,
+            },
+          })
+        ).error
+      else if (kind === 'income')
+        error = (
+          await apiClient.POST('/api/v1/financial-events/incomes', {
+            params: { header: headers },
+            body: {
+              ...common,
+              accountId: account,
+              categoryId: category === 'none' ? null : category,
+            },
+          })
+        ).error
+      else if (kind === 'debt_payment')
+        error = (
+          await apiClient.POST('/api/v1/financial-events/debt-payments', {
+            params: { header: headers },
+            body: {
+              ...common,
+              accountId: account,
+              categoryId: category === 'none' ? null : category,
+            },
+          })
+        ).error
+      else if (kind === 'refund')
+        error = (
+          await apiClient.POST('/api/v1/financial-events/refunds', {
+            params: { header: headers },
+            body: { ...common, originalEventId: original },
+          })
+        ).error
+      else
+        error = (
+          await apiClient.POST('/api/v1/financial-events/transfers', {
+            params: { header: headers },
+            body: {
+              amountMinor: review.amountMinor,
+              description: review.description,
+              occurredAt: review.occurredAt,
+              sourceAccountId: account,
+              destinationAccountId: target,
+            },
+          })
+        ).error
+      if (error) {
+        setFailure(error.message)
+        return
+      }
+      await Promise.all(
+        [
+          'accounts',
+          'financial-events',
+          'cash-position',
+          'period-summary',
+          'obligations',
+        ].map((key) => query.invalidateQueries({ queryKey: [key] })),
+      )
+      toast.success('Операция сохранена')
+      onSaved?.()
+    } catch {
+      setFailure(
+        'Не удалось получить ответ. Повтор этого подтверждения использует тот же ключ и не создаст вторую операцию.',
+      )
+    } finally {
+      inFlight.current = false
+      setPending(false)
     }
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['accounts'] }),
-      queryClient.invalidateQueries({ queryKey: ['financial-events'] }),
-    ])
-    reset({
-      ...values,
-      amount: Number.NaN,
-      merchant: '',
-      description: '',
-    })
-    toast.success(kindLabels[values.kind] + ' сохранена')
-  })
-
+  }
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Новое финансовое событие</CardTitle>
-        <CardDescription>
-          Остатки вычисляются из неизменяемых проводок, а не изменяются вручную.
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={onSubmit}>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="grid gap-2 md:col-span-2">
-            <Label htmlFor="kind">Вид события</Label>
-            <Select value={kind} onValueChange={(value) => setValue('kind', value as CreateFinancialEventValues['kind'])}>
-              <SelectTrigger id="kind" className="w-full"><SelectValue /></SelectTrigger>
+    <>
+      <form
+        hidden={!!review}
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const f = new FormData(e.currentTarget)
+          const amountMinor = parseMinor(String(f.get('amount'))),
+            merchant = String(f.get('merchant') ?? '').trim(),
+            description = String(f.get('description') ?? '').trim(),
+            date = new Date(String(f.get('occurredAt')))
+          if (
+            amountMinor === null ||
+            amountMinor <= 0 ||
+            !currency ||
+            Number.isNaN(date.valueOf())
+          ) {
+            setFailure('Проверьте сумму, счёт и дату.')
+            return
+          }
+          if (
+            kind === 'purchase' &&
+            (category === 'none' || (!merchant && !description))
+          ) {
+            setFailure('Выберите категорию и укажите описание или получателя.')
+            return
+          }
+          if (kind === 'transfer' && (account === target || !target)) {
+            setFailure('Выберите два разных счёта.')
+            return
+          }
+          if (kind === 'refund' && !originalPurchase) {
+            setFailure('Выберите исходную покупку.')
+            return
+          }
+          setFailure('')
+          setReview({
+            amountMinor,
+            merchant,
+            description,
+            occurredAt: date.toISOString(),
+            key: createIdempotencyKey(),
+          })
+        }}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="event-kind">Тип операции</Label>
+          <Select
+            value={kind}
+            onValueChange={(v) => {
+              setKind(v as Kind)
+              setCategory('none')
+            }}
+          >
+            <SelectTrigger id="event-kind" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(kinds).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="event-amount">
+            Сумма{currency ? ` (${currency})` : ''}
+          </Label>
+          <Input
+            name="amount"
+            id="event-amount"
+            inputMode="decimal"
+            required
+            placeholder="0,00"
+          />
+        </div>
+        {kind !== 'refund' && (
+          <div className="space-y-2">
+            <Label htmlFor="event-account">
+              {kind === 'transfer' ? 'Со счёта' : 'Счёт / карта'}
+            </Label>
+            <Select value={account} onValueChange={setAccount}>
+              <SelectTrigger id="event-account" className="w-full">
+                <SelectValue placeholder="Выберите счёт" />
+              </SelectTrigger>
               <SelectContent>
-                {Object.entries(kindLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {accountLabel(a)}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="account">{kind === 'transfer' ? 'Со счёта' : 'Счёт'}</Label>
-            <Select value={accountID} onValueChange={(value) => setValue('accountId', value, { shouldValidate: true })}>
-              <SelectTrigger id="account" className="w-full"><SelectValue /></SelectTrigger>
+        )}
+        {kind === 'transfer' && (
+          <div className="space-y-2">
+            <Label htmlFor="event-target">На счёт</Label>
+            <Select value={target} onValueChange={setTarget}>
+              <SelectTrigger id="event-target" className="w-full">
+                <SelectValue placeholder="Выберите счёт" />
+              </SelectTrigger>
               <SelectContent>
-                {accounts.map((account) => <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>)}
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {accountLabel(a)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            {errors.accountId && <p className="text-sm text-destructive">{errors.accountId.message}</p>}
           </div>
-
-          {kind === 'transfer' ? (
-            <div className="grid gap-2">
-              <Label htmlFor="destination-account">На счёт</Label>
-              <Select value={destinationAccountID} onValueChange={(value) => setValue('destinationAccountId', value, { shouldValidate: true })}>
-                <SelectTrigger id="destination-account" className="w-full"><SelectValue placeholder="Выберите счёт" /></SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              {errors.destinationAccountId && <p className="text-sm text-destructive">{errors.destinationAccountId.message}</p>}
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              <Label htmlFor="category">Категория</Label>
-              <Select value={categoryID} onValueChange={(value) => setValue('categoryId', value, { shouldValidate: true })}>
-                <SelectTrigger id="category" className="w-full"><SelectValue placeholder="Без категории" /></SelectTrigger>
-                <SelectContent>
-                  {visibleCategories.map((category) => <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              {errors.categoryId && <p className="text-sm text-destructive">{errors.categoryId.message}</p>}
-            </div>
-          )}
-
-          <div className="grid gap-2">
-            <Label htmlFor="amount">Сумма, ₽</Label>
-            <Input id="amount" type="number" min="0.01" step="0.01" inputMode="decimal" {...register('amount', { valueAsNumber: true })} />
-            {errors.amount && <p className="text-sm text-destructive">{errors.amount.message}</p>}
+        )}
+        {kind === 'refund' && (
+          <div className="space-y-2">
+            <Label htmlFor="event-original">Исходная покупка</Label>
+            <Select value={original} onValueChange={setOriginal}>
+              <SelectTrigger id="event-original" className="w-full">
+                <SelectValue placeholder="Выберите покупку" />
+              </SelectTrigger>
+              <SelectContent>
+                {events
+                  .filter((e) => e.kind === 'purchase')
+                  .map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.merchant || e.description || 'Покупка'} ·{' '}
+                      {formatMoney(
+                        e.postings[0].amountMinor,
+                        e.postings[0].currency,
+                      )}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {kind !== 'transfer' && (
-            <div className="grid gap-2">
-              <Label htmlFor="merchant">{kind === 'income' ? 'Источник' : 'Получатель'}</Label>
-              <Input id="merchant" {...register('merchant')} />
-              {errors.merchant && <p className="text-sm text-destructive">{errors.merchant.message}</p>}
-            </div>
-          )}
-
-          <div className="grid gap-2 md:col-span-2">
-            <Label htmlFor="description">Комментарий</Label>
-            <Input id="description" {...register('description')} />
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="event-date">
+            Дата и время (часовой пояс устройства)
+          </Label>
+          <Input
+            name="occurredAt"
+            id="event-date"
+            type="datetime-local"
+            required
+            defaultValue={initialDate}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="event-description">Описание / комментарий</Label>
+          <Input name="description" id="event-description" maxLength={500} />
+        </div>
+        <details className="rounded-xl border p-3">
+          <summary className="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent">
+            Дополнительные сведения
+          </summary>
+          <div className="mt-4 space-y-4">
+            {kind !== 'transfer' && kind !== 'refund' && (
+              <div className="space-y-2">
+                <Label htmlFor="event-category">Категория</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="event-category" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Не указана</SelectItem>
+                    {categoriesVisible.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {kind !== 'transfer' && (
+              <div className="space-y-2">
+                <Label htmlFor="event-merchant">
+                  {kind === 'income' ? 'Источник' : 'Получатель'}
+                </Label>
+                <Input name="merchant" id="event-merchant" maxLength={160} />
+              </div>
+            )}
           </div>
-        </CardContent>
-        <CardFooter>
-          <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting || accounts.length === 0}>
-            {isSubmitting ? 'Сохранение…' : 'Сохранить событие'}
+        </details>
+        <div className="grace-actions">
+          <Button type="submit" disabled={accounts.length === 0}>
+            Посмотреть подтверждение
           </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+      {review && (
+        <>
+          <dl className="grace-fields">
+            <div>
+              <dt>Тип</dt>
+              <dd>{kinds[kind]}</dd>
+            </div>
+            <div>
+              <dt>Сумма</dt>
+              <dd>{formatMoney(review.amountMinor, currency!)}</dd>
+            </div>
+            <div>
+              <dt>Счёт / карта</dt>
+              <dd>
+                {eventAccount ? accountLabel(eventAccount) : 'Не указано'}
+              </dd>
+            </div>
+            {kind === 'transfer' && (
+              <div>
+                <dt>На счёт</dt>
+                <dd>
+                  {accounts.find((a) => a.id === target)
+                    ? accountLabel(accounts.find((a) => a.id === target)!)
+                    : 'Не указано'}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>Дата</dt>
+              <dd>{new Date(review.occurredAt).toLocaleString('ru-RU')}</dd>
+            </div>
+            <div>
+              <dt>Категория</dt>
+              <dd>
+                {categories.find((c) => c.id === category)?.name ??
+                  'Не указано'}
+              </dd>
+            </div>
+            <div>
+              <dt>Получатель</dt>
+              <dd>{review.merchant || 'Не указано'}</dd>
+            </div>
+            <div>
+              <dt>Комментарий</dt>
+              <dd>{review.description || 'Не указано'}</dd>
+            </div>
+          </dl>
+          <div className="grace-actions">
+            <Button disabled={pending} onClick={() => void save()}>
+              {pending ? 'Сохранение…' : 'Подтвердить и сохранить'}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={pending}
+              onClick={() => setReview(null)}
+            >
+              Изменить
+            </Button>
+          </div>
+        </>
+      )}
+      {failure && (
+        <p role="alert" className="mt-4 text-destructive">
+          {failure}
+        </p>
+      )}
+    </>
   )
 }

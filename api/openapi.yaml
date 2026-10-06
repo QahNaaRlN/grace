@@ -887,6 +887,9 @@ components:
         currency: { type: string, minLength: 3, maxLength: 3 }
         balanceMinor: { type: integer, format: int64 }
         createdAt: { type: string, format: date-time }
+        paymentInstruments:
+          type: array
+          items: { $ref: '#/components/schemas/PaymentInstrument' }
     CreateAccount:
       type: object
       additionalProperties: false
@@ -896,6 +899,23 @@ components:
         type: { type: string, enum: [debit, credit, installment, cash] }
         currency: { type: string, minLength: 3, maxLength: 3 }
         openingBalanceMinor: { type: integer, format: int64 }
+        card: { $ref: '#/components/schemas/CreateCard' }
+    CreateCard:
+      type: object
+      additionalProperties: false
+      required: [name, bank, last4]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        bank: { type: string, minLength: 1, maxLength: 160 }
+        last4: { type: string, pattern: '^[0-9]{4}$' }
+    PaymentInstrument:
+      type: object
+      required: [id, name, bank, last4]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        bank: { type: string }
+        last4: { type: string, pattern: '^[0-9]{4}$' }
     Category:
       type: object
       required: [id, name, kind, createdAt]
