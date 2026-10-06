@@ -336,4 +336,56 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 	if w := request("GET", "/api/v1/accounts", "", ownerCookie, false); w.Code != 401 {
 		t.Fatal("expired session alive")
 	}
+
+	// Cards are tenant-owned identifiers, not additional balances.
+	cardAccount, err := accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Card account", Type: "debit", Currency: "RUB", OpeningBalanceMinor: 12345, Card: &accounts.CardRequest{Name: "Card", Bank: "Test bank", Last4: "0012"}})
+	if err != nil || len(cardAccount.PaymentInstruments) != 1 || cardAccount.PaymentInstruments[0].Last4 != "0012" {
+		t.Fatal("card create", err, cardAccount)
+	}
+	memberItems, err := accountRepo.List(memberCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, a := range memberItems {
+		if a.ID == cardAccount.ID {
+			found = true
+			if a.BalanceMinor != 12345 || len(a.PaymentInstruments) != 1 || a.PaymentInstruments[0].Last4 != "0012" {
+				t.Fatal("card list roundtrip", a)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("new card account missing")
+	}
+	ownerItems, err := accountRepo.List(ownerCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, a := range ownerItems {
+		if a.ID == cardAccount.ID {
+			t.Fatal("card visible to another owner")
+		}
+	}
+	tenantTx, err := database.ForUsers(pool).BeginTx(memberCtx, pgx.TxOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tenantTx.Exec(memberCtx, `INSERT INTO payment_instruments (account_id,name,bank,last4) VALUES ($1,'Other card','Bank','0012')`, ownerID)
+	_ = tenantTx.Rollback(memberCtx)
+	if err == nil {
+		t.Fatal("cross-owner card link accepted")
+	}
+	beforeItems, err := accountRepo.List(memberCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Must rollback", Type: "debit", Currency: "RUB", Card: &accounts.CardRequest{Name: "Card", Bank: "", Last4: "0012"}})
+	if err == nil {
+		t.Fatal("invalid bank accepted")
+	}
+	afterItems, err := accountRepo.List(memberCtx)
+	if err != nil || len(afterItems) != len(beforeItems) {
+		t.Fatal("failed card creation leaked account", err)
+	}
 }

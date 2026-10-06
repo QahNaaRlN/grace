@@ -11,11 +11,34 @@ import { AuthBoundary } from './AuthBoundary'
 export const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <AuthBoundary><HomePage /></AuthBoundary>,
+    element: (
+      <AuthBoundary>
+        <HomePage />
+      </AuthBoundary>
+    ),
   },
   {
     path: '/assistant',
-    element: <AuthBoundary><AssistantPage /></AuthBoundary>,
+    element: (
+      <AuthBoundary>
+        <AssistantPage />
+      </AuthBoundary>
+    ),
   },
+  ...[
+    'operations',
+    'payments',
+    'accounts',
+    'analytics',
+    'health',
+    'profile',
+  ].map((page) => ({
+    path: `/${page}`,
+    element: (
+      <AuthBoundary>
+        <HomePage />
+      </AuthBoundary>
+    ),
+  })),
   { path: '/login', element: <LoginPage /> },
 ])

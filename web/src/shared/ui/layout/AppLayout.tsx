@@ -1,58 +1,164 @@
-import type { ReactNode } from 'react'
-import { Bot, HeartPulse, WalletCards } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
-
+import { useEffect, useState, type ReactNode } from 'react'
+import {
+  Bot,
+  HeartPulse,
+  LayoutDashboard,
+  ListOrdered,
+  CalendarClock,
+  Menu,
+  WalletCards,
+  BarChart3,
+  UserRound,
+  Moon,
+  Sun,
+  TableProperties,
+} from 'lucide-react'
+import { NavLink, Link } from 'react-router-dom'
+import { useTheme } from 'next-themes'
 import { cn } from '@/shared/lib/utils'
-import { AuthActions } from './AuthActions'
+import { Button } from '@/shared/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/shared/ui/dialog'
 
-type AppLayoutProps = {
-  children: ReactNode
-}
-
-/**
- * Компонент, который задаёт семантическую оболочку приложения (header, main, footer).
- */
-export function AppLayout({ children }: AppLayoutProps) {
-  const navClass = ({ isActive }: { isActive: boolean }) => cn(
-    'flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40',
-    isActive
-      ? 'bg-white text-primary shadow-sm ring-1 ring-foreground/5'
-      : 'text-muted-foreground hover:bg-white/60 hover:text-foreground',
-  )
-
+const mainLinks = [
+  { to: '/', label: 'Обзор', icon: LayoutDashboard },
+  { to: '/operations', label: 'Операции', icon: ListOrdered },
+  { to: '/payments', label: 'Платежи', icon: CalendarClock },
+]
+const moreLinks = [
+  { to: '/accounts', label: 'Счета и карты', icon: WalletCards },
+  { to: '/analytics', label: 'Подробный расчёт', icon: BarChart3 },
+  { to: '/assistant', label: 'Ассистент', icon: Bot },
+  { to: '/health', label: 'Финансовое здоровье', icon: TableProperties },
+  { to: '/profile', label: 'Профиль и доступ', icon: UserRound },
+]
+export function AppLayout({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const [keyboard, setKeyboard] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+    const update = () => setKeyboard(window.innerHeight - viewport.height > 150)
+    viewport.addEventListener('resize', update)
+    return () => viewport.removeEventListener('resize', update)
+  }, [])
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      'flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring',
+      isActive
+        ? 'bg-accent text-primary'
+        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+    )
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-              <HeartPulse className="size-5" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Grace</p>
-              <p className="text-sm font-semibold sm:text-base">Финансовое здоровье</p>
-            </div>
-          </div>
-          <AuthActions />
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-40 border-b bg-card">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link
+            to="/"
+            aria-label="Grace — обзор"
+            className="flex min-h-11 items-center gap-3 text-xl font-semibold"
+          >
+            <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
+              <HeartPulse aria-hidden="true" className="size-5" />
+            </span>
+            Grace
+          </Link>
           <nav
             aria-label="Основная навигация"
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/90 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none"
+            className="mr-auto ml-6 hidden gap-2 md:flex"
           >
-            <div className="mx-auto grid max-w-md grid-cols-2 gap-2 rounded-2xl bg-muted/80 p-1 md:flex">
-              <NavLink to="/" end className={navClass}><WalletCards className="size-4" aria-hidden="true" />Финансы</NavLink>
-              <NavLink to="/assistant" className={navClass}><Bot className="size-4" aria-hidden="true" />Ассистент</NavLink>
-            </div>
+            {mainLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === '/'}
+                className={navClass}
+              >
+                {link.label}
+              </NavLink>
+            ))}
           </nav>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" aria-label="Меню">
+                <Menu aria-hidden="true" className="size-4" />
+                <span>Меню</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
+              <div>
+                <DialogHeader>
+                  <DialogTitle>Меню</DialogTitle>
+                  <DialogDescription>Личное пространство</DialogDescription>
+                </DialogHeader>
+                <nav
+                  aria-label="Дополнительные разделы"
+                  className="mt-6 grid gap-1"
+                >
+                  {moreLinks.map(({ icon: Icon, ...link }) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setOpen(false)}
+                      className={navClass}
+                    >
+                      <Icon aria-hidden="true" className="size-5" />
+                      {link.label}
+                    </NavLink>
+                  ))}
+                </nav>
+                <div className="grace-actions">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+                    }
+                  >
+                    {resolvedTheme === 'dark' ? (
+                      <Sun className="size-4" />
+                    ) : (
+                      <Moon className="size-4" />
+                    )}
+                    {resolvedTheme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
-
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-5 pb-28 sm:px-6 sm:pt-8 md:pb-10">{children}</main>
-
-      <footer className="hidden border-t border-border/70 bg-white/60 md:block">
-        <div className="mx-auto max-w-6xl px-6 py-4 text-sm text-muted-foreground">
-          Достоверные данные · детерминированные расчёты
-        </div>
-      </footer>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-10">
+        {children}
+      </main>
+      {!keyboard && (
+        <nav
+          aria-label="Разделы на телефоне"
+          className="fixed inset-x-0 bottom-0 z-40 border-t bg-card px-3 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] md:hidden"
+        >
+          <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
+            {mainLinks.map(({ icon: Icon, ...link }) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === '/'}
+                className={({ isActive }) =>
+                  cn(navClass({ isActive }), 'flex-col gap-1 px-1 text-xs')
+                }
+              >
+                <Icon aria-hidden="true" className="size-5" />
+                {link.label}
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+      )}
     </div>
   )
 }

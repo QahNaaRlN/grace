@@ -153,7 +153,9 @@ describe('AssistantPage', () => {
     renderPage(submit)
 
     expect(submit).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button',{name:'Меню'}))
     expect(screen.getByRole('link', { name: 'Ассистент' })).toHaveAttribute('aria-current', 'page')
+    await user.keyboard('{Escape}')
     await user.click(screen.getByRole('button', { name: 'Спросить Grace' }))
 
     expect(await screen.findByText('Введите вопрос.')).toBeInTheDocument()
