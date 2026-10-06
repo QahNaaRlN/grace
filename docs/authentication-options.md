@@ -1,107 +1,128 @@
-# Варианты входа и возвращение на сайт
+# Google и Apple: проработка входа по приглашению
 
-Проработка от 2026-10-06 по запросу владельца. Предлагаемый scope:
-[draft SPEC-0019](specs/0019-passkeys-and-mobile-login.md). Это предложение,
-а не описание уже включённых способов входа.
+Дата: 2026-10-06. По указанию владельца Google и Apple Account (Apple ID)
+выбраны двумя основными вариантами для следующего этапа.
+[Draft SPEC-0019](specs/0019-google-apple-mobile-login.md)
+обновлён; production implementation отсутствует.
 
-## Что подтверждено в текущем коде
+## Пользовательский сценарий
 
-- `internal/auth/provider.go:43`: обычный Telegram OIDC Code Flow с PKCE,
-  state/nonce, scopes `openid profile`. Принудительный повторный login через
-  `prompt=login` не запрашивается. Разрешения bot messaging/phone не запрашиваются.
-- `internal/auth/handler.go:129`: после успешного callback сервер устанавливает
-  cookie и отвечает 303 на `/`. Redirect существует; ошибка callback ведёт на
-  `/login?error=authentication_failed`.
-- `internal/auth/repository.go:81` и handler: сессия и cookie живут семь дней.
-  При сохранённой сессии в том же браузере обычное открытие `/` не должно
-  требовать Telegram. Это абсолютный срок, продления по активности нет.
-- `web/src/pages/login/LoginPage.tsx:10`: сама `/login` не проверяет действующую
-  сессию. Даже авторизованный пользователь видит кнопку запуска нового OIDC.
-  Это подтверждённый недостаток UX, но не доказанная единственная причина жалобы.
-- Владелец наблюдает проблему на телефоне во внутреннем браузере Telegram и Chrome.
-  ОС, версии и конкретный этап остановки пока неизвестны.
+На Grace доступны «Продолжить с Google» и «Продолжить с Apple», Telegram —
+дополнительный способ. Обе кнопки можно показывать на Android и iPhone: выбор
+аккаунта не равен выбору ОС. Не ограничивать Google владельцами Android,
+а Apple — владельцами iPhone.
 
-Уведомление, о котором сообщил владелец, отправляет сам Telegram. В текущей
-документации OIDC нет описанного параметра сайта для подавления таких уведомлений.
-Отсутствие такого параметра в документации не является обещанием, что настройки
-клиента Telegram никогда не изменятся. Решение со стороны Grace — повторно
-использовать собственную сессию и предложить другой способ входа.
+Первое подключение: код приглашения на Grace → выбранный provider → проверка
+сервером → однократное потребление invitation → собственная сессия Grace.
+Повторный вход не требует приглашения. При уже действующей семидневной сессии
+страница /login сразу открывает приложение вместо нового внешнего входа.
 
-## Сравнение
+Для существующего Telegram-пользователя нужен явный сценарий «Добавить Google»
+или «Добавить Apple» внутри своего аккаунта с свежей проверкой существующим
+способом. Все identities ссылаются на прежний user UUID; финансовые owner_id,
+счета, роли и история не меняются. Email или отображаемое имя не объединяют
+аккаунты. Apple может скрывать реальный email, а адрес Google может меняться.
 
-| Способ | Пользовательский опыт | Приглашения | Цена сложности и ограничения |
-| --- | --- | --- | --- |
-| Passkey | Подтверждение лицом, отпечатком или PIN устройства на странице Grace; Telegram не участвует | Первое создание ключа только по приглашению; последующие ключи добавляются к существующему аккаунту | WebAuthn, управление ключами и восстановление; совместимость встроенного браузера проверять отдельно |
-| Код на email | Ввести одноразовый код на той же странице; не обязательно открывать ссылку в другом браузере | Приглашение и доказательство контроля почты нужны при первом подключении | Почтовая доставка, задержки/спам, ограничения попыток и зависимость от защиты почтового ящика |
-| Логин и пароль | Привычная форма внутри Grace; Telegram не участвует | Регистрация закрыта без приглашения | Хранение password hashes, защита от перебора, восстановление, возможный второй фактор |
-| Google/Apple OIDC | Привычный внешний аккаунт | Приглашение остаётся отдельным условием допуска | Другой провайдер, redirect и привязка identities; Google ограничивает OAuth во встроенных WebView |
-| Telegram | Уже существует; оставить как дополнительный вход для привязанных пользователей | Существующий механизм | Уведомления провайдера и переход между приложением и браузером сохраняются |
+## Сравнение двух методов
 
-Рекомендация: сначала passkey + исправление восстановления сессии и мобильного
-возврата, Telegram оставить дополнительным способом. Если passkey не подходит,
-следующий рассматриваемый вариант — код на почту. Ссылка из письма может снова
-открыть другой браузер, поэтому код лучше соответствует описанной мобильной жалобе.
-Длинную сессию не считать заменой исправлению браузерного контекста; на первом
-этапе сохранить текущие семь дней.
+| Вопрос | Google | Apple |
+| --- | --- | --- |
+| На телефоне | Выбор знакомого Google account в обычном браузере | Apple Account; пользовательское подтверждение зависит от устройства/сессии |
+| Настройка | Cloud project, Web OAuth client, consent screen, точный redirect | Developer Program, primary App ID, Services ID, domains/return URL и private key |
+| Браузер Telegram | Embedded WebView официально запрещён для Google OAuth | Реальный flow требуется проверить; нельзя считать поведение равным Safari |
+| Возврат | Server code callback в исходный браузер | При scopes name/email — form_post; нужен отдельный POST→GET finish |
+| Идентификатор | Проверенный issuer + sub, не email | Проверенный issuer + sub, не real/relay email |
+| Эксплуатация | Client secret и provider config | Key/JWT client-secret rotation; first-consent profile и privacy/revocation semantics |
+| Готовность для Grace | Подходит существующей Go/OIDC архитектуре, но нужен adapter/discovery | Та же финансовая архитектура; есть дополнительная внешняя prerequisite-проверка |
 
-## Как сохраняются приглашения и финансовый аккаунт
+## Google: предлагаемое решение
 
-Приглашение разрешает присоединение к Grace, способ входа доказывает владение
-учётными данными. Эти роли независимы. Сейчас `users.id` уже отделён от
-`auth_identities(issuer, subject)`; новый ключ должен ссылаться на тот же user UUID.
+Серверный Authorization Code Flow, PKCE S256, state и nonce. JWT проверяется
+на сервере по ожидаемым issuer/audience/JWKS, а не по данным, присланным браузером.
+Для Grace достаточно login scopes openid/profile/email; доступ к Gmail, Drive
+и Calendar не нужен. Не запрашивать offline access ради собственной сессии.
+Использовать только зарегистрированный HTTPS callback и корректное оформление
+кнопки Google. One Tap не является обязательным условием первого этапа.
 
-Первый вход: код приглашения → проверка и создание passkey → атомарное потребление
-приглашения и создание сессии. При отмене создания ключа приглашение не тратится.
-Действующий пользователь: свежий вход в свой аккаунт → явное добавление ключа →
-следующий вход без Telegram. Совпадение имени/email не связывает аккаунты.
-Счета, owner_id, роли и финансовые данные не переносить и не создавать заново.
+Google запрещает OAuth в embedded user agents. Поэтому пользователь должен
+открыть Grace в обычном Chrome/Safari до ввода invitation и начала flow.
+Сайт может объяснить, как открыть внешний браузер через меню Telegram; он не
+может гарантировать принудительный запуск Chrome на любой мобильной ОС.
 
-Несколько ключей допустимы. Нельзя удалить последний рабочий основной способ.
-Для потери всех ключей нужен заранее описанный recovery: другой ключ,
-ранее привязанный Telegram или ручная операторская процедура с проверкой личности.
-Новый публичный автоматический recovery через приглашение здесь не предлагается.
+## Apple: предлагаемое решение и зависимость
 
-## Возврат на телефоне: диагноз и план проверки
+Для Web нужен Services ID, связанный с primary App ID, включённым для Sign in
+with Apple, и private key. Документ Apple по настройке прямо указывает существующее
+приложение в App Store, использующее этот вход; Account Help описывает связь
+с primary App ID. Для текущего Web-only Grace нельзя обещать подключение только
+добавлением кнопки: нужно подтвердить допустимую конфигурацию и наличие
+prerequisites в аккаунте разработчика. Native app и его публикация не входят
+в поручение проработать Web login. Сторонний auth broker не отменяет требований Apple.
 
-Подтверждено наличие server redirect. Причина конкретного мобильного сбоя пока
-не подтверждена. Возможны три разных случая:
+Стандартная membership Apple Developer Program — 99 USD в год либо локальная
+цена; региональные условия проверяются при enrollment. Наличие membership,
+App ID и подходящего приложения у владельца пока не проверено. Оплата или
+регистрация аккаунта этой проработкой не выполнялись.
 
-1. Telegram подтверждён, callback уже установил сессию, но приложение Telegram
-   осталось на переднем плане. Проверить исходную вкладку и `/api/auth/me`.
-2. Провайдер ещё не вернул браузер на callback. Проверить этап OIDC и разрешённый
-   callback URL; не заменять протокол произвольным deep link или увеличением таймаутов.
-3. Callback открылся в Chrome после старта во встроенном браузере, или наоборот.
-   Cookie login flow остаётся в исходном браузере. Проверка browser binding
-   правильно отклонит такой callback; отключать эту защиту нельзя.
+Provider adapter обменивает code на сервере и проверяет ID token. Client secret
+Apple — подписанный сервером JWT; предусмотреть создание/ротацию и мониторинг
+expiry вместо бессрочной строковой настройки. Не переносить Telegram JWKS paths
+или без проверки предполагать поддержку PKCE у Apple.
 
-Предлагаемый UX: `/login` сначала проверяет собственную сессию; действующая
-сессия открывает приложение. Passkey завершает вход на той же странице.
-Для Telegram начать и завершить flow в одном браузере. Если встроенный браузер
-мешает, предложить открыть Grace в Chrome/Safari ДО ввода приглашения и начала
-авторизации. Автоматический запуск Chrome из любого встроенного браузера не
-гарантировать: дать понятную инструкцию/обычную ссылку и возможность открыть
-страницу через меню Telegram. По возвращении проверить сессию без нового OIDC.
+Если запрашиваются name/email, Apple возвращает данные cross-site form POST.
+Текущий handler Grace принимает GET, а flow cookie имеет SameSite=Lax. Предлагается
+bounded POST receiver: сохранить response краткоживуще на сервере, сделать 303
+на same-origin GET finish и только там подтвердить исходную cookie до выдачи
+сессии/привязки. Непрозрачный одноразовый locator не содержит code/token/invitation
+и не даёт доступа без browser proof. Финансовую cookie не ослаблять.
+Этот проект решения требует browser tests; не выдавать его за уже доказанный flow.
 
-После успешного callback возвращаться к разрешённому разделу, откуда начат вход,
-а не всегда на `/`. При неполном входе показывать понятную причину/следующее
-действие, не зацикливать Telegram и не переносить session/code/token через URL.
-Сайт не может надёжно заставить мобильную ОС переключиться из Telegram в браузер.
+Apple profile name может быть доступен только при первом consent. Сохранить
+нужные display metadata после проверки identity; отсутствие имени при следующих
+входах допустимо. Hide My Email поддерживается, relay адрес не является ключом
+объединения с Google или Telegram. Для revocation/account changes определить
+минимальное token retention и защищённое хранение перед implementation.
 
-Проверка на устройстве должна различать приложение/вкладку и результат сервера.
-Без повторного входа владельца эти гипотезы остаются гипотезами. Новый реальный
-Telegram-вход автоматически не запускался, чтобы не создавать лишнее уведомление.
+## Что это решает в исходных жалобах
 
-## Источники
+- Google/Apple вход не вызывает Telegram login notification. Однако обещать
+  отсутствие любых уведомлений/2FA от самих Google или Apple нельзя.
+- Приглашения остаются отдельным условием первого допуска; смена способа не
+  создаёт второй аккаунт и не переносит финансовые данные.
+- В обычном браузере flow должен завершаться на Grace в той же вкладке.
+  Это проверяется на устройствах; альтернативный provider сам по себе не
+  устраняет ограничения встроенного браузера или переключения приложений.
+- /login сначала проверяет собственную сессию. В текущем коде эта проверка
+  отсутствует, хотя session TTL уже семь дней.
 
-Проверены 2026-10-06; provider/browser support меняются со временем.
+Точная причина наблюдаемого Telegram-return сбоя не доказана. Callback Grace
+уже отвечает 303 на / после успешного входа; возможны незавершённый provider
+flow, браузер без исходной cookie либо просто Telegram на переднем плане.
+Browser binding не отключать и не переносить session между Chrome/WebView.
 
-- [Telegram Login/OIDC](https://core.telegram.org/bots/telegram-login): allowed
-  URLs, code/PKCE, callback; SDK с popup — отдельный механизм, не гарантированное
-  исправление текущего mobile flow.
-- [FIDO passkeys](https://fidoalliance.org/passkeys-2/): локальное подтверждение
-  пользователя, ключи и синхронизация; биометрия не передаётся сайту.
-- [Google: поддержка Chrome/Android](https://developers.google.com/identity/passkeys/supported-environments):
-  поддержка обычного Chrome не доказывает поддержку конкретного Telegram WebView.
-- [Google: ограничения embedded OAuth](https://developers.googleblog.com/en/upcoming-security-changes-to-googles-oauth-20-authorization-endpoint-in-embedded-webviews/).
-- [OWASP Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html):
-  защита связывания аккаунтов, повторная проверка личности при изменении способов входа.
+## Предлагаемый порядок
+
+1. Утвердить scope Google + Apple, same-account linking и mobile return.
+2. Исправить повторное использование сессии и return path как общую часть.
+3. Реализовать и проверить Google; параллельно подтвердить Apple prerequisites.
+4. Реализовать Apple adapter и POST callback после подтверждения допустимости.
+5. Проверить Android Chrome, iOS Safari/Chrome и Telegram browser: initial invite,
+   повторный вход, linking, cancellation, back/reload и потеря cookie.
+6. Выпустить выбранные провайдеры после acceptance/CI/отдельного rollout решения.
+
+Если Apple prerequisites потребуют native-приложения, вынести это в отдельное
+решение. Не заменять выбранный Apple другим provider без владельца.
+
+## Проверенные источники
+
+Источники проверены 2026-10-06; факты провайдеров необходимо перепроверять перед rollout.
+
+- [Google OIDC](https://developers.google.com/identity/openid-connect/openid-connect): code flow, claims и sub.
+- [Google embedded browser policy](https://developers.googleblog.com/en/upcoming-security-changes-to-googles-oauth-20-authorization-endpoint-in-embedded-webviews/).
+- [Apple Web setup](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web).
+- [Apple environment prerequisites](https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple).
+  Официальный Markdown доступен по тому же URL с суффиксом .md; он прочитан напрямую.
+- [Apple authorization/callback](https://developer.apple.com/documentation/signinwithapplerestapi/request-an-authorization-to-the-sign-in-with-apple-server.).
+- [Apple authentication/profile behavior](https://developer.apple.com/documentation/signinwithapple/authenticating-users-with-sign-in-with-apple).
+- [Apple client secret](https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret): ссылка из official Sign in with Apple setup.
+- [Apple membership](https://developer.apple.com/help/account/membership/program-enrollment).
