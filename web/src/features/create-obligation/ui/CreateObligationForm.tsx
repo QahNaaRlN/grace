@@ -59,12 +59,20 @@ export function CreateObligationForm() {
       payments: [emptyPayment()],
     },
   })
-  const { fields, append, remove } = useFieldArray({ control, name: 'payments' })
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'payments',
+  })
   const kind = useWatch({ control, name: 'kind' })
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await apiClient.POST('/api/v1/obligations', {
-      params: { header: { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken } },
+      params: {
+        header: {
+          'Idempotency-Key': createIdempotencyKey(),
+          'X-CSRF-Token': csrfToken,
+        },
+      },
       body: {
         name: values.name,
         kind: values.kind,
@@ -80,8 +88,17 @@ export function CreateObligationForm() {
       toast.error(result.error.message)
       return
     }
-    await queryClient.invalidateQueries({ queryKey: ['obligations'] })
-    reset({ name: '', kind: values.kind, currency: values.currency, total: Number.NaN, payments: [emptyPayment()] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['obligations'] }),
+      queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
+    ])
+    reset({
+      name: '',
+      kind: values.kind,
+      currency: values.currency,
+      total: Number.NaN,
+      payments: [emptyPayment()],
+    })
     toast.success('Обязательство сохранено')
   })
 
@@ -98,59 +115,145 @@ export function CreateObligationForm() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="obligation-name">Название</Label>
-              <Input id="obligation-name" placeholder="Рассрочка на ноутбук" {...register('name')} />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              <Input
+                id="obligation-name"
+                placeholder="Рассрочка на ноутбук"
+                {...register('name')}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="obligation-kind">Тип</Label>
-              <Select value={kind} onValueChange={(value) => setValue('kind', value as CreateObligationValues['kind'])}>
-                <SelectTrigger id="obligation-kind" className="w-full"><SelectValue /></SelectTrigger>
+              <Select
+                value={kind}
+                onValueChange={(value) =>
+                  setValue('kind', value as CreateObligationValues['kind'])
+                }
+              >
+                <SelectTrigger id="obligation-kind" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(kindLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                  {Object.entries(kindLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="obligation-total">Общая сумма</Label>
-              <Input id="obligation-total" type="number" min="0.01" step="0.01" {...register('total', { valueAsNumber: true })} />
-              {errors.total && <p className="text-sm text-destructive">{errors.total.message}</p>}
+              <Input
+                id="obligation-total"
+                type="number"
+                min="0.01"
+                step="0.01"
+                {...register('total', { valueAsNumber: true })}
+              />
+              {errors.total && (
+                <p className="text-sm text-destructive">
+                  {errors.total.message}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="obligation-currency">Валюта</Label>
-              <Input id="obligation-currency" maxLength={3} {...register('currency')} />
-              {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
+              <Input
+                id="obligation-currency"
+                maxLength={3}
+                {...register('currency')}
+              />
+              {errors.currency && (
+                <p className="text-sm text-destructive">
+                  {errors.currency.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <Label>График</Label>
-              <Button type="button" variant="outline" size="sm" onClick={() => append(emptyPayment())}>
-                <Plus aria-hidden="true" className="mr-1 size-4" /> Добавить платёж
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append(emptyPayment())}
+              >
+                <Plus aria-hidden="true" className="mr-1 size-4" /> Добавить
+                платёж
               </Button>
             </div>
             {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_auto]">
+              <div
+                key={field.id}
+                className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_auto]"
+              >
                 <div className="grid gap-2">
-                  <Label htmlFor={`payment-date-${index}`}>Дата #{index + 1}</Label>
-                  <Input id={`payment-date-${index}`} type="date" {...register(`payments.${index}.dueOn`)} />
-                  {errors.payments?.[index]?.dueOn && <p className="text-sm text-destructive">{errors.payments[index].dueOn.message}</p>}
+                  <Label htmlFor={`payment-date-${index}`}>
+                    Дата #{index + 1}
+                  </Label>
+                  <Input
+                    id={`payment-date-${index}`}
+                    type="date"
+                    {...register(`payments.${index}.dueOn`)}
+                  />
+                  {errors.payments?.[index]?.dueOn && (
+                    <p className="text-sm text-destructive">
+                      {errors.payments[index].dueOn.message}
+                    </p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`payment-amount-${index}`}>Сумма</Label>
-                  <Input id={`payment-amount-${index}`} type="number" min="0.01" step="0.01" {...register(`payments.${index}.amount`, { valueAsNumber: true })} />
-                  {errors.payments?.[index]?.amount && <p className="text-sm text-destructive">{errors.payments[index].amount.message}</p>}
+                  <Input
+                    id={`payment-amount-${index}`}
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    {...register(`payments.${index}.amount`, {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  {errors.payments?.[index]?.amount && (
+                    <p className="text-sm text-destructive">
+                      {errors.payments[index].amount.message}
+                    </p>
+                  )}
                 </div>
-                <Button type="button" variant="ghost" size="icon" className="self-end" disabled={fields.length === 1} onClick={() => remove(index)} aria-label={`Удалить платёж ${index + 1}`}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="self-end"
+                  disabled={fields.length === 1}
+                  onClick={() => remove(index)}
+                  aria-label={`Удалить платёж ${index + 1}`}
+                >
                   <Trash2 aria-hidden="true" className="size-4" />
                 </Button>
               </div>
             ))}
-            {errors.payments?.message && <p className="text-sm text-destructive">{errors.payments.message}</p>}
+            {errors.payments?.message && (
+              <p className="text-sm text-destructive">
+                {errors.payments.message}
+              </p>
+            )}
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Сохранение…' : 'Сохранить обязательство'}</Button>
+          <Button
+            className="w-full sm:w-auto"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Сохранение…' : 'Сохранить обязательство'}
+          </Button>
         </CardFooter>
       </form>
     </Card>

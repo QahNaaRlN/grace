@@ -132,6 +132,18 @@ const columns: Record<string, string[]> = {
   ],
   Инструкция: ['Шаг', 'Что сделать'],
 }
+const eventLabels: Record<FinancialEvent['kind'], string> = {
+  purchase: 'Покупка',
+  income_received: 'Доход',
+  internal_transfer: 'Перевод',
+  refund: 'Возврат',
+  debt_payment: 'Платёж по обязательству',
+}
+const debtLabels: Record<Obligation['kind'], string> = {
+  loan: 'Кредит',
+  installment: 'Рассрочка',
+  other_fixed: 'Другое обязательство',
+}
 type RecordRow = { title: string; values: Record<string, string> }
 export function FinancialHealth({
   accounts,
@@ -162,7 +174,7 @@ export function FinancialHealth({
       values: {
         ID: e.id,
         Дата: new Date(e.occurredAt).toLocaleString('ru-RU'),
-        Тип: e.kind,
+        Тип: eventLabels[e.kind],
         Описание: e.description,
         Категория: e.categoryName ?? 'Не указано',
         'Сумма, ₽': e.postings[0]
@@ -197,9 +209,9 @@ export function FinancialHealth({
       title: o.name,
       values: {
         'Кредитор / долг': o.name,
-        Тип: o.kind,
+        Тип: debtLabels[o.kind],
         'Остаток, ₽': formatMoney(o.remainingMinor, o.currency),
-        Статус: o.status,
+        Статус: o.status === 'completed' ? 'Завершено' : 'Действует',
       },
     })),
     Категории: categories.map((c) => ({

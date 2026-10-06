@@ -29,3 +29,12 @@ existing accounts/events/categories/fixed obligations/receipts. Missing spreadsh
 fields remain unknown. Full editable credit facilities/statements, planned salary,
 budgets and reconciliation/document management remain separate roadmap work;
 they are not simulated as saved financial data. No production test writes planned.
+
+Follow-up verification: obligation creation and settlement now invalidate the
+cash-position query as well as obligations. Browser: add a 200 RUB scheduled
+payment to the existing 100 RUB test plan, wait for successful save, navigate
+back to Overview without reload → 300 RUB obligations and 125690 RUB available,
+while liquid balance remains 125990 RUB. All amounts came from Go API.
+PR CI run 37475410104 passed on 9b75e45, including Linux production-bundle and
+all PostgreSQL integration/container gates. Final cache-refresh refinement is
+submitted for a new CI run before merging.

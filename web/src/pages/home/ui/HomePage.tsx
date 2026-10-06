@@ -528,7 +528,10 @@ function SettlementControl({
       return
     }
     setEventID('')
-    await queryClient.invalidateQueries({ queryKey: ['obligations'] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['obligations'] }),
+      queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
+    ])
     toast.success('Фактический платёж связан с графиком')
   }
 
