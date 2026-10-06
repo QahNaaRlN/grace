@@ -195,16 +195,8 @@ export function FinancialHealth({
         }).format(new Date(e.occurredAt)),
       },
     })),
-    Зарплата: events
-      .filter((e) => e.kind === 'income_received')
-      .map((e) => ({
-        title: e.merchant || e.description || 'Поступление дохода',
-        values: {
-          'Фактически получено, ₽': e.postings[0]
-            ? formatMoney(e.postings[0].amountMinor, e.postings[0].currency)
-            : 'Не указано',
-        },
-      })),
+    // A general income event does not establish a salary component.
+    Зарплата: [],
     Задолженности: obligations.map((o) => ({
       title: o.name,
       values: {
