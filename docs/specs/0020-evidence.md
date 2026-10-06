@@ -38,3 +38,6 @@ while liquid balance remains 125990 RUB. All amounts came from Go API.
 PR CI run 37475410104 passed on 9b75e45, including Linux production-bundle and
 all PostgreSQL integration/container gates. Final cache-refresh refinement is
 submitted for a new CI run before merging.
+Additional empty-state regression test: first-account action is available with
+zero accounts, no invented balance section, and opening the form sends no POST.
+The complete Web suite now has 24 passing tests.
