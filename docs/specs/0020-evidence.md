@@ -56,3 +56,5 @@ The complete Web suite now has 24 passing tests.
 
 This final documentation update records the deployed release; it does not
 change deployed application behavior or advance SPEC-0017/0019.
+
+Final smoke-test release includes the SPEC-0021 display correction: 11f6b2e. See [0021-evidence.md](0021-evidence.md); 25 Web tests pass.
