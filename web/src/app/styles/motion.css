@@ -1,0 +1,95 @@
+/* Presentation only: no remounts, timers or delayed actions. */
+@keyframes grace-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes grace-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes grace-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes grace-dialog-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+@keyframes grace-select-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes grace-menu-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes grace-menu-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(8px); }
+}
+@keyframes grace-select-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.98); }
+}
+
+.grace-page {
+  animation: grace-fade-in var(--motion-enter) var(--motion-ease);
+}
+[data-slot='dialog-overlay'][data-state='open'] {
+  animation: grace-fade-in var(--motion-enter) var(--motion-ease) both;
+}
+[data-slot='dialog-overlay'][data-state='closed'] {
+  animation: grace-fade-out var(--motion-quick) ease-in both;
+}
+[data-slot='dialog-content'][data-state='open'] {
+  animation: grace-dialog-in var(--motion-enter) var(--motion-ease) both;
+}
+[data-slot='dialog-content'][data-state='closed'] {
+  animation: grace-dialog-out var(--motion-quick) ease-in both;
+}
+[data-slot='dialog-content'][data-motion='menu'][data-state='open'] {
+  animation-name: grace-menu-in;
+}
+[data-slot='dialog-content'][data-motion='menu'][data-state='closed'] {
+  animation-name: grace-menu-out;
+}
+[data-slot='select-content'][data-state='open'] {
+  animation: grace-select-in var(--motion-enter) var(--motion-ease) both;
+}
+[data-slot='select-content'][data-state='closed'] {
+  animation: grace-select-out var(--motion-quick) ease-in both;
+}
+/* Item-aligned lists must not move relative to the selected option. */
+[data-slot='select-content'][data-align-trigger='true'][data-state='open'] {
+  animation-name: grace-fade-in;
+}
+[data-slot='select-content'][data-align-trigger='true'][data-state='closed'] {
+  animation-name: grace-fade-out;
+}
+
+[data-slot='button'],
+[data-slot='input'],
+[data-slot='textarea'],
+[data-slot='select-trigger'],
+[data-slot='select-item'],
+.grace-row,
+nav a {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--motion-quick);
+  transition-timing-function: var(--motion-ease);
+}
+[data-slot='button']:not(:disabled):not([aria-disabled='true']):active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  [data-slot='button']:active {
+    transform: none !important;
+    translate: none !important;
+  }
+}
