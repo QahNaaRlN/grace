@@ -215,4 +215,5 @@ if grep -q 'test-only-credential' "$tmp_dir/credential-output"; then
   echo "deployment leaked credentials" >&2; exit 1
 fi
 
+sh "$repo_root/scripts/test-email-rollout.sh"
 echo "SPEC-0012 production deployment checks passed"

@@ -26,7 +26,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   cfg.CORSOrigins,
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key", "X-CSRF-Token"},
 		AllowCredentials: true,
 	}))
@@ -54,13 +54,27 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	if cfg.AuthMode == "telegram" {
 		identityProvider = auth.NewTelegramProvider(cfg.TelegramClientID, cfg.TelegramClientSecret, cfg.PublicURL+"/api/auth/callback")
 	}
-	authHandler := auth.NewHandler(auth.NewRepository(pool), identityProvider, cfg.AuthMode, cfg.PublicURL)
+	authRepository := auth.NewRepository(pool)
+	authHandler := auth.NewHandler(authRepository, identityProvider, cfg.AuthMode, cfg.PublicURL)
+	sender := auth.NewSMTPSender(auth.SMTPSettings{Host: cfg.SMTPHost, Port: cfg.SMTPPort, Username: cfg.SMTPUsername, Password: cfg.SMTPPassword, From: cfg.SMTPFrom, Security: cfg.SMTPSecurity})
+	emailHandler := auth.NewEmailHandler(authRepository, sender, cfg.AuthMode, cfg.PublicURL, cfg.EmailBudget)
+	profileHandler := auth.NewProfileHandler(authRepository)
 	router.Route("/api/auth", func(router chi.Router) {
+		router.Get("/methods", emailHandler.Methods)
+		router.Post("/email/request", emailHandler.Request)
+		router.Post("/email/verify", emailHandler.Verify)
 		router.Post("/login", authHandler.Login)
 		router.Get("/callback", authHandler.Callback)
 		router.Group(func(router chi.Router) {
 			router.Use(authHandler.Require)
 			router.Get("/me", authHandler.Me)
+			router.Get("/profile", profileHandler.Get)
+			router.Post("/profile", profileHandler.Update)
+			router.Post("/profile/email/request", emailHandler.RequestLink)
+			router.Post("/profile/email/verify", emailHandler.VerifyLink)
+			router.Get("/profile/avatar", profileHandler.GetAvatar)
+			router.Post("/profile/avatar", profileHandler.UploadAvatar)
+			router.Delete("/profile/avatar", profileHandler.DeleteAvatar)
 			router.Post("/logout", authHandler.Logout)
 			router.Post("/revoke-sessions", authHandler.RevokeSessions)
 			router.Post("/invitations", authHandler.Invite)

@@ -1,4 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { AuthContext } from '@/shared/model/auth-context'
+import { env } from '@/shared/config/env'
+import { useContext, useEffect, useState, type ReactNode } from 'react'
 import {
   Bot,
   HeartPulse,
@@ -39,6 +41,7 @@ const moreLinks = [
   { to: '/profile', label: 'Профиль и доступ', icon: UserRound },
 ]
 export function AppLayout({ children }: { children: ReactNode }) {
+  const auth = useContext(AuthContext)
   const [open, setOpen] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
@@ -88,7 +91,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" aria-label="Меню">
-                <Menu aria-hidden="true" className="size-4" />
+                {auth?.session.user.avatarUrl ? (
+                  <img
+                    src={env.VITE_API_BASE_URL + auth.session.user.avatarUrl}
+                    alt=""
+                    className="size-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <Menu aria-hidden="true" className="size-4" />
+                )}
                 <span>Меню</span>
               </Button>
             </DialogTrigger>

@@ -108,3 +108,8 @@ Google и Apple с сохранением приглашений, явной п�
 этапом. Remote CI и deployment имеют самостоятельные gates.
 
 [SPEC-0021](0021-explicit-salary-data.md) интегрирована и развёрнута: общий доход не классифицируется как зарплата. Окончательный smoke-release интерфейса: 11f6b2e; [проверки](0021-evidence.md).
+
+[SPEC-0022](0022-email-authentication-profile.md) — accepted: основной вход по
+почтовому коду, персональный профиль и сохранение существующего владельца.
+Реализация в codex/email-profile; отправка настоящих писем и production-перенос
+пока ожидают настройки Postbox/DNS. [Порядок подключения](../email-authentication-rollout.md).

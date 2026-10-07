@@ -2,6 +2,24 @@ package config
 
 import "testing"
 
+func TestEmailConfigurationRequiresDeliveryAndHTTPS(t *testing.T) {
+	base := map[string]string{"DATABASE_URL": "postgres://test", "GRACE_ASSISTANT_ROUTING_ENABLED": "false", "GRACE_AUTH_MODE": "email", "GRACE_PUBLIC_URL": "https://grace.test", "GRACE_SMTP_HOST": "postbox.example.test", "GRACE_SMTP_PORT": "587", "GRACE_SMTP_SECURITY": "starttls", "GRACE_SMTP_USERNAME": "synthetic-user", "GRACE_SMTP_PASSWORD": "synthetic-password", "GRACE_SMTP_FROM": "Grace <no-reply@example.test>", "GRACE_EMAIL_MONTHLY_BUDGET": "1500"}
+	for key, value := range base {
+		t.Setenv(key, value)
+	}
+	if cfg, err := Load(); err != nil || cfg.AuthMode != "email" {
+		t.Fatal("valid email configuration rejected", err)
+	}
+	for _, invalid := range []struct{ key, value string }{{"GRACE_PUBLIC_URL", "http://grace.test"}, {"GRACE_SMTP_PASSWORD", ""}, {"GRACE_SMTP_HOST", ""}, {"GRACE_SMTP_SECURITY", "plain"}, {"GRACE_SMTP_PORT", "0"}, {"GRACE_SMTP_FROM", "no-reply@example.test\r\nBcc: attacker@example.test"}, {"GRACE_EMAIL_MONTHLY_BUDGET", "0"}} {
+		t.Run(invalid.key, func(t *testing.T) {
+			t.Setenv(invalid.key, invalid.value)
+			if _, err := Load(); err == nil {
+				t.Fatal("unsafe email configuration accepted")
+			}
+		})
+	}
+}
+
 func TestAuthConfigurationFailsClosed(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://test")
 	t.Setenv("GRACE_ASSISTANT_ROUTING_ENABLED", "false")
