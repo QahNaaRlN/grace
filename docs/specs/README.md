@@ -13,6 +13,13 @@ Scope [SPEC-0017 — сохраняемые черновики и подтвер
 Открыт [draft PR #7](https://github.com/QahNaaRlN/grace/pull/7);
 интеграция в main и post-merge CI ещё не выполнены.
 Результаты: [evidence](0017-evidence.md), [инструкция](../imports.md).
+
+[SPEC-0023 — перенос месяца расходов](0023-monthly-expense-migration.md)
+принята прямым поручением владельца 2026-10-07. Ветка
+`codex/monthly-expense-migration` совмещает основу SPEC-0017 с текущим main,
+использует миграцию 000009 и добавляет CSV, полный месячный отчёт и проверку
+дублей основного блока. Проверки и ограничения: [evidence](0023-evidence.md).
+Интеграция в main и production rollout — отдельные последующие действия.
 Банковские PDF, фото чеков, кредитная модель и LLM API ещё не реализованы.
 
 [SPEC-0018](0018-public-telegram-entrypoint.md) интегрирована и развёрнута:

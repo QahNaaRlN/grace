@@ -8,6 +8,40 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/imports/csv:
+    post:
+      operationId: uploadImportCSV
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - { name: sourceId, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 500 } }
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema: { type: string, description: 'UTF-8 full Operations sheet A:O; data starts at row 5; maximum 16 MiB.' }
+      responses:
+        '201': { description: New CSV draft, content: { application/json: { schema: { $ref: '#/components/schemas/ImportBatch' } } } }
+        '200': { description: Existing draft or replay, content: { application/json: { schema: { $ref: '#/components/schemas/ImportBatch' } } } }
+        '400': { $ref: '#/components/responses/ImportError' }
+        '401': { $ref: '#/components/responses/ImportError' }
+        '403': { $ref: '#/components/responses/ImportError' }
+        '409': { $ref: '#/components/responses/ImportError' }
+        '413': { $ref: '#/components/responses/ImportError' }
+        '422': { $ref: '#/components/responses/ImportError' }
+        '500': { $ref: '#/components/responses/ImportError' }
+  /api/imports/batches/{batchId}/month:
+    get:
+      operationId: getImportMonth
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: month, in: query, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200': { description: Complete-batch monthly reconciliation, content: { application/json: { schema: { $ref: '#/components/schemas/ImportMonthReport' } } } }
+        '400': { $ref: '#/components/responses/ImportError' }
+        '401': { $ref: '#/components/responses/ImportError' }
+        '404': { $ref: '#/components/responses/ImportError' }
+        '500': { $ref: '#/components/responses/ImportError' }
   "/api/imports/batches":
     "get":
       "operationId": "listImportBatches"
@@ -1348,6 +1382,11 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    ImportError:
+      description: Safe import error with code and message; no private source values
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     AuthenticationError:
       description: Authentication/authorization error
       content:
@@ -1390,6 +1429,49 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    ImportMonthRow:
+      type: object
+      required: [recordId, sheet, row, sourceDate, sourceKind, sourceAmountMinor, sourceCurrency, description, action, published, reason, targetDate, targetKind, targetAmountMinor, targetCurrency, differences]
+      properties:
+        recordId: { type: string, format: uuid }
+        sheet: { type: string }
+        row: { type: integer, minimum: 1 }
+        sourceDate: { type: string }
+        sourceKind: { type: string }
+        sourceAmountMinor: { type: [integer, 'null'], format: int64 }
+        sourceCurrency: { type: string }
+        description: { type: string }
+        action: { type: string, enum: [unresolved, create, link_existing, duplicate_of, exclude] }
+        published: { type: boolean }
+        reason: { type: string }
+        targetDate: { type: string }
+        targetKind: { type: string }
+        targetAmountMinor: { type: [integer, 'null'], format: int64 }
+        targetCurrency: { type: string }
+        differences: { type: array, items: { type: string, enum: [exclude, duplicate_of, unresolved, kind_changed, amount_changed, currency_changed, date_changed, target_unknown] } }
+    ImportMonthTotal:
+      type: object
+      required: [currency, sourceRows, sourceMinor, preparedMinor, confirmedMinor]
+      properties:
+        currency: { type: string }
+        sourceRows: { type: integer, minimum: 0 }
+        sourceMinor: { type: [integer, 'null'], format: int64, description: 'Raw purchase row sum including possible duplicates. Null means unknown or overflow.' }
+        preparedMinor: { type: [integer, 'null'], format: int64, description: 'Unpublished unique purchase decisions; does not change financial state.' }
+        confirmedMinor: { type: [integer, 'null'], format: int64, description: 'Unique confirmed purchases represented by this month of source rows.' }
+    ImportMonthReport:
+      type: object
+      required: [batchId, batchRevision, month, timeZone, complete, outsidePeriod, pendingRows, totals, rows, unknownDateRows]
+      properties:
+        batchId: { type: string, format: uuid }
+        batchRevision: { type: integer, format: int64 }
+        month: { type: string }
+        timeZone: { type: string, enum: [Asia/Yekaterinburg] }
+        complete: { type: boolean }
+        outsidePeriod: { type: integer, minimum: 0 }
+        pendingRows: { type: integer, minimum: 0 }
+        totals: { type: array, items: { $ref: '#/components/schemas/ImportMonthTotal' } }
+        rows: { type: array, items: { $ref: '#/components/schemas/ImportMonthRow' } }
+        unknownDateRows: { type: array, items: { $ref: '#/components/schemas/ImportMonthRow' } }
     AuthMethods:
       type: object
       required: [mode, email, telegram, emailLinkAvailable]

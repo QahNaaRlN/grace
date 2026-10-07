@@ -40,3 +40,43 @@ it('keeps a saved decision when batch revision refreshes before record details',
   expect(client.PATCH).toHaveBeenCalledOnce()
   expect(client.POST).not.toHaveBeenCalled()
 })
+
+it('uploads original CSV bytes and waits for separate review and confirmation', async () => {
+  client.GET.mockReset().mockImplementation(async (path: string) => path === '/api/imports/batches/{batchId}' ? { data: { id: 'batch-csv', revision: 1, counts: {}, source: { sourceId: 'Финансовое здоровье' } } } : { data: { items: [] } })
+  client.POST.mockReset().mockResolvedValue({ data: { id: 'batch-csv' } })
+  client.PATCH.mockReset()
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={cache}><MemoryRouter><ImportsPage /></MemoryRouter></QueryClientProvider>)
+  const file = new File(['CSV original bytes: 9007199254740993,01'], 'Операции.csv', { type: 'text/csv' })
+  const user = userEvent.setup()
+  await user.upload(screen.getByLabelText('Таблица CSV или снимок JSON (до 16 MiB)'), file)
+  expect(screen.getByLabelText('Название источника')).toHaveValue('Финансовое здоровье')
+  await user.click(screen.getByRole('button', { name: 'Сохранить черновик' }))
+  await waitFor(() => expect(client.POST).toHaveBeenCalledOnce())
+  const [path, options] = client.POST.mock.calls[0]
+  expect(path).toBe('/api/imports/csv')
+  expect(options.bodySerializer()).toBe(file)
+  expect(options.params.query.sourceId).toBe('Финансовое здоровье')
+  expect(client.PATCH).not.toHaveBeenCalled()
+})
+
+it('keeps the selected month and refreshes financial views after confirmation', async () => {
+  client.GET.mockReset().mockImplementation(async (path: string) => {
+    if (path.endsWith('/month')) return { data: { rows: [], unknownDateRows: [], totals: [], pendingRows: 0, outsidePeriod: 0, complete: false } }
+    if (path.endsWith('/records')) return { data: { items: [{ id: 'row', source: { sheet: 'Операции', row: 5, domain: 'transaction', normalized: {}, issues: [] }, published: false, decision: { action: 'create' } }] } }
+    if (path === '/api/imports/batches/{batchId}') return { data: { id: 'batch', revision: 1, counts: {}, source: { sourceId: 'source' } } }
+    return { data: { items: [] } }
+  })
+  client.POST.mockReset().mockImplementation(async (path: string) => path.endsWith('/previews') ? { data: { id: 'preview', hash: 'hash', newEvents: 1, links: 0, exclusions: 0, lines: [], changes: [], blockers: [], expiresAt: '2099-01-01T00:00:00Z' } } : { data: { id: 'receipt', outcomes: [] } })
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const invalidate = vi.spyOn(cache, 'invalidateQueries')
+  render(<QueryClientProvider client={cache}><MemoryRouter initialEntries={['/imports?batch=batch&month=2026-09']}><ImportsPage /></MemoryRouter></QueryClientProvider>)
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('checkbox'))
+  await user.click(screen.getByRole('button', { name: 'Предварительный просмотр (1)' }))
+  expect(client.POST).toHaveBeenCalledOnce()
+  await user.click(await screen.findByRole('button', { name: 'Подтвердить импорт 1 операций' }))
+  await screen.findByText('Подтверждение сохранено')
+  expect(screen.getByLabelText('Месяц для сверки')).toHaveValue('2026-09')
+  for (const key of ['imports', 'accounts', 'financial-events', 'period-summary', 'cash-position']) expect(invalidate).toHaveBeenCalledWith({ queryKey: [key] })
+})

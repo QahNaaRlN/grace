@@ -15,7 +15,6 @@ import {
   Sun,
   TableProperties,
   Import,
-  Import,
 } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from 'next-themes'
@@ -36,7 +35,6 @@ const mainLinks = [
   { to: '/payments', label: 'Платежи', icon: CalendarClock },
 ]
 const moreLinks = [
-  { to: '/imports', label: 'Импорт', icon: Import },
   { to: '/imports', label: 'Импорт', icon: Import },
   { to: '/accounts', label: 'Счета и карты', icon: WalletCards },
   { to: '/analytics', label: 'Подробный расчёт', icon: BarChart3 },

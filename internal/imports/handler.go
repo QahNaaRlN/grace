@@ -18,8 +18,10 @@ type Handler struct{ repo *Repository }
 func NewHandler(repo *Repository) *Handler { return &Handler{repo} }
 func (h *Handler) Routes(r chi.Router) {
 	r.Post("/batches", h.Upload)
+	r.Post("/csv", h.UploadCSV)
 	r.Get("/batches", h.Batches)
 	r.Get("/batches/{batchId}", h.Batch)
+	r.Get("/batches/{batchId}/month", h.Month)
 	r.Get("/batches/{batchId}/records", h.Records)
 	r.Get("/batches/{batchId}/records/{recordId}", h.Record)
 	r.Patch("/batches/{batchId}/records/{recordId}", h.Edit)
@@ -96,6 +98,30 @@ func (h *Handler) Batches(w http.ResponseWriter, r *http.Request) {
 	}
 	v, e := h.repo.Batches(r.Context(), c, l)
 	respond(w, v, e)
+}
+
+func (h *Handler) UploadCSV(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, importreview.MaxBytes)
+	raw, err := io.ReadAll(r.Body)
+	if err != nil {
+		web.WriteError(w, 413, "body_too_large", "Файл не должен превышать 16 MiB.")
+		return
+	}
+	b, err := h.repo.UploadCSV(r.Context(), raw, r.URL.Query().Get("sourceId"), key(r))
+	if err == nil && b.created {
+		web.WriteJSON(w, http.StatusCreated, b)
+		return
+	}
+	respond(w, b, err)
+}
+
+func (h *Handler) Month(w http.ResponseWriter, r *http.Request) {
+	b, ok := path(w, r, "batchId")
+	if !ok {
+		return
+	}
+	v, err := h.repo.Month(r.Context(), b, r.URL.Query().Get("month"))
+	respond(w, v, err)
 }
 func (h *Handler) Batch(w http.ResponseWriter, r *http.Request) {
 	b, ok := path(w, r, "batchId")

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/financialevents"
@@ -70,24 +71,28 @@ func (r *Repository) Upload(ctx context.Context, raw []byte, key string) (Batch,
 	if err != nil {
 		return Batch{}, fault("review_limit", 422)
 	}
+	return r.uploadReport(ctx, raw, key, report)
+}
+
+func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, report importreview.Report) (Batch, error) {
 	tx, err := r.begin(ctx, true)
 	if err != nil {
 		return Batch{}, err
 	}
 	defer tx.Rollback(ctx)
 	var b Batch
-	payload := hashBytes(raw)
+	payload := struct{ Hash, Source string }{hashBytes(raw), report.Source.SourceID}
 	replay, err := request(ctx, tx, "upload", key, payload, &b)
 	if err != nil || replay {
 		return b, err
 	}
 	var id string
 	created := false
-	err = tx.QueryRow(ctx, "SELECT id::text FROM import_batches WHERE payload_hash=$1", payload).Scan(&id)
+	err = tx.QueryRow(ctx, "SELECT id::text FROM import_batches WHERE payload_hash=$1", payload.Hash).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		created = true
 		data, _ := json.Marshal(report)
-		err = tx.QueryRow(ctx, "INSERT INTO import_batches(source_id,payload_hash,snapshot,report) VALUES($1,$2,$3,$4) RETURNING id::text", s.SourceID, payload, raw, data).Scan(&id)
+		err = tx.QueryRow(ctx, "INSERT INTO import_batches(source_id,payload_hash,snapshot,report) VALUES($1,$2,$3,$4) RETURNING id::text", report.Source.SourceID, payload.Hash, raw, data).Scan(&id)
 		if err != nil {
 			return b, err
 		}
@@ -104,6 +109,9 @@ func (r *Repository) Upload(ctx context.Context, raw []byte, key string) (Batch,
 	b, _, err = loadBatch(ctx, tx, id, false)
 	if err != nil {
 		return b, err
+	}
+	if b.Source.SourceID != report.Source.SourceID {
+		return Batch{}, fault("source_conflict", 409)
 	}
 	if err = remember(ctx, tx, "upload", key, payload, b); err != nil {
 		return b, err
@@ -404,6 +412,45 @@ func candidates(ctx context.Context, tx pgx.Tx, batch string, report importrevie
 		}
 	}
 	if amount != nil && date != nil && len(date.Local) >= 10 {
+		// A month migration also reviews matches within the main source block.
+		batchRows, err := tx.Query(ctx, `SELECT id::text,source->'normalized'->'date'->>'local',decision
+		FROM import_records WHERE batch_id=$1 AND id<>$2 AND domain='transaction'
+		AND COALESCE(decision->'fields'->>'kind',source->'normalized'->>'kind')=$3
+		AND COALESCE(decision->'fields'->>'amountMinor',source->'normalized'->>'amountMinor')=$4`, batch, rec.ID, kind, strconv.FormatInt(*amount, 10))
+		if err != nil {
+			return nil, err
+		}
+		for batchRows.Next() {
+			var id string
+			var local *string
+			var decisionRaw []byte
+			if err = batchRows.Scan(&id, &local, &decisionRaw); err != nil {
+				batchRows.Close()
+				return nil, err
+			}
+			var decision Decision
+			if err = json.Unmarshal(decisionRaw, &decision); err != nil {
+				batchRows.Close()
+				return nil, err
+			}
+			otherDate := ""
+			if local != nil && len(*local) >= 10 {
+				otherDate = (*local)[:10]
+			}
+			if decision.Fields != nil {
+				otherDate = targetLocalDate(decision.Fields.OccurredAt)
+			}
+			cid := "record:" + id
+			if otherDate == date.Local[:10] && !seen[cid] {
+				result = append(result, Candidate{ID: cid, RecordID: id, Rule: "batch_date_amount_kind", Differences: []string{"Compare source and reviewed fields; equal totals do not prove a duplicate"}})
+				seen[cid] = true
+			}
+		}
+		err = batchRows.Err()
+		batchRows.Close()
+		if err != nil {
+			return nil, err
+		}
 		rows, err := tx.Query(ctx, `SELECT DISTINCT e.id::text FROM financial_events e JOIN postings p ON p.financial_event_id=e.id AND p.owner_id=e.owner_id WHERE p.amount_minor=$1 AND e.kind::text=$2 AND (e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date=$3::date ORDER BY e.id::text LIMIT 1001`, *amount, kind, date.Local[:10])
 		if err != nil {
 			return nil, err

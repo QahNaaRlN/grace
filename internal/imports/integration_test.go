@@ -527,4 +527,26 @@ func TestImportSessionCSRFAndOrigin(t *testing.T) {
 			t.Fatal("HTTP gate", tc, w.Code, w.Body.String())
 		}
 	}
+	// The CSV endpoint uses the same authenticated mutation boundary.
+	for _, tc := range []struct {
+		cookie, origin, csrf bool
+		status               int
+	}{{false, true, true, 401}, {true, false, true, 403}, {true, true, false, 403}, {true, true, true, 201}} {
+		req := httptest.NewRequest(http.MethodPost, "https://grace.test/csv?sourceId=http-csv", strings.NewReader(string(csvFixture(',', 1))))
+		req.Header.Set("Idempotency-Key", "http-csv")
+		if tc.cookie {
+			req.AddCookie(&http.Cookie{Name: "__Host-grace_session", Value: token})
+		}
+		if tc.origin {
+			req.Header.Set("Origin", "https://grace.test")
+		}
+		if tc.csrf {
+			req.Header.Set("X-CSRF-Token", csrf)
+		}
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		if w.Code != tc.status {
+			t.Fatal("CSV gate", tc, w.Code, w.Body.String())
+		}
+	}
 }
