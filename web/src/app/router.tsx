@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { HomePage } from '@/pages/home'
 import { AssistantPage } from '@/pages/assistant'
 import { LoginPage } from '@/pages/login/LoginPage'
+import { ImportsPage } from '@/pages/imports/ImportsPage'
 import { AuthBoundary } from './AuthBoundary'
 
 /**
@@ -41,4 +42,5 @@ export const appRouter = createBrowserRouter([
     ),
   })),
   { path: '/login', element: <LoginPage /> },
+  { path: '/imports', element: <AuthBoundary><ImportsPage /></AuthBoundary> },
 ])

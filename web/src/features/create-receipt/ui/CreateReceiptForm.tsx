@@ -26,7 +26,8 @@ import {
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 
-function localDateTime(value: string) {
+function localDateTime(value: string | null) {
+  if (!value) return ''
   const date = new Date(value)
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
     .toISOString()

@@ -30,10 +30,10 @@ func (repo *Repository) List(ctx context.Context, limit int) ([]Event, error) {
 		WHERE e.id IN (
 			SELECT id
 			FROM financial_events
-			ORDER BY occurred_at DESC, created_at DESC
+			ORDER BY COALESCE(occurred_at, occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, created_at DESC
 			LIMIT $1
 		)
-		ORDER BY e.occurred_at DESC, e.created_at DESC, p.created_at, p.id`, limit)
+		ORDER BY COALESCE(e.occurred_at, e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, e.created_at DESC, p.created_at, p.id`, limit)
 	if err != nil {
 		return nil, fmt.Errorf("list financial events: %w", err)
 	}
@@ -47,6 +47,39 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 		return Event{}, false, fmt.Errorf("begin financial event: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	event, created, err := CreateInTx(ctx, tx, command, "manual")
+	if err != nil {
+		return Event{}, false, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Event{}, false, err
+	}
+	return event, created, nil
+}
+
+// LockOwner serializes ledger writes with import matching for the same tenant.
+func LockOwner(ctx context.Context, tx pgx.Tx) error {
+	_, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended('ledger:' || grace_owner_id()::text, 0))")
+	return err
+}
+
+// ValidateInTx resolves exactly the postings the financial writer will create.
+func ValidateInTx(ctx context.Context, tx pgx.Tx, command Command) ([]Posting, error) {
+	if command.AmountMinor <= 0 || !validOccurrence(command) {
+		return nil, ErrInvalid
+	}
+	_, _, postings, err := resolveCommand(ctx, tx, command)
+	return postings, err
+}
+
+// CreateInTx leaves transaction ownership to the caller, enabling atomic groups.
+func CreateInTx(ctx context.Context, tx pgx.Tx, command Command, source string) (Event, bool, error) {
+	if source != "manual" && source != "import" {
+		return Event{}, false, ErrInvalid
+	}
+	if err := LockOwner(ctx, tx); err != nil {
+		return Event{}, false, err
+	}
 
 	lockKey := command.Kind + ":" + command.IdempotencyKey
 	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", lockKey); err != nil {
@@ -54,7 +87,7 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	}
 
 	var existingID, existingHash string
-	err = tx.QueryRow(ctx, `
+	err := tx.QueryRow(ctx, `
 		SELECT id::text, request_hash
 		FROM financial_events
 		WHERE kind = $1 AND idempotency_key = $2`,
@@ -70,6 +103,9 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return Event{}, false, fmt.Errorf("find idempotent event: %w", err)
 	}
+	if _, err := ValidateInTx(ctx, tx, command); err != nil {
+		return Event{}, false, err
+	}
 
 	categoryID, originalEventID, postings, err := resolveCommand(ctx, tx, command)
 	if err != nil {
@@ -77,15 +113,21 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	}
 
 	var eventID string
+	var timestamp, calendarDate any
+	if command.OccurredDate != "" {
+		calendarDate = command.OccurredDate
+	} else {
+		timestamp = command.OccurredAt
+	}
 	err = tx.QueryRow(ctx, `
 		INSERT INTO financial_events (
 			kind, source, category_id, original_event_id, merchant, description,
-			occurred_at, idempotency_key, request_hash
-		) VALUES ($1, 'manual', $2, $3, $4, $5, $6, $7, $8)
+			occurred_at, idempotency_key, request_hash, occurred_date
+		) VALUES ($1, $9, $2, $3, $4, $5, $6, $7, $8, $10)
 		RETURNING id::text`,
 		command.Kind, categoryID, originalEventID, command.Merchant,
-		command.Description, command.OccurredAt, command.IdempotencyKey,
-		command.RequestHash,
+		command.Description, timestamp, command.IdempotencyKey,
+		command.RequestHash, source, calendarDate,
 	).Scan(&eventID)
 	if err != nil {
 		return Event{}, false, fmt.Errorf("insert financial event: %w", err)
@@ -107,10 +149,11 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	if err != nil {
 		return Event{}, false, err
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return Event{}, false, fmt.Errorf("commit financial event: %w", err)
-	}
 	return event, true, nil
+}
+
+func LoadInTx(ctx context.Context, tx pgx.Tx, id string) (Event, error) {
+	return loadEvent(ctx, tx, id)
 }
 
 type account struct {
@@ -209,7 +252,7 @@ func resolveCommand(ctx context.Context, tx pgx.Tx, command Command) (*string, *
 		).Scan(&refunded); err != nil {
 			return nil, nil, nil, fmt.Errorf("sum refunds: %w", err)
 		}
-		if refunded+command.AmountMinor > purchaseAmount {
+		if refunded > purchaseAmount || command.AmountMinor > purchaseAmount-refunded {
 			return nil, nil, nil, fmt.Errorf("%w: refund exceeds purchase amount", ErrInvalid)
 		}
 		originalID := command.OriginalEventID
@@ -257,6 +300,7 @@ const eventQuery = `
 		e.merchant,
 		e.description,
 		e.occurred_at,
+		e.occurred_date::text,
 		e.created_at,
 		p.id::text,
 		p.account_id::text,
@@ -295,13 +339,17 @@ func collectEvents(rows pgx.Rows) ([]Event, error) {
 		if err := rows.Scan(
 			&event.ID, &event.Kind, &event.Source, &event.CategoryID, &event.CategoryName,
 			&event.OriginalEventID, &event.Merchant, &event.Description,
-			&event.OccurredAt, &event.CreatedAt,
+			&event.OccurredAt, &event.OccurredDate, &event.CreatedAt,
 			&posting.ID, &posting.AccountID, &posting.Account, &posting.Direction,
 			&posting.Amount, &posting.Currency,
 		); err != nil {
 			return nil, fmt.Errorf("scan financial event: %w", err)
 		}
 		position, exists := index[event.ID]
+		event.DatePrecision = "instant"
+		if event.OccurredDate != nil {
+			event.DatePrecision = "date"
+		}
 		if !exists {
 			event.Postings = make([]Posting, 0, 2)
 			items = append(items, event)

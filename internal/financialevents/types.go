@@ -12,17 +12,19 @@ type Posting struct {
 }
 
 type Event struct {
-	ID              string    `json:"id"`
-	Kind            string    `json:"kind"`
-	Source          string    `json:"source"`
-	CategoryID      *string   `json:"categoryId"`
-	CategoryName    *string   `json:"categoryName"`
-	OriginalEventID *string   `json:"originalEventId"`
-	Merchant        string    `json:"merchant"`
-	Description     string    `json:"description"`
-	OccurredAt      time.Time `json:"occurredAt"`
-	CreatedAt       time.Time `json:"createdAt"`
-	Postings        []Posting `json:"postings"`
+	ID              string     `json:"id"`
+	Kind            string     `json:"kind"`
+	Source          string     `json:"source"`
+	CategoryID      *string    `json:"categoryId"`
+	CategoryName    *string    `json:"categoryName"`
+	OriginalEventID *string    `json:"originalEventId"`
+	Merchant        string     `json:"merchant"`
+	Description     string     `json:"description"`
+	OccurredAt      *time.Time `json:"occurredAt"`
+	OccurredDate    *string    `json:"occurredDate"`
+	DatePrecision   string     `json:"datePrecision"`
+	CreatedAt       time.Time  `json:"createdAt"`
+	Postings        []Posting  `json:"postings"`
 }
 
 type Command struct {
@@ -37,6 +39,7 @@ type Command struct {
 	Merchant             string
 	Description          string
 	OccurredAt           time.Time
+	OccurredDate         string
 }
 
 type singleAccountRequest struct {

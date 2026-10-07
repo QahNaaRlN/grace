@@ -8,6 +8,7 @@ import (
 type IncomeAnchorErrorCode string
 
 const (
+	CodeIncomeTimeUnknown     IncomeAnchorErrorCode = "income_time_unknown"
 	CodeInvalidAnchorCategory IncomeAnchorErrorCode = "invalid_anchor_category"
 	CodeAnchorNotFound        IncomeAnchorErrorCode = "anchor_not_found"
 )

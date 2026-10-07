@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   TableProperties,
+  Import,
 } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from 'next-themes'
@@ -34,6 +35,7 @@ const mainLinks = [
   { to: '/payments', label: 'Платежи', icon: CalendarClock },
 ]
 const moreLinks = [
+  { to: '/imports', label: 'Импорт', icon: Import },
   { to: '/accounts', label: 'Счета и карты', icon: WalletCards },
   { to: '/analytics', label: 'Подробный расчёт', icon: BarChart3 },
   { to: '/assistant', label: 'Ассистент', icon: Bot },
@@ -103,7 +105,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <span>Меню</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
+            <DialogContent data-motion="menu" className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
               <div>
                 <DialogHeader>
                   <DialogTitle>Меню</DialogTitle>
@@ -145,7 +147,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </Dialog>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-10">
+      <main className="grace-page mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-10">
         {children}
       </main>
       {!keyboard && (

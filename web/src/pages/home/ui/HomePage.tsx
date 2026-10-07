@@ -13,7 +13,7 @@ import { useLocation } from 'react-router-dom'
 import { Overview } from './Overview'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { accountLabel, today, dateText } from '@/shared/lib/finance-display'
+import { accountLabel, today, eventDateText, eventTimeText } from '@/shared/lib/finance-display'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
 import {
   Dialog,
@@ -84,14 +84,7 @@ function localDateValue(date: Date) {
   return `${year}-${month}-${day}`
 }
 
-function localBoundary(value: string) {
-  const date = new Date(`${value}T00:00:00`)
-  const offset = -date.getTimezoneOffset()
-  const sign = offset >= 0 ? '+' : '-'
-  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0')
-  const minutes = String(Math.abs(offset) % 60).padStart(2, '0')
-  return `${value}T00:00:00${sign}${hours}:${minutes}`
-}
+function localBoundary(value: string) { return `${value}T00:00:00+05:00` }
 
 function initialPeriod() {
   const now = new Date()
@@ -373,7 +366,7 @@ function Events({
                             kindLabels[item.kind]}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {dateText(item.occurredAt)} ·{' '}
+                          {eventDateText(item)} ·{' '}
                           {item.categoryName ?? kindLabels[item.kind]} ·{' '}
                           {accountDescription}
                         </p>
@@ -405,7 +398,7 @@ function Events({
                       {[
                         [
                           'Дата',
-                          new Date(item.occurredAt).toLocaleString('ru-RU'),
+                          eventTimeText(item),
                         ],
                         ['Тип', kindLabels[item.kind]],
                         ['Описание', item.description || 'Не указано'],
@@ -429,7 +422,7 @@ function Events({
                             timeZone: 'Asia/Yekaterinburg',
                             month: 'long',
                             year: 'numeric',
-                          }).format(new Date(item.occurredAt)),
+                          }).format(new Date(item.occurredAt ?? `${item.occurredDate}T00:00:00Z`)),
                         ],
                         ['Источник записи', item.source],
                         ['Проверка источника', 'Не указано'],

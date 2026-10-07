@@ -4,6 +4,7 @@ import type { Account, CashPosition, FinancialEvent } from '@/shared/api/types'
 import {
   formatMoney,
   dateText,
+  eventDateText,
   accountLabel,
 } from '@/shared/lib/finance-display'
 import { Button } from '@/shared/ui/button'
@@ -171,7 +172,7 @@ export function Overview({
                   {e.merchant || e.description || 'Операция'}
                 </strong>
                 <small className="mt-1 block text-muted-foreground">
-                  {dateText(e.occurredAt)} ·{' '}
+                  {eventDateText(e)} ·{' '}
                   {a ? accountLabel(a) : (p?.accountName ?? 'Не указан счёт')}
                 </small>
               </span>

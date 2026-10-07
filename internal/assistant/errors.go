@@ -8,6 +8,7 @@ import (
 type ErrorCode string
 
 const (
+	CodeTimePrecision         ErrorCode = "time_precision_required"
 	CodeUnknownTool           ErrorCode = "unknown_tool"
 	CodeInvalidArguments      ErrorCode = "invalid_arguments"
 	CodeInvalidAnchorCategory ErrorCode = "invalid_anchor_category"
