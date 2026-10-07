@@ -15,9 +15,10 @@ import (
 var ErrDenied = errors.New("authentication denied")
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Role string `json:"role"`
+	AvatarURL *string `json:"avatarUrl,omitempty"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Role      string  `json:"role"`
 }
 
 func (u User) Principal() access.Principal {

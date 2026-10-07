@@ -26,6 +26,7 @@ backups_dir="$grace_root/backups"
 current_link="$grace_root/current"
 previous_link="$grace_root/previous"
 previous_dir=""
+rollback_auth_mode="locked"
 
 if [ ! -f "$release_env" ]; then
   echo "missing release environment: $release_env" >&2
@@ -53,6 +54,17 @@ if [ -f "$telegram_env" ]; then
   set +a
 fi
 
+# Email configuration overrides the temporary Telegram method only when installed by the operator.
+email_env="$grace_root/shared/secrets/email.env"
+if [ -f "$email_env" ]; then
+  case "$(stat -c '%a' "$email_env")" in 400|600) ;; *) echo "Email environment must have mode 400 or 600" >&2; exit 1 ;; esac
+  email_owner="$(stat -c '%u' "$email_env")"
+  if [ "$email_owner" != "$(id -u)" ] && [ "$email_owner" != "0" ]; then echo "Email environment must belong to the deployment operator or root" >&2; exit 1; fi
+  set -a
+  . "$email_env"
+  set +a
+fi
+
 postgres_password_file="$(sed -n 's/^GRACE_SECRETS_DIR=//p' "$release_env")/postgres_password"
 if [ ! -r "$postgres_password_file" ]; then
   echo "PostgreSQL password file is not readable" >&2
@@ -68,11 +80,27 @@ compose_release() {
 
 if [ -L "$current_link" ]; then
   previous_dir="$(readlink -f "$current_link")"
+  previous_api="$(docker compose --project-name "$compose_project" \
+    --env-file "$previous_dir/release.env" -f "$previous_dir/compose.yaml" ps -q api)"
+  if [ -n "$previous_api" ]; then
+    previous_mode="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" \
+      | sed -n 's/^GRACE_AUTH_MODE=//p')"
+    case "$previous_mode" in
+      telegram|email|locked) rollback_auth_mode="$previous_mode" ;;
+      *) echo "cannot determine previous production authentication mode" >&2; exit 1 ;;
+    esac
+  else
+    echo "cannot snapshot previous authentication mode: API container is missing" >&2
+    exit 1
+  fi
 fi
 
 rollback_application() {
   if [ -n "$previous_dir" ] && [ -f "$previous_dir/release.env" ]; then
     echo "rolling application containers back to $previous_dir" >&2
+    # Restore the mode actually used by the previous image, not a new operator override.
+    GRACE_AUTH_MODE="$rollback_auth_mode"
+    export GRACE_AUTH_MODE
     docker compose --project-name "$compose_project" \
       --env-file "$previous_dir/release.env" -f "$previous_dir/compose.yaml" \
       up -d --no-deps api web caddy || true
@@ -140,7 +168,7 @@ until "$release_dir/check-public-entrypoint.sh" "https://$domain:$https_port" \
   "$domain:$https_port:127.0.0.1" >/dev/null 2>&1; do
   attempt=$((attempt + 1))
   if [ "$attempt" -ge 45 ]; then
-    echo "Caddy did not expose the public Telegram entrypoint and protected API" >&2
+    echo "Caddy did not expose the public login entrypoint and protected API" >&2
     exit 1
   fi
   sleep 2

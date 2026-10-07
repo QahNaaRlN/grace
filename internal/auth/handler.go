@@ -97,6 +97,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 	noStore(w)
+	if h.mode != "telegram" || h.provider == nil {
+		http.Redirect(w, r, "/login?error=authentication_failed", http.StatusSeeOther)
+		return
+	}
 	browser := tokenCookie(r, flowCookie)
 	setCookie(w, flowCookie, "", -1)
 	fail := func(stage string) {
@@ -138,7 +142,7 @@ func (h *Handler) Require(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(access.WithPrincipal(r.Context(), p)))
 			return
 		}
-		if h.mode != "telegram" {
+		if h.mode != "telegram" && h.mode != "email" {
 			web.WriteError(w, 401, "unauthenticated", "Войдите в Grace.")
 			return
 		}
@@ -170,10 +174,19 @@ func (h *Handler) Require(next http.Handler) http.Handler {
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	p, _ := access.Current(r.Context())
 	csrf := "development"
-	if h.mode == "telegram" {
+	if h.mode == "telegram" || h.mode == "email" {
 		csrf = csrfToken(tokenCookie(r, sessionCookie))
 	}
-	web.WriteJSON(w, 200, map[string]any{"user": User{ID: p.ID, Name: p.Name, Role: p.Role}, "csrfToken": csrf, "mode": h.mode})
+	user := User{ID: p.ID, Name: p.Name, Role: p.Role}
+	if profiles, ok := h.store.(interface {
+		Profile(context.Context, string) (Profile, error)
+	}); ok {
+		if profile, err := profiles.Profile(r.Context(), p.ID); err == nil {
+			user.AvatarURL = profile.AvatarURL
+			user.Name = profile.DisplayName
+		}
+	}
+	web.WriteJSON(w, 200, map[string]any{"user": user, "csrfToken": csrf, "mode": h.mode})
 }
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request)         { h.revoke(w, r, false) }
 func (h *Handler) RevokeSessions(w http.ResponseWriter, r *http.Request) { h.revoke(w, r, true) }

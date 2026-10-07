@@ -14,7 +14,7 @@ import { Overview } from './Overview'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
 import { accountLabel, today, dateText } from '@/shared/lib/finance-display'
-import { AuthActions } from '@/shared/ui/layout/AuthActions'
+import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
 import {
   Dialog,
   DialogContent,
@@ -1128,17 +1128,7 @@ export function HomePage() {
                 receipts={receipts.data ?? []}
               />
             )}
-            {path === '/profile' && (
-              <section className="rounded-2xl border bg-card p-6">
-                <h2>Ваше пространство</h2>
-                <p className="mt-3 text-muted-foreground">
-                  Управление приглашениями и сеансами
-                </p>
-                <div className="grace-actions">
-                  <AuthActions />
-                </div>
-              </section>
-            )}
+            {path === '/profile' && <ProfilePanel />}
           </>
         )}
       </div>

@@ -36,6 +36,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAuthMethods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/email/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/email/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyProfile"];
+        put?: never;
+        post: operations["updateMyProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/profile/email/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestProfileEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/profile/email/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyProfileEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/profile/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyAvatar"];
+        put?: never;
+        post: operations["uploadMyAvatar"];
+        delete: operations["deleteMyAvatar"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/me": {
         parameters: {
             query?: never;
@@ -393,10 +505,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AuthMethods: {
+            /** @enum {string} */
+            mode: "email" | "telegram" | "locked" | "development";
+            email: boolean;
+            telegram: boolean;
+            emailLinkAvailable: boolean;
+        };
+        EmailCodeRequest: {
+            /** Format: email */
+            email: string;
+            invitation?: string;
+        };
+        EmailCodeVerify: {
+            code: string;
+        };
+        EmailCodeRequested: {
+            expiresInSeconds: number;
+            resendAfterSeconds: number;
+        };
+        ProfileNames: {
+            displayName: string;
+            firstName: string;
+            lastName: string;
+        };
+        UserProfile: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            firstName: string;
+            lastName: string;
+            email: string | null;
+            avatarUrl: string | null;
+        };
         AuthUser: {
             /** Format: uuid */
             id: string;
             name: string;
+            avatarUrl?: string | null;
             /** @enum {string} */
             role: "admin" | "member";
         };
@@ -404,7 +550,7 @@ export interface components {
             user: components["schemas"]["AuthUser"];
             csrfToken: string;
             /** @enum {string} */
-            mode: "telegram" | "development";
+            mode: "telegram" | "email" | "development";
         };
         AuthInvitation: {
             token: string;
@@ -1003,6 +1149,283 @@ export interface operations {
                 };
                 content?: never;
             };
+        };
+    };
+    getAuthMethods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Available authentication methods */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthMethods"];
+                };
+            };
+        };
+    };
+    requestEmailCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description Uniform code request response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailCodeRequested"];
+                };
+            };
+            400: components["responses"]["AuthenticationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    verifyEmailCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeVerify"];
+            };
+        };
+        responses: {
+            /** @description Authenticated session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
+                };
+            };
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    getMyProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Own private profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserProfile"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    updateMyProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileNames"];
+            };
+        };
+        responses: {
+            /** @description Updated own profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserProfile"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    requestProfileEmailCode: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description Code requested for email linking with a recently authenticated session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailCodeRequested"];
+                };
+            };
+            400: components["responses"]["AuthenticationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    verifyProfileEmailCode: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeVerify"];
+            };
+        };
+        responses: {
+            /** @description Email linked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    getMyAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Own sanitized avatar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    uploadMyAvatar: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    avatar: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Avatar replaced */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserProfile"];
+                };
+            };
+            400: components["responses"]["AuthenticationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            /** @description Avatar exceeds 2 MiB */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    deleteMyAvatar: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Avatar removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
         };
     };
     getCurrentSession: {

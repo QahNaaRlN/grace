@@ -67,6 +67,161 @@ paths:
       responses:
         '303':
           description: Fixed redirect to / or /login?error=authentication_failed; session cookie is set only on success
+  /api/auth/methods:
+    get:
+      operationId: getAuthMethods
+      security: []
+      responses:
+        '200':
+          description: Available authentication methods
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthMethods' }
+  /api/auth/email/request:
+    post:
+      operationId: requestEmailCode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailCodeRequest' }
+      responses:
+        '200':
+          description: Uniform code request response
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmailCodeRequested' }
+        '400': { $ref: '#/components/responses/AuthenticationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/email/verify:
+    post:
+      operationId: verifyEmailCode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailCodeVerify' }
+      responses:
+        '200':
+          description: Authenticated session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/profile:
+    get:
+      operationId: getMyProfile
+      responses:
+        '200':
+          description: Own private profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+    post:
+      operationId: updateMyProfile
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileNames' }
+      responses:
+        '200':
+          description: Updated own profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/profile/email/request:
+    post:
+      operationId: requestProfileEmailCode
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailCodeRequest' }
+      responses:
+        '200':
+          description: Code requested for email linking with a recently authenticated session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmailCodeRequested' }
+        '400': { $ref: '#/components/responses/AuthenticationError' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/profile/email/verify:
+    post:
+      operationId: verifyProfileEmailCode
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailCodeVerify' }
+      responses:
+        '204': { description: Email linked, other sessions revoked }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/profile/avatar:
+    get:
+      operationId: getMyAvatar
+      responses:
+        '200':
+          description: Own sanitized avatar
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      operationId: uploadMyAvatar
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [avatar]
+              properties:
+                avatar: { type: string, format: binary }
+      responses:
+        '200':
+          description: Avatar replaced
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '400': { $ref: '#/components/responses/AuthenticationError' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '413': { description: Avatar exceeds 2 MiB }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+    delete:
+      operationId: deleteMyAvatar
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      responses:
+        '204': { description: Avatar removed }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
   /api/auth/me:
     get:
       operationId: getCurrentSession
@@ -676,6 +831,51 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    AuthMethods:
+      type: object
+      required: [mode, email, telegram, emailLinkAvailable]
+      properties:
+        mode: { type: string, enum: [email, telegram, locked, development] }
+        email: { type: boolean }
+        telegram: { type: boolean }
+        emailLinkAvailable: { type: boolean }
+    EmailCodeRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        invitation: { type: string, maxLength: 43 }
+    EmailCodeVerify:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code: { type: string, pattern: '^[0-9]{6}$' }
+    EmailCodeRequested:
+      type: object
+      required: [expiresInSeconds, resendAfterSeconds]
+      properties:
+        expiresInSeconds: { type: integer }
+        resendAfterSeconds: { type: integer }
+    ProfileNames:
+      type: object
+      additionalProperties: false
+      required: [displayName, firstName, lastName]
+      properties:
+        displayName: { type: string, minLength: 1, maxLength: 160 }
+        firstName: { type: string, maxLength: 80 }
+        lastName: { type: string, maxLength: 80 }
+    UserProfile:
+      type: object
+      required: [id, displayName, firstName, lastName, email, avatarUrl]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { oneOf: [{ type: string, format: email }, { type: 'null' }] }
+        avatarUrl: { oneOf: [{ type: string }, { type: 'null' }] }
     AuthUser:
       type: object
       required:
@@ -688,6 +888,7 @@ components:
           format: uuid
         name:
           type: string
+        avatarUrl: { oneOf: [{ type: string }, { type: 'null' }] }
         role:
           type: string
           enum:
@@ -708,6 +909,7 @@ components:
           type: string
           enum:
             - telegram
+            - email
             - development
     AuthInvitation:
       type: object
