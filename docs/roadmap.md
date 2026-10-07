@@ -192,3 +192,16 @@ Roadmap связывает их с проверяемыми этапами сб�
 
 Статус выпуска и исполняемые свидетельства:
 [0020-evidence.md](specs/0020-evidence.md).
+
+## Favicon и плавность интерфейса — SPEC-0024
+
+[SPEC-0024](specs/0024-interface-motion.md) проверена локально в
+`codex/interface-motion`; main integration и deployment ещё не выполнены.
+
+| Направление | Реализовано в ветке | Остаётся / зависимость |
+| --- | --- | --- |
+| Бренд во вкладке | SVG сердце/пульс, индиго, новый URL favicon | Выпуск и проверка вкладки на опубликованной версии |
+| Плавность | Меню справа, dialog/overlay/select, короткие transitions | Review, CI и release smoke |
+| Доступность | Reduced motion, сохранённые Esc/focus и формы; browser smoke 390/1280 и dark | Проверка других браузеров при выпуске |
+
+Результаты проверок: [0024-evidence.md](specs/0024-evidence.md).

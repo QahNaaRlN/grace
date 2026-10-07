@@ -1,12 +1,12 @@
 # SPEC-0024: Favicon Grace и плавность интерфейса
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-07
 - Acceptance owner: владелец Grace
 - Acceptance record: прямое поручение заменить favicon и добавить немного плавности и анимаций, в частности появление меню, в текущем чате 2026-10-07.
 - Implementation branch: codex/interface-motion
-- Implementation commit: отсутствует
+- Implementation commit: 46b2b51
 
 ## Проблема и пользовательский результат
 
@@ -66,11 +66,11 @@ select. Disabled-кнопки не реагируют масштабом. Без
 
 ## Критерии приёмки
 
-- [ ] AC1: favicon читается на 16/32px; HTML указывает актуальную SVG Grace.
-- [ ] AC2: menu/dialog/select плавно открываются и закрываются; кнопки и
+- [x] AC1: favicon читается на 16/32px; HTML указывает актуальную SVG Grace.
+- [x] AC2: menu/dialog/select плавно открываются и закрываются; кнопки и
   навигация имеют короткий отклик; main fade не сбрасывает формы.
-- [ ] AC3: reduced-motion отключает движения; Esc/focus/disabled сохранены.
-- [ ] AC4: mobile/dark layout не регрессирует; make test и git diff --check
+- [x] AC3: reduced-motion отключает движения; Esc/focus/disabled сохранены.
+- [x] AC4: mobile/dark layout не регрессирует; make test и git diff --check
   проходят; evidence содержит результаты проверок каждого критерия.
 
 ## Исполняемые проверки
