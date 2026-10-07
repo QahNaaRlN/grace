@@ -1,13 +1,14 @@
 # Production deployment Grace
 
 После SPEC-0013 новая версия API закрыта по умолчанию (`GRACE_AUTH_MODE=locked`).
-По SPEC-0018 публичный экран входа не требует Basic Auth. До релиза настроить Telegram OIDC,
-применить миграцию 000006 после backup и выполнить первый вход owner по
-[authentication runbook](authentication.md). Историческая проверка SPEC-0012
+По SPEC-0018 публичный экран входа не требует Basic Auth. По SPEC-0022 основной
+production-вход — почтовый код; Telegram временно отключён. Настройка SMTP,
+аддитивной миграции 000008 и подтверждаемый перенос owner описаны в
+[email runbook](email-authentication-rollout.md). Историческая проверка SPEC-0012
 относится к версии без пользовательских сессий.
 
-Этот runbook реализует SPEC-0012 с обновлениями SPEC-0013–0015 и SPEC-0018.
-Caddy открывает Web shell и Telegram-вход; API закрывает финансовые данные
+Этот runbook реализует SPEC-0012 с обновлениями SPEC-0013–0015, SPEC-0018 и SPEC-0022.
+Caddy открывает Web shell и экран входа; API закрывает финансовые данные
 серверными сессиями и tenant isolation. Доступ новых пользователей — по
 приглашению. PostgreSQL остаётся во внутренней Docker network, assistant router выключен.
 
