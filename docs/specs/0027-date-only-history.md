@@ -1,12 +1,12 @@
 # SPEC-0027: Исторические операции с неизвестным временем
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-08
 - Acceptance owner: owner
 - Acceptance record: 2026-10-08 владелец подтвердил правило «сохранять календарный день с отметкой время неизвестно, без подстановки часов» для 160 исходных строк перед выпуском и переносом всей таблицы.
 - Implementation branch: codex/history-release
-- Implementation commit: отсутствует
+- Implementation commit: 597cfcc
 
 ## Проблема и пользовательский результат
 
@@ -73,14 +73,14 @@ unknown income order. Existing exact-time paths работают как рань
 
 ## Критерии приёмки
 
-- [ ] AC1: date-only import сохраняет occurred_at NULL и точный occurred_date,
+- [x] AC1: date-only import сохраняет occurred_at NULL и точный occurred_date,
   raw precision/provenance; повтор не создаёт postings.
-- [ ] AC2: даты точно валидируются; кандидаты и месячная сверка поддерживают оба
+- [x] AC2: даты точно валидируются; кандидаты и месячная сверка поддерживают оба
   вида даты без автоматического слияния.
-- [ ] AC3: дневная/месячная аналитика учитывает date-only, partial-day и unknown
+- [x] AC3: дневная/месячная аналитика учитывает date-only, partial-day и unknown
   income anchor дают явный отказ; exact-time regressions отсутствуют.
-- [ ] AC4: UI и contract не показывают придуманного времени/epoch; mobile reflow.
-- [ ] AC5: migration up/down guard, imports integration, make test, go vet и
+- [x] AC4: UI и contract не показывают придуманного времени/epoch; mobile reflow.
+- [x] AC5: migration up/down guard, imports integration, make test, go vet и
   git diff --check проходят; evidence привязывает критерии к executable checks.
 
 ## Исполняемые проверки
