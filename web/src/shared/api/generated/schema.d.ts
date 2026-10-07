@@ -756,8 +756,10 @@ export interface components {
             categoryId?: string | null;
             /** Format: uuid */
             originalEventId?: string;
+            /** Format: date */
+            occurredDate?: string;
             /** Format: date-time */
-            occurredAt: string;
+            occurredAt?: string;
             merchant: string;
             description: string;
             timeReason?: string;
@@ -1100,7 +1102,7 @@ export interface components {
             route: components["schemas"]["AssistantRoute"];
             confidence: number;
             /** @enum {string} */
-            clarificationCode: "low_confidence" | "clarification_required" | "composition_mismatch" | "arguments_required" | "income_category_required" | "no_income_anchor";
+            clarificationCode: "low_confidence" | "clarification_required" | "composition_mismatch" | "arguments_required" | "income_category_required" | "no_income_anchor" | "time_precision_required";
             requiredArguments?: ("from" | "to" | "through" | "asOf" | "limit" | "categoryId")[];
         };
         AssistantUnsupported: {
@@ -1255,8 +1257,10 @@ export interface components {
             originalEventId?: string | null;
             merchant: string;
             description: string;
-            /** Format: date-time */
-            occurredAt: string;
+            occurredAt: string | null;
+            occurredDate?: string | null;
+            /** @enum {string} */
+            datePrecision?: "instant" | "date";
             /** Format: date-time */
             createdAt: string;
             postings: components["schemas"]["Posting"][];

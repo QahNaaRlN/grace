@@ -406,7 +406,9 @@ func candidates(ctx context.Context, tx pgx.Tx, batch string, report importrevie
 		f := rec.Decision.Fields
 		amount = &f.AmountMinor
 		kind = f.Kind
-		if t, err := time.Parse(time.RFC3339, f.OccurredAt); err == nil {
+		if f.OccurredDate != "" {
+			date = &importreview.Date{Local: f.OccurredDate, Precision: "date"}
+		} else if t, err := time.Parse(time.RFC3339, f.OccurredAt); err == nil {
 			zone, _ := time.LoadLocation("Asia/Yekaterinburg")
 			date = &importreview.Date{Local: t.In(zone).Format("2006-01-02"), Precision: "date"}
 		}
@@ -439,6 +441,9 @@ func candidates(ctx context.Context, tx pgx.Tx, batch string, report importrevie
 			}
 			if decision.Fields != nil {
 				otherDate = targetLocalDate(decision.Fields.OccurredAt)
+				if decision.Fields.OccurredDate != "" {
+					otherDate = decision.Fields.OccurredDate
+				}
 			}
 			cid := "record:" + id
 			if otherDate == date.Local[:10] && !seen[cid] {
@@ -451,7 +456,7 @@ func candidates(ctx context.Context, tx pgx.Tx, batch string, report importrevie
 		if err != nil {
 			return nil, err
 		}
-		rows, err := tx.Query(ctx, `SELECT DISTINCT e.id::text FROM financial_events e JOIN postings p ON p.financial_event_id=e.id AND p.owner_id=e.owner_id WHERE p.amount_minor=$1 AND e.kind::text=$2 AND (e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date=$3::date ORDER BY e.id::text LIMIT 1001`, *amount, kind, date.Local[:10])
+		rows, err := tx.Query(ctx, `SELECT DISTINCT e.id::text FROM financial_events e JOIN postings p ON p.financial_event_id=e.id AND p.owner_id=e.owner_id WHERE p.amount_minor=$1 AND e.kind::text=$2 AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)=$3::date ORDER BY e.id::text LIMIT 1001`, *amount, kind, date.Local[:10])
 		if err != nil {
 			return nil, err
 		}

@@ -12,7 +12,7 @@ until docker compose exec -T postgres pg_isready -U grace -d grace >/dev/null 2>
 database_url='postgres://grace:grace@postgres:5432/grace?sslmode=disable'
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 # Empty import schema can be rolled back and restored.
-docker compose run --rm migrate -path=/migrations -database="$database_url" down 1
+docker compose run --rm migrate -path=/migrations -database="$database_url" down 2
 docker compose run --rm migrate -path=/migrations -database="$database_url" up
 postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \

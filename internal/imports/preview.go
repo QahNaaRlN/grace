@@ -19,7 +19,11 @@ func command(f *Fields, key string) (financialevents.Command, error) {
 		return financialevents.Command{}, fault("fields_required", 422)
 	}
 	t, err := time.Parse(time.RFC3339, f.OccurredAt)
-	if err != nil || f.AmountMinor <= 0 || len(f.Currency) != 3 || f.Currency != strings.ToUpper(f.Currency) || len(f.Merchant) > 2000 || len(f.Description) > 4000 || len(f.TimeReason) > 2000 {
+	if f.OccurredDate != "" && f.OccurredAt == "" && financialevents.ValidCalendarDate(f.OccurredDate) {
+		t = time.Time{}
+		err = nil
+	}
+	if err != nil || f.OccurredDate != "" && f.OccurredAt != "" || f.AmountMinor <= 0 || len(f.Currency) != 3 || f.Currency != strings.ToUpper(f.Currency) || len(f.Merchant) > 2000 || len(f.Description) > 4000 || len(f.TimeReason) > 2000 {
 		return financialevents.Command{}, fault("invalid_fields", 422)
 	}
 	if f.Kind == "purchase" && strings.TrimSpace(f.Merchant) == "" && strings.TrimSpace(f.Description) == "" {
@@ -43,7 +47,7 @@ func command(f *Fields, key string) (financialevents.Command, error) {
 	if f.Kind == "internal_transfer" && f.DestinationAccountID == "" {
 		return financialevents.Command{}, fault("destination_required", 422)
 	}
-	return financialevents.Command{Kind: f.Kind, IdempotencyKey: key, RequestHash: digest(f), AccountID: f.AccountID, DestinationAccountID: f.DestinationAccountID, CategoryID: f.CategoryID, OriginalEventID: f.OriginalEventID, AmountMinor: f.AmountMinor, Merchant: f.Merchant, Description: f.Description, OccurredAt: t}, nil
+	return financialevents.Command{Kind: f.Kind, IdempotencyKey: key, RequestHash: digest(f), AccountID: f.AccountID, DestinationAccountID: f.DestinationAccountID, CategoryID: f.CategoryID, OriginalEventID: f.OriginalEventID, AmountMinor: f.AmountMinor, Merchant: f.Merchant, Description: f.Description, OccurredAt: t, OccurredDate: f.OccurredDate}, nil
 }
 func add(a, b int64) (int64, bool) {
 	if b > 0 && a > math.MaxInt64-b || b < 0 && a < math.MinInt64-b {
@@ -218,7 +222,7 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 					line.Blockers = append(line.Blockers, "borrowed_is_not_income")
 				}
 				if n.Date == nil || n.Date.Precision == "date" || n.Date.Precision == "serial_fraction" {
-					if f.TimeReason == "" {
+					if f.TimeReason == "" && f.OccurredDate == "" {
 						line.Blockers = append(line.Blockers, "time_confirmation_required")
 					}
 				}

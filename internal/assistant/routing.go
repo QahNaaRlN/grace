@@ -133,6 +133,9 @@ func (router *Router) Query(ctx context.Context, query Query) QueryResult {
 		if toolCode, ok := ErrorCodeOf(err); ok && toolCode == CodeAnchorNotFound {
 			return clarify(judgment.Route, effective, "no_income_anchor", nil)
 		}
+		if toolCode, ok := ErrorCodeOf(err); ok && toolCode == CodeTimePrecision {
+			return clarify(judgment.Route, effective, "time_precision_required", nil)
+		}
 		return unavailable("dependency_unavailable")
 	}
 	return QueryResult{Status: StatusCompleted, Route: judgment.Route, Confidence: number(effective), Data: &result}

@@ -80,11 +80,14 @@ func monthRow(rec Record, event *financialevents.Event) MonthRow {
 	if rec.Decision.Action == "create" && rec.Decision.Fields != nil {
 		f := rec.Decision.Fields
 		row.TargetDate, row.TargetKind, row.TargetCurrency = f.OccurredAt, f.Kind, f.Currency
+		if f.OccurredDate != "" {
+			row.TargetDate = f.OccurredDate
+		}
 		amount := f.AmountMinor
 		row.TargetAmount = &amount
 	}
 	if event != nil {
-		row.TargetDate, row.TargetKind = event.OccurredAt.Format(time.RFC3339), event.Kind
+		row.TargetDate, row.TargetKind = event.OccurrenceValue(), event.Kind
 		for _, post := range event.Postings {
 			if post.Direction == "debit" {
 				amount := post.Amount
@@ -117,6 +120,9 @@ func monthRow(rec Record, event *financialevents.Event) MonthRow {
 }
 
 func targetLocalDate(value string) string {
+	if financialevents.ValidCalendarDate(value) {
+		return value
+	}
 	t, err := time.Parse(time.RFC3339, value)
 	if err != nil {
 		return ""
@@ -170,7 +176,7 @@ func buildMonth(batch Batch, month string, records []Record, events map[string]f
 		}
 		// An explicit reviewed date may resolve a missing/invalid source date,
 		// while the immutable source and its uncertainty stay visible in the row.
-		if err != nil && rec.Decision.Reason != "" && (rec.Decision.Action == "create" && rec.Decision.Fields != nil && rec.Decision.Fields.TimeReason != "" || rec.Decision.Action == "link_existing" && e != nil) {
+		if err != nil && rec.Decision.Reason != "" && (rec.Decision.Action == "create" && rec.Decision.Fields != nil && (rec.Decision.Fields.TimeReason != "" || rec.Decision.Fields.OccurredDate != "") || rec.Decision.Action == "link_existing" && e != nil) {
 			sourceDate, err = time.Parse("2006-01-02", targetLocalDate(row.TargetDate))
 		}
 		if err != nil {

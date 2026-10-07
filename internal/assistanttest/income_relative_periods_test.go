@@ -112,7 +112,7 @@ func TestIncomeRelativePeriodsAgainstPostgreSQL(t *testing.T) {
 	if err != nil || withoutCategory.Anchor.EventID != uncategorized.ID || withoutCategory.Anchor.CategoryID != nil {
 		t.Fatalf("unexpected unfiltered anchor: %#v %v", withoutCategory.Anchor, err)
 	}
-	atExclusiveBoundary, err := analyticsRepo.IncomeRelativePeriod(ctx, uncategorized.OccurredAt, nil)
+	atExclusiveBoundary, err := analyticsRepo.IncomeRelativePeriod(ctx, *uncategorized.OccurredAt, nil)
 	if err != nil || atExclusiveBoundary.Anchor.EventID != latestAdvance.ID {
 		t.Fatalf("asOf must exclude an anchor at the boundary: %#v %v", atExclusiveBoundary.Anchor, err)
 	}

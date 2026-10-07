@@ -30,10 +30,10 @@ func (repo *Repository) List(ctx context.Context, limit int) ([]Event, error) {
 		WHERE e.id IN (
 			SELECT id
 			FROM financial_events
-			ORDER BY occurred_at DESC, created_at DESC
+			ORDER BY COALESCE(occurred_at, occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, created_at DESC
 			LIMIT $1
 		)
-		ORDER BY e.occurred_at DESC, e.created_at DESC, p.created_at, p.id`, limit)
+		ORDER BY COALESCE(e.occurred_at, e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, e.created_at DESC, p.created_at, p.id`, limit)
 	if err != nil {
 		return nil, fmt.Errorf("list financial events: %w", err)
 	}
@@ -65,7 +65,7 @@ func LockOwner(ctx context.Context, tx pgx.Tx) error {
 
 // ValidateInTx resolves exactly the postings the financial writer will create.
 func ValidateInTx(ctx context.Context, tx pgx.Tx, command Command) ([]Posting, error) {
-	if command.AmountMinor <= 0 || command.OccurredAt.IsZero() {
+	if command.AmountMinor <= 0 || !validOccurrence(command) {
 		return nil, ErrInvalid
 	}
 	_, _, postings, err := resolveCommand(ctx, tx, command)
@@ -113,15 +113,21 @@ func CreateInTx(ctx context.Context, tx pgx.Tx, command Command, source string) 
 	}
 
 	var eventID string
+	var timestamp, calendarDate any
+	if command.OccurredDate != "" {
+		calendarDate = command.OccurredDate
+	} else {
+		timestamp = command.OccurredAt
+	}
 	err = tx.QueryRow(ctx, `
 		INSERT INTO financial_events (
 			kind, source, category_id, original_event_id, merchant, description,
-			occurred_at, idempotency_key, request_hash
-		) VALUES ($1, $9, $2, $3, $4, $5, $6, $7, $8)
+			occurred_at, idempotency_key, request_hash, occurred_date
+		) VALUES ($1, $9, $2, $3, $4, $5, $6, $7, $8, $10)
 		RETURNING id::text`,
 		command.Kind, categoryID, originalEventID, command.Merchant,
-		command.Description, command.OccurredAt, command.IdempotencyKey,
-		command.RequestHash, source,
+		command.Description, timestamp, command.IdempotencyKey,
+		command.RequestHash, source, calendarDate,
 	).Scan(&eventID)
 	if err != nil {
 		return Event{}, false, fmt.Errorf("insert financial event: %w", err)
@@ -294,6 +300,7 @@ const eventQuery = `
 		e.merchant,
 		e.description,
 		e.occurred_at,
+		e.occurred_date::text,
 		e.created_at,
 		p.id::text,
 		p.account_id::text,
@@ -332,13 +339,17 @@ func collectEvents(rows pgx.Rows) ([]Event, error) {
 		if err := rows.Scan(
 			&event.ID, &event.Kind, &event.Source, &event.CategoryID, &event.CategoryName,
 			&event.OriginalEventID, &event.Merchant, &event.Description,
-			&event.OccurredAt, &event.CreatedAt,
+			&event.OccurredAt, &event.OccurredDate, &event.CreatedAt,
 			&posting.ID, &posting.AccountID, &posting.Account, &posting.Direction,
 			&posting.Amount, &posting.Currency,
 		); err != nil {
 			return nil, fmt.Errorf("scan financial event: %w", err)
 		}
 		position, exists := index[event.ID]
+		event.DatePrecision = "instant"
+		if event.OccurredDate != nil {
+			event.DatePrecision = "date"
+		}
 		if !exists {
 			event.Postings = make([]Posting, 0, 2)
 			items = append(items, event)

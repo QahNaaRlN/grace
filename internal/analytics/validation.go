@@ -10,6 +10,7 @@ import (
 const dateLayout = "2006-01-02"
 
 var (
+	ErrTimePrecision            = errors.New("time_precision_required")
 	ErrInvalidPeriod            = errors.New("invalid analytics period")
 	ErrInvalidCashHorizon       = errors.New("invalid cash position horizon")
 	ErrInvalidIncomeAnchorQuery = errors.New("invalid income anchor query")

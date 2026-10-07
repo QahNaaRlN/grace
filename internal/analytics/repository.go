@@ -37,6 +37,9 @@ type periodQuerier interface {
 }
 
 func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (PeriodSummary, error) {
+	if err := checkPeriodPrecision(ctx, db, from, to); err != nil {
+		return PeriodSummary{}, err
+	}
 	byCurrency := make(map[string]*CurrencyPeriodSummary)
 	rows, err := db.Query(ctx, `
 		WITH account_opening AS (
@@ -44,10 +47,10 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 			FROM accounts GROUP BY currency
 		), posting_effects AS (
 			SELECT p.currency,
-				COALESCE(SUM(CASE WHEN e.occurred_at < $1 THEN
+				COALESCE(SUM(CASE WHEN COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') < $1 THEN
 					CASE p.direction WHEN 'credit' THEN p.amount_minor ELSE -p.amount_minor END
 				ELSE 0 END), 0)::bigint AS before_from,
-				COALESCE(SUM(CASE WHEN e.occurred_at < $2 THEN
+				COALESCE(SUM(CASE WHEN COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') < $2 THEN
 					CASE p.direction WHEN 'credit' THEN p.amount_minor ELSE -p.amount_minor END
 				ELSE 0 END), 0)::bigint AS before_to
 			FROM postings p JOIN financial_events e ON e.id = p.financial_event_id
@@ -87,7 +90,7 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'debt_payment' AND p.direction = 'debit'), 0)::bigint,
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'internal_transfer' AND p.direction = 'debit'), 0)::bigint
 		FROM financial_events e JOIN postings p ON p.financial_event_id = e.id
-		WHERE e.occurred_at >= $1 AND e.occurred_at < $2
+		WHERE COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') >= $1 AND COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') < $2
 		GROUP BY p.currency ORDER BY p.currency`, from, to)
 	if err != nil {
 		return PeriodSummary{}, fmt.Errorf("query period flows: %w", err)
@@ -124,7 +127,7 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 		FROM financial_events e
 		JOIN postings p ON p.financial_event_id = e.id
 		LEFT JOIN categories c ON c.id = e.category_id
-		WHERE e.occurred_at >= $1 AND e.occurred_at < $2
+		WHERE COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') >= $1 AND COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') < $2
 			AND e.kind IN ('purchase', 'refund')
 		GROUP BY p.currency, e.category_id, c.name
 		ORDER BY p.currency, COALESCE(c.name, 'Без категории'), e.category_id`, from, to)
@@ -189,17 +192,31 @@ func (repo *Repository) IncomeRelativePeriod(ctx context.Context, asOf time.Time
 		FROM financial_events e
 		LEFT JOIN categories c ON c.id = e.category_id
 		WHERE e.kind = 'income_received'
-			AND e.occurred_at >= $1 AND e.occurred_at < $2
+			AND e.occurred_at >= $1 AND COALESCE(e.occurred_at,e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') < $2
 			AND ($3::uuid IS NULL OR e.category_id = $3::uuid)
 		ORDER BY e.occurred_at DESC, e.created_at DESC, e.id DESC
 		LIMIT 1`, lowerBound, asOf, categoryArgument).Scan(
 		&anchor.EventID, &anchor.CategoryID, &anchor.CategoryName, &anchor.OccurredAt,
 	)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return IncomeRelativePeriod{}, &IncomeAnchorError{Code: CodeAnchorNotFound, Err: errors.New("no confirmed income in the five-year lookup window")}
-	}
-	if err != nil {
+	hasExactAnchor := err == nil
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return IncomeRelativePeriod{}, fmt.Errorf("find income anchor: %w", err)
+	}
+	anchorDay := historyDay(lowerBound)
+	if hasExactAnchor {
+		anchorDay = historyDay(anchor.OccurredAt)
+	}
+	var uncertainIncome bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM financial_events WHERE kind='income_received'
+	AND occurred_date >= $1::date AND occurred_date <= $2::date AND occurred_date >= $3::date
+	AND ($4::uuid IS NULL OR category_id=$4::uuid))`, historyDay(lowerBound), historyDay(asOf), anchorDay, categoryArgument).Scan(&uncertainIncome); err != nil {
+		return IncomeRelativePeriod{}, err
+	}
+	if uncertainIncome {
+		return IncomeRelativePeriod{}, &IncomeAnchorError{Code: CodeIncomeTimeUnknown}
+	}
+	if !hasExactAnchor {
+		return IncomeRelativePeriod{}, &IncomeAnchorError{Code: CodeAnchorNotFound}
 	}
 
 	rows, err := tx.Query(ctx, `

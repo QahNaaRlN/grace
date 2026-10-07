@@ -1,4 +1,4 @@
-import type { Account } from '@/shared/api/types'
+import type { Account, FinancialEvent } from '@/shared/api/types'
 export function accountLabel(account: Account) {
   const card = account.paymentInstruments?.[0]
   return card ? `${card.name} · ${card.bank} · •• ${card.last4}` : account.name
@@ -13,6 +13,14 @@ export function dateText(value: string) {
     timeZone: 'Asia/Yekaterinburg',
     dateStyle: 'medium',
   }).format(new Date(value.length === 10 ? `${value}T12:00:00+05:00` : value))
+}
+export function eventDateText(event: Pick<FinancialEvent, 'occurredAt' | 'occurredDate'>) {
+  if (event.occurredDate) return `${dateText(event.occurredDate)} · время неизвестно`
+  return event.occurredAt ? dateText(event.occurredAt) : 'Дата неизвестна'
+}
+export function eventTimeText(event: Pick<FinancialEvent, 'occurredAt' | 'occurredDate'>) {
+  if (event.occurredDate) return eventDateText(event)
+  return event.occurredAt ? new Date(event.occurredAt).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' }) : 'Дата неизвестна'
 }
 export function today() {
   return new Intl.DateTimeFormat('sv-SE', {

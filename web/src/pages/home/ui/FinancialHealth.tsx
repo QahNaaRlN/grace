@@ -1,3 +1,4 @@
+import { eventTimeText } from '@/shared/lib/finance-display'
 import { Link } from 'react-router-dom'
 import type {
   Account,
@@ -173,7 +174,7 @@ export function FinancialHealth({
       title: e.merchant || e.description || e.id,
       values: {
         ID: e.id,
-        Дата: new Date(e.occurredAt).toLocaleString('ru-RU'),
+        Дата: eventTimeText(e),
         Тип: eventLabels[e.kind],
         Описание: e.description,
         Категория: e.categoryName ?? 'Не указано',
@@ -192,7 +193,7 @@ export function FinancialHealth({
           timeZone: 'Asia/Yekaterinburg',
           month: 'long',
           year: 'numeric',
-        }).format(new Date(e.occurredAt)),
+        }).format(new Date(e.occurredAt ?? `${e.occurredDate}T00:00:00Z`)),
       },
     })),
     // A general income event does not establish a salary component.

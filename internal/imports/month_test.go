@@ -52,7 +52,7 @@ func TestMonthDecisionsUniqueEventsAndCorrections(t *testing.T) {
 	exclude := monthlyRecord("exclude", minor(1000))
 	exclude.Decision = Decision{Action: "exclude", Reason: "Это план"}
 	exclude.Published = true
-	e := financialevents.Event{Kind: "purchase", OccurredAt: time.Date(2026, 9, 1, 7, 0, 0, 0, time.UTC), Postings: []financialevents.Posting{{Direction: "debit", Amount: 1000, Currency: "RUB"}}}
+	e := financialevents.Event{Kind: "purchase", OccurredAt: func() *time.Time { t := time.Date(2026, 9, 1, 7, 0, 0, 0, time.UTC); return &t }(), Postings: []financialevents.Posting{{Direction: "debit", Amount: 1000, Currency: "RUB"}}}
 	rows := []Record{create, link, link2, duplicate, exclude}
 	r := buildMonth(Batch{}, "2026-09", rows, map[string]financialevents.Event{"event": e})
 	if *r.Totals[0].Source != 5000 || *r.Totals[0].Prepared != 900 || *r.Totals[0].Confirmed != 1000 || r.Complete {

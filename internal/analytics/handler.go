@@ -1,6 +1,7 @@
 package analytics
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -18,6 +19,10 @@ func (handler *Handler) PeriodSummary(w http.ResponseWriter, r *http.Request) {
 	}
 	summary, err := handler.repo.PeriodSummary(r.Context(), from, to)
 	if err != nil {
+		if errors.Is(err, ErrTimePrecision) {
+			web.WriteError(w, 422, "time_precision_required", "Для операций без времени выберите полный календарный период Asia/Yekaterinburg.")
+			return
+		}
 		web.WriteError(w, http.StatusInternalServerError, "internal_error", "Не удалось рассчитать сводку периода.")
 		return
 	}

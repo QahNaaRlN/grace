@@ -36,7 +36,8 @@ type Fields struct {
 	DestinationAccountID string  `json:"destinationAccountId,omitempty"`
 	CategoryID           *string `json:"categoryId,omitempty"`
 	OriginalEventID      string  `json:"originalEventId,omitempty"`
-	OccurredAt           string  `json:"occurredAt"`
+	OccurredAt           string  `json:"occurredAt,omitempty"`
+	OccurredDate         string  `json:"occurredDate,omitempty"`
 	Merchant             string  `json:"merchant"`
 	Description          string  `json:"description"`
 	TimeReason           string  `json:"timeReason,omitempty"`

@@ -24,6 +24,7 @@ import { Textarea } from '@/shared/ui/textarea'
 const MAX_UTTERANCE_BYTES = 2000
 
 const clarificationText: Record<AssistantClarify['clarificationCode'], string> = {
+  time_precision_required: 'В истории есть операции с неизвестным временем. Выберите полный календарный период вместо расчёта после точного момента.',
   low_confidence: 'Сформулируйте один конкретный вопрос о ваших финансовых данных.',
   clarification_required: 'Уточните, какие именно финансовые данные вы хотите увидеть.',
   composition_mismatch: 'Не удалось безопасно подобрать параметры. Уточните запрос.',

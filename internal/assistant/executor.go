@@ -205,12 +205,17 @@ func invalidArguments(err error) error {
 }
 
 func dependencyError(ctx context.Context, err error) error {
+	if errors.Is(err, analytics.ErrTimePrecision) {
+		return &ToolError{Code: CodeTimePrecision, Err: err}
+	}
 	if errors.Is(ctx.Err(), context.Canceled) || errors.Is(ctx.Err(), context.DeadlineExceeded) ||
 		errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return &ToolError{Code: CodeCanceled, Err: err}
 	}
 	if code, ok := analytics.IncomeAnchorErrorCodeOf(err); ok {
 		switch code {
+		case analytics.CodeIncomeTimeUnknown:
+			return &ToolError{Code: CodeTimePrecision, Err: err}
 		case analytics.CodeInvalidAnchorCategory:
 			return &ToolError{Code: CodeInvalidAnchorCategory, Err: err}
 		case analytics.CodeAnchorNotFound:

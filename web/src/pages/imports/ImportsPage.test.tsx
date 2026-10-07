@@ -8,7 +8,37 @@ import { ImportsPage } from './ImportsPage'
 const client = vi.hoisted(() => ({ GET: vi.fn(), PATCH: vi.fn(), POST: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: client }))
 
+it('saves a date-only decision without inventing a timestamp or publishing it', async () => {
+  const row = { id: 'calendar-row', source: { sheet: 'Операции', row: 8, domain: 'transaction', raw: {}, normalized: { kind: 'purchase', amountMinor: 12000, currency: 'RUB', date: { precision: 'date', local: '2026-09-02', utc: null } }, issues: [] }, decision: { action: 'unresolved' }, candidates: [], history: [], published: false }
+  const batch = { id: 'calendar-batch', revision: 1, counts: {}, source: { sourceId: 'synthetic' } }
+  client.GET.mockReset().mockImplementation(async (path: string) => {
+    if (path.endsWith('/records/{recordId}')) return { data: row }
+    if (path.endsWith('/records')) return { data: { items: [row] } }
+    if (path === '/api/imports/batches/{batchId}') return { data: batch }
+    return { data: { items: [] } }
+  })
+  client.PATCH.mockReset().mockResolvedValue({ data: batch })
+  client.POST.mockReset()
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={cache}><MemoryRouter initialEntries={['/imports?batch=calendar-batch']}><ImportsPage /></MemoryRouter></QueryClientProvider>)
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: 'Операции, строка 8' }))
+  await user.selectOptions(await screen.findByLabelText('Решение'), 'create')
+  expect(screen.getByLabelText('Известен только день, время неизвестно')).toBeChecked()
+  expect(screen.getByLabelText('Дата операции')).toHaveValue('2026-09-02')
+  expect(screen.queryByLabelText('Дата и время (с часовым поясом, например +05:00)')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Сохранить решение' }))
+  await waitFor(() => expect(client.PATCH).toHaveBeenCalledOnce())
+  const decision = client.PATCH.mock.calls[0][1].body.decision
+  expect(decision.fields.occurredDate).toBe('2026-09-02')
+  expect(decision.fields.occurredAt).toBeUndefined()
+  expect(client.POST).not.toHaveBeenCalled()
+})
+
 it('keeps a saved decision when batch revision refreshes before record details', async () => {
+  client.GET.mockReset()
+  client.PATCH.mockReset()
+  client.POST.mockReset()
   let revision = 1
   let detailReads = 0
   let resolveDetails!: (value: { data: unknown }) => void

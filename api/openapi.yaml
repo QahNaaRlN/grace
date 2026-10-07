@@ -1531,7 +1531,7 @@ components:
     "ImportFields":
       "type": "object"
       "additionalProperties": false
-      "required": ["kind","currency","amountMinor","occurredAt","merchant","description"]
+      "required": ["kind","currency","amountMinor","merchant","description"]
       "properties":
         "kind":
           "type": "string"
@@ -1555,6 +1555,9 @@ components:
         "originalEventId":
           "type": "string"
           "format": "uuid"
+        "occurredDate":
+          "type": "string"
+          "format": "date"
         "occurredAt":
           "type": "string"
           "format": "date-time"
@@ -2177,7 +2180,7 @@ components:
         confidence: { type: number, minimum: 0, maximum: 1 }
         clarificationCode:
           type: string
-          enum: [low_confidence, clarification_required, composition_mismatch, arguments_required, income_category_required, no_income_anchor]
+          enum: [low_confidence, clarification_required, composition_mismatch, arguments_required, income_category_required, no_income_anchor, time_precision_required]
         requiredArguments:
           type: array
           uniqueItems: true
@@ -2352,7 +2355,9 @@ components:
         originalEventId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         merchant: { type: string }
         description: { type: string }
-        occurredAt: { type: string, format: date-time }
+        occurredAt: { oneOf: [{ type: string, format: date-time }, { type: 'null' }] }
+        occurredDate: { oneOf: [{ type: string, format: date }, { type: 'null' }] }
+        datePrecision: { type: string, enum: [instant, date] }
         createdAt: { type: string, format: date-time }
         postings:
           type: array
