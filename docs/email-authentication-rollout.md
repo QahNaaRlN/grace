@@ -1,19 +1,22 @@
 # Email authentication rollout — SPEC-0022
 
-Mail delivery uses a TLS-only SMTP adapter. Recommended initial sender is
-Yandex Cloud Postbox; the domain is managed in Timeweb. Current delivery is
-NOT configured. Google/Apple research remains SPEC-0019 draft.
+Mail delivery uses a TLS-only SMTP adapter with Yandex Cloud Postbox; the domain
+is managed in Timeweb. Delivery, DKIM and the original owner's email migration
+were verified on 2026-10-07. Email mode is active and Telegram login is temporarily
+disabled. Google/Apple research remains SPEC-0019 draft. See [evidence](specs/0022-evidence.md).
 
 ## Provider and domain prerequisites
 
 1. Owner signs into/registers Yandex Cloud, accepts its agreement personally,
    and activates the account/billing prerequisites shown by that provider.
-2. Create a Grace folder and a service account with only Postbox sending rights.
+2. Use the same folder for the sender and its service account. Grant only
+   postbox.sender to the service account. The configured account is grace-mailer.
 3. Create the sender identity for graceapp.ru / no-reply@graceapp.ru. Copy the
    generated DKIM records exactly into Timeweb DNS. Preserve existing A/AAAA/NS
    and existing mail records. Configure the provider's current SPF/DMARC guidance;
    do not invent DKIM values or add a second conflicting SPF record.
-4. Owner creates SMTP credentials. Do not paste them into chat or repository.
+4. Owner creates an API key with only yc.postbox.send scope. Its identifier is
+   the SMTP username and its secret is the SMTP password. Do not paste them into chat or repository.
    Install the completed email.env from the example on the VPS, owned by the
    deployment operator/root, mode 600. The example contains no live secrets.
 5. Default settings are postbox.cloud.yandex.net:587 with STARTTLS. Port 465

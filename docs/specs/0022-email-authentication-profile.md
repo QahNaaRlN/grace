@@ -1,6 +1,6 @@
 # SPEC-0022: основной вход по почте и персональный профиль
 
-- Статус: accepted
+- Статус: integrated
 - Автор: Codex
 - Дата: 2026-10-07
 - Acceptance owner: владелец Grace
@@ -22,7 +22,7 @@ React формы и операторская миграция существую
 Google/Apple/SMS, пароли, публичные профили, дополнительные PII, финансовые
 изменения и автоматическое объединение по имени/почте исключены.
 
-## Текущее поведение
+## Поведение до SPEC-0022
 
 Telegram OIDC — единственный production login. User имеет id/name/role.
 Почтовой доставки, verified email, имён/фамилии и аватара нет. Приглашение
@@ -94,8 +94,8 @@ revoke/disabled user; generic messages. Изменение имени и ава�
 
 ## External prerequisites / open decisions
 
-No mail provider is configured yet. Default integration is SMTP; selected provider
-and domain verification/credential setup are operational prerequisites, not reasons
-to leave authorized implementation undone. No production lockout switch until
-these prerequisites and owner recovery are ready. Current prior Telegram identities
-are retained. Google's/Apple's SPEC-0019 research remains historical draft.
+SMTP provider/domain setup and owner verification are required before switching
+production login. These prerequisites were completed on 2026-10-07 with Yandex
+Cloud Postbox and Timeweb DNS; the owner personally verified email sign-in.
+Previous Telegram identities are retained. Google's/Apple's SPEC-0019 remains draft.
+Release and executable acceptance evidence: [0022-evidence.md](0022-evidence.md).

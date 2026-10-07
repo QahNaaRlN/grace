@@ -55,10 +55,12 @@ Development-only оценка модели и маршрутизации нах�
 связей финансовых объектов разных владельцев. Admin управляет доступом,
 но не получает финансовых привилегий другого пользователя.
 
-Вход использует Telegram OIDC Code Flow/PKCE; сессии непрозрачны и хранятся
+Основной вход использует одноразовый почтовый код по SPEC-0022. Telegram OIDC
+Code Flow/PKCE сохранён в коде и identities, но временно отключён. Сессии непрозрачны и хранятся
 на сервере. Mutations требуют CSRF token и точный Origin. Без настроенного
 входа действует locked mode; development bypass разрешён только явно в
-локальной development-конфигурации. См. [authentication](authentication.md).
+локальной development-конфигурации. См. [почтовый вход](email-authentication-rollout.md)
+и [Telegram runbook](authentication.md).
 
 api/openapi.yaml — публичный контракт. TypeScript-клиент не объявляет DTO
 вручную. Изменение API считается завершённым только после обновления контракта
@@ -108,7 +110,8 @@ Obligation → ScheduledPayment → Settlement связывает будущий
 ликвидную позицию, но не прогнозирует будущие доходы и расходы.
 
 React Web — реализованный клиент; iOS остаётся направлением развития.
-По SPEC-0018 Caddy открывает Web shell и экран Telegram-входа без Basic Auth.
+По SPEC-0018 Caddy открывает Web shell и экран входа без Basic Auth;
+по SPEC-0022 production использует почтовый код.
 Финансовый API требует собственную сессию; приглашения, CSRF/Origin и RLS
 сохраняются. Публикация исправления проходит через отдельный release pipeline.
 API, Web и PostgreSQL доступны только во внутренней Docker network.
