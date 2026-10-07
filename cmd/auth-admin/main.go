@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/auth"
+	"github.com/QahNaaRlN/grace/internal/platform/access"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 )
 
 func main() {
-	if len(os.Args) != 2 || os.Args[1] != "owner-invitation" {
-		fmt.Fprintln(os.Stderr, "usage: auth-admin owner-invitation (DATABASE_URL required)")
+	migration := len(os.Args) == 3 && os.Args[1] == "prepare-owner-email"
+	if !migration && (len(os.Args) != 2 || os.Args[1] != "owner-invitation") {
+		fmt.Fprintln(os.Stderr, "usage: auth-admin owner-invitation | prepare-owner-email EMAIL (DATABASE_URL required)")
 		os.Exit(2)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -25,6 +27,15 @@ func main() {
 		os.Exit(1)
 	}
 	defer pool.Close()
+	if migration {
+		i, e := auth.NewRepository(pool).EmailMigrationInvitation(ctx, access.BootstrapOwnerID, os.Args[2])
+		if e != nil {
+			fmt.Fprintln(os.Stderr, "cannot prepare owner email migration")
+			os.Exit(1)
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"prepared": true, "expiresAt": i.Expires})
+		return
+	}
 	i, err := auth.NewRepository(pool).OwnerInvitation(ctx)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "cannot create owner invitation (owner must be unlinked)")

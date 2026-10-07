@@ -45,3 +45,7 @@ check_route /login 200 text/html 'id="root"'
 check_route /api/meta 200 application/json '"service"[[:space:]]*:[[:space:]]*"grace"'
 check_route /api/auth/me 401 application/json '"code"[[:space:]]*:[[:space:]]*"unauthenticated"'
 check_route /api/v1/accounts 401 application/json '"code"[[:space:]]*:[[:space:]]*"unauthenticated"'
+if [ "${GRACE_AUTH_MODE:-}" = "email" ]; then
+  check_route /api/auth/methods 200 application/json '"email"[[:space:]]*:[[:space:]]*true'
+  grep -Eq '"telegram"[[:space:]]*:[[:space:]]*false' "$tmp_dir/body"
+fi

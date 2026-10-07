@@ -5,7 +5,9 @@ package authtest
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -388,4 +390,132 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 	if err != nil || len(afterItems) != len(beforeItems) {
 		t.Fatal("failed card creation leaked account", err)
 	}
+	// SPEC-0022: operator-approved email migration preserves the original owner.
+	beforeEmail, err := accountRepo.List(ownerCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	migration, err := store.EmailMigrationInvitation(ctx, access.BootstrapOwnerID, "owner@example.test")
+	if err != nil || migration.Token == "" {
+		t.Fatal("migration prepare", err)
+	}
+	migrationDigest := sha256.Sum256([]byte(migration.Token))
+	if _, err = store.Login(ctx, auth.Identity{Issuer: auth.EmailIssuer, Subject: "wrong-owner@example.test"}, hex.EncodeToString(migrationDigest[:]), token(), token()); !errors.Is(err, auth.ErrDenied) {
+		t.Fatal("migration accepted a different mailbox", err)
+	}
+	sender := &capturedEmailSender{}
+	emailHandler := auth.NewEmailHandler(store, sender, "email", "https://grace.test", 1500)
+	requestCode := httptest.NewRequest("POST", "https://grace.test/api/auth/email/request", strings.NewReader(`{"email":"owner@example.test"}`))
+	requestCode.Header.Set("Origin", "https://grace.test")
+	emailResponse := httptest.NewRecorder()
+	emailHandler.Request(emailResponse, requestCode)
+	if emailResponse.Code != 200 {
+		t.Fatal("request email", emailResponse.Code, emailResponse.Body.String())
+	}
+	var browserCookie *http.Cookie
+	for _, c := range emailResponse.Result().Cookies() {
+		if c.Name == "__Host-grace_email" {
+			browserCookie = c
+		}
+	}
+	if browserCookie == nil || sender.code == "" {
+		t.Fatal("missing browser binding/code")
+	}
+	verifyEmail := httptest.NewRequest("POST", "https://grace.test/api/auth/email/verify", strings.NewReader(`{"code":"`+sender.code+`"}`))
+	verifyEmail.Header.Set("Origin", "https://grace.test")
+	verifyEmail.AddCookie(browserCookie)
+	verified := httptest.NewRecorder()
+	emailHandler.Verify(verified, verifyEmail)
+	if verified.Code != 200 {
+		t.Fatal("verify email", verified.Code, verified.Body.String())
+	}
+	var emailSession struct {
+		User auth.User `json:"user"`
+	}
+	if err = json.Unmarshal(verified.Body.Bytes(), &emailSession); err != nil || emailSession.User.ID != access.BootstrapOwnerID || emailSession.User.Role != "admin" {
+		t.Fatal("owner changed during email migration", err)
+	}
+	afterEmail, err := accountRepo.List(ownerCtx)
+	if err != nil || len(beforeEmail) != len(afterEmail) {
+		t.Fatal("finance lost", err)
+	}
+	for i := range beforeEmail {
+		if beforeEmail[i].ID != afterEmail[i].ID || beforeEmail[i].BalanceMinor != afterEmail[i].BalanceMinor {
+			t.Fatal("finance changed")
+		}
+	}
+	var emailCookie *http.Cookie
+	for _, c := range verified.Result().Cookies() {
+		if c.Name == "__Host-grace_session" {
+			emailCookie = c
+		}
+	}
+	if emailCookie == nil {
+		t.Fatal("email session missing")
+	}
+	emailProfile, err := store.Profile(ctx, access.BootstrapOwnerID)
+	if err != nil || emailProfile.Email == nil || *emailProfile.Email != "owner@example.test" {
+		t.Fatal("verified email absent", err)
+	}
+	if err = store.UpdateProfile(ctx, access.BootstrapOwnerID, auth.ProfileNames{DisplayName: "Name Family", FirstName: "Name", LastName: "Family"}); err != nil {
+		t.Fatal(err)
+	}
+	updatedProfile, err := store.Profile(ctx, access.BootstrapOwnerID)
+	if err != nil || updatedProfile.FirstName != "Name" || updatedProfile.LastName != "Family" {
+		t.Fatal("profile names not retained", err)
+	}
+	// A fresh session can change its own verified address; another session is revoked.
+	oldToken := token()
+	if _, err = store.Login(ctx, auth.Identity{Issuer: auth.EmailIssuer, Subject: "owner@example.test"}, "", oldToken, "old-csrf"); err != nil {
+		t.Fatal(err)
+	}
+	if err = store.LinkEmail(ctx, access.BootstrapOwnerID, "new-owner@example.test", emailCookie.Value); err != nil {
+		t.Fatal("link email", err)
+	}
+	if _, err = store.FindSession(ctx, oldToken); !errors.Is(err, auth.ErrDenied) {
+		t.Fatal("other session survived email change")
+	}
+	if _, err = store.FindSession(ctx, emailCookie.Value); err != nil {
+		t.Fatal("current session lost")
+	}
+	otherInvite, err := store.CreateInvitation(ctx, access.BootstrapOwnerID, "Other email user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherDigest := sha256.Sum256([]byte(otherInvite.Token))
+	otherToken := token()
+	otherUser, err := store.Login(ctx, auth.Identity{Issuer: auth.EmailIssuer, Subject: "other@example.test"}, hex.EncodeToString(otherDigest[:]), otherToken, token())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = store.LinkEmail(ctx, otherUser.ID, "new-owner@example.test", otherToken); !errors.Is(err, auth.ErrDenied) {
+		t.Fatal("email collision merged owners", err)
+	}
+	if err = store.SetAvatar(ctx, access.BootstrapOwnerID, []byte("synthetic-avatar")); err != nil {
+		t.Fatal(err)
+	}
+	if avatar, avatarErr := store.Avatar(ctx, otherUser.ID); avatarErr != nil || len(avatar) != 0 {
+		t.Fatal("other user saw owner's avatar", avatarErr)
+	}
+	if err = store.SetAvatar(ctx, access.BootstrapOwnerID, nil); err != nil {
+		t.Fatal(err)
+	}
+	// Persistent cooldown survives constructing another repository.
+	rateA := auth.NewRepository(pool)
+	if err = rateA.ReserveEmail(ctx, "limit@example.test", "test-source", 1500); err != nil {
+		t.Fatal(err)
+	}
+	rateB := auth.NewRepository(pool)
+	if err = rateB.ReserveEmail(ctx, "limit@example.test", "test-source", 1500); !errors.Is(err, auth.ErrRateLimited) {
+		t.Fatal("persistent rate limit bypass", err)
+	}
+
+}
+
+type capturedEmailSender struct{ code string }
+
+func (s *capturedEmailSender) Ready() bool { return true }
+func (s *capturedEmailSender) SendCode(_ context.Context, _ string, code string) error {
+	s.code = code
+	return nil
 }

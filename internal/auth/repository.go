@@ -53,8 +53,8 @@ func (r *Repository) Login(ctx context.Context, identity Identity, invitationHas
 			return User{}, ErrDenied
 		}
 		err = tx.QueryRow(ctx, `SELECT u.id::text,u.display_name,u.role,u.disabled FROM auth_invitations i
-			JOIN users u ON u.id=i.user_id WHERE i.token_hash=$1 AND i.used_at IS NULL AND i.expires_at>now()
-			FOR UPDATE OF i,u`, invitationHash).Scan(&user.ID, &user.Name, &user.Role, &disabled)
+			JOIN users u ON u.id=i.user_id WHERE i.token_hash=$1 AND i.used_at IS NULL AND i.expires_at>now() AND (i.bound_email IS NULL OR ($2=$3 AND i.bound_email=$4))
+			FOR UPDATE OF i,u`, invitationHash, identity.Issuer, EmailIssuer, identity.Subject).Scan(&user.ID, &user.Name, &user.Role, &disabled)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return User{}, ErrDenied
 		}
