@@ -1,0 +1,60 @@
+# SPEC-0020 implementation evidence
+
+Specification: [0020-home-redesign.md](0020-home-redesign.md), accepted 2026-10-06.
+Implementation branch: `codex/home-design-audit`.
+Status: integrated and deployed to graceapp.ru on 2026-10-06. Release: 7b108dfae3ae5449b2f9f36e77398da20aab4460.
+
+| Criterion | Executable evidence |
+| --- | --- |
+| AC1 | Chrome real Go API/PostgreSQL at localhost:18280; indigo light/dark; responsive 320/390px; saved screenshot `bin/spec0020-mobile-card.png` (ignored, synthetic records only) |
+| AC2 | Menu → accounts changes URL; mobile bottom nav; details Esc closes; explicit trigger focus restoration added |
+| AC3 | `HomePage.test.tsx`: stale calculated amount hidden on analytics failure, accounts remain visible; browser recovered queries via Repeat |
+| AC4 | Go `accounts_test.go`: 0012, missing bank, ASCII validation, reject full card number/cash card; `authtest/integration_test.go`: card round trip, RLS, cross-owner FK, rollback without leaked account |
+| AC5 | Browser: create test card → review → POST → 1000.01 RUB balance; purchase 10.01 RUB → review → POST → server returns card balance 990.00 RUB, cash 125990.00 RUB; web test proves no POST before confirmation and same retry idempotency key |
+| AC6 | At 320px card dialog clientWidth = scrollWidth = 288; operation review 273; footer margin 24px; pointer cursor; two action buttons wrap; body clientWidth = scrollWidth = 305 |
+| AC7 | `make test`: Go, 23 web tests, lint, build, offline Jev 49/72; `git diff --check`; generated contract updated; PostgreSQL auth suite passed on isolated test database |
+
+Production-bundle test was attempted on Windows: Git Bash path conversion and
+symlink limitations prevent the full deployment fixture here. Linux CI is the
+required release gate; its actual run/result is recorded below after completion.
+
+Migration 000007 adds tenant-owned payment instruments only. Creation with an
+account is atomic. It does not migrate financial records or duplicate account
+balances. SPEC-0017 draft PR 7 also has an unintegrated migration number 000007:
+when that work resumes its migration must be rebased/renumbered; this release
+does not publish import drafts or edit that unrelated PR.
+
+The financial-health screen preserves the ten-sheet field structure and shows
+existing accounts/events/categories/fixed obligations/receipts. Missing spreadsheet
+fields remain unknown. Full editable credit facilities/statements, planned salary,
+budgets and reconciliation/document management remain separate roadmap work;
+they are not simulated as saved financial data. No production test writes planned.
+
+Follow-up verification: obligation creation and settlement now invalidate the
+cash-position query as well as obligations. Browser: add a 200 RUB scheduled
+payment to the existing 100 RUB test plan, wait for successful save, navigate
+back to Overview without reload → 300 RUB obligations and 125690 RUB available,
+while liquid balance remains 125990 RUB. All amounts came from Go API.
+PR CI run 37475410104 passed on 9b75e45, including Linux production-bundle and
+all PostgreSQL integration/container gates. Final cache-refresh refinement is
+submitted for a new CI run before merging.
+Additional empty-state regression test: first-account action is available with
+zero accounts, no invented balance section, and opening the form sends no POST.
+The complete Web suite now has 24 passing tests.
+
+
+## Final remote and post-merge evidence
+
+- Final PR CI, 24 Web tests and all gates: https://github.com/QahNaaRlN/grace/actions/runs/37476896509 — success on 1f72730.
+- PR 8 merged: https://github.com/QahNaaRlN/grace/pull/8 — merge 7b108df.
+- Main CI: https://github.com/QahNaaRlN/grace/actions/runs/37477866791 — success.
+- Exact SHA image delivery: https://github.com/QahNaaRlN/grace/actions/runs/37478357907 — success.
+- Production deploy: https://github.com/QahNaaRlN/grace/actions/runs/37478764197 — success, including backup/migration/readiness/public entrypoint gates.
+- Primary integration checkout: make test (Go, 24 Web tests, lint/build, offline Jev), git diff --check — passed; existing local SPEC-0017 documentation commits preserved, not published by this release.
+- External checks: graceapp.ru returns 200; no Basic Auth challenge; anonymous financial accounts API returns 401. Live CSS is /assets/index-6lJtijDf.css, JS /assets/index-SukfoGOn.js, matching the verified build. Indigo #4338ca present.
+- No production financial test records were created. Owner smoke-test checklist: [0020-smoke-checklist.md](0020-smoke-checklist.md).
+
+This final documentation update records the deployed release; it does not
+change deployed application behavior or advance SPEC-0017/0019.
+
+Final smoke-test release includes the SPEC-0021 display correction: 11f6b2e. See [0021-evidence.md](0021-evidence.md); 25 Web tests pass.

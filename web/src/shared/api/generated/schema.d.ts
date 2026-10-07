@@ -549,6 +549,7 @@ export interface components {
             balanceMinor: number;
             /** Format: date-time */
             createdAt: string;
+            paymentInstruments?: components["schemas"]["PaymentInstrument"][];
         };
         CreateAccount: {
             name: string;
@@ -557,6 +558,19 @@ export interface components {
             currency: string;
             /** Format: int64 */
             openingBalanceMinor: number;
+            card?: components["schemas"]["CreateCard"];
+        };
+        CreateCard: {
+            name: string;
+            bank: string;
+            last4: string;
+        };
+        PaymentInstrument: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            bank: string;
+            last4: string;
         };
         Category: {
             /** Format: uuid */
