@@ -47,6 +47,39 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 		return Event{}, false, fmt.Errorf("begin financial event: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	event, created, err := CreateInTx(ctx, tx, command, "manual")
+	if err != nil {
+		return Event{}, false, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Event{}, false, err
+	}
+	return event, created, nil
+}
+
+// LockOwner serializes ledger writes with import matching for the same tenant.
+func LockOwner(ctx context.Context, tx pgx.Tx) error {
+	_, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended('ledger:' || grace_owner_id()::text, 0))")
+	return err
+}
+
+// ValidateInTx resolves exactly the postings the financial writer will create.
+func ValidateInTx(ctx context.Context, tx pgx.Tx, command Command) ([]Posting, error) {
+	if command.AmountMinor <= 0 || command.OccurredAt.IsZero() {
+		return nil, ErrInvalid
+	}
+	_, _, postings, err := resolveCommand(ctx, tx, command)
+	return postings, err
+}
+
+// CreateInTx leaves transaction ownership to the caller, enabling atomic groups.
+func CreateInTx(ctx context.Context, tx pgx.Tx, command Command, source string) (Event, bool, error) {
+	if source != "manual" && source != "import" {
+		return Event{}, false, ErrInvalid
+	}
+	if err := LockOwner(ctx, tx); err != nil {
+		return Event{}, false, err
+	}
 
 	lockKey := command.Kind + ":" + command.IdempotencyKey
 	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", lockKey); err != nil {
@@ -54,7 +87,7 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	}
 
 	var existingID, existingHash string
-	err = tx.QueryRow(ctx, `
+	err := tx.QueryRow(ctx, `
 		SELECT id::text, request_hash
 		FROM financial_events
 		WHERE kind = $1 AND idempotency_key = $2`,
@@ -70,6 +103,9 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return Event{}, false, fmt.Errorf("find idempotent event: %w", err)
 	}
+	if _, err := ValidateInTx(ctx, tx, command); err != nil {
+		return Event{}, false, err
+	}
 
 	categoryID, originalEventID, postings, err := resolveCommand(ctx, tx, command)
 	if err != nil {
@@ -81,11 +117,11 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 		INSERT INTO financial_events (
 			kind, source, category_id, original_event_id, merchant, description,
 			occurred_at, idempotency_key, request_hash
-		) VALUES ($1, 'manual', $2, $3, $4, $5, $6, $7, $8)
+		) VALUES ($1, $9, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id::text`,
 		command.Kind, categoryID, originalEventID, command.Merchant,
 		command.Description, command.OccurredAt, command.IdempotencyKey,
-		command.RequestHash,
+		command.RequestHash, source,
 	).Scan(&eventID)
 	if err != nil {
 		return Event{}, false, fmt.Errorf("insert financial event: %w", err)
@@ -107,10 +143,11 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Event, boo
 	if err != nil {
 		return Event{}, false, err
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return Event{}, false, fmt.Errorf("commit financial event: %w", err)
-	}
 	return event, true, nil
+}
+
+func LoadInTx(ctx context.Context, tx pgx.Tx, id string) (Event, error) {
+	return loadEvent(ctx, tx, id)
 }
 
 type account struct {
@@ -209,7 +246,7 @@ func resolveCommand(ctx context.Context, tx pgx.Tx, command Command) (*string, *
 		).Scan(&refunded); err != nil {
 			return nil, nil, nil, fmt.Errorf("sum refunds: %w", err)
 		}
-		if refunded+command.AmountMinor > purchaseAmount {
+		if refunded > purchaseAmount || command.AmountMinor > purchaseAmount-refunded {
 			return nil, nil, nil, fmt.Errorf("%w: refund exceeds purchase amount", ErrInvalid)
 		}
 		originalID := command.OriginalEventID

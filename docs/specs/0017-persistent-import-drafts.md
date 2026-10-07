@@ -1,12 +1,12 @@
 # SPEC-0017: Сохраняемые черновики и подтверждение импорта
 
-- Статус: accepted
+- Статус: verified
 - Автор: Codex
 - Дата: 2026-10-06
 - Acceptance owner: owner
 - Acceptance record: 2026-10-06 владелец поручил «Приступить к спеке 17» после представления полного draft и вопроса о принятии scope; предложенные решения и критерии приняты этим поручением.
 - Implementation branch: codex/persistent-import-drafts
-- Implementation commit: отсутствует
+- Implementation commit: a1ea19d
 
 ## Проблема и пользовательский результат
 
@@ -190,28 +190,28 @@ confirmation автоматически не повторяется после �
 
 ## Критерии приёмки
 
-- [ ] AC1: Snapshot сохраняется целиком; все records имеют raw/provenance;
+- [x] AC1: Snapshot сохраняется целиком; все records имеют raw/provenance;
   перезапуск API/браузера сохраняет решения; ledger не меняется до confirmation.
-- [ ] AC2: Тот же snapshot не создаёт второй batch; новый hash не обходит
+- [x] AC2: Тот же snapshot не создаёт второй batch; новый hash не обходит
   проверку опубликованных свидетельств; нет автоматической дедупликации.
-- [ ] AC3: Правки имеют audit и revision; циклы/цепочки duplicate запрещены;
+- [x] AC3: Правки имеют audit и revision; циклы/цепочки duplicate запрещены;
   новые исходные данные не перезаписывают прошлые решения.
-- [ ] AC4: RLS/FK, session, CSRF/Origin защищают все маршруты и новые таблицы;
+- [x] AC4: RLS/FK, session, CSRF/Origin защищают все маршруты и новые таблицы;
   второй owner/admin не читает и не связывает чужие records/events.
-- [ ] AC5: Preview точно показывает действия и изменения по счетам/валютам;
+- [x] AC5: Preview точно показывает действия и изменения по счетам/валютам;
   устаревший/истёкший preview и новые совпадения блокируют первую confirmation.
-- [ ] AC6: Confirmation атомарна; concurrent/retry/lost-response не создают
+- [x] AC6: Confirmation атомарна; concurrent/retry/lost-response не создают
   повторных postings/provenance; invalid row откатывает всю выбранную группу.
-- [ ] AC7: Пять существующих kinds сохраняют инварианты; link/duplicate/exclude
+- [x] AC7: Пять существующих kinds сохраняют инварианты; link/duplicate/exclude
   не меняют баланс; date-only и unsupported debt/plan/HOLD не публикуются молча.
-- [ ] AC8: UI продолжает черновик после reload, показывает исходники и конфликты,
+- [x] AC8: UI продолжает черновик после reload, показывает исходники и конфликты,
   требует отдельное подтверждение и работает на узком экране/с клавиатуры.
-- [ ] AC9: Contract/types, миграции и rollback проверены; make test, go vet,
+- [x] AC9: Contract/types, миграции и rollback проверены; make test, go vet,
   integration и git diff --check проходят; evidence связывает каждый AC с тестом.
 
 ## Исполняемые проверки
 
-План реализации (файлы этих проверок ещё не существуют):
+Проверки реализованы; результаты и привязка к AC: [evidence](0017-evidence.md).
 
 - `go test ./internal/imports/... ./internal/financialevents/...`:
   AC2/3/5/7, точные деньги/даты, blockers, cycles, expiry, revisions.

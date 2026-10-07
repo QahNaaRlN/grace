@@ -14,7 +14,7 @@ until docker compose exec -T postgres pg_isready -U grace -d grace >/dev/null 2>
 database_url='postgres://grace:grace@postgres:5432/grace?sslmode=disable'
 docker compose run --rm migrate -path=/migrations -database="$database_url" goto 5
 before="$(docker compose exec -T postgres psql -U grace -d grace -Atc 'SELECT sum(opening_balance_minor) FROM accounts')"
-docker compose run --rm migrate -path=/migrations -database="$database_url" up
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 6
 after="$(docker compose exec -T postgres psql -U grace -d grace -Atc 'SELECT sum(opening_balance_minor) FROM accounts')"
 test "$before" = "$after"
 # Owner-only rollback is supported and can migrate forward again.
