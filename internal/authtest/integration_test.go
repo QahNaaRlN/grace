@@ -161,14 +161,14 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(ownerAccounts) != 1 || ownerAccounts[0].BalanceMinor != 12500000 {
+	if len(ownerAccounts) != 1 || *ownerAccounts[0].BalanceMinor != 12500000 {
 		t.Fatalf("migration changed baseline: %#v", ownerAccounts)
 	}
 	memberAccounts, err := accountRepo.List(memberCtx)
 	if err != nil || len(memberAccounts) != 0 {
 		t.Fatal("member sees old accounts", err)
 	}
-	memberAccount, err := accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Member cash", Type: "cash", Currency: "RUB", OpeningBalanceMinor: 10000})
+	memberAccount, err := accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Member cash", Type: "cash", Currency: "RUB", OpeningBalanceMinor: moneyPointer(10000)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -340,7 +340,7 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 	}
 
 	// Cards are tenant-owned identifiers, not additional balances.
-	cardAccount, err := accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Card account", Type: "debit", Currency: "RUB", OpeningBalanceMinor: 12345, Card: &accounts.CardRequest{Name: "Card", Bank: "Test bank", Last4: "0012"}})
+	cardAccount, err := accountRepo.Create(memberCtx, accounts.CreateRequest{Name: "Card account", Type: "debit", Currency: "RUB", OpeningBalanceMinor: moneyPointer(12345), Card: &accounts.CardRequest{Name: "Card", Bank: "Test bank", Last4: "0012"}})
 	if err != nil || len(cardAccount.PaymentInstruments) != 1 || cardAccount.PaymentInstruments[0].Last4 != "0012" {
 		t.Fatal("card create", err, cardAccount)
 	}
@@ -352,7 +352,7 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 	for _, a := range memberItems {
 		if a.ID == cardAccount.ID {
 			found = true
-			if a.BalanceMinor != 12345 || len(a.PaymentInstruments) != 1 || a.PaymentInstruments[0].Last4 != "0012" {
+			if *a.BalanceMinor != 12345 || len(a.PaymentInstruments) != 1 || a.PaymentInstruments[0].Last4 != "0012" {
 				t.Fatal("card list roundtrip", a)
 			}
 		}
@@ -440,7 +440,7 @@ func TestAuthenticationAndFinancialIsolation(t *testing.T) {
 		t.Fatal("finance lost", err)
 	}
 	for i := range beforeEmail {
-		if beforeEmail[i].ID != afterEmail[i].ID || beforeEmail[i].BalanceMinor != afterEmail[i].BalanceMinor {
+		if beforeEmail[i].ID != afterEmail[i].ID || *beforeEmail[i].BalanceMinor != *afterEmail[i].BalanceMinor {
 			t.Fatal("finance changed")
 		}
 	}
@@ -519,3 +519,5 @@ func (s *capturedEmailSender) SendCode(_ context.Context, _ string, code string)
 	s.code = code
 	return nil
 }
+
+func moneyPointer(value int64) *int64 { return &value }

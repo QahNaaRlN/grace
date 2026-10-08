@@ -14,6 +14,7 @@ const account = {
   name: 'Счёт',
   type: 'debit' as const,
   currency: 'RUB',
+  balanceReconciled: true,
   balanceMinor: 100000,
   createdAt: '2026-10-06T00:00:00Z',
   paymentInstruments: [{ id: 'c', name: 'Карта', bank: 'Банк', last4: '0012' }],
@@ -145,4 +146,25 @@ describe('SPEC-0020', () => {
     expect(screen.queryByText(/999\s999/)).not.toBeInTheDocument()
     expect(screen.getByText('Карта · Банк · •• 0012')).toBeVisible()
   })
+})
+
+describe('SPEC-0028 unreconciled accounts', () => {
+ it('saves unknown opening balance explicitly and requires confirmation', async () => {
+  const user=userEvent.setup()
+  post.mockResolvedValue({data:{...account,balanceMinor:null,balanceReconciled:false}})
+  wrap(<CreateAccountForm onSaved={() => {}} />)
+  await user.type(screen.getByLabelText('Название'),'История')
+  await user.click(screen.getByLabelText('Есть карта'))
+  await user.click(screen.getByLabelText('Остаток пока не сверён'))
+  await user.click(screen.getByRole('button',{name:'Проверить данные'}))
+  expect(screen.getByText('Не сверён')).toBeVisible()
+  expect(post).not.toHaveBeenCalled()
+  await user.click(screen.getByRole('button',{name:'Создать счёт'}))
+  await waitFor(()=>expect(post).toHaveBeenCalledOnce())
+  expect(post.mock.calls[0][1].body).toMatchObject({openingBalanceMinor:null,balanceReconciled:false})
+ })
+ it('displays unknown cash and account balances without converting them to zero', () => {
+  wrap(<Overview cash={{asOf:'2026-10-08',through:'2026-10-31',currencies:[{currency:'RUB',liquidBalanceMinor:null,availableAfterObligationsMinor:null,obligationsThroughMinor:0,overdueObligationsMinor:0,upcomingObligationsMinor:0,scheduledPayments:[]}]}} pending={false} failed={false} events={[]} accounts={[{...account,balanceMinor:null,balanceReconciled:false}]} retry={()=>{}} />)
+  expect(screen.getAllByText('Не сверён').length).toBeGreaterThanOrEqual(2)
+ })
 })

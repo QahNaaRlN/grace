@@ -1198,7 +1198,8 @@ export interface components {
             type: "debit" | "credit" | "installment" | "cash";
             currency: string;
             /** Format: int64 */
-            balanceMinor: number;
+            balanceMinor: number | null;
+            balanceReconciled: boolean;
             /** Format: date-time */
             createdAt: string;
             paymentInstruments?: components["schemas"]["PaymentInstrument"][];
@@ -1209,7 +1210,9 @@ export interface components {
             type: "debit" | "credit" | "installment" | "cash";
             currency: string;
             /** Format: int64 */
-            openingBalanceMinor: number;
+            openingBalanceMinor: number | null;
+            /** @default true */
+            balanceReconciled: boolean;
             card?: components["schemas"]["CreateCard"];
         };
         CreateCard: {
@@ -1278,9 +1281,9 @@ export interface components {
         CurrencyPeriodSummary: {
             currency: string;
             /** Format: int64 */
-            openingBalanceMinor: number;
+            openingBalanceMinor: number | null;
             /** Format: int64 */
-            closingBalanceMinor: number;
+            closingBalanceMinor: number | null;
             /** Format: int64 */
             incomeMinor: number;
             /** Format: int64 */
@@ -1322,7 +1325,7 @@ export interface components {
         CurrencyCashPosition: {
             currency: string;
             /** Format: int64 */
-            liquidBalanceMinor: number;
+            liquidBalanceMinor: number | null;
             /** Format: int64 */
             overdueObligationsMinor: number;
             /** Format: int64 */
@@ -1330,7 +1333,7 @@ export interface components {
             /** Format: int64 */
             obligationsThroughMinor: number;
             /** Format: int64 */
-            availableAfterObligationsMinor: number;
+            availableAfterObligationsMinor: number | null;
             scheduledPayments: components["schemas"]["CashScheduledPayment"][];
         };
         CashPosition: {

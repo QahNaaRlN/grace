@@ -43,7 +43,7 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 	byCurrency := make(map[string]*CurrencyPeriodSummary)
 	rows, err := db.Query(ctx, `
 		WITH account_opening AS (
-			SELECT currency, SUM(opening_balance_minor)::bigint AS opening_minor
+			SELECT currency, SUM(opening_balance_minor)::bigint AS opening_minor, BOOL_AND(balance_reconciled) AS reconciled
 			FROM accounts GROUP BY currency
 		), posting_effects AS (
 			SELECT p.currency,
@@ -59,8 +59,8 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 			SELECT currency FROM account_opening UNION SELECT currency FROM posting_effects
 		)
 		SELECT c.currency,
-			(COALESCE(a.opening_minor, 0) + COALESCE(p.before_from, 0))::bigint,
-			(COALESCE(a.opening_minor, 0) + COALESCE(p.before_to, 0))::bigint
+			CASE WHEN a.reconciled THEN (a.opening_minor + COALESCE(p.before_from, 0))::bigint ELSE NULL END,
+			CASE WHEN a.reconciled THEN (a.opening_minor + COALESCE(p.before_to, 0))::bigint ELSE NULL END
 		FROM currencies c
 		LEFT JOIN account_opening a USING (currency)
 		LEFT JOIN posting_effects p USING (currency)
@@ -262,7 +262,7 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 	byCurrency := make(map[string]*CurrencyCashPosition)
 	rows, err := tx.Query(ctx, `
 		SELECT a.currency,
-			(SUM(a.opening_balance_minor) + COALESCE(SUM(pe.effect_minor), 0))::bigint
+			CASE WHEN BOOL_AND(a.balance_reconciled) THEN (SUM(a.opening_balance_minor) + COALESCE(SUM(pe.effect_minor), 0))::bigint ELSE NULL END
 		FROM accounts a
 		LEFT JOIN (
 			SELECT p.account_id, SUM(CASE p.direction WHEN 'credit' THEN p.amount_minor ELSE -p.amount_minor END) AS effect_minor
@@ -312,7 +312,8 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 		}
 		item := byCurrency[currency]
 		if item == nil {
-			item = &CurrencyCashPosition{Currency: currency, ScheduledPayments: make([]CashScheduledPayment, 0)}
+			zero := int64(0)
+			item = &CurrencyCashPosition{Currency: currency, LiquidBalanceMinor: &zero, ScheduledPayments: make([]CashScheduledPayment, 0)}
 			byCurrency[currency] = item
 		}
 		if payment.DueOn < asOf {
@@ -337,7 +338,10 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 	for _, currency := range sortedKeys(byCurrency) {
 		item := byCurrency[currency]
 		item.ObligationsThroughMinor = item.OverdueObligationsMinor + item.UpcomingObligationsMinor
-		item.AvailableAfterObligationsMinor = item.LiquidBalanceMinor - item.ObligationsThroughMinor
+		if item.LiquidBalanceMinor != nil {
+			available := *item.LiquidBalanceMinor - item.ObligationsThroughMinor
+			item.AvailableAfterObligationsMinor = &available
+		}
 		currencies = append(currencies, *item)
 	}
 	return CashPosition{AsOf: asOf, Through: through, Currencies: currencies}, nil
