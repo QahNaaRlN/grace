@@ -152,9 +152,9 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
   const [resolutions, setResolutions] = useState(record.decision.resolutions || [])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
-  const accounts = useQuery({ queryKey: ['accounts'], queryFn: async () => (await apiClient.GET('/api/v1/accounts')).data })
-  const categories = useQuery({ queryKey: ['categories'], queryFn: async () => (await apiClient.GET('/api/v1/categories')).data })
-  const events = useQuery({ queryKey: ['financial-events'], queryFn: async () => (await apiClient.GET('/api/v1/financial-events')).data })
+  const accounts = useQuery({ queryKey: ['accounts', 'import-options'], queryFn: async () => (await apiClient.GET('/api/v1/accounts')).data })
+  const categories = useQuery({ queryKey: ['categories', 'import-options'], queryFn: async () => (await apiClient.GET('/api/v1/categories')).data })
+  const events = useQuery({ queryKey: ['financial-events', 'import-options'], queryFn: async () => (await apiClient.GET('/api/v1/financial-events')).data })
   function field<K extends keyof Fields>(name: K, value: Fields[K]) { setFields({ ...fields, [name]: value }) }
   async function save(event: React.FormEvent) {
     event.preventDefault(); if (pending) return

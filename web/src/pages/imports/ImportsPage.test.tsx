@@ -8,6 +8,39 @@ import { ImportsPage } from './ImportsPage'
 const client = vi.hoisted(() => ({ GET: vi.fn(), PATCH: vi.fn(), POST: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: client }))
 
+it.each([false, true])('keeps home list caches compatible when reviewing imports (warm cache: %s)', async (warm) => {
+  const row = { id: 'cache-row', source: { sheet: 'Операции', row: 8, domain: 'transaction', raw: {}, normalized: { kind: 'purchase', amountMinor: 12000, currency: 'RUB', date: { precision: 'date', local: '2026-09-02' } }, issues: [] }, decision: { action: 'unresolved' }, candidates: [], history: [], published: false }
+  const batch = { id: 'cache-batch', revision: 1, counts: {}, source: { sourceId: 'synthetic' } }
+  const lists = {
+    accounts: [{ id: 'account', name: 'Счёт для проверки', currency: 'RUB' }],
+    categories: [{ id: 'category', name: 'Категория для проверки' }],
+    'financial-events': [{ id: 'event', kind: 'purchase', amountMinor: 12000, currency: 'RUB', description: 'Операция для проверки', occurredDate: '2026-09-02' }],
+  }
+  client.GET.mockReset().mockImplementation(async (path: string) => {
+    if (path.endsWith('/records/{recordId}')) return { data: row }
+    if (path.endsWith('/records')) return { data: { items: [row] } }
+    if (path === '/api/imports/batches/{batchId}') return { data: batch }
+    const key = path.split('/').at(-1) as keyof typeof lists
+    return { data: { items: lists[key] ?? [] } }
+  })
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
+  if (warm) for (const [key, items] of Object.entries(lists)) cache.setQueryData([key], items)
+  render(<QueryClientProvider client={cache}><MemoryRouter initialEntries={['/imports?batch=cache-batch']}><ImportsPage /></MemoryRouter></QueryClientProvider>)
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: 'Операции, строка 8' }))
+  await user.selectOptions(await screen.findByLabelText('Решение'), 'create')
+  await screen.findByRole('option', { name: 'Счёт для проверки (RUB)' })
+  await screen.findByRole('option', { name: 'Категория для проверки' })
+  await user.selectOptions(screen.getByLabelText('Решение'), 'link_existing')
+  await screen.findByRole('option', { name: /Операция для проверки/ })
+  for (const [key, items] of Object.entries(lists)) {
+    if (warm) expect(cache.getQueryData([key])).toEqual(items)
+    else expect(cache.getQueryData([key])).toBeUndefined()
+    const loaded = await cache.fetchQuery({ queryKey: [key], queryFn: async () => items })
+    expect(loaded.map(item => item.id)).toEqual(items.map(item => item.id))
+  }
+})
+
 it('saves a date-only decision without inventing a timestamp or publishing it', async () => {
   const row = { id: 'calendar-row', source: { sheet: 'Операции', row: 8, domain: 'transaction', raw: {}, normalized: { kind: 'purchase', amountMinor: 12000, currency: 'RUB', date: { precision: 'date', local: '2026-09-02', utc: null } }, issues: [] }, decision: { action: 'unresolved' }, candidates: [], history: [], published: false }
   const batch = { id: 'calendar-batch', revision: 1, counts: {}, source: { sourceId: 'synthetic' } }
