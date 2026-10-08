@@ -1,7 +1,9 @@
 package accounts
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -37,7 +39,8 @@ type Account struct {
 	Name               string              `json:"name"`
 	Type               string              `json:"type"`
 	Currency           string              `json:"currency"`
-	BalanceMinor       int64               `json:"balanceMinor"`
+	BalanceMinor       *int64              `json:"balanceMinor"`
+	BalanceReconciled  bool                `json:"balanceReconciled"`
 	CreatedAt          time.Time           `json:"createdAt"`
 }
 
@@ -46,7 +49,31 @@ type CreateRequest struct {
 	Name                string       `json:"name"`
 	Type                string       `json:"type"`
 	Currency            string       `json:"currency"`
-	OpeningBalanceMinor int64        `json:"openingBalanceMinor"`
+	OpeningBalanceMinor *int64       `json:"openingBalanceMinor"`
+	BalanceReconciled   *bool        `json:"balanceReconciled,omitempty"`
+}
+
+func (request CreateRequest) reconciled() bool {
+	return request.BalanceReconciled == nil || *request.BalanceReconciled
+}
+
+func (request *CreateRequest) UnmarshalJSON(data []byte) error {
+	type plain CreateRequest
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	if _, ok := fields["openingBalanceMinor"]; !ok {
+		return fmt.Errorf("openingBalanceMinor is required")
+	}
+	var parsed plain
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&parsed); err != nil {
+		return err
+	}
+	*request = CreateRequest(parsed)
+	return nil
 }
 
 type Repository struct{ pool *database.TenantPool }
@@ -60,13 +87,13 @@ func (repo *Repository) List(ctx context.Context) ([]Account, error) {
 			a.name,
 			a.type::text,
 			a.currency,
-			a.opening_balance_minor + COALESCE(SUM(
+			CASE WHEN a.balance_reconciled THEN a.opening_balance_minor + COALESCE(SUM(
 				CASE p.direction
 					WHEN 'credit' THEN p.amount_minor
 					ELSE -p.amount_minor
 				END
-			), 0) AS balance_minor,
-			a.created_at, COALESCE((SELECT jsonb_agg(jsonb_build_object('id', i.id, 'name', i.name, 'bank', i.bank, 'last4', i.last4) ORDER BY i.created_at, i.id) FROM payment_instruments i WHERE i.account_id = a.id), '[]'::jsonb)
+			), 0) ELSE NULL END AS balance_minor,
+			a.balance_reconciled, a.created_at, COALESCE((SELECT jsonb_agg(jsonb_build_object('id', i.id, 'name', i.name, 'bank', i.bank, 'last4', i.last4) ORDER BY i.created_at, i.id) FROM payment_instruments i WHERE i.account_id = a.id), '[]'::jsonb)
 		FROM accounts a
 		LEFT JOIN postings p ON p.account_id = a.id
 		GROUP BY a.id
@@ -79,7 +106,7 @@ func (repo *Repository) List(ctx context.Context) ([]Account, error) {
 	items := make([]Account, 0)
 	for rows.Next() {
 		var item Account
-		if err := rows.Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.CreatedAt, &item.PaymentInstruments); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.BalanceReconciled, &item.CreatedAt, &item.PaymentInstruments); err != nil {
 			return nil, fmt.Errorf("scan account: %w", err)
 		}
 		items = append(items, item)
@@ -94,9 +121,9 @@ func (repo *Repository) Create(ctx context.Context, request CreateRequest) (Acco
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	var item Account
-	err = tx.QueryRow(ctx, `INSERT INTO accounts (name, type, currency, opening_balance_minor)
- VALUES ($1, $2, $3, $4) RETURNING id::text, name, type::text, currency, opening_balance_minor, created_at`,
-		request.Name, request.Type, request.Currency, request.OpeningBalanceMinor).Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.CreatedAt)
+	err = tx.QueryRow(ctx, `INSERT INTO accounts (name, type, currency, opening_balance_minor, balance_reconciled)
+ VALUES ($1, $2, $3, $4, $5) RETURNING id::text, name, type::text, currency, CASE WHEN balance_reconciled THEN opening_balance_minor ELSE NULL END, balance_reconciled, created_at`,
+		request.Name, request.Type, request.Currency, request.OpeningBalanceMinor, request.reconciled()).Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.BalanceReconciled, &item.CreatedAt)
 	if err != nil {
 		return Account{}, fmt.Errorf("create account: %w", err)
 	}
@@ -120,6 +147,9 @@ func validateRequest(request *CreateRequest) bool {
 	request.Name = strings.TrimSpace(request.Name)
 	request.Type = strings.TrimSpace(request.Type)
 	request.Currency = strings.ToUpper(strings.TrimSpace(request.Currency))
+	if request.reconciled() && request.OpeningBalanceMinor == nil {
+		return false
+	}
 	if request.Name == "" || utf8.RuneCountInString(request.Name) > 160 || !validTypes[request.Type] || !regexp.MustCompile(`^[A-Z]{3}$`).MatchString(request.Currency) {
 		return false
 	}

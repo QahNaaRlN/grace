@@ -3,7 +3,8 @@ export function accountLabel(account: Account) {
   const card = account.paymentInstruments?.[0]
   return card ? `${card.name} · ${card.bank} · •• ${card.last4}` : account.name
 }
-export function formatMoney(valueMinor: number, currency: string) {
+export function formatMoney(valueMinor: number | null, currency: string) {
+  if (valueMinor === null) return "Не сверён"
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(
     valueMinor / 100,
   )

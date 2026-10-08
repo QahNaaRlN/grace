@@ -74,6 +74,9 @@ func ValidateInTx(ctx context.Context, tx pgx.Tx, command Command) ([]Posting, e
 
 // CreateInTx leaves transaction ownership to the caller, enabling atomic groups.
 func CreateInTx(ctx context.Context, tx pgx.Tx, command Command, source string) (Event, bool, error) {
+	if source != "import" {
+		command.AllowUncategorized = false
+	}
 	if source != "manual" && source != "import" {
 		return Event{}, false, ErrInvalid
 	}
@@ -194,7 +197,7 @@ func resolveCommand(ctx context.Context, tx pgx.Tx, command Command) (*string, *
 			return nil, nil, nil, err
 		}
 		account := accounts[command.AccountID]
-		if err := validateCategory(ctx, tx, command.CategoryID, command.Kind); err != nil {
+		if err := validateCategory(ctx, tx, command.CategoryID, command.Kind, command.AllowUncategorized); err != nil {
 			return nil, nil, nil, err
 		}
 		direction := "debit"
@@ -265,9 +268,9 @@ func resolveCommand(ctx context.Context, tx pgx.Tx, command Command) (*string, *
 	}
 }
 
-func validateCategory(ctx context.Context, tx pgx.Tx, categoryID *string, kind string) error {
+func validateCategory(ctx context.Context, tx pgx.Tx, categoryID *string, kind string, allowUncategorized bool) error {
 	if categoryID == nil {
-		if kind == "purchase" {
+		if kind == "purchase" && !allowUncategorized {
 			return fmt.Errorf("%w: purchase requires an expense category", ErrInvalid)
 		}
 		return nil

@@ -550,3 +550,44 @@ func TestImportSessionCSRFAndOrigin(t *testing.T) {
 		}
 	}
 }
+
+func TestReviewedImportPreservesUnknownCategory(t *testing.T) {
+	ctx, p, r := setup(t)
+	raw := []byte(strings.ReplaceAll(string(snapshot("spec28-unknown-category", "Расход", false)), "10,00", "71,23"))
+	b, err := r.Upload(ctx, raw, "spec28-unknown-category")
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := r.Records(ctx, b.ID, "", "", "", 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := page.Items
+	d := createDecision("purchase")
+	d.Fields.CategoryID = nil
+	d.Fields.AmountMinor = 7123
+	b, err = r.Edit(ctx, b.ID, rows[0].ID, "spec28-unknown-edit", Edit{b.Revision, d})
+	if err != nil {
+		t.Fatal(err)
+	}
+	preview, err := r.Preview(ctx, b.ID, "spec28-unknown-preview", Selection{b.Revision, []string{rows[0].ID}})
+	if err != nil || len(preview.Blockers) > 0 {
+		t.Fatal("unknown category preview", err, preview.Blockers)
+	}
+	receipt, err := r.Confirm(ctx, b.ID, "spec28-unknown-confirm", Confirmation{preview.ID, preview.Hash})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(receipt.Outcomes) != 1 {
+		t.Fatal("missing event", receipt)
+	}
+
+	_, _, manualErr := financialevents.NewRepository(p).Create(ctx, financialevents.Command{Kind: "purchase", AccountID: accountID, AmountMinor: 7123, Merchant: "Synthetic", OccurredAt: time.Now(), IdempotencyKey: "spec28-manual-no-category", AllowUncategorized: true})
+	if manualErr == nil {
+		t.Fatal("manual purchase bypassed category requirement")
+	}
+	var category *string
+	if err = p.QueryRow(ctx, `SELECT category_id::text FROM financial_events WHERE id=(SELECT event_id FROM import_provenance WHERE record_id=$1)`, rows[0].ID).Scan(&category); err != nil || category != nil {
+		t.Fatal("invented category", category, err)
+	}
+}

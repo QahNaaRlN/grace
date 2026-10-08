@@ -87,7 +87,7 @@ func (fake *fakeReceipts) List(_ context.Context, limit int) ([]receipts.Receipt
 type contextKey string
 
 func newTestExecutor() (*Executor, *fakeAccounts, *fakeAnalytics, *fakeObligations, *fakeReceipts) {
-	accountReader := &fakeAccounts{items: []accounts.Account{{ID: "account-1", Currency: "RUB", BalanceMinor: 123}}}
+	accountReader := &fakeAccounts{items: []accounts.Account{{ID: "account-1", Currency: "RUB", BalanceMinor: moneyPointer(123)}}}
 	analyticsReader := &fakeAnalytics{
 		period: analytics.PeriodSummary{Currencies: []analytics.CurrencyPeriodSummary{}},
 		cash:   analytics.CashPosition{Currencies: []analytics.CurrencyCashPosition{}},
@@ -139,7 +139,7 @@ func TestExecutorDispatchesCanonicalDependencies(t *testing.T) {
 	if err != nil || accountsResult.Name != "get_accounts" || accountReader.contextValue != "same-context" {
 		t.Fatalf("unexpected accounts result: %#v %v", accountsResult, err)
 	}
-	if got := accountsResult.Data.(AccountsResult).Items[0].BalanceMinor; got != 123 {
+	if got := accountsResult.Data.(AccountsResult).Items[0].BalanceMinor; got == nil || *got != 123 {
 		t.Fatalf("expected canonical balance, got %d", got)
 	}
 
@@ -247,3 +247,5 @@ func TestDependencyErrorsHaveStableCodes(t *testing.T) {
 		t.Fatalf("expected cancellation without data, got %#v %v", result, err)
 	}
 }
+
+func moneyPointer(value int64) *int64 { return &value }

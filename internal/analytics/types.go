@@ -30,8 +30,8 @@ type IncomeRelativePeriod struct {
 
 type CurrencyPeriodSummary struct {
 	Currency                    string                   `json:"currency"`
-	OpeningBalanceMinor         int64                    `json:"openingBalanceMinor"`
-	ClosingBalanceMinor         int64                    `json:"closingBalanceMinor"`
+	OpeningBalanceMinor         *int64                   `json:"openingBalanceMinor"`
+	ClosingBalanceMinor         *int64                   `json:"closingBalanceMinor"`
 	IncomeMinor                 int64                    `json:"incomeMinor"`
 	PurchasesMinor              int64                    `json:"purchasesMinor"`
 	RefundsMinor                int64                    `json:"refundsMinor"`
@@ -57,11 +57,11 @@ type CashPosition struct {
 
 type CurrencyCashPosition struct {
 	Currency                       string                 `json:"currency"`
-	LiquidBalanceMinor             int64                  `json:"liquidBalanceMinor"`
+	LiquidBalanceMinor             *int64                 `json:"liquidBalanceMinor"`
 	OverdueObligationsMinor        int64                  `json:"overdueObligationsMinor"`
 	UpcomingObligationsMinor       int64                  `json:"upcomingObligationsMinor"`
 	ObligationsThroughMinor        int64                  `json:"obligationsThroughMinor"`
-	AvailableAfterObligationsMinor int64                  `json:"availableAfterObligationsMinor"`
+	AvailableAfterObligationsMinor *int64                 `json:"availableAfterObligationsMinor"`
 	ScheduledPayments              []CashScheduledPayment `json:"scheduledPayments"`
 }
 
