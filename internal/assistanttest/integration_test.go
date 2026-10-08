@@ -114,15 +114,16 @@ func TestReadToolsAgainstPostgreSQL(t *testing.T) {
 			t.Fatal("incomplete known opening", debit, err)
 		}
 		events := financialevents.NewRepository(pool)
+		foodCategory := "20000000-0000-0000-0000-000000000001"
 		at := time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC)
-		if _, _, err = events.Create(ctx, financialevents.Command{Kind: "purchase", AccountID: debit.ID, AmountMinor: 123, OccurredAt: at, Merchant: "Synthetic", IdempotencyKey: "spec28-purchase"}); err != nil {
+		if _, _, err = events.Create(ctx, financialevents.Command{Kind: "purchase", AccountID: debit.ID, CategoryID: &foodCategory, AmountMinor: 123, OccurredAt: at, Merchant: "Synthetic", IdempotencyKey: "spec28-purchase"}); err != nil {
 			t.Fatal(err)
 		}
 		eur, err := accountRepo.Create(ctx, accounts.CreateRequest{Name: "Known EUR", Type: "cash", Currency: "EUR", OpeningBalanceMinor: moneyPointer(500)})
 		if err != nil || eur.BalanceMinor == nil || *eur.BalanceMinor != 500 || !eur.BalanceReconciled {
 			t.Fatal("known account", eur, err)
 		}
-		if _, _, err = events.Create(ctx, financialevents.Command{Kind: "purchase", AccountID: eur.ID, AmountMinor: 23, OccurredAt: at, Merchant: "Synthetic", IdempotencyKey: "spec28-eur"}); err != nil {
+		if _, _, err = events.Create(ctx, financialevents.Command{Kind: "purchase", AccountID: eur.ID, CategoryID: &foodCategory, AmountMinor: 23, OccurredAt: at, Merchant: "Synthetic", IdempotencyKey: "spec28-eur"}); err != nil {
 			t.Fatal(err)
 		}
 		summary, err := analyticRepo.PeriodSummary(ctx, at.Add(-24*time.Hour), at.Add(48*time.Hour))

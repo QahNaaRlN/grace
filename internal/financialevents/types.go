@@ -28,6 +28,8 @@ type Event struct {
 }
 
 type Command struct {
+	// AllowUncategorized is internal to reviewed imports, never accepted by manual HTTP requests.
+	AllowUncategorized   bool
 	Kind                 string
 	IdempotencyKey       string
 	RequestHash          string

@@ -72,6 +72,9 @@ Account: nullable balanceMinor, boolean balanceReconciled.
 PeriodSummary: nullable openingBalanceMinor/closingBalanceMinor.
 CashPosition: nullable liquidBalanceMinor/availableAfterObligationsMinor.
 Пропущенное обязательное поле openingBalanceMinor не считается нулём.
+Импорт допускает purchase с неизвестной привязкой категории (categoryId=null),
+как предусмотрено Scope; категория источника остаётся в provenance. Ручное
+создание purchase сохраняет прежнее требование expense-категории.
 Сгенерировать TypeScript из api/openapi.yaml. Финансовые DTO не дублировать.
 
 ## Данные, миграция и rollback
