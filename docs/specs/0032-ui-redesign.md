@@ -42,6 +42,9 @@ Radix select использует empty sentinel только внутри UI; A
   не submit и не теряет value, accessible label reflects state.
 - AC2: все screens используют единый shell/styles/headers/controls; Desktop
   navigation/mobile menu/bottom bar, читаемые tables/forms, actions доступны.
+  Уточнение владельца 2026-10-10: с 1024 CSS px только sidebar, ниже — мобильная
+  кнопка меню и нижняя навигация. Открытое мобильное меню при переходе на desktop
+  удаляется вместе с overlay/focus trap/scroll lock; обратно возвращается закрытым.
 - AC3: сохранены прежние financial/auth/import interactions; tests covers
   confirmations and control changes, keyboard/disabled/empty selection.
 - AC4: make test, git diff --check, browser visual QA по screens, both themes,

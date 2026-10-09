@@ -42,13 +42,27 @@ const moreLinks = [
   { to: '/health', label: 'Финансовое здоровье', icon: TableProperties },
   { to: '/profile', label: 'Профиль и доступ', icon: UserRound },
 ]
+// Keep in sync with Tailwind's lg breakpoint used by the shell and bottom bar.
+const desktopQuery = '(min-width: 64rem)'
 export function AppLayout({ children }: { children: ReactNode }) {
   const auth = useContext(AuthContext)
   const [open, setOpen] = useState(false)
+  const [desktop, setDesktop] = useState(() => window.matchMedia?.(desktopQuery).matches ?? false)
   const [keyboard, setKeyboard] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
   const { pathname } = useLocation()
   const mainRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const query = window.matchMedia?.(desktopQuery)
+    if (!query) return
+    const update = () => {
+      setDesktop(query.matches)
+      // Unmount the Radix portal too: hiding its panel would retain the modal lock.
+      setOpen(false)
+    }
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
   useEffect(() => {
     window.scrollTo(0, 0)
     mainRef.current?.focus({ preventScroll: true })
@@ -81,9 +95,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
           <Link to="/" aria-label="Grace — обзор" className="flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight lg:hidden"><GraceMark aria-hidden="true" className="size-8 text-primary"/>Grace</Link>
           <span className="hidden text-sm text-muted-foreground lg:block">Мои финансы</span>
-          <Dialog open={open} onOpenChange={setOpen}>
+          {!desktop && <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" aria-label="Меню">
+              <Button variant="outline" aria-label="Меню" className="lg:hidden">
                 {auth?.session.user.avatarUrl ? (
                   <img
                     src={env.VITE_API_BASE_URL + auth.session.user.avatarUrl}
@@ -96,7 +110,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <span>Меню</span>
               </Button>
             </DialogTrigger>
-            <DialogContent data-motion="menu" className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
+            <DialogContent data-motion="menu" onCloseAutoFocus={event => {
+              if (window.matchMedia?.(desktopQuery).matches) {
+                event.preventDefault()
+                mainRef.current?.focus({ preventScroll: true })
+              }
+            }} className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
               <div>
                 <DialogHeader>
                   <DialogTitle>Меню</DialogTitle>
@@ -110,6 +129,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     <NavLink
                       key={link.to}
                       to={link.to}
+                      end={link.to === '/'}
                       onClick={() => setOpen(false)}
                       className={navClass}
                     >
@@ -135,7 +155,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </header>
       <main ref={mainRef} tabIndex={-1} id="main-content" className="grace-page mx-auto w-full max-w-6xl px-4 pt-7 pb-[calc(6rem+env(safe-area-inset-bottom))] outline-none sm:px-6 sm:pt-8 lg:pb-12">

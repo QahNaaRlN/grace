@@ -30,3 +30,21 @@ ResizeObserver/pointer capture/scroll shims; browser smoke проверяет н
 Нет полного assistive-technology certification. Main/remote CI/production пока
 не менялись. Новые AI receipt flows отдельной feature branch не интегрированы;
 все действующие ручные receipt формы используют новые shared controls.
+
+## Уточнение адаптивной навигации — 2026-10-10
+
+AC2: исправлена оставшаяся на desktop кнопка мобильного меню. Единая граница
+Tailwind lg / matchMedia — 64rem (1024 CSS px при стандартном размере).
+При переходе из открытого мобильного меню на desktop Radix portal удаляется,
+overlay, блокировка страницы и focus trap снимаются; фокус переходит к main.
+Обратный переход возвращает закрытое меню. Для ссылки «Обзор» в drawer
+включено точное совпадение маршрута, чтобы она не выделялась в других разделах.
+
+AC3: AppLayout.test.tsx — два теста: desktop без кнопки меню; открытый drawer →
+desktop → mobile, снятие pointer lock/overlay, focus main, повторное открытие и
+выбор «Счета и карты». Browser QA: 1023 → 1024 px с открытым drawer, затем
+390 px и выбор раздела; sidebar/bottom bar взаимно исключаются, overflow нет.
+
+AC4: make test PASS (Go, Web60 tests/15 files, lint/build, Jev49/72),
+git diff --check PASS. Log: web/node_modules/ui-menu-check.log.
+Исправление остаётся локальным в принятом scope SPEC-0032; production не менялся.
