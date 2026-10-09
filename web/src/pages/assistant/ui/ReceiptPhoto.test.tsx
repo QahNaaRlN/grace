@@ -14,6 +14,18 @@ beforeEach(() => {
   mocked.GET.mockImplementation(async (path: string) => ({ data: path === '/api/assistant/capabilities' ? { receipt: { enabled: true, model: 'fixture', provider: 'synthetic', consentGranted: false, policyHash: 'synthetic-policy', dataDescription: 'Фото без метаданных.', privacy: 'Тестовый провайдер.' } } : { items: [] } }))
 })
 describe('receipt photo confirmation boundary', () => {
+  it('does not turn a foreign or unknown currency into RUB when the amount is edited', async () => {
+    mocked.POST.mockResolvedValue({ data: { ...draft, fields: { ...fields, currency: 'USD' } } })
+    render(<ReceiptPhoto />)
+    await userEvent.upload(await screen.findByLabelText('Фото чека'), new File(['synthetic'], 'receipt.jpg', { type: 'image/jpeg' }))
+    const currency = await screen.findByLabelText('Валюта чека')
+    expect(currency).toHaveValue('USD')
+    const total = screen.getByLabelText('Итог')
+    await userEvent.clear(total); await userEvent.type(total, '10.00')
+    expect(currency).toHaveValue('USD')
+    await userEvent.selectOptions(currency, 'RUB')
+    expect(currency).toHaveValue('RUB')
+  })
   it('uploads without inference or finance publication and keeps recognition behind separate consent', async () => {
     mocked.POST.mockResolvedValue({ data: draft })
     render(<ReceiptPhoto />)

@@ -69,7 +69,10 @@ key-file и отдельный volume, готовит ownership под non-root 
   зависимость ядра от assistant остаются запрещены. Оставшиеся suites прошли.
 - `make test-production` локально — ограничение Windows symlink/readlink:
   mock backup fixture сообщает `no current Grace release`. Это не production
-  проверка и не заявлено PASS; Linux CI должен подтвердить bundle gate.
+  проверка и не заявлено local PASS. Linux CI run 51 (head `56b7a1b`)
+  подтвердил Quality gates, включая production deployment bundle, PASS.
+  Integration в этом run остановился до tests на отсутствующем executable bit
+  нового `scripts/test-ai-experiment.sh`; бит исправлен в следующем commit.
 - [UI evidence](0026-ui-synthetic.jpg) — искусственные поля, mock API;
   эта картинка не доказывает live vision accuracy, server persistence или
   удаление upstream копий. Server persistence/cleanup проверены отдельно в БД.
