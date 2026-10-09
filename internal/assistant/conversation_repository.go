@@ -55,6 +55,22 @@ func (r *ConversationRepository) Create(ctx context.Context) (string, error) {
 	err := r.pool.QueryRow(ctx, "INSERT INTO ai_conversations DEFAULT VALUES RETURNING id::text").Scan(&id)
 	return id, err
 }
+func (r *ConversationRepository) Delete(ctx context.Context, id string) error {
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	var deleted string
+	err = tx.QueryRow(ctx, "DELETE FROM ai_conversations WHERE id::text=$1 RETURNING id::text", id).Scan(&deleted)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrAINotFound
+	}
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
 
 type ConversationMessage struct {
 	ID        string          `json:"id"`

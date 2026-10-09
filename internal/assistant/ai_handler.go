@@ -37,19 +37,22 @@ func NewAIHandler(settings AISettings, pool *pgxpool.Pool, reader MonthlyReader)
 	if !settings.Enabled {
 		return h
 	}
-	if json.Unmarshal([]byte(settings.AnalysisPolicy), &h.policy) != nil || !h.policy.Valid(time.Now()) {
-		return h
-	}
+	analysisValid := json.Unmarshal([]byte(settings.AnalysisPolicy), &h.policy) == nil && h.policy.Valid(time.Now())
 	provider, err := NewOpenRouterProvider(settings.Key, nil)
 	if err != nil {
 		return h
 	}
 	h.provider = provider
-	h.enabled = true
+	h.enabled = analysisValid
 	if json.Unmarshal([]byte(settings.ReceiptPolicy), &h.receiptPolicy) == nil && h.receiptPolicy.Vision && h.receiptPolicy.Valid(time.Now()) && settings.PhotoDir != "" {
 		h.receiptsEnabled = true
 	}
 	return h
+}
+func (h *AIHandler) SetReceiptStorageAvailable(available bool) {
+	if !available {
+		h.receiptsEnabled = false
+	}
 }
 func (h *AIHandler) available() bool {
 	return h.enabled && h.provider != nil && h.policy.Valid(time.Now())
@@ -66,11 +69,19 @@ func (h *AIHandler) Routes(r chi.Router) {
 	r.Delete("/consents/{scope}", h.RevokeConsent)
 	r.Post("/conversations", h.CreateConversation)
 	r.Get("/conversations/{conversationId}", h.GetConversation)
+	r.Delete("/conversations/{conversationId}", h.DeleteConversation)
 	r.Post("/conversations/{conversationId}/messages", h.Message)
+}
+func (h *AIHandler) DeleteConversation(w http.ResponseWriter, r *http.Request) {
+	if err := h.conversations.Delete(r.Context(), chi.URLParam(r, "conversationId")); err != nil {
+		aiError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 func (h *AIHandler) Capabilities(w http.ResponseWriter, r *http.Request) {
 	remaining := int64(0)
-	if h.available() {
+	if h.available() || h.receiptsEnabled {
 		n, err := h.usage.Remaining(r.Context())
 		if err != nil {
 			aiError(w, errors.New("ai_usage_requires_review"))
@@ -106,7 +117,7 @@ func (h *AIHandler) Consent(w http.ResponseWriter, r *http.Request) {
 	if !web.DecodeJSON(w, r, &in) {
 		return
 	}
-	if !h.available() {
+	if !h.available() && !(in.Scope == "receipt" && h.receiptsEnabled && h.receiptPolicy.Valid(time.Now())) {
 		aiError(w, errors.New("ai_disabled"))
 		return
 	}

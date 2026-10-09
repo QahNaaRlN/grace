@@ -48,6 +48,9 @@ type Extractor interface {
 	Extract(context.Context, []byte) (Extracted, error)
 	Available() bool
 }
+type GroupSuggester interface {
+	Suggest(context.Context, []Item) ([]*GroupSuggestion, error)
+}
 type Draft struct {
 	ID            string      `json:"id"`
 	Revision      int64       `json:"revision"`

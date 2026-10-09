@@ -220,7 +220,7 @@ export function FinancialHealth({
         '№': r.id,
         Тип: 'Подтверждённый чек',
         Статус: 'Подтверждён',
-        Комментарий: `${r.seller} · ${dateText(r.issuedAt)} · ${formatMoney(r.totalMinor, r.currency)}`,
+        Комментарий: `${r.seller} · ${r.issuedDate ? `${dateText(r.issuedDate)} · время неизвестно` : r.issuedAt ? dateText(r.issuedAt) : 'Дата неизвестна'} · ${formatMoney(r.totalMinor, r.currency)}`,
       },
     })),
   }

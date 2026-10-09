@@ -13,7 +13,7 @@ docker compose run --rm migrate -path=/migrations -database="$database_url" up
 postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 test -n "$postgres_port"
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
- go test -tags=integration ./internal/assistant -run '^TestGlobalAIUsage' -count=1
+ go test -tags=integration ./internal/assistant ./internal/receiptdrafts -count=1
 if docker compose run --rm migrate -path=/migrations -database="$database_url" goto 10; then
  echo 'AI usage evidence was discarded by downgrade' >&2; exit 1
 fi

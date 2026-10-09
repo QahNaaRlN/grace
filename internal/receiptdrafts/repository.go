@@ -71,6 +71,28 @@ func (r *Repository) Create(ctx context.Context, imageID, imageHash string) (Dra
 		return Draft{}, false, err
 	}
 	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended('receipt-upload:' || grace_owner_id()::text,0))"); err != nil {
+		return Draft{}, false, err
+	}
+	var previousID string
+	findErr := tx.QueryRow(ctx, "SELECT id::text FROM receipt_drafts WHERE image_hash=$1", imageHash).Scan(&previousID)
+	if findErr == nil {
+		d, err := load(ctx, tx, previousID, false)
+		if err != nil {
+			return d, false, err
+		}
+		return d, false, tx.Commit(ctx)
+	}
+	if !errors.Is(findErr, pgx.ErrNoRows) {
+		return Draft{}, false, findErr
+	}
+	var active int
+	if err = tx.QueryRow(ctx, "SELECT count(*) FROM receipt_drafts WHERE status NOT IN ('confirmed','cancelled','expired') AND expires_at>now()").Scan(&active); err != nil {
+		return Draft{}, false, err
+	}
+	if active >= 20 {
+		return Draft{}, false, errors.New("draft_limit")
+	}
 	var id string
 	err = tx.QueryRow(ctx, `INSERT INTO receipt_drafts(image_id,image_hash) VALUES($1,$2) ON CONFLICT(owner_id,image_hash) DO NOTHING RETURNING id::text`, imageID, imageHash).Scan(&id)
 	created := err == nil
@@ -132,6 +154,9 @@ func (r *Repository) BeginExtraction(ctx context.Context, id, key string) (Draft
 	}
 	if d.ExtractionKey == key && d.Status != "extracting" {
 		return d, false, nil
+	}
+	if len(d.Extractions) >= 10 {
+		return d, false, errors.New("extraction_limit")
 	}
 	if err = editable(d); err != nil {
 		return d, false, err

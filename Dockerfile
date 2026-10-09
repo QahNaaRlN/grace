@@ -7,7 +7,7 @@ RUN CGO_ENABLED=0 go build -trimpath -o /out/grace-api ./cmd/api
 RUN CGO_ENABLED=0 go build -trimpath -o /out/grace-auth-admin ./cmd/auth-admin
 
 FROM alpine:3.22
-RUN addgroup -S grace && adduser -S grace -G grace
+RUN addgroup -S -g 10001 grace && adduser -S -u 10001 grace -G grace
 USER grace
 COPY --from=build /out/grace-api /usr/local/bin/grace-api
 COPY --from=build /out/grace-auth-admin /usr/local/bin/grace-auth-admin

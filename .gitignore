@@ -7,4 +7,8 @@ coverage.out
 web/node_modules/
 web/dist/
 *.private.json
+*.private.cjs
+integration-spec0026.log
+receipts-spec0026.log
+*-spec0026.log
 

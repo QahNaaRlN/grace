@@ -73,7 +73,7 @@ const receiptsResult = {
         id: '00000000-0000-0000-0000-000000000004',
         purchaseEventId: '00000000-0000-0000-0000-000000000005',
         seller: 'Магазин',
-        issuedAt: '2026-10-04T14:00:00+05:00',
+        issuedAt: '2026-10-04T14:00:00+05:00', issuedDate: null, datePrecision: 'instant',
         currency: 'RUB',
         totalMinor: 350_00,
         fiscalDocumentNumber: '42',

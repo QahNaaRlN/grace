@@ -54,9 +54,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	assistantHandler := assistant.NewHandler(assistantRouter)
 	aiHandler := assistant.NewAIHandler(assistant.AISettings{Enabled: cfg.AIEnabled, Key: cfg.OpenRouterAPIKey, AnalysisPolicy: cfg.AIAnalysisPolicy, ReceiptPolicy: cfg.AIReceiptPolicy, PhotoDir: cfg.AIPhotoDir}, pool, analyticsRepository)
 	var photoStore *receiptdrafts.PhotoStore
-	if cfg.AIEnabled && cfg.AIPhotoDir != "" {
+	if cfg.AIPhotoDir != "" {
 		photoStore, _ = receiptdrafts.NewPhotoStore(cfg.AIPhotoDir)
 	}
+	aiHandler.SetReceiptStorageAvailable(photoStore!=nil)
 	draftHandler := receiptdrafts.NewHandler(pool, photoStore, aiHandler.ReceiptExtractor())
 	var identityProvider auth.Provider
 	if cfg.AuthMode == "telegram" {

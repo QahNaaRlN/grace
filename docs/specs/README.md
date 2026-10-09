@@ -3,7 +3,8 @@
 [SPEC-0026 — встроенный ассистент и фото чеков](0026-ai-assistant-receipts.md)
 — accepted: архитектура ядра/Jev/LLM, серверный OpenRouter adapter, бюджет $10,
 временные фото и отдельное подтверждение AI-originated expense. Реализация
-не начата; scope и политика записи приняты владельцем 2026-10-08. Проработка:
+ведётся в `codex/ai-assistant-receipts`; live experiment и rollout ещё не выполнены.
+Scope и политика записи приняты владельцем 2026-10-08. Проработка:
 [архитектура взаимодействия](../ai-interaction-architecture.md).
 
 [SPEC-0027 — исторические операции с неизвестным временем](0027-date-only-history.md)

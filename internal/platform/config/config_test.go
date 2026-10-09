@@ -1,6 +1,42 @@
 package config
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestOpenRouterSecretFileIsServerOnlyAndMissingKeyKeepsCore(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://synthetic")
+	t.Setenv("GRACE_AUTH_MODE", "locked")
+	t.Setenv("GRACE_PUBLIC_URL", "https://grace.test")
+	t.Setenv("GRACE_ASSISTANT_ROUTING_ENABLED", "false")
+	t.Setenv("GRACE_AI_ENABLED", "true")
+	t.Setenv("OPENROUTER_API_KEY", "")
+	path := filepath.Join(t.TempDir(), "synthetic-key")
+	t.Setenv("OPENROUTER_API_KEY_FILE", path)
+	cfg, err := Load()
+	if err != nil || cfg.AIEnabled || cfg.AuthMode != "locked" {
+		t.Fatal("missing key broke core", err)
+	}
+	if err = os.WriteFile(path, []byte("synthetic-test-key\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = Load()
+	if err != nil || !cfg.AIEnabled || cfg.OpenRouterAPIKey != "synthetic-test-key" {
+		t.Fatal("file key not loaded", err)
+	}
+	t.Setenv("OPENROUTER_API_KEY", "ambiguous-synthetic-source")
+	cfg, err = Load()
+	if err != nil || cfg.AIEnabled {
+		t.Fatal("ambiguous keys enabled inference", err)
+	}
+	t.Setenv("GRACE_AI_ENABLED", "false")
+	t.Setenv("OPENROUTER_API_KEY_FILE", "missing-relative")
+	if _, err = Load(); err != nil {
+		t.Fatal("disabled key was required", err)
+	}
+}
 
 func TestEmailConfigurationRequiresDeliveryAndHTTPS(t *testing.T) {
 	base := map[string]string{"DATABASE_URL": "postgres://test", "GRACE_ASSISTANT_ROUTING_ENABLED": "false", "GRACE_AUTH_MODE": "email", "GRACE_PUBLIC_URL": "https://grace.test", "GRACE_SMTP_HOST": "postbox.example.test", "GRACE_SMTP_PORT": "587", "GRACE_SMTP_SECURITY": "starttls", "GRACE_SMTP_USERNAME": "synthetic-user", "GRACE_SMTP_PASSWORD": "synthetic-password", "GRACE_SMTP_FROM": "Grace <no-reply@example.test>", "GRACE_EMAIL_MONTHLY_BUDGET": "1500"}

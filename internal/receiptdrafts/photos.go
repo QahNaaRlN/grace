@@ -12,6 +12,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
@@ -259,4 +261,32 @@ func (s *PhotoStore) Delete(id string) error {
 		return nil
 	}
 	return err
+}
+
+// A crash between saving a normalized image and committing its draft can leave
+// an orphan. All objects are temporary; a one-hour margin avoids early expiry.
+func (s *PhotoStore) DeleteExpiredObjects(now time.Time) error {
+	entries, err := os.ReadDir(s.directory)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".jpg") {
+			continue
+		}
+		id := strings.TrimSuffix(entry.Name(), ".jpg")
+		if _, err = s.path(id); err != nil {
+			continue
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if info.Mode().IsRegular() && now.Sub(info.ModTime()) >= 25*time.Hour {
+			if err = s.Delete(id); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

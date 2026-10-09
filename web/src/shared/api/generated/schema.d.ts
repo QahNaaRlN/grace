@@ -4,6 +4,94 @@
  */
 
 export interface paths {
+    "/api/receipt-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadReceiptPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getReceiptDraft"];
+        put?: never;
+        post?: never;
+        delete: operations["cancelReceiptDraft"];
+        options?: never;
+        head?: never;
+        patch: operations["editReceiptDraft"];
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["extractReceiptPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewReceiptDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmReceiptDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/assistant/capabilities": {
         parameters: {
             query?: never;
@@ -82,7 +170,7 @@ export interface paths {
         get: operations["getAIConversation"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["deleteAIConversation"];
         options?: never;
         head?: never;
         patch?: never;
@@ -751,6 +839,76 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ReceiptDraftItem: {
+            name: string | null;
+            quantity: string | null;
+            unitPrice: string | null;
+            lineTotal: string | null;
+            discount: string | null;
+            brand: string | null;
+            package: string | null;
+            broadGroup: string | null;
+        };
+        ReceiptDraftFields: {
+            seller: string | null;
+            issuedAt: string | null;
+            issuedDate: string | null;
+            currency: string | null;
+            total: string | null;
+            fiscalDocumentNumber: string | null;
+            categoryId: string | null;
+            accountId: string;
+            action: string;
+            existingEventId: string;
+            candidateReason: string;
+            items: components["schemas"]["ReceiptDraftItem"][];
+        };
+        ReceiptExtraction: {
+            fields: components["schemas"]["ReceiptDraftFields"];
+            sourceText: string;
+            model: string;
+            provider: string;
+            costMicros: string;
+        };
+        ReceiptDraft: {
+            id: string;
+            /** Format: int64 */
+            revision: number;
+            status: string;
+            fields: components["schemas"]["ReceiptDraftFields"];
+            extractions: components["schemas"]["ReceiptExtraction"][];
+            warnings: string[];
+            photoStatus: string;
+            expiresAt: string;
+            receiptId: string | null;
+            eventId: string | null;
+        };
+        EditReceiptDraft: {
+            /** Format: int64 */
+            revision: number;
+            fields: components["schemas"]["ReceiptDraftFields"];
+        };
+        ReceiptDraftCandidate: {
+            eventId: string;
+            description: string;
+            amountMinor: string;
+            currency: string;
+            hasReceipt: boolean;
+        };
+        ReceiptDraftPreview: {
+            id: string;
+            hash: string;
+            /** Format: int64 */
+            revision: number;
+            expiresAt: string;
+            action: string;
+            amountMinor: string;
+            currency: string;
+            accountId: string;
+            existingEventId: string;
+            candidates: components["schemas"]["ReceiptDraftCandidate"][];
+            warnings: string[];
+        };
         AIMode: {
             enabled: boolean;
             model?: string;
@@ -1550,6 +1708,9 @@ export interface components {
             unitPriceMinor: number;
             /** Format: int64 */
             lineTotalMinor: number;
+            brand?: string | null;
+            package?: string | null;
+            broadGroup?: string | null;
         };
         Receipt: {
             /** Format: uuid */
@@ -1558,7 +1719,11 @@ export interface components {
             purchaseEventId: string;
             seller: string;
             /** Format: date-time */
-            issuedAt: string;
+            issuedAt: string | null;
+            /** Format: date */
+            issuedDate: string | null;
+            /** @enum {string} */
+            datePrecision: "instant" | "date";
             currency: string;
             /** Format: int64 */
             totalMinor: number;
@@ -1575,6 +1740,9 @@ export interface components {
             unitPriceMinor: number;
             /** Format: int64 */
             lineTotalMinor: number;
+            brand?: string | null;
+            package?: string | null;
+            broadGroup?: string | null;
         };
         CreateReceipt: {
             /** Format: uuid */
@@ -1763,6 +1931,232 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    uploadReceiptPhoto: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    photo: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getReceiptDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    cancelReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    editReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditReceiptDraft"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    extractReceiptPhoto: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    previewReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: int64 */
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraftPreview"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    confirmReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    previewId: string;
+                    hash: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
     getAICapabilities: {
         parameters: {
             query?: never;
@@ -1891,6 +2285,30 @@ export interface operations {
                         messages: components["schemas"]["AIConversationMessage"][];
                     };
                 };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAIConversation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversation removed; financial provenance remains. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             404: components["responses"]["NotFound"];
         };

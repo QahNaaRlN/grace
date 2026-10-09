@@ -8,6 +8,137 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/receipt-drafts:
+    post:
+      operationId: uploadReceiptPhoto
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [photo], properties: { photo: { type: string, format: binary } } }
+      responses:
+        '201':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getReceiptDraft
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+    patch:
+      operationId: editReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EditReceiptDraft' }
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+    delete:
+      operationId: cancelReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/extract:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: extractReceiptPhoto
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/previews:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: previewReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [revision], properties: { revision: { type: integer, format: int64 } } }
+      responses:
+        '201':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraftPreview' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/confirmations:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: confirmReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [previewId, hash], properties: { previewId: { type: string, format: uuid }, hash: { type: string, minLength: 64, maxLength: 64 } } }
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
   /api/assistant/capabilities:
     get:
       operationId: getAICapabilities
@@ -79,6 +210,13 @@ paths:
                   id: { type: string, format: uuid }
                   messages: { type: array, items: { $ref: '#/components/schemas/AIConversationMessage' } }
         '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteAIConversation
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': { description: Conversation removed; financial provenance remains. }
+        '404': { $ref: '#/components/responses/NotFound' }
   /api/assistant/conversations/{conversationId}/messages:
     parameters:
       - { name: conversationId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -97,7 +235,7 @@ paths:
               additionalProperties: false
               properties:
                 question: { type: string, minLength: 1, maxLength: 2000 }
-                month: { type: string, pattern: '^\\d{4}-\\d{2}$' }
+                month: { type: string, pattern: '^[0-9]{4}-[0-9]{2}$' }
       responses:
         '200':
           description: Saved answer or safe failed turn with deterministic facts; replay has no second inference cost.
@@ -1532,6 +1670,94 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    ReceiptDraftItem:
+      type: object
+      additionalProperties: false
+      required: [name, quantity, unitPrice, lineTotal, discount, brand, package, broadGroup]
+      properties:
+        name: { type: [string, "null"] }
+        quantity: { type: [string, "null"] }
+        unitPrice: { type: [string, "null"] }
+        lineTotal: { type: [string, "null"] }
+        discount: { type: [string, "null"] }
+        brand: { type: [string, "null"] }
+        package: { type: [string, "null"] }
+        broadGroup: { type: [string, "null"] }
+    ReceiptDraftFields:
+      type: object
+      additionalProperties: false
+      required: [seller, issuedAt, issuedDate, currency, total, fiscalDocumentNumber, categoryId, accountId, action, existingEventId, candidateReason, items]
+      properties:
+        seller: { type: [string, "null"] }
+        issuedAt: { type: [string, "null"] }
+        issuedDate: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        total: { type: [string, "null"] }
+        fiscalDocumentNumber: { type: [string, "null"] }
+        categoryId: { type: [string, "null"] }
+        accountId: { type: string }
+        action: { type: string }
+        existingEventId: { type: string }
+        candidateReason: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/ReceiptDraftItem' } }
+    ReceiptExtraction:
+      type: object
+      additionalProperties: false
+      required: [fields, sourceText, model, provider, costMicros]
+      properties:
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+        sourceText: { type: string }
+        model: { type: string }
+        provider: { type: string }
+        costMicros: { type: string }
+    ReceiptDraft:
+      type: object
+      additionalProperties: false
+      required: [id, revision, status, fields, extractions, warnings, photoStatus, expiresAt, receiptId, eventId]
+      properties:
+        id: { type: string }
+        revision: { type: integer, format: int64 }
+        status: { type: string }
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+        extractions: { type: array, items: { $ref: '#/components/schemas/ReceiptExtraction' } }
+        warnings: { type: array, items: { type: string } }
+        photoStatus: { type: string }
+        expiresAt: { type: string }
+        receiptId: { type: [string, "null"] }
+        eventId: { type: [string, "null"] }
+    EditReceiptDraft:
+      type: object
+      additionalProperties: false
+      required: [revision, fields]
+      properties:
+        revision: { type: integer, format: int64 }
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+    ReceiptDraftCandidate:
+      type: object
+      additionalProperties: false
+      required: [eventId, description, amountMinor, currency, hasReceipt]
+      properties:
+        eventId: { type: string }
+        description: { type: string }
+        amountMinor: { type: string }
+        currency: { type: string }
+        hasReceipt: { type: boolean }
+    ReceiptDraftPreview:
+      type: object
+      additionalProperties: false
+      required: [id, hash, revision, expiresAt, action, amountMinor, currency, accountId, existingEventId, candidates, warnings]
+      properties:
+        id: { type: string }
+        hash: { type: string }
+        revision: { type: integer, format: int64 }
+        expiresAt: { type: string }
+        action: { type: string }
+        amountMinor: { type: string }
+        currency: { type: string }
+        accountId: { type: string }
+        existingEventId: { type: string }
+        candidates: { type: array, items: { $ref: '#/components/schemas/ReceiptDraftCandidate' } }
+        warnings: { type: array, items: { type: string } }
     AIMode:
       type: object
       required: [enabled]
@@ -2635,6 +2861,7 @@ components:
         description: { type: string }
         occurredAt: { type: string, format: date-time }
     ReceiptItem:
+
       type: object
       required: [id, position, name, quantityMilli, unitPriceMinor, lineTotalMinor]
       properties:
@@ -2644,14 +2871,19 @@ components:
         quantityMilli: { type: integer, format: int64, minimum: 1 }
         unitPriceMinor: { type: integer, format: int64, minimum: 1 }
         lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        brand: { type: [string, "null"], maxLength: 300 }
+        package: { type: [string, "null"], maxLength: 300 }
+        broadGroup: { type: [string, "null"], maxLength: 300 }
     Receipt:
       type: object
-      required: [id, purchaseEventId, seller, issuedAt, currency, totalMinor, fiscalDocumentNumber, createdAt, items]
+      required: [id, purchaseEventId, seller, issuedAt, issuedDate, datePrecision, currency, totalMinor, fiscalDocumentNumber, createdAt, items]
       properties:
         id: { type: string, format: uuid }
         purchaseEventId: { type: string, format: uuid }
         seller: { type: string }
-        issuedAt: { type: string, format: date-time }
+        issuedAt: { type: [string, "null"], format: date-time }
+        issuedDate: { type: [string, "null"], format: date }
+        datePrecision: { type: string, enum: [instant, date] }
         currency: { type: string, minLength: 3, maxLength: 3 }
         totalMinor: { type: integer, format: int64, minimum: 1 }
         fiscalDocumentNumber: { type: string }
@@ -2661,6 +2893,7 @@ components:
           minItems: 1
           items: { $ref: '#/components/schemas/ReceiptItem' }
     CreateReceiptItem:
+
       type: object
       additionalProperties: false
       required: [name, quantityMilli, unitPriceMinor, lineTotalMinor]
@@ -2669,6 +2902,9 @@ components:
         quantityMilli: { type: integer, format: int64, minimum: 1 }
         unitPriceMinor: { type: integer, format: int64, minimum: 1 }
         lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        brand: { type: [string, "null"], maxLength: 300 }
+        package: { type: [string, "null"], maxLength: 300 }
+        broadGroup: { type: [string, "null"], maxLength: 300 }
     CreateReceipt:
       type: object
       additionalProperties: false

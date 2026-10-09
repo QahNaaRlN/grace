@@ -54,7 +54,7 @@ func draftError(w http.ResponseWriter, err error) {
 	}
 	web.WriteError(w, status, code, "Чек не подтверждён. Проверь поля, совпадения и согласие; при изменении данных получи новый предварительный просмотр.")
 }
-func (h *Handler) enabled() bool { return h.store != nil }
+func (h *Handler) enabled() bool { return h.store != nil && h.extractor != nil }
 func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	if !h.enabled() {
 		draftError(w, errors.New("ai_disabled"))
@@ -244,6 +244,7 @@ func (h *Handler) RunCleanup(ctx context.Context, p *pgxpool.Pool) {
 		for _, id := range owners {
 			_ = h.repo.Sweep(access.WithPrincipal(bounded, access.Principal{ID: id, Role: "member"}), h.store)
 		}
+		_ = h.store.DeleteExpiredObjects(time.Now())
 	}
 	sweep()
 	ticker := time.NewTicker(time.Hour)

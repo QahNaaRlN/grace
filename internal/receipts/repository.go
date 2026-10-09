@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -74,6 +75,9 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 // transaction. It never creates a financial event or another posting itself.
 func CreateInTx(ctx context.Context, tx pgx.Tx, command Command) (Receipt, bool, error) {
 	if err := ValidateCommand(command); err != nil {
+		return Receipt{}, false, err
+	}
+	if err := financialevents.LockOwner(ctx, tx); err != nil {
 		return Receipt{}, false, err
 	}
 

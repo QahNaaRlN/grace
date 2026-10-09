@@ -18,6 +18,7 @@ type ReceiptExtractor struct {
 	Provider ReasoningProvider
 	Meter    UsageMeter
 	Consents *ConversationRepository
+	Groups   receiptdrafts.GroupSuggester
 }
 
 func (e *ReceiptExtractor) Available() bool {
@@ -85,6 +86,17 @@ func (e *ReceiptExtractor) Extract(ctx context.Context, photo []byte) (receiptdr
 	for _, i := range decoded.Items {
 		if i.GroupSuggestion != nil {
 			return receiptdrafts.Extracted{}, errors.New("provider_protocol")
+		}
+	}
+	if decoded.Items == nil {
+		decoded.Items = []receiptdrafts.Item{}
+	}
+	if e.Groups != nil {
+		suggestions, suggestErr := e.Groups.Suggest(ctx, decoded.Items)
+		if suggestErr == nil && len(suggestions) == len(decoded.Items) {
+			for i, suggestion := range suggestions {
+				decoded.Items[i].GroupSuggestion = suggestion
+			}
 		}
 	}
 	return receiptdrafts.Extracted{Fields: receiptdrafts.Fields{Seller: decoded.Seller, IssuedAt: decoded.IssuedAt, IssuedDate: decoded.IssuedDate, Currency: decoded.Currency, Total: decoded.Total, FiscalDocumentNumber: decoded.FiscalDocumentNumber, Items: decoded.Items}, SourceText: decoded.SourceText, Model: out.Model, Provider: out.Provider, CostMicros: strconv.FormatInt(out.CostMicros, 10)}, nil

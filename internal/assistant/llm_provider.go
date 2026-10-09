@@ -115,7 +115,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 		return LLMResponse{}, errors.New("provider_request")
 	}
 	body := map[string]any{"model": in.Policy.Model, "messages": in.Messages, "max_tokens": in.MaxOutputTokens, "stream": false,
-		"provider":        map[string]any{"only": []string{in.Policy.Provider}, "allow_fallbacks": false, "require_parameters": true, "data_collection": "deny", "zdr": true},
+		"provider":        map[string]any{"only": []string{in.Policy.Provider}, "allow_fallbacks": false, "require_parameters": true, "data_collection": "deny", "zdr": true, "max_price": map[string]any{"prompt": microsPrice(in.Policy.InputMicrosPerMillion), "completion": microsPrice(in.Policy.OutputMicrosPerMillion)}},
 		"response_format": map[string]any{"type": "json_schema", "json_schema": map[string]any{"name": "grace_response", "strict": true, "schema": in.Schema}}}
 	payload, err := json.Marshal(body)
 	if err != nil {
@@ -172,4 +172,8 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 		return LLMResponse{}, err
 	}
 	return LLMResponse{out.ID, out.Model, out.Provider, json.RawMessage(out.Choices[0].Message.Content), out.Usage.Prompt, out.Usage.Completion, cost}, nil
+}
+
+func microsPrice(n int64) json.Number {
+	return json.Number(new(big.Rat).SetFrac64(n, 1000000).FloatString(6))
 }

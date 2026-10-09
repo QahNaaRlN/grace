@@ -5,6 +5,7 @@ import (
 	"net/mail"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -54,6 +55,24 @@ func Load() (Config, error) {
 		AIAnalysisPolicy:     os.Getenv("GRACE_AI_ANALYSIS_POLICY"),
 		AIReceiptPolicy:      os.Getenv("GRACE_AI_RECEIPT_POLICY"),
 		AIPhotoDir:           os.Getenv("GRACE_AI_PHOTO_DIR"),
+	}
+	aiEnabledValue := valueOrDefault("GRACE_AI_ENABLED", "false")
+	if aiEnabledValue != "true" && aiEnabledValue != "false" {
+		return Config{}, fmt.Errorf("GRACE_AI_ENABLED must be true or false")
+	}
+	if keyFile := strings.TrimSpace(os.Getenv("OPENROUTER_API_KEY_FILE")); cfg.AIEnabled && keyFile != "" {
+		if !filepath.IsAbs(keyFile) || cfg.OpenRouterAPIKey != "" {
+			cfg.AIEnabled = false
+			cfg.OpenRouterAPIKey = ""
+		} else {
+			raw, readErr := os.ReadFile(keyFile)
+			if readErr != nil || len(raw) > 1024 {
+				cfg.AIEnabled = false
+				cfg.OpenRouterAPIKey = ""
+			} else {
+				cfg.OpenRouterAPIKey = strings.TrimSpace(string(raw))
+			}
+		}
 	}
 	enabledValue := valueOrDefault("GRACE_ASSISTANT_ROUTING_ENABLED", "false")
 	if enabledValue != "true" && enabledValue != "false" {
