@@ -172,7 +172,7 @@ function ResultShell({ title, result, children }: { title: string, result: Assis
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2 text-emerald-700"><CheckCircle2 className="size-5" aria-hidden="true" /><CardTitle>{title}</CardTitle></div>
+        <div className="flex items-center gap-2 text-success"><CheckCircle2 className="size-5" aria-hidden="true" /><CardTitle>{title}</CardTitle></div>
         <CardDescription>Данные рассчитаны детерминированными модулями Grace.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">{children}<Confidence value={result.confidence} route={result.route} /></CardContent>
@@ -305,17 +305,17 @@ export function AssistantPage({ submitAssistant = queryAssistant }: { submitAssi
   return (
     <AppLayout>
       <section className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-emerald-700 px-5 py-7 text-primary-foreground shadow-xl shadow-emerald-950/10 sm:px-8 sm:py-9">
+        <div className="relative overflow-hidden rounded-3xl bg-primary px-5 py-7 text-primary-foreground shadow-xl shadow-primary/10 sm:px-8 sm:py-9">
           <div className="absolute -top-14 -right-10 size-44 rounded-full bg-white/10" />
           <div className="relative max-w-2xl">
-            <p className="flex items-center gap-2 text-sm font-semibold text-emerald-100"><Bot className="size-4" aria-hidden="true" /> Grace · только чтение</p>
+            <p className="flex items-center gap-2 text-sm font-semibold text-primary-foreground"><Bot className="size-4" aria-hidden="true" /> Grace · только чтение</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Спросите о своих деньгах</h1>
             <p className="mt-3 leading-relaxed text-primary-foreground/75">Один конкретный вопрос — один проверяемый ответ. Расчёты выполняет финансовое ядро, а не языковая модель.</p>
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 p-4 text-sm leading-relaxed text-emerald-950 shadow-sm sm:p-5">
-          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-100"><ShieldCheck className="size-5" aria-hidden="true" /></div>
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-sm leading-relaxed text-accent-foreground shadow-sm sm:p-5">
+          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card"><ShieldCheck className="size-5" aria-hidden="true" /></div>
           <p><span className="font-semibold">Перед отправкой:</span> текст текущего вопроса, язык и время передаются TypeSafe. Финансовые записи и результаты инструментов провайдеру не отправляются.</p>
         </div>
 

@@ -3,7 +3,6 @@ import { env } from '@/shared/config/env'
 import { useContext, useEffect, useState, type ReactNode } from 'react'
 import {
   Bot,
-  HeartPulse,
   LayoutDashboard,
   ListOrdered,
   CalendarClock,
@@ -20,6 +19,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from 'next-themes'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
+import { GraceMark } from '@/shared/ui/GraceMark'
 import {
   Dialog,
   DialogContent,
@@ -71,7 +71,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             className="flex min-h-11 items-center gap-3 text-xl font-semibold"
           >
             <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <HeartPulse aria-hidden="true" className="size-5" />
+              <GraceMark aria-hidden="true" className="size-6" />
             </span>
             Grace
           </Link>
