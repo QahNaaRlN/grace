@@ -7,6 +7,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { PasswordForm } from './PasswordEntry'
 
 export function LoginPage() {
   const [params] = useSearchParams(),
@@ -137,7 +138,7 @@ export function LoginPage() {
                 </Button>
               </div>
             </>
-          ) : methods.data?.email ? (
+          ) : methods.data?.password ? <PasswordForm view="login" /> : methods.data?.email ? (
             <>
               {step === 'email' ? (
                 <form

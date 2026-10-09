@@ -196,6 +196,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/password/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["passwordLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["passwordRegister"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPasswordInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/email/request": {
         parameters: {
             query?: never;
@@ -724,7 +820,8 @@ export interface components {
         };
         AuthMethods: {
             /** @enum {string} */
-            mode: "email" | "telegram" | "locked" | "development";
+            mode: "email" | "password" | "telegram" | "locked" | "development";
+            password: boolean;
             email: boolean;
             telegram: boolean;
             emailLinkAvailable: boolean;
@@ -1069,11 +1166,39 @@ export interface components {
             /** @enum {string} */
             role: "admin" | "member";
         };
+        PasswordLoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
+        PasswordRegistrationRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+            invitation: string;
+        };
+        PasswordResetRequest: {
+            token: string;
+            password: string;
+        };
+        PasswordEmailResponse: {
+            message: string;
+            resendAfterSeconds: number;
+        };
+        PasswordInvitation: {
+            token: string;
+            /** Format: email */
+            email: string;
+            /** Format: uri */
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
         AuthSession: {
             user: components["schemas"]["AuthUser"];
             csrfToken: string;
             /** @enum {string} */
-            mode: "telegram" | "email" | "development";
+            mode: "telegram" | "email" | "password" | "development";
         };
         AuthInvitation: {
             token: string;
@@ -2709,6 +2834,182 @@ export interface operations {
                     "application/json": components["schemas"]["AuthMethods"];
                 };
             };
+        };
+    };
+    passwordLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Session, no invitation needed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    passwordRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordRegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description Email verification queued; invitation not consumed yet */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordEmailResponse"];
+                };
+            };
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Generic reply for known and unknown addresses; also sets first password for verified existing users */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordEmailResponse"];
+                };
+            };
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    confirmRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Verified and registered; log in normally */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Password replaced and sessions revoked; log in normally */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["AuthenticationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    createPasswordInvitation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** Format: email */
+                    email: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Admin-created invitation; copy and send personally */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordInvitation"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            409: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
         };
     };
     requestEmailCode: {

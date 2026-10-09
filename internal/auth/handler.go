@@ -142,7 +142,7 @@ func (h *Handler) Require(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(access.WithPrincipal(r.Context(), p)))
 			return
 		}
-		if h.mode != "telegram" && h.mode != "email" {
+		if h.mode != "telegram" && h.mode != "email" && h.mode != "password" {
 			web.WriteError(w, 401, "unauthenticated", "Войдите в Grace.")
 			return
 		}
@@ -174,7 +174,7 @@ func (h *Handler) Require(next http.Handler) http.Handler {
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	p, _ := access.Current(r.Context())
 	csrf := "development"
-	if h.mode == "telegram" || h.mode == "email" {
+	if h.mode == "telegram" || h.mode == "email" || h.mode == "password" {
 		csrf = csrfToken(tokenCookie(r, sessionCookie))
 	}
 	user := User{ID: p.ID, Name: p.Name, Role: p.Role}

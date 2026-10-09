@@ -1,5 +1,9 @@
 # Spec-first процесс Grace
 
+[SPEC-0031 — почта, пароль и приглашения](0031-password-registration.md) —
+accepted прямым поручением и выбором password-only login / email-bound invites.
+Реализация локально; [evidence](0031-evidence.md), [rollout](../password-authentication-rollout.md).
+
 [SPEC-0030 — графики статистики](0030-statistics-charts.md) — accepted прямым
 поручением владельца после обсуждения трёх графиков. Реализация в отдельной
 ветке codex/statistics-charts, проверки: [evidence](0030-evidence.md).

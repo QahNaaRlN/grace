@@ -62,6 +62,11 @@ Code Flow/PKCE сохранён в коде и identities, но временно
 локальной development-конфигурации. См. [почтовый вход](email-authentication-rollout.md)
 и [Telegram runbook](authentication.md).
 
+По принятой SPEC-0031 подготовлен password mode: регистрация по привязанному
+к почте приглашению, подтверждение адреса, вход email/password и mail-link reset.
+Существующие verified identities/UUID сохраняются. Production переключение ещё
+не выполнено; [порядок перехода и rollback](password-authentication-rollout.md).
+
 api/openapi.yaml — публичный контракт. TypeScript-клиент не объявляет DTO
 вручную. Изменение API считается завершённым только после обновления контракта
 и сгенерированных типов.

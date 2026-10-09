@@ -64,7 +64,7 @@ func Load() (Config, error) {
 	cfg.EmailBudget = budget
 	switch cfg.AuthMode {
 	case "locked":
-	case "email":
+	case "email", "password":
 		if u.Scheme != "https" || cfg.SMTPHost == "" || cfg.SMTPUsername == "" || cfg.SMTPPassword == "" {
 			return Config{}, fmt.Errorf("email auth requires HTTPS and configured SMTP")
 		}

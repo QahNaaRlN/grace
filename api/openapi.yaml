@@ -670,6 +670,129 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AuthMethods' }
+  /api/auth/password/login:
+    post:
+      operationId: passwordLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasswordLoginRequest' }
+      responses:
+        '200':
+          description: Session, no invitation needed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/password/register:
+    post:
+      operationId: passwordRegister
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasswordRegistrationRequest' }
+      responses:
+        '202':
+          description: Email verification queued; invitation not consumed yet
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasswordEmailResponse' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/password/forgot:
+    post:
+      operationId: forgotPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              additionalProperties: false
+              properties:
+                email: { type: string, format: email, maxLength: 254 }
+      responses:
+        '202':
+          description: Generic reply for known and unknown addresses; also sets first password for verified existing users
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasswordEmailResponse' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/password/confirm:
+    post:
+      operationId: confirmRegistration
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              additionalProperties: false
+              properties:
+                token: { type: string, minLength: 43, maxLength: 43 }
+      responses:
+        '204': { description: Verified and registered; log in normally }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/password/reset:
+    post:
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasswordResetRequest' }
+      responses:
+        '204': { description: Password replaced and sessions revoked; log in normally }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+  /api/auth/password/invitations:
+    post:
+      operationId: createPasswordInvitation
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 160 }
+                email: { type: string, format: email, maxLength: 254 }
+      responses:
+        '201':
+          description: Admin-created invitation; copy and send personally
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasswordInvitation' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '409': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/auth/email/request:
     post:
       operationId: requestEmailCode
@@ -1496,9 +1619,10 @@ components:
         unknownDateRows: { type: array, items: { $ref: '#/components/schemas/ImportMonthRow' } }
     AuthMethods:
       type: object
-      required: [mode, email, telegram, emailLinkAvailable]
+      required: [mode, email, telegram, emailLinkAvailable, password]
       properties:
-        mode: { type: string, enum: [email, telegram, locked, development] }
+        mode: { type: string, enum: [email, password, telegram, locked, development] }
+        password: { type: boolean }
         email: { type: boolean }
         telegram: { type: boolean }
         emailLinkAvailable: { type: boolean }
@@ -2123,6 +2247,42 @@ components:
           enum:
             - admin
             - member
+    PasswordLoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, maxLength: 128 }
+    PasswordRegistrationRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, invitation]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 15, maxLength: 128 }
+        invitation: { type: string, minLength: 43, maxLength: 43 }
+    PasswordResetRequest:
+      type: object
+      additionalProperties: false
+      required: [token, password]
+      properties:
+        token: { type: string, minLength: 43, maxLength: 43 }
+        password: { type: string, minLength: 15, maxLength: 128 }
+    PasswordEmailResponse:
+      type: object
+      required: [message, resendAfterSeconds]
+      properties:
+        message: { type: string }
+        resendAfterSeconds: { type: integer }
+    PasswordInvitation:
+      type: object
+      required: [token, email, url, expiresAt]
+      properties:
+        token: { type: string }
+        email: { type: string, format: email }
+        url: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time }
     AuthSession:
       type: object
       required:
@@ -2139,6 +2299,7 @@ components:
           enum:
             - telegram
             - email
+            - password
             - development
     AuthInvitation:
       type: object

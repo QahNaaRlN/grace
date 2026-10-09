@@ -60,8 +60,20 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	sender := auth.NewSMTPSender(auth.SMTPSettings{Host: cfg.SMTPHost, Port: cfg.SMTPPort, Username: cfg.SMTPUsername, Password: cfg.SMTPPassword, From: cfg.SMTPFrom, Security: cfg.SMTPSecurity})
 	emailHandler := auth.NewEmailHandler(authRepository, sender, cfg.AuthMode, cfg.PublicURL, cfg.EmailBudget)
 	profileHandler := auth.NewProfileHandler(authRepository)
+	passwordHandler := auth.NewPasswordHandler(authRepository, sender, cfg.AuthMode, cfg.PublicURL, cfg.EmailBudget)
 	router.Route("/api/auth", func(router chi.Router) {
-		router.Get("/methods", emailHandler.Methods)
+		router.Get("/methods", func(w http.ResponseWriter, r *http.Request) {
+			if cfg.AuthMode == "password" {
+				passwordHandler.Methods(w, r)
+			} else {
+				emailHandler.Methods(w, r)
+			}
+		})
+		router.Post("/password/login", passwordHandler.Login)
+		router.Post("/password/register", passwordHandler.Register)
+		router.Post("/password/confirm", passwordHandler.Confirm)
+		router.Post("/password/forgot", passwordHandler.Forgot)
+		router.Post("/password/reset", passwordHandler.Reset)
 		router.Post("/email/request", emailHandler.Request)
 		router.Post("/email/verify", emailHandler.Verify)
 		router.Post("/login", authHandler.Login)
@@ -78,7 +90,14 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 			router.Delete("/profile/avatar", profileHandler.DeleteAvatar)
 			router.Post("/logout", authHandler.Logout)
 			router.Post("/revoke-sessions", authHandler.RevokeSessions)
-			router.Post("/invitations", authHandler.Invite)
+			router.Post("/invitations", func(w http.ResponseWriter, r *http.Request) {
+				if cfg.AuthMode == "password" {
+					web.WriteError(w, 503, "invitation_unavailable", "Используйте приглашение для конкретной почты.")
+					return
+				}
+				authHandler.Invite(w, r)
+			})
+			router.Post("/password/invitations", passwordHandler.Invite)
 			router.Post("/users/{userId}/disable", func(w http.ResponseWriter, r *http.Request) {
 				r.SetPathValue("userId", chi.URLParam(r, "userId"))
 				authHandler.Disable(w, r)
