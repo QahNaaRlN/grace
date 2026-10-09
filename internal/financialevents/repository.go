@@ -18,6 +18,25 @@ var (
 
 type Repository struct{ pool *database.TenantPool }
 
+// PurchaseCandidatesInTx returns possible matches only. The caller must obtain
+// a user's explicit decision; this lookup never merges financial events.
+func PurchaseCandidatesInTx(ctx context.Context, tx pgx.Tx, amount int64, currency, day string) ([]Event, error) {
+	if amount <= 0 || !ValidCalendarDate(day) {
+		return nil, ErrInvalid
+	}
+	rows, err := tx.Query(ctx, eventQuery+` WHERE e.id IN (
+	 SELECT ev.id FROM financial_events ev JOIN postings po ON po.financial_event_id=ev.id
+	 WHERE ev.kind='purchase' AND po.direction='debit' AND po.amount_minor=$1 AND po.currency=$2
+	 AND COALESCE(ev.occurred_date,(ev.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)=$3::date
+	 ORDER BY ev.created_at,ev.id LIMIT 100)
+	 ORDER BY e.created_at,e.id,p.id`, amount, currency, day)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return collectEvents(rows)
+}
+
 func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 type queryer interface {

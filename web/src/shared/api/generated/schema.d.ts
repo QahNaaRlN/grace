@@ -4,6 +4,108 @@
  */
 
 export interface paths {
+    "/api/assistant/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAICapabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["grantAIConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/consents/{scope}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scope: "analysis" | "receipt";
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revokeAIConsent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createAIConversation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations/{conversationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getAIConversation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["analyzeCalendarMonth"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/imports/csv": {
         parameters: {
             query?: never;
@@ -649,6 +751,68 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AIMode: {
+            enabled: boolean;
+            model?: string;
+            provider?: string;
+            consentGranted?: boolean;
+            policyHash?: string;
+            dataDescription?: string;
+            privacy?: string;
+        };
+        AICapabilities: {
+            analysis: components["schemas"]["AIMode"];
+            receipt: components["schemas"]["AIMode"];
+            remainingMicros: string;
+            policyVersion: string;
+        };
+        AIAnalysisFact: {
+            id: string;
+            label: string;
+            valueMinor: string;
+            currency: string;
+            /**
+             * Format: int64
+             * @description Share of gross purchases computed by Go; 10000 means 100 percent.
+             */
+            shareBasisPoints?: number;
+        };
+        AIAnalysisFacts: {
+            month: string;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            /** Format: date-time */
+            capturedAt: string;
+            /** @enum {string} */
+            coverage: "confirmed_only_coverage_unknown";
+            facts: components["schemas"]["AIAnalysisFact"][];
+        };
+        AIAnalysisAnswer: {
+            facts: components["schemas"]["AIAnalysisFacts"];
+            interpretations: {
+                /** @enum {string} */
+                kind: "assumption" | "suggestion";
+                text: string;
+                factIds: string[];
+            }[];
+            model: string;
+            provider: string;
+            costMicros: string;
+            notice: string;
+        };
+        AIConversationMessage: {
+            /** Format: uuid */
+            id: string;
+            question: string;
+            month: string;
+            /** @enum {string} */
+            status: "pending" | "completed" | "failed";
+            facts: components["schemas"]["AIAnalysisFacts"];
+            response: components["schemas"]["AIAnalysisAnswer"] | null;
+            errorCode: string | null;
+        };
         ImportMonthRow: {
             /** Format: uuid */
             recordId: string;
@@ -1491,6 +1655,15 @@ export interface components {
         };
     };
     responses: {
+        /** @description Service temporarily unavailable; ordinary financial functions remain independent of AI. */
+        InternalError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Safe import error with code and message; no private source values */
         ImportError: {
             headers: {
@@ -1587,6 +1760,173 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getAICapabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enabled modes, data disclosure, consent and shared experiment allowance. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AICapabilities"];
+                };
+            };
+            503: components["responses"]["InternalError"];
+        };
+    };
+    grantAIConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    scope: "analysis" | "receipt";
+                    policyHash: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Consent granted for the current named provider and data scope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        granted: boolean;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    revokeAIConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                scope: "analysis" | "receipt";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consent revoked; confirmed finance is unchanged. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createAIConversation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private conversation created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getAIConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped questions, fact snapshots and interpretations. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        messages: components["schemas"]["AIConversationMessage"][];
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    analyzeCalendarMonth: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    question: string;
+                    month: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved answer or safe failed turn with deterministic facts; replay has no second inference cost. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIConversationMessage"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
     uploadImportCSV: {
         parameters: {
             query: {

@@ -19,6 +19,16 @@ var (
 
 type Repository struct{ pool *database.TenantPool }
 
+func HasPurchaseReceiptInTx(ctx context.Context, tx pgx.Tx, eventID string) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM receipts WHERE purchase_event_id::text=$1)", eventID).Scan(&exists)
+	return exists, err
+}
+
+func GetInTx(ctx context.Context, tx pgx.Tx, id string) (Receipt, error) {
+	return loadReceipt(ctx, tx, id)
+}
+
 func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 type queryer interface {
@@ -29,10 +39,10 @@ func (repo *Repository) List(ctx context.Context, limit int) ([]Receipt, error) 
 	rows, err := repo.pool.Query(ctx, receiptQuery+`
 		WHERE r.id IN (
 			SELECT id FROM receipts
-			ORDER BY issued_at DESC, created_at DESC
+			ORDER BY COALESCE(issued_at, issued_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, created_at DESC
 			LIMIT $1
 		)
-		ORDER BY r.issued_at DESC, r.created_at DESC, i.position`, limit)
+		ORDER BY COALESCE(r.issued_at, r.issued_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, r.created_at DESC, i.position`, limit)
 	if err != nil {
 		return nil, fmt.Errorf("list receipts: %w", err)
 	}
@@ -50,6 +60,22 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 		return Receipt{}, false, fmt.Errorf("begin receipt: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	receipt, created, err := CreateInTx(ctx, tx, command)
+	if err != nil {
+		return Receipt{}, false, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Receipt{}, false, err
+	}
+	return receipt, created, nil
+}
+
+// CreateInTx allows a confirmed purchase and its receipt to share one atomic
+// transaction. It never creates a financial event or another posting itself.
+func CreateInTx(ctx context.Context, tx pgx.Tx, command Command) (Receipt, bool, error) {
+	if err := ValidateCommand(command); err != nil {
+		return Receipt{}, false, err
+	}
 
 	if _, err := tx.Exec(ctx,
 		"SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
@@ -59,7 +85,7 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 	}
 
 	var existingID, existingHash string
-	err = tx.QueryRow(ctx, `
+	err := tx.QueryRow(ctx, `
 		SELECT id::text, request_hash FROM receipts WHERE idempotency_key = $1`,
 		command.IdempotencyKey,
 	).Scan(&existingID, &existingHash)
@@ -106,15 +132,21 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 	}
 
 	var receiptID string
+	var issuedAt, issuedDate any
+	if command.IssuedDate != "" {
+		issuedDate = command.IssuedDate
+	} else {
+		issuedAt = command.IssuedAt
+	}
 	err = tx.QueryRow(ctx, `
 		INSERT INTO receipts (
 			purchase_event_id, seller, issued_at, currency, total_minor,
-			fiscal_document_number, idempotency_key, request_hash
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			fiscal_document_number, idempotency_key, request_hash, issued_date
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id::text`,
-		command.PurchaseEventID, command.Seller, command.IssuedAt, currency,
+		command.PurchaseEventID, command.Seller, issuedAt, currency,
 		command.TotalMinor, command.FiscalDocumentNumber, command.IdempotencyKey,
-		command.RequestHash,
+		command.RequestHash, issuedDate,
 	).Scan(&receiptID)
 	if err != nil {
 		return Receipt{}, false, fmt.Errorf("insert receipt: %w", err)
@@ -125,9 +157,10 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 			INSERT INTO receipt_items (
 				receipt_id, position, name, quantity_milli,
 				unit_price_minor, line_total_minor
-			) VALUES ($1, $2, $3, $4, $5, $6)`,
+				, brand, package, broad_group
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 			receiptID, index+1, item.Name, item.QuantityMilli,
-			item.UnitPriceMinor, item.LineTotalMinor,
+			item.UnitPriceMinor, item.LineTotalMinor, item.Brand, item.Package, item.BroadGroup,
 		)
 		if err != nil {
 			return Receipt{}, false, fmt.Errorf("insert receipt item: %w", err)
@@ -138,9 +171,6 @@ func (repo *Repository) Create(ctx context.Context, command Command) (Receipt, b
 	if err != nil {
 		return Receipt{}, false, err
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return Receipt{}, false, fmt.Errorf("commit receipt: %w", err)
-	}
 	return receipt, true, nil
 }
 
@@ -150,6 +180,7 @@ const receiptQuery = `
 		r.purchase_event_id::text,
 		r.seller,
 		r.issued_at,
+		r.issued_date::text,
 		r.currency,
 		r.total_minor,
 		r.fiscal_document_number,
@@ -159,7 +190,7 @@ const receiptQuery = `
 		i.name,
 		i.quantity_milli,
 		i.unit_price_minor,
-		i.line_total_minor
+		i.line_total_minor, i.brand, i.package, i.broad_group
 	FROM receipts r
 	JOIN receipt_items i ON i.receipt_id = r.id
 	`
@@ -190,14 +221,18 @@ func collectReceipts(rows pgx.Rows) ([]Receipt, error) {
 		var item Item
 		if err := rows.Scan(
 			&receipt.ID, &receipt.PurchaseEventID, &receipt.Seller,
-			&receipt.IssuedAt, &receipt.Currency, &receipt.TotalMinor,
+			&receipt.IssuedAt, &receipt.IssuedDate, &receipt.Currency, &receipt.TotalMinor,
 			&receipt.FiscalDocumentNumber, &receipt.CreatedAt,
 			&item.ID, &item.Position, &item.Name, &item.QuantityMilli,
-			&item.UnitPriceMinor, &item.LineTotalMinor,
+			&item.UnitPriceMinor, &item.LineTotalMinor, &item.Brand, &item.Package, &item.BroadGroup,
 		); err != nil {
 			return nil, fmt.Errorf("scan receipt: %w", err)
 		}
 		position, exists := index[receipt.ID]
+		receipt.DatePrecision = "instant"
+		if receipt.IssuedDate != nil {
+			receipt.DatePrecision = "date"
+		}
 		if !exists {
 			receipt.Items = make([]Item, 0)
 			items = append(items, receipt)

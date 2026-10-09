@@ -8,6 +8,104 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/assistant/capabilities:
+    get:
+      operationId: getAICapabilities
+      responses:
+        '200':
+          description: Enabled modes, data disclosure, consent and shared experiment allowance.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AICapabilities' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/assistant/consents:
+    post:
+      operationId: grantAIConsent
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, policyHash]
+              additionalProperties: false
+              properties:
+                scope: { type: string, enum: [analysis, receipt] }
+                policyHash: { type: string, minLength: 64, maxLength: 64 }
+      responses:
+        '200':
+          description: Consent granted for the current named provider and data scope.
+          content:
+            application/json:
+              schema: { type: object, required: [granted], properties: { granted: { type: boolean } } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/assistant/consents/{scope}:
+    parameters:
+      - { name: scope, in: path, required: true, schema: { type: string, enum: [analysis, receipt] } }
+    delete:
+      operationId: revokeAIConsent
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': { description: Consent revoked; confirmed finance is unchanged. }
+  /api/assistant/conversations:
+    post:
+      operationId: createAIConversation
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '201':
+          description: Private conversation created.
+          content:
+            application/json:
+              schema: { type: object, required: [id], properties: { id: { type: string, format: uuid } } }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/assistant/conversations/{conversationId}:
+    parameters:
+      - { name: conversationId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getAIConversation
+      responses:
+        '200':
+          description: Owner-scoped questions, fact snapshots and interpretations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, messages]
+                properties:
+                  id: { type: string, format: uuid }
+                  messages: { type: array, items: { $ref: '#/components/schemas/AIConversationMessage' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/assistant/conversations/{conversationId}/messages:
+    parameters:
+      - { name: conversationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: analyzeCalendarMonth
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question, month]
+              additionalProperties: false
+              properties:
+                question: { type: string, minLength: 1, maxLength: 2000 }
+                month: { type: string, pattern: '^\\d{4}-\\d{2}$' }
+      responses:
+        '200':
+          description: Saved answer or safe failed turn with deterministic facts; replay has no second inference cost.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AIConversationMessage' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /api/imports/csv:
     post:
       operationId: uploadImportCSV
@@ -1382,6 +1480,11 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    InternalError:
+      description: Service temporarily unavailable; ordinary financial functions remain independent of AI.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     ImportError:
       description: Safe import error with code and message; no private source values
       content:
@@ -1429,6 +1532,73 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    AIMode:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+        model: { type: string }
+        provider: { type: string }
+        consentGranted: { type: boolean }
+        policyHash: { type: string }
+        dataDescription: { type: string }
+        privacy: { type: string }
+    AICapabilities:
+      type: object
+      required: [analysis, receipt, remainingMicros, policyVersion]
+      properties:
+        analysis: { $ref: '#/components/schemas/AIMode' }
+        receipt: { $ref: '#/components/schemas/AIMode' }
+        remainingMicros: { type: string, pattern: '^[0-9]+$' }
+        policyVersion: { type: string }
+    AIAnalysisFact:
+      type: object
+      required: [id, label, valueMinor, currency]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        valueMinor: { type: string, pattern: '^-?[0-9]+$' }
+        currency: { type: string }
+        shareBasisPoints: { type: integer, format: int64, description: 'Share of gross purchases computed by Go; 10000 means 100 percent.' }
+    AIAnalysisFacts:
+      type: object
+      required: [month, from, to, capturedAt, coverage, facts]
+      properties:
+        month: { type: string }
+        from: { type: string, format: date-time }
+        to: { type: string, format: date-time }
+        capturedAt: { type: string, format: date-time }
+        coverage: { type: string, enum: [confirmed_only_coverage_unknown] }
+        facts: { type: array, items: { $ref: '#/components/schemas/AIAnalysisFact' } }
+    AIAnalysisAnswer:
+      type: object
+      required: [facts, interpretations, model, provider, costMicros, notice]
+      properties:
+        facts: { $ref: '#/components/schemas/AIAnalysisFacts' }
+        interpretations:
+          type: array
+          items:
+            type: object
+            required: [kind, text, factIds]
+            properties:
+              kind: { type: string, enum: [assumption, suggestion] }
+              text: { type: string }
+              factIds: { type: array, items: { type: string } }
+        model: { type: string }
+        provider: { type: string }
+        costMicros: { type: string }
+        notice: { type: string }
+    AIConversationMessage:
+      type: object
+      required: [id, question, month, status, facts, response, errorCode]
+      properties:
+        id: { type: string, format: uuid }
+        question: { type: string }
+        month: { type: string }
+        status: { type: string, enum: [pending, completed, failed] }
+        facts: { $ref: '#/components/schemas/AIAnalysisFacts' }
+        response: { oneOf: [{ $ref: '#/components/schemas/AIAnalysisAnswer' }, { type: 'null' }] }
+        errorCode: { type: [string, 'null'] }
     ImportMonthRow:
       type: object
       required: [recordId, sheet, row, sourceDate, sourceKind, sourceAmountMinor, sourceCurrency, description, action, published, reason, targetDate, targetKind, targetAmountMinor, targetCurrency, differences]
