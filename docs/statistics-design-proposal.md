@@ -1,7 +1,8 @@
 # Статистика Grace: предложение
 
-Статус: proposal, не accepted implementation scope. 2026-10-09.
-Владелец попросил добавить графики/диаграммы и обсудить направление.
+Статус: первый этап принят поручением «приступить к работе» и реализован
+локально по [SPEC-0030](specs/0030-statistics-charts.md). 2026-10-09.
+Проверки: [evidence](specs/0030-evidence.md). Production пока не обновлён.
 
 ## Первый этап
 
@@ -40,7 +41,9 @@
 cash-position; API содержит эти агрегаты. Наличие готовых временных рядов
 и категорийных агрегатов не подтверждено. Перед реализацией — принятая spec,
 контракт API, агрегация/coverage на Go, затем отображение в web.
-Графики не внедрены этой проработкой.
+Временные ряды и категории доступны через новый read-only endpoint statistics.
+Три графика и compact overview внедрены локально. Полный category drilldown
+с пагинацией и прогноз остатка остаются следующими этапами.
 
 Основание UX: [Carbon chart anatomy](https://www.carbondesignsystem.com/building-blocks/data-visualization/chart-anatomy),
 [Carbon legends](https://www.carbondesignsystem.com/building-blocks/data-visualization/legends).

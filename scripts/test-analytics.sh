@@ -107,4 +107,49 @@ if go list -deps ./cmd/api | grep -Eiq '/(jeveval|routereval)(/|$)'; then
   exit 1
 fi
 
-echo "SPEC-0004 analytics integration checks passed"
+before_statistics="$(curl --fail --silent "$api/financial-events")"
+statistics="$(curl --fail --silent "$api/analytics/statistics?from=2026-10-01&to=2026-11-01&granularity=month")"
+test "$(printf '%s' "$statistics" | json_value 'data.coverage')" = "recorded_only"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies.map(c=>c.currency).join(",")')" = "RUB,USD"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[0].series[0].purchasesMinor')" = "14000"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[0].series[0].refundsMinor')" = "3000"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[0].series[0].incomeMinor')" = "50000"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[0].series[0].outflowsMinor')" = "21000"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[0].categories[0].shareBasisPoints')" = "10000"
+test "$(printf '%s' "$statistics" | json_value 'data.currencies[1].series[0].outflowsMinor')" = "0"
+weekly="$(curl --fail --silent "$api/analytics/statistics?from=2026-10-01&to=2026-11-01&granularity=week")"
+test "$(printf '%s' "$weekly" | json_value 'data.currencies[0].series.length')" = "5"
+test "$(printf '%s' "$weekly" | json_value 'data.currencies[0].series.reduce((sum,b)=>sum+b.outflowsMinor,0)')" = "21000"
+test "$before_statistics" = "$(curl --fail --silent "$api/financial-events")"
+for query in 'from=2026-02-30&to=2026-03-01' 'from=2025-01-01&to=2026-01-02' 'from=2026-10-01&to=2026-11-01&granularity=day'; do
+  test "$(curl --silent --output /dev/null --write-out '%{http_code}' "$api/analytics/statistics?$query")" = "422"
+done
+# Date-only history is grouped by its actual calendar date, with no fabricated time.
+docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 -c "UPDATE financial_events SET occurred_at=NULL, occurred_date='2026-10-01' WHERE id='$purchase_id'" >/dev/null
+date_only="$(curl --fail --silent "$api/analytics/statistics?from=2026-10-01&to=2026-11-01&granularity=month")"
+test "$(printf '%s' "$date_only" | json_value 'data.currencies[0].series[0].purchasesMinor')" = "14000"
+empty_stats="$(curl --fail --silent "$api/analytics/statistics?from=2026-08-01&to=2026-09-01")"
+test "$(printf '%s' "$empty_stats" | json_value 'data.currencies[0].series[0].purchasesMinor')" = "0"
+test "$(printf '%s' "$empty_stats" | json_value 'data.currencies[0].categories.length')" = "0"
+docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO users(id,display_name,role) VALUES ('33333333-3333-4333-8333-333333333333','Synthetic isolation','member');
+INSERT INTO accounts(id,name,type,currency,opening_balance_minor,owner_id) VALUES ('44444444-4444-4444-8444-444444444444','Other owner','cash','GBP',0,'33333333-3333-4333-8333-333333333333');
+INSERT INTO financial_events(id,kind,source,occurred_at,idempotency_key,request_hash,owner_id) VALUES ('55555555-5555-4555-8555-555555555555','purchase','manual','2026-10-03T00:00:00Z','statistics-isolation',repeat('0',64),'33333333-3333-4333-8333-333333333333');
+INSERT INTO postings(financial_event_id,account_id,direction,amount_minor,currency,owner_id) VALUES ('55555555-5555-4555-8555-555555555555','44444444-4444-4444-8444-444444444444','debit',999999,'GBP','33333333-3333-4333-8333-333333333333');
+SQL
+isolated="$(curl --fail --silent "$api/analytics/statistics?from=2026-10-01&to=2026-11-01")"
+test "$(printf '%s' "$isolated" | json_value 'data.currencies.map(c=>c.currency).join(",")')" = "RUB,USD"
+test "$(printf '%s' "$isolated" | json_value 'data.currencies[0].series[0].purchasesMinor')" = "14000"
+# Historical imports can contain an unknown category; manual purchase API requires one.
+docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 <<SQL >/dev/null
+INSERT INTO financial_events(id,kind,source,occurred_date,idempotency_key,request_hash,owner_id) VALUES ('66666666-6666-4666-8666-666666666666','purchase','bank_import','2026-10-15','statistics-uncategorized',repeat('0',64),'00000000-0000-4000-8000-000000000001');
+INSERT INTO postings(financial_event_id,account_id,direction,amount_minor,currency,owner_id) VALUES ('66666666-6666-4666-8666-666666666666','$primary_id','debit',20,'RUB','00000000-0000-4000-8000-000000000001');
+SQL
+docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 -c "UPDATE accounts SET balance_reconciled=false WHERE id='$primary_id'" >/dev/null
+unknown="$(curl --fail --silent "$api/analytics/statistics?from=2026-10-01&to=2026-11-01")"
+test "$(printf '%s' "$unknown" | json_value 'data.currencies[0].summary.openingBalanceMinor')" = "null"
+test "$(printf '%s' "$unknown" | json_value 'data.currencies[0].summary.closingBalanceMinor')" = "null"
+test "$(printf '%s' "$unknown" | json_value 'data.currencies[0].summary.purchasesMinor')" = "14020"
+test "$(printf '%s' "$unknown" | json_value 'data.currencies[0].categories.find(c=>c.categoryId===null).categoryName')" = "Без категории"
+test "$(printf '%s' "$unknown" | json_value 'data.currencies[0].categories.find(c=>c.categoryId===null).purchasesMinor')" = "20"
+echo "SPEC-0004 and SPEC-0030 analytics integration checks passed"

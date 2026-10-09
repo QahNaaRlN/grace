@@ -37,7 +37,7 @@ const mainLinks = [
 const moreLinks = [
   { to: '/imports', label: 'Импорт', icon: Import },
   { to: '/accounts', label: 'Счета и карты', icon: WalletCards },
-  { to: '/analytics', label: 'Подробный расчёт', icon: BarChart3 },
+  { to: '/analytics', label: 'Статистика', icon: BarChart3 },
   { to: '/assistant', label: 'Ассистент', icon: Bot },
   { to: '/health', label: 'Финансовое здоровье', icon: TableProperties },
   { to: '/profile', label: 'Профиль и доступ', icon: UserRound },

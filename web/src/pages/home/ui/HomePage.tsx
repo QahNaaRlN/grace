@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { Overview } from './Overview'
+import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
 import { accountLabel, today, eventDateText, eventTimeText } from '@/shared/lib/finance-display'
@@ -1075,14 +1076,14 @@ export function HomePage() {
         ) : (
           <>
             {path === '/' && (
-              <Overview
+              <div className="space-y-6"><Overview
                 cash={cash.data}
                 pending={cash.isPending}
                 failed={cash.isError}
                 events={events.data ?? []}
                 accounts={accounts.data ?? []}
                 retry={() => void cash.refetch()}
-              />
+              /><StatisticsPage compact /></div>
             )}
             {path === '/accounts' && accounts.data && (
               <Accounts items={accounts.data} />
@@ -1112,7 +1113,7 @@ export function HomePage() {
                 )}
               </div>
             )}
-            {path === '/analytics' && <Analytics />}
+            {path === '/analytics' && <div className="space-y-8"><StatisticsPage /><details className="rounded-2xl border bg-card p-5"><summary className="min-h-11 content-center font-medium">Подробные расчёты остатков и платежей</summary><div className="mt-5"><Analytics /></div></details></div>}
             {path === '/health' && (
               <FinancialHealth
                 accounts={accounts.data ?? []}

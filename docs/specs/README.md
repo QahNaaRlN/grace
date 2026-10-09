@@ -1,9 +1,13 @@
 # Spec-first процесс Grace
 
+[SPEC-0030 — графики статистики](0030-statistics-charts.md) — accepted прямым
+поручением владельца после обсуждения трёх графиков. Реализация в отдельной
+ветке codex/statistics-charts, проверки: [evidence](0030-evidence.md).
+
 [SPEC-0029 — проработка палитры и единое оформление](0029-design-foundations.md)
 — accepted по поручению владельца 2026-10-09: три palette previews,
-прозрачная favicon и согласованные общие controls. Окончательный цвет ещё
-выбирается; production palette/rollout не меняются.
+прозрачная favicon и согласованные общие controls. Выбрана петрольная палитра
+и знак ₽ с пульсом; применены локально, production rollout ещё не выполнен.
 [Проработка](../design-direction.md), [evidence](0029-evidence.md).
 
 [SPEC-0026 — встроенный ассистент и фото чеков](0026-ai-assistant-receipts.md)

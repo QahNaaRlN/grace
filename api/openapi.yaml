@@ -1204,6 +1204,28 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/PeriodSummary' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/analytics/statistics:
+    get:
+      operationId: getStatistics
+      description: Recorded events only; coverage does not certify a complete history. Calendar Asia/Yekaterinburg, maximum one year, isolated by owner.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date }, description: Inclusive calendar date }
+        - { name: to, in: query, required: true, schema: { type: string, format: date }, description: Exclusive calendar date }
+        - { name: granularity, in: query, schema: { type: string, enum: [week, month], default: month } }
+      responses:
+        '200':
+          description: Deterministic statistics, grouped by currency
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Statistics' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '503': { $ref: '#/components/responses/AuthenticationError' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500':
+          description: Statistics calculation failed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/v1/analytics/cash-position:
     get:
       operationId: getCashPosition
@@ -2399,6 +2421,46 @@ components:
         currencies:
           type: array
           items: { $ref: '#/components/schemas/CurrencyPeriodSummary' }
+    Statistics:
+      type: object
+      required: [from, to, granularity, coverage, currencies]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        granularity: { type: string, enum: [week, month] }
+        coverage: { type: string, enum: [recorded_only] }
+        currencies:
+          type: array
+          items: { $ref: '#/components/schemas/StatisticsCurrency' }
+    StatisticsCurrency:
+      type: object
+      required: [currency, summary, categories, series]
+      properties:
+        currency: { type: string }
+        summary: { $ref: '#/components/schemas/CurrencyPeriodSummary' }
+        categories:
+          type: array
+          items:
+            allOf:
+              - { $ref: '#/components/schemas/ExpenseCategorySummary' }
+              - type: object
+                required: [shareBasisPoints]
+                properties:
+                  shareBasisPoints: { type: integer, minimum: 0, maximum: 10000 }
+        series:
+          type: array
+          items: { $ref: '#/components/schemas/StatisticsBucket' }
+    StatisticsBucket:
+      type: object
+      required: [from, to, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, outflowsMinor]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        incomeMinor: { type: integer, format: int64, minimum: 0 }
+        purchasesMinor: { type: integer, format: int64, minimum: 0 }
+        refundsMinor: { type: integer, format: int64, minimum: 0 }
+        debtPaymentsMinor: { type: integer, format: int64, minimum: 0 }
+        outflowsMinor: { type: integer, format: int64, minimum: 0 }
     CashScheduledPayment:
       type: object
       required: [scheduledPaymentId, obligationId, obligationName, dueOn, amountMinor, paidMinor, remainingMinor, timing]

@@ -124,6 +124,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Post("/obligations", obligationsHandler.Create)
 		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
 		router.Get("/analytics/period-summary", analyticsHandler.PeriodSummary)
+		router.Get("/analytics/statistics", analyticsHandler.Statistics)
 		router.Get("/analytics/cash-position", analyticsHandler.CashPosition)
 		router.Post("/assistant/query", assistantHandler.Query)
 	})

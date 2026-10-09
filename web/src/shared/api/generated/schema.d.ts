@@ -564,6 +564,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analytics/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Recorded events only; coverage does not certify a complete history. Calendar Asia/Yekaterinburg, maximum one year, isolated by owner. */
+        get: operations["getStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/analytics/cash-position": {
         parameters: {
             query?: never;
@@ -1304,6 +1321,41 @@ export interface components {
             /** Format: date-time */
             to: string;
             currencies: components["schemas"]["CurrencyPeriodSummary"][];
+        };
+        Statistics: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** @enum {string} */
+            granularity: "week" | "month";
+            /** @enum {string} */
+            coverage: "recorded_only";
+            currencies: components["schemas"]["StatisticsCurrency"][];
+        };
+        StatisticsCurrency: {
+            currency: string;
+            summary: components["schemas"]["CurrencyPeriodSummary"];
+            categories: (components["schemas"]["ExpenseCategorySummary"] & {
+                shareBasisPoints: number;
+            })[];
+            series: components["schemas"]["StatisticsBucket"][];
+        };
+        StatisticsBucket: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** Format: int64 */
+            incomeMinor: number;
+            /** Format: int64 */
+            purchasesMinor: number;
+            /** Format: int64 */
+            refundsMinor: number;
+            /** Format: int64 */
+            debtPaymentsMinor: number;
+            /** Format: int64 */
+            outflowsMinor: number;
         };
         CashScheduledPayment: {
             /** Format: uuid */
@@ -3519,6 +3571,44 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    getStatistics: {
+        parameters: {
+            query: {
+                /** @description Inclusive calendar date */
+                from: string;
+                /** @description Exclusive calendar date */
+                to: string;
+                granularity?: "week" | "month";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deterministic statistics, grouped by currency */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Statistics"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
+            /** @description Statistics calculation failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             503: components["responses"]["AuthenticationError"];
         };
     };

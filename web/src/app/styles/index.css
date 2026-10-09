@@ -5,6 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: light;
   --motion-quick: 140ms;
   --motion-enter: 200ms;
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -36,6 +37,7 @@
   --chart-5: #735483;
 }
 .dark {
+  color-scheme: dark;
   --background: #101c1b;
   --foreground: #edf5f1;
   --card: #192a27;
