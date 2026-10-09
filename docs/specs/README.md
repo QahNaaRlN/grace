@@ -1,5 +1,11 @@
 # Spec-first процесс Grace
 
+[SPEC-0029 — проработка палитры и единое оформление](0029-design-foundations.md)
+— accepted по поручению владельца 2026-10-09: три palette previews,
+прозрачная favicon и согласованные общие controls. Окончательный цвет ещё
+выбирается; production palette/rollout не меняются.
+[Проработка](../design-direction.md), [evidence](0029-evidence.md).
+
 [SPEC-0026 — встроенный ассистент и фото чеков](0026-ai-assistant-receipts.md)
 — accepted: архитектура ядра/Jev/LLM, серверный OpenRouter adapter, бюджет $10,
 временные фото и отдельное подтверждение AI-originated expense. Реализация
