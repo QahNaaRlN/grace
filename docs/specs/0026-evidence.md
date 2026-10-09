@@ -41,7 +41,7 @@ key-file и отдельный volume, готовит ownership под non-root 
 | AC1 | Local PASS | `make test`; `TestOpenRouterSecretFileIsServerOnlyAndMissingKeyKeepsCore`; ручные finance/import/receipt/auth regression suites при выключенном ИИ |
 | AC2 | Частично | `TestAnalysisUsesExactCoreFactsAndCalendarPeriod`, `TestAnalysisRejectsInventedNumbersReferencesAndAdditionalFields`; подготовлены 20 questions. Live ответы на весь corpus ещё не измерены |
 | AC3 | Не завершён | `go run ./cmd/ai-eval`, `-render`, `-score`; 20 размеченных PNG (18 readable, 2 unknown). Сравнение 2–3 моделей, exact ≥95%, latency/cost/item errors требуют ключа и выбранных маршрутов |
-| AC4 | Частично | `TestProductGroupNoMatchThresholdAndEvidence`, `GroupQuestion`, optional GroupSuggester port, 30 labelled rows. Live metered Jev adapter, precision/coverage threshold и disclosure TypeSafe ещё не подключены; manual group остаётся |
+| AC4 | Частично | `TestProductGroupNoMatchThresholdAndEvidence`, `TestProductGroupsBatchOnlyNamesAndPreserveUnknownBilling`, typed question, metered adapter и optional port, 30 labelled rows. Live precision/coverage threshold, billing reconciliation и disclosure TypeSafe ещё не подключены; manual group остаётся |
 | AC5 | Local PASS | `TestReceiptDraftAtomicConfirmationIsolationAndCleanup`: edit не создаёт posting, 8 concurrent confirms дают одну posting, конфликт key/duplicate/stale ledger отвергается, link-existing не добавляет posting |
 | AC6 | Local PASS | `TestReceiptAmountsDiscountsAndUnknowns`, точные ParseScaled, discount проверяется один раз, date-only сохраняет неизвестное время; `npm run generate:api` + build; оригинальные extractions отдельно от owner fields |
 | AC7 | Частично | RLS cross-owner draft/usage tests; отсутствие principal отвергается; existing session/CSRF/Origin suites PASS; `TestOpenRouterNeverRetriesOrReflectsPrivateError`, unsupported fact references/extra fields. Live endpoint-policy gate и полный adversarial corpus остаются |
@@ -54,6 +54,7 @@ key-file и отдельный volume, готовит ownership под non-root 
 - `make test` — PASS на Windows через Git Bash, с разрешёнными локальными
   loopback test servers; 11 Web test files / 45 tests.
 - `go vet ./...` — PASS.
+- Docker API image build и проверка временного volume от non-root UID 10001 — PASS.
 - `git diff --check` — PASS.
 - `scripts/test-ai-experiment.sh` — PASS: usage concurrency/uncertainty и
   receipt create/link/isolation/cleanup; downgrade корректно отказался
@@ -82,9 +83,9 @@ adapter, явное согласие на один личный анализ/ч�
 с backup/restore. Платные внешние inference calls в этой работе не выполнялись.
 Production и реальные финансовые данные не менялись.
 
-Отправка ветки и создание draft PR пока не выполнены: автоматический reviewer
-отклонил push, указав, что разрешение на разработку не подтверждает передачу
-исходного кода в GitHub. Запрошено явное разрешение владельца на
-`QahNaaRlN/grace`; local commits сохранены. Linux CI до отправки ветки не запущен.
+Автоматический reviewer сначала отклонил push как передачу исходного кода без
+явного разрешения на GitHub. Владелец 2026-10-09 прямо разрешил отправку ветки
+в `QahNaaRlN/grace` и создание draft PR для CI. Результат Linux CI фиксируется
+после наблюдаемого завершения; local PASS не означает remote PASS.
 
 Порядок установки и эксперимента: [ai-experiment.md](../ai-experiment.md).
