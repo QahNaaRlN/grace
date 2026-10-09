@@ -1,0 +1,31 @@
+# Optional SPEC-0026 override. Base production stays usable without an AI key.
+# Use only after the live evaluation and consent gates in docs/ai-experiment.md.
+services:
+  ai-photo-init:
+    image: ghcr.io/${GRACE_IMAGE_OWNER:?GRACE_IMAGE_OWNER is required}/grace-api:${RELEASE_TAG:?RELEASE_TAG is required}
+    user: '0:0'
+    network_mode: none
+    entrypoint: [/bin/sh, -ec]
+    command: ['chown grace:grace /photos && chmod 0700 /photos']
+    volumes:
+      - grace-temporary-photos:/photos
+    restart: 'no'
+  api:
+    depends_on:
+      ai-photo-init:
+        condition: service_completed_successfully
+    environment:
+      GRACE_AI_ENABLED: ${GRACE_AI_ENABLED:-false}
+      OPENROUTER_API_KEY_FILE: /run/secrets/openrouter_api_key
+      GRACE_AI_ANALYSIS_POLICY: ${GRACE_AI_ANALYSIS_POLICY:-}
+      GRACE_AI_RECEIPT_POLICY: ${GRACE_AI_RECEIPT_POLICY:-}
+      GRACE_AI_PHOTO_DIR: /var/lib/grace/temporary-receipt-photos
+    secrets:
+      - openrouter_api_key
+    volumes:
+      - grace-temporary-photos:/var/lib/grace/temporary-receipt-photos
+secrets:
+  openrouter_api_key:
+    file: ${GRACE_SECRETS_DIR:?GRACE_SECRETS_DIR is required}/openrouter_api_key
+volumes:
+  grace-temporary-photos:
