@@ -74,6 +74,13 @@ upper bound должен покрывать нормализованное из�
 Запрос требует `provider.only`, `allow_fallbacks=false`, `require_parameters`,
 `data_collection=deny`, `zdr=true`, `max_price`; external tools/plugins отсутствуют.
 Ответ проверяется на модель/provider, полный JSON, usage и стоимость.
+`provider` — точный routing slug; `providerName` — отдельно проверенное имя
+из router metadata (например, имя Google Vertex не равно slug `google-vertex`).
+Сервер запрашивает `X-OpenRouter-Metadata: enabled`, требует ровно один
+выбранный endpoint, direct strategy / первую попытку, отсутствие BYOK и
+скрытых pipeline stages. Он не зависит от недокументированного верхнего поля
+`provider` и не угадывает соответствие slug/name. Без route evidence ответ
+отвергается, billing остаётся uncertain. [Контракт metadata](https://openrouter.ai/docs/guides/features/router-metadata).
 Первые реальные запросы — только synthetic fixtures. Отдельное согласие в
 Grace требуется перед передачей личного анализа или чека, отдельно от
 подтверждения расхода. Общий лимит включает будущие платные Jev-вызовы.

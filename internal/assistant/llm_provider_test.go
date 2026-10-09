@@ -21,6 +21,9 @@ func TestOpenRouterPinsPrivacyRouteAndParsesExactCost(t *testing.T) {
 		if r.Header.Get("Authorization") != "Bearer synthetic-test-key" {
 			t.Error("missing server authentication")
 		}
+		if r.Header.Get("X-OpenRouter-Metadata") != "enabled" {
+			t.Error("missing route evidence opt-in")
+		}
 		var input map[string]json.RawMessage
 		json.NewDecoder(r.Body).Decode(&input)
 		var route struct {
@@ -38,12 +41,14 @@ func TestOpenRouterPinsPrivacyRouteAndParsesExactCost(t *testing.T) {
 			t.Error("external tools leaked")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"id":"fixture-call","model":"fixture/model-v1","provider":"fixture","choices":[{"finish_reason":"stop","message":{"content":"{\"status\":\"ok\"}"}}],"usage":{"prompt_tokens":100,"completion_tokens":10,"cost":0.0000500001}}`))
+		w.Write([]byte(`{"id":"fixture-call","model":"fixture/model-v1","openrouter_metadata":{"requested":"fixture/model-v1","strategy":"direct","attempt":1,"is_byok":false,"endpoints":{"available":[{"provider":"Fixture Display","model":"fixture/model-v1","selected":true}]},"pipeline":[]},"choices":[{"finish_reason":"stop","message":{"content":"{\"status\":\"ok\"}"}}],"usage":{"prompt_tokens":100,"completion_tokens":10,"cost":0.0000500001}}`))
 	}))
 	defer server.Close()
 	p, _ := NewOpenRouterProvider("synthetic-test-key", server.Client())
 	p.endpoint = server.URL
-	out, err := p.Complete(context.Background(), LLMRequest{Policy: policyFixture(), Messages: []LLMMessage{{Role: "user", Content: "Synthetic input"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
+	policy := policyFixture()
+	policy.ProviderName = "Fixture Display"
+	out, err := p.Complete(context.Background(), LLMRequest{Policy: policy, Messages: []LLMMessage{{Role: "user", Content: "Synthetic input"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
 	if err != nil || out.CostMicros != 51 || out.PromptTokens != 100 || calls.Load() != 1 {
 		t.Fatal(out, err, calls.Load())
 	}

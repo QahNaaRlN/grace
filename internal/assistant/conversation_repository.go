@@ -27,7 +27,7 @@ func aiHash(value any) string {
 	return hex.EncodeToString(h[:])
 }
 func ConsentHash(scope string, policy ModelPolicy) string {
-	return aiHash(struct{ Scope, Model, Provider, Version string }{scope, policy.Model, policy.Provider, "grace.ai.20261008.zdr.confirmed"})
+	return aiHash(struct{ Scope, Model, Provider, ProviderName, Version string }{scope, policy.Model, policy.Provider, policy.DisplayProvider(), "grace.ai.20261008.zdr.confirmed"})
 }
 func (r *ConversationRepository) Consent(ctx context.Context, scope, hash string, grant bool) error {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})

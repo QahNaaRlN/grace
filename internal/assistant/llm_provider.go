@@ -18,11 +18,34 @@ import (
 type ModelPolicy struct {
 	Model                  string    `json:"model"`
 	Provider               string    `json:"provider"`
+	ProviderName           string    `json:"providerName,omitempty"`
 	InputMicrosPerMillion  int64     `json:"inputMicrosPerMillion"`
 	OutputMicrosPerMillion int64     `json:"outputMicrosPerMillion"`
 	ImageTokenUpperBound   int       `json:"imageTokenUpperBound"`
 	VerifiedAt             time.Time `json:"verifiedAt"`
 	Vision                 bool      `json:"vision"`
+}
+
+func (p ModelPolicy) DisplayProvider() string {
+	if p.ProviderName != "" {
+		return p.ProviderName
+	}
+	return p.Provider
+}
+
+type routerMetadata struct {
+	Requested string `json:"requested"`
+	Strategy  string `json:"strategy"`
+	Attempt   int    `json:"attempt"`
+	IsBYOK    bool   `json:"is_byok"`
+	Endpoints struct {
+		Available []struct {
+			Provider string `json:"provider"`
+			Model    string `json:"model"`
+			Selected bool   `json:"selected"`
+		} `json:"available"`
+	} `json:"endpoints"`
+	Pipeline []json.RawMessage `json:"pipeline"`
 }
 
 func (p ModelPolicy) Valid(now time.Time) bool {
@@ -129,6 +152,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 	}
 	req.Header.Set("Authorization", "Bearer "+p.apiKey)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-OpenRouter-Metadata", "enabled")
 	response, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -146,9 +170,10 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 		return LLMResponse{}, errors.New("provider_protocol")
 	}
 	var out struct {
-		ID       string `json:"id"`
-		Model    string `json:"model"`
-		Provider string `json:"provider"`
+		ID       string          `json:"id"`
+		Model    string          `json:"model"`
+		Provider string          `json:"provider"`
+		Metadata *routerMetadata `json:"openrouter_metadata"`
 		Choices  []struct {
 			FinishReason string `json:"finish_reason"`
 			Message      struct {
@@ -162,16 +187,35 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 			Cost       json.Number `json:"cost"`
 		} `json:"usage"`
 	}
-	if json.Unmarshal(raw, &out) != nil || out.ID == "" || out.Model != in.Policy.Model || !strings.EqualFold(out.Provider, in.Policy.Provider) ||
+	if json.Unmarshal(raw, &out) != nil || out.ID == "" || out.Model != in.Policy.Model ||
 		len(out.Choices) != 1 || len(out.Choices[0].Message.ToolCalls) > 0 || out.Choices[0].FinishReason != "stop" || !json.Valid([]byte(out.Choices[0].Message.Content)) ||
 		out.Usage.Prompt < 1 || out.Usage.Prompt > in.InputTokenUpperBound || out.Usage.Completion < 1 || out.Usage.Completion > in.MaxOutputTokens {
+		return LLMResponse{}, errors.New("provider_protocol")
+	}
+	// Routing slugs and response display names are distinct API fields. The
+	// expected name is verified by the operator, never inferred from a slug.
+	if out.Metadata == nil || out.Metadata.Requested != in.Policy.Model || out.Metadata.Strategy != "direct" || out.Metadata.Attempt != 1 || out.Metadata.IsBYOK || len(out.Metadata.Pipeline) > 0 {
+		return LLMResponse{}, errors.New("provider_protocol")
+	}
+	selected := 0
+	actualProvider := ""
+	for _, endpoint := range out.Metadata.Endpoints.Available {
+		if endpoint.Selected {
+			selected++
+			if endpoint.Model != in.Policy.Model || !strings.EqualFold(endpoint.Provider, in.Policy.DisplayProvider()) {
+				return LLMResponse{}, errors.New("provider_protocol")
+			}
+			actualProvider = endpoint.Provider
+		}
+	}
+	if selected != 1 || (out.Provider != "" && !strings.EqualFold(out.Provider, actualProvider)) {
 		return LLMResponse{}, errors.New("provider_protocol")
 	}
 	cost, err := costMicros(string(out.Usage.Cost))
 	if err != nil {
 		return LLMResponse{}, err
 	}
-	return LLMResponse{out.ID, out.Model, out.Provider, json.RawMessage(out.Choices[0].Message.Content), out.Usage.Prompt, out.Usage.Completion, cost}, nil
+	return LLMResponse{out.ID, out.Model, actualProvider, json.RawMessage(out.Choices[0].Message.Content), out.Usage.Prompt, out.Usage.Completion, cost}, nil
 }
 
 func microsPrice(n int64) json.Number {
