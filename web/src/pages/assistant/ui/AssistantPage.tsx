@@ -1,4 +1,5 @@
-import { AlertCircle, Bot, CheckCircle2, Send, ShieldCheck } from 'lucide-react'
+import { PageHeader } from '@/shared/ui/page-header'
+import { AlertCircle, CheckCircle2, Send, ShieldCheck } from 'lucide-react'
 import { Component, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 
 import {
@@ -304,15 +305,8 @@ export function AssistantPage({ submitAssistant = queryAssistant }: { submitAssi
 
   return (
     <AppLayout>
-      <section className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
-        <div className="relative overflow-hidden rounded-3xl bg-primary px-5 py-7 text-primary-foreground shadow-xl shadow-primary/10 sm:px-8 sm:py-9">
-          <div className="absolute -top-14 -right-10 size-44 rounded-full bg-white/10" />
-          <div className="relative max-w-2xl">
-            <p className="flex items-center gap-2 text-sm font-semibold text-primary-foreground"><Bot className="size-4" aria-hidden="true" /> Grace · только чтение</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Спросите о своих деньгах</h1>
-            <p className="mt-3 leading-relaxed text-primary-foreground/75">Один конкретный вопрос — один проверяемый ответ. Расчёты выполняет финансовое ядро, а не языковая модель.</p>
-          </div>
-        </div>
+      <section className="space-y-6">
+        <PageHeader title="Ассистент" description="Спросите о своих деньгах. Ответы опираются на проверяемые расчёты Grace." />
 
         <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-sm leading-relaxed text-accent-foreground shadow-sm sm:p-5">
           <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card"><ShieldCheck className="size-5" aria-hidden="true" /></div>

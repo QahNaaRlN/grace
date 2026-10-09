@@ -1,3 +1,4 @@
+import { PageHeader } from '@/shared/ui/page-header'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowDownRight,
@@ -140,9 +141,10 @@ function Accounts({ items }: { items: Account[] }) {
     <>
       <div className="rounded-2xl border bg-card p-5">
         {items.map((account) => (
-          <button
+          <Button
+            variant="ghost"
             key={account.id}
-            className="grace-row mt-1"
+            className="grace-row mt-1 h-auto justify-start whitespace-normal font-normal"
             onClick={(event) => {
               opener.current = event.currentTarget
               setSelected(account)
@@ -169,7 +171,7 @@ function Accounts({ items }: { items: Account[] }) {
             <strong className="grace-money max-w-[48%] text-right">
               {formatMoney(account.balanceMinor, account.currency)}
             </strong>
-          </button>
+          </Button>
         ))}
       </div>
       <Dialog
@@ -966,7 +968,7 @@ export function HomePage() {
     '/operations': 'Операции',
     '/payments': 'Платежи',
     '/accounts': 'Счета и карты',
-    '/analytics': 'Подробный расчёт',
+    '/analytics': 'Статистика',
     '/health': 'Финансовое здоровье',
     '/profile': 'Профиль и доступ',
   }
@@ -974,21 +976,11 @@ export function HomePage() {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="mb-1 text-sm text-muted-foreground">Личные финансы</p>
-            <h1>{title[path] ?? 'Обзор'}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {error
-                ? 'Часть данных недоступна'
-                : pending
-                  ? 'Обновляем данные…'
-                  : 'Данные загружены'}
-            </p>
-          </div>
+          <PageHeader title={title[path] ?? 'Обзор'} description={{'/':'Деньги и ближайшие дела — в одном месте.','/operations':'Покупки, поступления и переводы.','/accounts':'Счета, карты и подтверждённые остатки.','/payments':'Обязательства и ближайшие платежи.','/analytics':'Посмотрите, куда уходят деньги и как меняются траты.','/health':'Сводки по месяцам и источники данных.','/profile':'Личные данные, почта и управление доступом.'}[path]} status={error ? 'Часть данных недоступна' : pending ? 'Обновляем данные…' : undefined} />
           <div className="flex flex-wrap gap-3">
             <Dialog open={accountOpen} onOpenChange={setAccountOpen}>
               <DialogTrigger asChild>
-                <Button variant={empty ? 'default' : 'outline'}>
+                <Button className={!empty && path !== '/accounts' ? 'hidden' : undefined} variant={empty || path === '/accounts' ? 'default' : 'outline'}>
                   <Plus className="size-4" />
                   Добавить {empty ? 'первый ' : ''}счёт
                 </Button>
@@ -1007,6 +999,7 @@ export function HomePage() {
               <Dialog open={operationOpen} onOpenChange={setOperationOpen}>
                 <DialogTrigger asChild>
                   <Button
+                    className={!['/', '/operations'].includes(path) ? 'hidden' : undefined}
                     disabled={
                       !accounts.data?.length ||
                       categories.isPending ||

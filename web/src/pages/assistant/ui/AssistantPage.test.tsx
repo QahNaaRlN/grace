@@ -155,7 +155,7 @@ describe('AssistantPage', () => {
 
     expect(submit).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button',{name:'Меню'}))
-    expect(screen.getByRole('link', { name: 'Ассистент' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getAllByRole('link', { name: 'Ассистент' })[0]).toHaveAttribute('aria-current', 'page')
     await user.keyboard('{Escape}')
     await user.click(screen.getByRole('button', { name: 'Спросить Grace' }))
 

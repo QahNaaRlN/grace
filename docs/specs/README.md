@@ -1,5 +1,9 @@
 # Spec-first процесс Grace
 
+[SPEC-0032 — единый полный интерфейс](0032-ui-redesign.md) принят прямым
+поручением владельца; все действующие экраны переработаны локально.
+[Система компонентов](../design-system.md), [evidence](0032-evidence.md).
+
 [SPEC-0031 — почта, пароль и приглашения](0031-password-registration.md) —
 accepted прямым поручением и выбором password-only login / email-bound invites.
 Реализация локально; [evidence](0031-evidence.md), [rollout](../password-authentication-rollout.md).

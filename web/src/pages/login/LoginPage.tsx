@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
 import { setCSRFToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { AuthShell } from '@/shared/ui/auth-shell'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { PasswordForm } from './PasswordEntry'
@@ -121,12 +121,7 @@ export function LoginPage() {
     }
   }
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-8">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">Добро пожаловать в Grace</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <AuthShell title="Вход в Grace">
           {methods.isPending ? (
             <p className="text-muted-foreground">Проверяем способы входа…</p>
           ) : methods.error ? (
@@ -279,8 +274,6 @@ export function LoginPage() {
               {error}
             </p>
           )}
-        </CardContent>
-      </Card>
-    </main>
+    </AuthShell>
   )
 }

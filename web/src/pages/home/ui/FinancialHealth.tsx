@@ -231,7 +231,7 @@ export function FinancialHealth({
         обозначены «Не указано».
       </p>
       {Object.entries(columns).map(([section, fields]) => (
-        <details key={section} className="rounded-2xl border bg-card p-5">
+        <details key={section} className="rounded-2xl border border-border/70 bg-card p-5">
           <summary className="min-h-11 rounded-xl px-3 py-2 font-semibold hover:bg-accent">
             {section}
           </summary>

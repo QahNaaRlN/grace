@@ -1,6 +1,6 @@
 import { AuthContext } from '@/shared/model/auth-context'
 import { env } from '@/shared/config/env'
-import { useContext, useEffect, useState, type ReactNode } from 'react'
+import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Bot,
   LayoutDashboard,
@@ -15,7 +15,7 @@ import {
   TableProperties,
   Import,
 } from 'lucide-react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { useTheme } from 'next-themes'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
@@ -47,6 +47,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
+  const { pathname } = useLocation()
+  const mainRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    mainRef.current?.focus({ preventScroll: true })
+  }, [pathname])
   useEffect(() => {
     const viewport = window.visualViewport
     if (!viewport) return
@@ -54,42 +60,27 @@ export function AppLayout({ children }: { children: ReactNode }) {
     viewport.addEventListener('resize', update)
     return () => viewport.removeEventListener('resize', update)
   }, [])
+  const allLinks = [...mainLinks, ...moreLinks]
   const navClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring',
+      'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring',
       isActive
         ? 'bg-accent text-primary'
         : 'text-muted-foreground hover:bg-accent hover:text-foreground',
     )
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b bg-card">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link
-            to="/"
-            aria-label="Grace — обзор"
-            className="flex min-h-11 items-center gap-3 text-xl font-semibold"
-          >
-            <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <GraceMark aria-hidden="true" className="size-6" />
-            </span>
-            Grace
-          </Link>
-          <nav
-            aria-label="Основная навигация"
-            className="mr-auto ml-6 hidden gap-2 md:flex"
-          >
-            {mainLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === '/'}
-                className={navClass}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+    <div className="min-h-dvh lg:pl-60">
+      <a href="#main-content" className="sr-only fixed top-3 left-3 z-[100] rounded-xl bg-primary px-4 py-3 text-primary-foreground focus:not-sr-only">Перейти к содержимому</a>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-border/70 bg-card p-5 lg:flex">
+        <Link to="/" aria-label="Grace — обзор" className="mb-8 flex min-h-11 items-center gap-3 px-2 text-xl font-semibold tracking-tight"><GraceMark className="size-9 text-primary" aria-hidden="true"/>Grace</Link>
+        <p className="mb-3 px-3 text-xs font-medium tracking-wide text-muted-foreground">Личное пространство</p>
+        <nav aria-label="Навигация" className="grid gap-1">{allLinks.map(({icon:Icon,...link})=><NavLink key={link.to} to={link.to} end={link.to==='/'} className={navClass}><Icon className="size-[18px]" aria-hidden="true"/>{link.label}</NavLink>)}</nav>
+        <div className="mt-auto border-t pt-4"><Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>{resolvedTheme==='dark'?<Sun className="size-[18px]"/>:<Moon className="size-[18px]"/>}{resolvedTheme==='dark'?'Светлая тема':'Тёмная тема'}</Button>{auth && <p className="mt-3 truncate px-3 text-sm text-muted-foreground" title={auth.session.user.name}>{auth.session.user.name}</p>}</div>
+      </aside>
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+          <Link to="/" aria-label="Grace — обзор" className="flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight lg:hidden"><GraceMark aria-hidden="true" className="size-8 text-primary"/>Grace</Link>
+          <span className="hidden text-sm text-muted-foreground lg:block">Мои финансы</span>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" aria-label="Меню">
@@ -115,7 +106,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   aria-label="Дополнительные разделы"
                   className="mt-6 grid gap-1"
                 >
-                  {moreLinks.map(({ icon: Icon, ...link }) => (
+                  {allLinks.map(({ icon: Icon, ...link }) => (
                     <NavLink
                       key={link.to}
                       to={link.to}
@@ -147,13 +138,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </Dialog>
         </div>
       </header>
-      <main className="grace-page mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-10">
+      <main ref={mainRef} tabIndex={-1} id="main-content" className="grace-page mx-auto w-full max-w-6xl px-4 pt-7 pb-[calc(6rem+env(safe-area-inset-bottom))] outline-none sm:px-6 sm:pt-8 lg:pb-12">
         {children}
       </main>
       {!keyboard && (
         <nav
           aria-label="Разделы на телефоне"
-          className="fixed inset-x-0 bottom-0 z-40 border-t bg-card px-3 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 border-t bg-card px-3 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] lg:hidden"
         >
           <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
             {mainLinks.map(({ icon: Icon, ...link }) => (
@@ -162,7 +153,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 to={link.to}
                 end={link.to === '/'}
                 className={({ isActive }) =>
-                  cn(navClass({ isActive }), 'flex-col gap-1 px-1 text-xs')
+                  cn(navClass({ isActive }), 'flex-col justify-center gap-1 px-1 text-xs')
                 }
               >
                 <Icon aria-hidden="true" className="size-5" />

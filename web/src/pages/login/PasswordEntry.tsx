@@ -1,13 +1,13 @@
+import { PasswordInput } from '@/shared/ui/password-input'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
 import { setCSRFToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { AuthShell } from '@/shared/ui/auth-shell'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { GraceMark } from '@/shared/ui/GraceMark'
 
 type View = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -17,7 +17,7 @@ export function PasswordForm({ view }: { view: View }) {
   const [token, setToken] = useState(fragment.get('token') ?? '')
   const [invitation, setInvitation] = useState(fragment.get('invitation') ?? '')
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [repeat, setRepeat] = useState('')
-  const [visible, setVisible] = useState(false), [busy, setBusy] = useState(false), [done, setDone] = useState(false)
+  const [busy, setBusy] = useState(false), [done, setDone] = useState(false)
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [cooldown, setCooldown] = useState(0)
   const sending = useRef(false)
   useEffect(() => {
@@ -67,8 +67,8 @@ export function PasswordForm({ view }: { view: View }) {
     {view === 'forgot' && <p className="text-sm text-muted-foreground">Укажите подтверждённую почту. Здесь же можно установить первый пароль для существующего аккаунта Grace.</p>}
     {confirmation ? <p>Подтвердите почту и завершите регистрацию. Это действие создаст доступ к вашему аккаунту.</p> : view !== 'reset' && <div className="space-y-2"><Label htmlFor="password-email">Почта</Label><Input id="password-email" type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required maxLength={254} /></div>}
     {!confirmation && view !== 'forgot' && <>
-      <div className="space-y-2"><Label htmlFor="entry-password">{view === 'reset' ? 'Новый пароль' : 'Пароль'}</Label><div className="flex gap-2"><Input id="entry-password" type={visible ? 'text' : 'password'} autoComplete={newPassword ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} required className="min-w-0" /><Button type="button" variant="outline" aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'} aria-pressed={visible} onClick={() => setVisible(!visible)}>{visible ? 'Скрыть' : 'Показать'}</Button></div>{newPassword && <p id="password-help" className="text-sm text-muted-foreground">От 15 до 128 символов. Можно использовать фразу и вставлять пароль из менеджера.</p>}</div>
-      {newPassword && <div className="space-y-2"><Label htmlFor="repeat-password">Повторите пароль</Label><Input id="repeat-password" type={visible ? 'text' : 'password'} autoComplete="new-password" required value={repeat} onChange={e => setRepeat(e.target.value)} /></div>}
+      <div className="space-y-2"><Label htmlFor="entry-password">{view === 'reset' ? 'Новый пароль' : 'Пароль'}</Label><PasswordInput id="entry-password" autoComplete={newPassword ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} required aria-describedby={newPassword ? 'password-help' : undefined} />{newPassword && <p id="password-help" className="text-sm text-muted-foreground">От 15 до 128 символов. Можно использовать фразу и вставлять пароль из менеджера.</p>}</div>
+      {newPassword && <div className="space-y-2"><Label htmlFor="repeat-password">Повторите пароль</Label><PasswordInput id="repeat-password" visibilityLabel="повтор пароля" autoComplete="new-password" required value={repeat} onChange={e => setRepeat(e.target.value)} /></div>}
     </>}
     {view === 'register' && !confirmation && <div className="space-y-2"><Label htmlFor="registration-invite">Код приглашения</Label><Input id="registration-invite" value={invitation} onChange={e => setInvitation(e.target.value.trim())} autoComplete="off" required minLength={43} maxLength={43} /><p className="text-sm text-muted-foreground">Приглашение действует только для указанной администратором почты и используется один раз.</p></div>}
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
@@ -83,5 +83,5 @@ export function PasswordForm({ view }: { view: View }) {
 export function PasswordEntry({ view }: { view: Exclude<View, 'login'> }) {
   const methods = useQuery({ queryKey: ['auth-methods'], queryFn: async () => { const { data } = await apiClient.GET('/api/auth/methods'); if (!data) throw new Error('Проверка доступа недоступна.'); return data } })
   const titles = { register: 'Регистрация в Grace', forgot: 'Восстановление пароля', reset: 'Новый пароль' }
-  return <main className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-8"><Card className="w-full"><CardHeader><div className="mb-3 flex items-center gap-3 text-primary"><GraceMark className="size-8" aria-hidden="true" /><span className="text-xl font-semibold">Grace</span></div><CardTitle className="text-2xl">{titles[view]}</CardTitle></CardHeader><CardContent>{methods.isPending ? <p>Проверяем доступ…</p> : methods.data?.password ? <PasswordForm view={view} /> : <div className="space-y-4"><p role="alert">Этот способ доступа пока недоступен.</p><Button variant="outline" onClick={() => void methods.refetch()}>Повторить</Button><Link className="block text-primary underline" to="/login">Вернуться ко входу</Link></div>}</CardContent></Card></main>
+  return <AuthShell title={titles[view]}>{methods.isPending ? <p>Проверяем доступ…</p> : methods.data?.password ? <PasswordForm view={view} /> : <div className="space-y-4"><p role="alert">Этот способ доступа пока недоступен.</p><Button variant="outline" onClick={() => void methods.refetch()}>Повторить</Button><Link className="block text-primary underline" to="/login">Вернуться ко входу</Link></div>}</AuthShell>
 }

@@ -55,3 +55,8 @@ Privacy/модель/стоимость доступны человеку, но 
 | Применение palette ко всем tokens | Выполнено локально, обе темы | Интеграция и release |
 | Полный receipt/analysis redesign | Предложенный scope | Уточнённая spec + AI branch integration |
 | Production | Без изменений | Проверенный release |
+
+По прямому поручению владельца все действующие экраны переработаны в
+SPEC-0032: [единая система интерфейса](design-system.md),
+[проверки](specs/0032-evidence.md). Новый AI photo receipt flow остаётся
+отдельным этапом/веткой; текущие ручные формы используют общие controls.

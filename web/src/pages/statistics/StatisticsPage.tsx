@@ -1,4 +1,5 @@
-import { useId, useState } from 'react'
+import { ChoiceSelect } from '@/shared/ui/choice-select'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
@@ -23,23 +24,34 @@ type RowKey = 'purchasesMinor' | 'incomeMinor' | 'outflowsMinor'
 export function SeriesChart({ item, comparison = false, compact = false }: { item: StatisticsCurrency; comparison?: boolean; compact?: boolean }) {
   const id = useId()
   const [selection, setSelection] = useState<string>()
+  const plotRef = useRef<HTMLDivElement>(null)
+  const [plotWidth, setPlotWidth] = useState(0)
+  useEffect(() => {
+    const element = plotRef.current
+    if (!element || !compact) return
+    const update = () => { if (element.clientWidth) setPlotWidth(element.clientWidth - 16) }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [compact])
   const keys: RowKey[] = comparison ? ['incomeMinor', 'outflowsMinor'] : ['purchasesMinor']
   const labels: Record<RowKey, string> = { purchasesMinor: 'Покупки', incomeMinor: 'Доходы', outflowsMinor: 'Покупки и платежи' }
   const chosen = item.series.find(b => b.from === selection) ?? item.series.at(-1)
   const max = Math.max(1, ...item.series.flatMap(b => keys.map(k => b[k])))
   const hasValues = item.series.some(b => keys.some(k => b[k] > 0))
-  const width = Math.max(comparison ? 900 : 480, item.series.length * 56)
+  const width = Math.max(compact ? plotWidth : comparison ? 900 : 480, 480, item.series.length * 56)
   const step = (width - 130) / Math.max(item.series.length, 1)
   return <div className="space-y-3">
     <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">{keys.map((key, index) => <span key={key} className="flex items-center gap-2"><span className="inline-block size-3 rounded-sm" style={{ background: `var(--chart-${index + 1})` }} />{labels[key]}</span>)}</div>
-    {!compact && <p className="text-sm text-muted-foreground sm:hidden">Проведите по графику в сторону, чтобы увидеть другие периоды.</p>}
-    <div className="overflow-x-auto rounded-xl border bg-background/40 p-2" tabIndex={0} aria-label="Область графика, прокрутка при необходимости">
-      {!hasValues ? <p className="p-4 text-sm text-muted-foreground">{comparison ? 'Нет записанных доходов, покупок и платежей за этот период.' : 'Нет записанных покупок за этот период.'}</p> : <svg viewBox={`0 0 ${width} 230`} style={{ width: '100%', minWidth: compact ? undefined : width, height: compact ? 180 : 240 }} role="group" aria-labelledby={id}>
+    <p className="text-sm text-muted-foreground sm:hidden">Проведите по графику в сторону, чтобы увидеть другие периоды.</p>
+    <div ref={plotRef} className="overflow-x-auto rounded-xl border bg-background/40 p-2" tabIndex={0} aria-label="Область графика, прокрутка при необходимости">
+      {!hasValues ? <p className="p-4 text-sm text-muted-foreground">{comparison ? 'Нет записанных доходов, покупок и платежей за этот период.' : 'Нет записанных покупок за этот период.'}</p> : <svg viewBox={`0 0 ${width} 230`} style={{ width: '100%', minWidth: width, height: compact ? 230 : 240 }} role="group" aria-labelledby={id}>
         <title id={id}>{comparison ? 'Доходы и покупки с платежами' : 'Динамика покупок'}, {item.currency}. {compact ? 'Выберите период, чтобы увидеть сумму.' : 'Значения доступны в таблице.'}</title>
         {[0, 0.5, 1].map(ratio => <g key={ratio}><line x1="110" x2={width - 10} y1={190 - ratio * 150} y2={190 - ratio * 150} stroke="var(--border)" /><text x="100" textAnchor="end" y={194 - ratio * 150} fontSize="11" fill="var(--muted-foreground)">{formatMoney(Math.round(max * ratio), item.currency)}</text></g>)}
         {item.series.map((bucket, index) => <g key={bucket.from}>
           {keys.map((key, ki) => {
-            const barWidth = Math.min(22, step / (keys.length + 1))
+            const barWidth = Math.min(compact ? 36 : 22, step / (keys.length + 1))
             const height = bucket[key] / max * 150
             const label = `${rangeText(bucket)}: ${labels[key]} ${formatMoney(bucket[key], item.currency)}`
             return <rect key={key} x={120 + index * step + ki * barWidth} y={190 - Math.max(height, 2)} width={barWidth - 2} height={Math.max(height, 2)} rx="3" fill={`var(--chart-${ki + 1})`} fillOpacity={bucket[key] === 0 ? 0.2 : 1} tabIndex={0} role="button" aria-label={label} aria-pressed={chosen?.from === bucket.from} onClick={() => setSelection(bucket.from)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelection(bucket.from) } }} className="cursor-pointer focus:outline-2 focus:outline-ring"><title>{label}</title></rect>
@@ -97,16 +109,16 @@ export function StatisticsPage({ compact = false }: { compact?: boolean }) {
     {!compact && <div className="grid gap-4 sm:grid-cols-4">
       <div className="space-y-2"><Label htmlFor="stats-from">С даты</Label><Input id="stats-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="stats-to">До даты, не включая</Label><Input id="stats-to" type="date" value={to} onChange={e => setTo(e.target.value)} /></div>
-      <div className="space-y-2"><Label htmlFor="stats-group">Группировка</Label><select id="stats-group" value={granularity} onChange={e => setGranularity(e.target.value as 'month' | 'week')} className="h-11 w-full rounded-xl border border-input bg-card px-3 focus-visible:outline-2 focus-visible:outline-ring"><option value="month">По месяцам</option><option value="week">По неделям</option></select></div>
-      <div className="space-y-2"><Label htmlFor="stats-currency">Валюта</Label><select id="stats-currency" value={item?.currency ?? ''} onChange={e => setCurrency(e.target.value)} disabled={!query.data?.currencies.length} className="h-11 w-full rounded-xl border border-input bg-card px-3 focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed">{query.data?.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</select></div>
+      <div className="space-y-2"><Label htmlFor="stats-group">Группировка</Label><ChoiceSelect id="stats-group" value={granularity} onValueChange={value => setGranularity(value as 'month' | 'week')} className="h-11 w-full rounded-xl border border-input bg-card px-3 focus-visible:outline-2 focus-visible:outline-ring"><option value="month">По месяцам</option><option value="week">По неделям</option></ChoiceSelect></div>
+      <div className="space-y-2"><Label htmlFor="stats-currency">Валюта</Label><ChoiceSelect id="stats-currency" value={item?.currency ?? ''} onValueChange={value => setCurrency(value)} disabled={!query.data?.currencies.length} className="h-11 w-full rounded-xl border border-input bg-card px-3 focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed">{query.data?.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</ChoiceSelect></div>
     </div>}
     <p className="text-sm text-muted-foreground">Только записанные события · Asia/Yekaterinburg. Полнота истории не подтверждена; ноль на графике означает отсутствие записей. Неполные крайние периоды показаны по выбранным датам.</p>
     {!valid ? <p role="alert">Выберите период до одного года; конец должен быть позже начала.</p> : query.isError ? <div role="alert" className="space-y-3"><p>{query.error.message}</p><Button variant="outline" onClick={() => void query.refetch()}>Повторить загрузку</Button></div> : query.isPending ? <p role="status">Загружаем статистику…</p> : item ? <>
       <p className="text-sm">{dayText(from)} — до {dayText(to)}, не включая · {item.currency} · Покупки {formatMoney(item.summary.purchasesMinor, item.currency)}</p>
-      {compact && query.data.currencies.length > 1 && <div className="space-y-2"><Label htmlFor="overview-stats-currency">Валюта графика</Label><select id="overview-stats-currency" className="h-11 rounded-xl border bg-card px-3" value={item.currency} onChange={e => setCurrency(e.target.value)}>{query.data.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</select></div>}
+      {compact && query.data.currencies.length > 1 && <div className="space-y-2"><Label htmlFor="overview-stats-currency">Валюта графика</Label><ChoiceSelect id="overview-stats-currency" className="h-11 rounded-xl border bg-card px-3" value={item.currency} onValueChange={value => setCurrency(value)}>{query.data.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</ChoiceSelect></div>}
       <StatisticsCharts key={`${from}:${to}:${granularity}:${item.currency}`} item={item} compact={compact} />
     </> : <p>Пока нет финансовых данных для графиков.</p>}
   </div>
   if (compact) return <Card><CardHeader><CardTitle>Как меняются покупки</CardTitle></CardHeader><CardContent className="space-y-4">{body}<Link className="inline-flex min-h-11 items-center text-primary underline underline-offset-4" to="/analytics">Открыть статистику</Link></CardContent></Card>
-  return <section className="min-w-0 space-y-6" aria-label="Статистика"><h2>Статистика</h2>{body}</section>
+  return <section className="min-w-0 space-y-6" aria-label="Статистика">{body}</section>
 }

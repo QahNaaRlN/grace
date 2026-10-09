@@ -111,8 +111,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
     setNotice('Почта подтверждена. Другие сеансы завершены.')
   }
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border bg-card p-6">
+    <div className="grid items-start gap-6 xl:grid-cols-2">
+      <section className="rounded-2xl border border-border/70 bg-card p-6">
         <h2>Личные данные</h2>
         <div className="mt-5 flex flex-wrap items-center gap-5">
           <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-3xl text-primary">
@@ -214,7 +214,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
           </div>
         </form>
       </section>
-      <section className="rounded-2xl border bg-card p-6">
+      <section className="rounded-2xl border border-border/70 bg-card p-6">
         <h2>Почта и вход</h2>
         <p className="mt-3 break-words">
           {profile.email ?? 'Почта пока не привязана'}
@@ -292,7 +292,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
           {notice}
         </p>
       )}
-      <section className="rounded-2xl border bg-card p-6">
+      <section className="rounded-2xl border border-border/70 bg-card p-6">
         <h2>Доступ и сеансы</h2>
         <div className="grace-actions">
           <AuthActions />
