@@ -87,6 +87,24 @@ func TestOpenRouterRejectsMissingCostChangedProviderAndTruncation(t *testing.T) 
 		})
 	}
 }
+
+func TestOpenRouterDistinguishesRejectedRequestWithoutEchoOrRetry(t *testing.T) {
+	for _, status := range []int{400, 422} {
+		var calls int
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			calls++
+			w.WriteHeader(status)
+			w.Write([]byte(`{"error":{"message":"private-photo-text-and-key"}}`))
+		}))
+		p, _ := NewOpenRouterProvider("synthetic-test-key", server.Client())
+		p.endpoint = server.URL
+		_, err := p.Complete(context.Background(), LLMRequest{Policy: policyFixture(), Messages: []LLMMessage{{Role: "user", Content: "Synthetic"}}, Schema: json.RawMessage(`{}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
+		server.Close()
+		if err == nil || err.Error() != "provider_request" || calls != 1 {
+			t.Fatal(err, calls)
+		}
+	}
+}
 func TestCostMicrosNeverRoundsDownOrOverflows(t *testing.T) {
 	for value, want := range map[string]int64{"0": 0, "0.0000001": 1, "1.1234567": 1123457, "1e-6": 1} {
 		got, err := costMicros(value)

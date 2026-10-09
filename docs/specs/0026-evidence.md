@@ -79,11 +79,12 @@ key-file и отдельный volume, готовит ownership под non-root 
 
 ## Осталось до завершения SPEC-0026
 
-Аккаунт/пополнение готовы по ответу владельца; ключ не установлен.
-Нужны protected key-file, подтверждённый allowance после fees, выбор свежих
-model/provider policies, live synthetic comparison, Jev evaluation и metered
+Аккаунт/пополнение готовы; protected key-file установлен по разрешению владельца.
+Пополнение $10 без комиссии, отдельный лимит ключа $5 без сброса. Точечные
+платные synthetic probes выполнены; [результаты исправлений](0026-live-probe.md).
+Нужны live synthetic comparison, Jev evaluation и metered
 adapter, явное согласие на один личный анализ/чек, CI PASS и отдельный rollout
-с backup/restore. Платные внешние inference calls в этой работе не выполнялись.
+с backup/restore. Первоначальные проверки выше предшествовали paid probes.
 Production и реальные финансовые данные не менялись.
 
 Автоматический reviewer сначала отклонил push как передачу исходного кода без
@@ -92,3 +93,30 @@ Production и реальные финансовые данные не менял
 после наблюдаемого завершения; local PASS не означает remote PASS.
 
 Порядок установки и эксперимента: [ai-experiment.md](../ai-experiment.md).
+
+## Исправления live probes, 2026-10-09
+
+AC2: `TestAnalysisResponseRejectsProseWithoutLosingFactsOrBilling` проверяет
+отбрасывание чисел, чужих factIds и управляющих символов; core facts, notice
+о неполноте и стоимость остаются. Неуспешная проверка объяснения даёт ответ
+с данными Grace и явным предупреждением, без автоматического paid retry.
+Уточнён prompt; live synthetic explanation прошёл validator.
+
+AC3/AC6: Google отклонял исходную receipt schema как слишком сложную для
+constrained decoding. Provider schema упрощена; пределы 50 позиций, 300
+символов поля и 12000 sourceText проверяет Go.
+`TestReceiptDecoderRetainsLimitsOutsideProviderSchema` проверяет эти пределы,
+unknown time и запрет account/groupSuggestion от vision. Live искусственный
+чек дал точные 90 RUB, скидку 10 RUB и date-only без выдуманного времени.
+Это один smoke case, не завершение AC3.
+
+AC7/AC8: `TestOpenRouterDistinguishesRejectedRequestWithoutEchoOrRetry`
+различает HTTP 400/422 и временную недоступность, не отражая приватный body.
+Стоимость ошибок по-прежнему требует сверки, а не считается нулевой по HTTP.
+
+Проверки исправления: `make test` PASS (46 Web tests, Go, lint/build и offline
+Jev gates; Windows PATH содержит Git usr/bin), `go vet ./...` PASS,
+`git diff --check` PASS, `scripts/test-ai-experiment.sh` PASS в отдельной
+одноразовой БД (Windows: MSYS_NO_PATHCONV=1). История платного теста сохранена
+в отдельной БД и её бюджет не сбрасывался. CI текущего исправления отслеживается
+в draft PR #19 отдельно от ранее успешного run 53.

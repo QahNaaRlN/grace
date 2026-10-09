@@ -3,6 +3,7 @@ package assistant
 import (
 	"encoding/json"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -20,6 +21,24 @@ func TestAnalysisUsesExactCoreFactsAndCalendarPeriod(t *testing.T) {
 	}
 	if _, err = AnalysisRequest(policyFixture(), "Synthetic monthly analysis", facts); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestAnalysisResponseRejectsProseWithoutLosingFactsOrBilling(t *testing.T) {
+	facts := AnalysisFacts{Coverage: "confirmed_only_coverage_unknown", Facts: []AnalysisFact{{ID: "known", ValueMinor: "12345", Currency: "RUB"}}}
+	for _, raw := range []string{
+		`{"interpretations":[{"kind":"assumption","text":"Расходы выросли на 50%","factIds":["known"]}]}`,
+		`{"interpretations":[{"kind":"suggestion","text":"Проверьте данные","factIds":["invented"]}]}`,
+		`{"interpretations":[{"kind":"suggestion","text":"Первая строка\nВторая строка","factIds":["known"]}]}`,
+	} {
+		answer := AnalysisResponse(LLMResponse{Model: "fixture", Provider: "fixture", CostMicros: 158, Content: json.RawMessage(raw)}, facts)
+		if answer.Interpretations == nil || len(answer.Interpretations) != 0 || answer.Facts.Facts[0].ValueMinor != "12345" || answer.CostMicros != "158" || !strings.Contains(answer.Notice, "не прошло проверку") || !strings.Contains(answer.Notice, "Полнота") {
+			t.Fatal(answer)
+		}
+	}
+	answer := AnalysisResponse(LLMResponse{Content: json.RawMessage(`{"interpretations":[{"kind":"suggestion","text":"Проверьте полноту истории","factIds":["known"]}]}`)}, facts)
+	if len(answer.Interpretations) != 1 || strings.Contains(answer.Notice, "не прошло проверку") {
+		t.Fatal(answer)
 	}
 }
 func TestAnalysisRejectsInventedNumbersReferencesAndAdditionalFields(t *testing.T) {

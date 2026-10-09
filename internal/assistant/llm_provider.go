@@ -163,6 +163,9 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 	defer response.Body.Close()
 	// Do not reflect provider error bodies (which may echo personal input) in logs/UI.
 	if response.StatusCode != http.StatusOK {
+		if response.StatusCode == http.StatusBadRequest || response.StatusCode == http.StatusUnprocessableEntity {
+			return LLMResponse{}, errors.New("provider_request")
+		}
 		return LLMResponse{}, errors.New("provider_unavailable")
 	}
 	raw, err := io.ReadAll(io.LimitReader(response.Body, (1<<20)+1))

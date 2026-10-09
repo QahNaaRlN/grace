@@ -235,10 +235,7 @@ func (h *AIHandler) Message(w http.ResponseWriter, r *http.Request) {
 		out, err = MeteredCompletion(ctx, h.provider, h.usage, request, "analysis")
 	}
 	if err == nil {
-		answer.Interpretations, err = ValidateInterpretations(out.Content, facts)
-		answer.Model = out.Model
-		answer.Provider = out.Provider
-		answer.CostMicros = strconv.FormatInt(out.CostMicros, 10)
+		answer = AnalysisResponse(out, facts)
 	}
 	persistCtx, persistCancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer persistCancel()

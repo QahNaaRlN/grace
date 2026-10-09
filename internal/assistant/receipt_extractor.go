@@ -9,6 +9,7 @@ import (
 	"io"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/QahNaaRlN/grace/internal/receiptdrafts"
 )
@@ -28,7 +29,9 @@ func (e *ReceiptExtractor) Available() bool {
 // The schema deliberately excludes account/category/action and suggestion
 // fields: these choices are owned by the user, never by vision.
 var receiptSchema = func() json.RawMessage {
-	nullable := map[string]any{"type": []string{"string", "null"}, "maxLength": 300}
+	// Large string/array bounds multiply the constrained decoder's states on
+	// Gemini. Enforce these limits locally instead of in the provider schema.
+	nullable := map[string]any{"type": []string{"string", "null"}}
 	item := map[string]any{}
 	keys := []string{"name", "quantity", "unitPrice", "lineTotal", "discount", "brand", "package", "broadGroup"}
 	for _, k := range keys {
@@ -39,8 +42,8 @@ var receiptSchema = func() json.RawMessage {
 	for _, k := range required[:6] {
 		properties[k] = nullable
 	}
-	properties["sourceText"] = map[string]any{"type": "string", "maxLength": 12000}
-	properties["items"] = map[string]any{"type": "array", "maxItems": 50, "items": map[string]any{"type": "object", "additionalProperties": false, "required": keys, "properties": item}}
+	properties["sourceText"] = map[string]any{"type": "string"}
+	properties["items"] = map[string]any{"type": "array", "items": map[string]any{"type": "object", "additionalProperties": false, "required": keys, "properties": item}}
 	return mustJSON(map[string]any{"type": "object", "additionalProperties": false, "required": required, "properties": properties})
 }()
 
@@ -65,6 +68,22 @@ func (e *ReceiptExtractor) Extract(ctx context.Context, photo []byte) (receiptdr
 	if err != nil {
 		return receiptdrafts.Extracted{}, err
 	}
+	extracted, err := decodeReceipt(out)
+	if err != nil {
+		return receiptdrafts.Extracted{}, err
+	}
+	if e.Groups != nil {
+		suggestions, suggestErr := e.Groups.Suggest(ctx, extracted.Fields.Items)
+		if suggestErr == nil && len(suggestions) == len(extracted.Fields.Items) {
+			for i, suggestion := range suggestions {
+				extracted.Fields.Items[i].GroupSuggestion = suggestion
+			}
+		}
+	}
+	return extracted, nil
+}
+
+func decodeReceipt(out LLMResponse) (receiptdrafts.Extracted, error) {
 	var decoded struct {
 		Seller               *string              `json:"seller"`
 		IssuedAt             *string              `json:"issuedAt"`
@@ -77,27 +96,29 @@ func (e *ReceiptExtractor) Extract(ctx context.Context, photo []byte) (receiptdr
 	}
 	decoder := json.NewDecoder(bytes.NewReader(out.Content))
 	decoder.DisallowUnknownFields()
-	if decoder.Decode(&decoded) != nil || len(decoded.Items) > 50 || len(decoded.SourceText) > 48000 {
+	if decoder.Decode(&decoded) != nil || len(decoded.Items) > 50 || utf8.RuneCountInString(decoded.SourceText) > 12000 {
 		return receiptdrafts.Extracted{}, errors.New("provider_protocol")
 	}
 	if !errors.Is(decoder.Decode(&struct{}{}), io.EOF) {
 		return receiptdrafts.Extracted{}, errors.New("provider_protocol")
 	}
+	for _, field := range []*string{decoded.Seller, decoded.IssuedAt, decoded.IssuedDate, decoded.Currency, decoded.Total, decoded.FiscalDocumentNumber} {
+		if field != nil && utf8.RuneCountInString(*field) > 300 {
+			return receiptdrafts.Extracted{}, errors.New("provider_protocol")
+		}
+	}
 	for _, i := range decoded.Items {
 		if i.GroupSuggestion != nil {
 			return receiptdrafts.Extracted{}, errors.New("provider_protocol")
 		}
+		for _, field := range []*string{i.Name, i.Quantity, i.UnitPrice, i.LineTotal, i.Discount, i.Brand, i.Package, i.BroadGroup} {
+			if field != nil && utf8.RuneCountInString(*field) > 300 {
+				return receiptdrafts.Extracted{}, errors.New("provider_protocol")
+			}
+		}
 	}
 	if decoded.Items == nil {
 		decoded.Items = []receiptdrafts.Item{}
-	}
-	if e.Groups != nil {
-		suggestions, suggestErr := e.Groups.Suggest(ctx, decoded.Items)
-		if suggestErr == nil && len(suggestions) == len(decoded.Items) {
-			for i, suggestion := range suggestions {
-				decoded.Items[i].GroupSuggestion = suggestion
-			}
-		}
 	}
 	return receiptdrafts.Extracted{Fields: receiptdrafts.Fields{Seller: decoded.Seller, IssuedAt: decoded.IssuedAt, IssuedDate: decoded.IssuedDate, Currency: decoded.Currency, Total: decoded.Total, FiscalDocumentNumber: decoded.FiscalDocumentNumber, Items: decoded.Items}, SourceText: decoded.SourceText, Model: out.Model, Provider: out.Provider, CostMicros: strconv.FormatInt(out.CostMicros, 10)}, nil
 }
