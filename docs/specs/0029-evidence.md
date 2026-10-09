@@ -7,7 +7,7 @@
 
 | AC | Результат | Исполняемое свидетельство |
 | --- | --- | --- |
-| AC1 | PASS | web/public/favicon.svg: прозрачная монета, circle + два штриха, без rect/background, fill=none; 16/32/64px browser preview на checkerboard. Light stroke #0f6b63, dark #88d4c4. HTML cache version grace-petrol-coin-3 |
+| AC1 | PASS | web/public/favicon.svg: прозрачная монета, circle + пульс, без rect/background, fill=none; 16/32/64px browser preview на checkerboard. Light stroke #0f6b63, dark #88d4c4. HTML cache version grace-financial-health-4 |
 | AC2 | PASS, петрольный выбран | node docs/preview-design.mjs; три варианта и обе темы сохранены. CSS приложения использует выбранные tokens. GraceMark и favicon имеют одинаковые circle/path. rg по web/src не находит HeartPulse, старые indigo hex или fixed emerald classes |
 | AC3 | PASS в scope | Real React smoke: Button default/sm44px, icon-sm44×44, icon-lg48×48, disabled native button/input cursor not-allowed, enabled button pointer, input text; Tab показывает focus ring. Прототип320/390px без horizontal overflow, сумма abc блокирует demo confirm |
 | AC4 | PASS local | make test (Go, 43 Web tests/10 files, lint/build, offline Jev gates); git diff --check. API generation не меняет содержимое schema, backend/ledger не менялись |
@@ -65,3 +65,8 @@ SVG не содержит внешних ресурсов, script, фоновы�
 
 Осталось: принять полный scope receipt/analysis screens, проверить реальные
 сценарии после интеграции и выполнить отдельный rollout.
+
+Уточнение владельца: деньги и здоровье объединены в монете с пульсом внутри.
+Favicon, GraceMark и prototype brand используют path M17 33h8l5-12 7 23 5-11h5.
+Петрольные цвета и прозрачность сохранены. Browser smoke16/32/64px выполнен;
+make test и git diff --check повторно PASS после этого изменения.

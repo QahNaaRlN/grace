@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <title>Grace — монета</title>
+  <title>Grace — финансовое здоровье</title>
   <style>
     .mark { stroke: #0f6b63; }
     @media (prefers-color-scheme: dark) { .mark { stroke: #88d4c4; } }
   </style>
   <g class="mark" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="32" cy="32" r="25" />
-    <path d="M24 25h16M24 39h16" />
+    <path d="M17 33h8l5-12 7 23 5-11h5" />
   </g>
 </svg>
