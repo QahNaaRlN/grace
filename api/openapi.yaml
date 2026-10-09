@@ -2458,13 +2458,14 @@ components:
         version: { type: string }
     Account:
       type: object
-      required: [id, name, type, currency, balanceMinor, createdAt]
+      required: [id, name, type, currency, balanceMinor, balanceReconciled, createdAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         type: { type: string, enum: [debit, credit, installment, cash] }
         currency: { type: string, minLength: 3, maxLength: 3 }
-        balanceMinor: { type: integer, format: int64 }
+        balanceMinor: { type: [integer, "null"], format: int64 }
+        balanceReconciled: { type: boolean }
         createdAt: { type: string, format: date-time }
         paymentInstruments:
           type: array
@@ -2477,7 +2478,8 @@ components:
         name: { type: string, minLength: 1 }
         type: { type: string, enum: [debit, credit, installment, cash] }
         currency: { type: string, minLength: 3, maxLength: 3 }
-        openingBalanceMinor: { type: integer, format: int64 }
+        openingBalanceMinor: { type: [integer, "null"], format: int64 }
+        balanceReconciled: { type: boolean, default: true }
         card: { $ref: '#/components/schemas/CreateCard' }
     CreateCard:
       type: object
@@ -2547,8 +2549,8 @@ components:
       required: [currency, openingBalanceMinor, closingBalanceMinor, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, netExternalCashFlowMinor, internalTransferVolumeMinor, expenseCategories]
       properties:
         currency: { type: string, minLength: 3, maxLength: 3 }
-        openingBalanceMinor: { type: integer, format: int64 }
-        closingBalanceMinor: { type: integer, format: int64 }
+        openingBalanceMinor: { type: [integer, "null"], format: int64 }
+        closingBalanceMinor: { type: [integer, "null"], format: int64 }
         incomeMinor: { type: integer, format: int64, minimum: 0 }
         purchasesMinor: { type: integer, format: int64, minimum: 0 }
         refundsMinor: { type: integer, format: int64, minimum: 0 }
@@ -2584,11 +2586,11 @@ components:
       required: [currency, liquidBalanceMinor, overdueObligationsMinor, upcomingObligationsMinor, obligationsThroughMinor, availableAfterObligationsMinor, scheduledPayments]
       properties:
         currency: { type: string, minLength: 3, maxLength: 3 }
-        liquidBalanceMinor: { type: integer, format: int64 }
+        liquidBalanceMinor: { type: [integer, "null"], format: int64 }
         overdueObligationsMinor: { type: integer, format: int64, minimum: 0 }
         upcomingObligationsMinor: { type: integer, format: int64, minimum: 0 }
         obligationsThroughMinor: { type: integer, format: int64, minimum: 0 }
-        availableAfterObligationsMinor: { type: integer, format: int64 }
+        availableAfterObligationsMinor: { type: [integer, "null"], format: int64 }
         scheduledPayments:
           type: array
           items: { $ref: '#/components/schemas/CashScheduledPayment' }

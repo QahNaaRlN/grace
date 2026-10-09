@@ -18,11 +18,12 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
   const query = useQueryClient()
   const [type, setType] = useState('debit')
   const [card, setCard] = useState(true)
+  const [unreconciled, setUnreconciled] = useState(false)
   const [review, setReview] = useState<{
     name: string
     bank: string
     last4: string
-    balance: number
+    balance: number | null
   } | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
@@ -42,6 +43,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
             type: type as 'debit' | 'credit' | 'cash' | 'installment',
             currency: 'RUB',
             openingBalanceMinor: review.balance,
+            balanceReconciled: !unreconciled,
             ...(card
               ? {
                   card: {
@@ -77,13 +79,14 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         onSubmit={(e) => {
           e.preventDefault()
           const f = new FormData(e.currentTarget)
-          const balance = parseMinor(String(f.get('balance')))
+          const balanceText = String(f.get('balance') ?? '').trim()
+          const balance = unreconciled && !balanceText ? null : parseMinor(balanceText)
           const name = String(f.get('name')).trim(),
             bank = String(f.get('bank') ?? '').trim(),
             last4 = String(f.get('last4') ?? '')
           if (
             !name ||
-            balance === null ||
+            ((!unreconciled || balanceText !== "") && balance === null) ||
             (card && (!bank || !/^\d{4}$/.test(last4)))
           ) {
             setError('Проверьте название, остаток и реквизиты карты.')
@@ -149,16 +152,17 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           </>
         )}
         <div className="space-y-2">
-          <Label htmlFor="new-balance">Текущий остаток, ₽</Label>
+          <label className="flex min-h-11 cursor-pointer items-center gap-3"><input type="checkbox" checked={unreconciled} onChange={e => setUnreconciled(e.target.checked)} />Остаток пока не сверён</label>
+          <Label htmlFor="new-balance">{unreconciled ? "Известный начальный остаток, ₽ (необязательно)" : "Текущий остаток, ₽"}</Label>
           <Input
             id="new-balance"
             name="balance"
             inputMode="decimal"
-            required
+            required={!unreconciled}
             placeholder="0,00"
           />
           <p className="text-sm text-muted-foreground">
-            Для кредитного счёта задолженность обозначается отрицательным
+            При переносе неполной истории оставьте остаток несверенным. Начальное число указывайте только при известной дате до начала истории. Для кредитного счёта задолженность обозначается отрицательным
             балансом.
           </p>
         </div>
@@ -187,7 +191,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
             )}
             <div>
               <dt>Текущий остаток</dt>
-              <dd>{formatMoney(review.balance, 'RUB')}</dd>
+              <dd>{unreconciled ? 'Не сверён' : formatMoney(review.balance, 'RUB')}</dd>
             </div>
           </dl>
           <div className="grace-actions">

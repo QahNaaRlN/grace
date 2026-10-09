@@ -45,7 +45,8 @@ const argumentLabels: Record<RequiredArgument, string> = {
   categoryId: 'категория дохода',
 }
 
-function formatMoney(valueMinor: number, currency: string) {
+function formatMoney(valueMinor: number | null, currency: string) {
+  if (valueMinor === null) return "Не сверён"
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(valueMinor / 100)
 }
 

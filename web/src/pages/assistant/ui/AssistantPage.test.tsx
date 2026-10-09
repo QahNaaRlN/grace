@@ -20,6 +20,7 @@ const accountResult = {
         name: 'Основной счёт',
         type: 'debit',
         currency: 'RUB',
+        balanceReconciled: true,
         balanceMinor: 125_050,
         createdAt: '2026-10-01T10:00:00+05:00',
       }],
