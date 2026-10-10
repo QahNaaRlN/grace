@@ -84,7 +84,7 @@ describe('SPEC-0020', () => {
     )
     expect(post).not.toHaveBeenCalled()
     expect(
-      screen.getByText('Карта · Банк · •• 0012', { selector: 'dd' }),
+      screen.getByText('Банк *0012', { selector: 'dd' }),
     ).toBeVisible()
     await user.click(
       screen.getByRole('button', { name: 'Подтвердить и сохранить' }),
@@ -103,7 +103,6 @@ describe('SPEC-0020', () => {
     const user = userEvent.setup()
     post.mockResolvedValue({ data: account })
     wrap(<CreateAccountForm onSaved={() => {}} />)
-    await user.type(screen.getByLabelText('Название'), 'Основная')
     await user.type(screen.getByLabelText('Банк'), 'Банк')
     await user.type(
       screen.getByLabelText('Последние четыре цифры карты'),
@@ -144,7 +143,7 @@ describe('SPEC-0020', () => {
     )
     expect(screen.getByText('Расчёт недоступен')).toBeVisible()
     expect(screen.queryByText(/999\s999/)).not.toBeInTheDocument()
-    expect(screen.getByText('Карта · Банк · •• 0012')).toBeVisible()
+    expect(screen.getByText('Банк *0012')).toBeVisible()
   })
 })
 
@@ -153,8 +152,8 @@ describe('SPEC-0028 unreconciled accounts', () => {
   const user=userEvent.setup()
   post.mockResolvedValue({data:{...account,balanceMinor:null,balanceReconciled:false}})
   wrap(<CreateAccountForm onSaved={() => {}} />)
-  await user.type(screen.getByLabelText('Название'),'История')
   await user.click(screen.getByLabelText('Есть карта'))
+  await user.type(screen.getByLabelText('Название'),'История')
   await user.click(screen.getByLabelText('Остаток пока не сверён'))
   await user.click(screen.getByRole('button',{name:'Проверить данные'}))
   expect(screen.getByText('Не сверён')).toBeVisible()

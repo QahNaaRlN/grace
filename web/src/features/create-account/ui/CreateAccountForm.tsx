@@ -82,9 +82,9 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           const f = new FormData(e.currentTarget)
           const balanceText = String(f.get('balance') ?? '').trim()
           const balance = unreconciled && !balanceText ? null : parseMinor(balanceText)
-          const name = String(f.get('name')).trim(),
-            bank = String(f.get('bank') ?? '').trim(),
+          const bank = String(f.get('bank') ?? '').trim(),
             last4 = String(f.get('last4') ?? '')
+          const name = card ? `${bank} *${last4}` : String(f.get('name') ?? '').trim()
           if (
             !name ||
             ((!unreconciled || balanceText !== "") && balance === null) ||
@@ -98,10 +98,10 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         }}
         className="space-y-4"
       >
-        <div className="space-y-2">
+        {!card && <div className="space-y-2">
           <Label htmlFor="new-account-name">Название</Label>
           <Input id="new-account-name" name="name" required maxLength={160} />
-        </div>
+        </div>}
         <div className="space-y-2">
           <Label htmlFor="new-account-type">Тип счёта</Label>
           <Select
@@ -136,7 +136,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           <>
             <div className="space-y-2">
               <Label htmlFor="new-bank">Банк</Label>
-              <Input id="new-bank" name="bank" required maxLength={160} />
+              <Input id="new-bank" name="bank" required maxLength={150} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-last4">Последние четыре цифры карты</Label>

@@ -31,6 +31,7 @@ export const appRouter = createBrowserRouter([
     'operations',
     'payments',
     'accounts',
+    'categories',
     'analytics',
     'health',
     'profile',

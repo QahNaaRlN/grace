@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
@@ -303,7 +304,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
 }
 export function ProfilePanel() {
   const result = useQuery({ queryKey: ['user-profile'], queryFn: loadProfile })
-  if (result.isPending) return <p>Загружаем профиль…</p>
+  if (result.isPending) return <LoadingSkeleton label="Загружаем профиль…" />
   if (result.error)
     return (
       <div>

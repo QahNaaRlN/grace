@@ -18,6 +18,25 @@ var (
 
 type Repository struct{ pool *database.TenantPool }
 
+// PurchaseCandidatesInTx returns possible matches only. The caller must obtain
+// a user's explicit decision; this lookup never merges financial events.
+func PurchaseCandidatesInTx(ctx context.Context, tx pgx.Tx, amount int64, currency, day string) ([]Event, error) {
+	if amount <= 0 || !ValidCalendarDate(day) {
+		return nil, ErrInvalid
+	}
+	rows, err := tx.Query(ctx, eventQuery+` WHERE e.id IN (
+	 SELECT ev.id FROM financial_events ev JOIN postings po ON po.financial_event_id=ev.id
+	 WHERE ev.kind='purchase' AND po.direction='debit' AND po.amount_minor=$1 AND po.currency=$2
+	 AND COALESCE(ev.occurred_date,(ev.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)=$3::date
+	 ORDER BY ev.created_at,ev.id LIMIT 100)
+	 ORDER BY e.created_at,e.id,p.id`, amount, currency, day)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return collectEvents(rows)
+}
+
 func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 type queryer interface {
@@ -26,14 +45,22 @@ type queryer interface {
 }
 
 func (repo *Repository) List(ctx context.Context, limit int) ([]Event, error) {
+	return repo.ListFiltered(ctx, limit, "", "", "")
+}
+
+// Filter before LIMIT, including historical date-only entries in local calendar time.
+func (repo *Repository) ListFiltered(ctx context.Context, limit int, category, from, to string) ([]Event, error) {
 	rows, err := repo.pool.Query(ctx, eventQuery+`
 		WHERE e.id IN (
 			SELECT id
 			FROM financial_events
+			WHERE ($2='' OR ($2='uncategorized' AND category_id IS NULL AND kind='purchase') OR category_id::text=$2)
+			AND ($3='' OR COALESCE(occurred_date,(occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)>=NULLIF($3,'')::date)
+			AND ($4='' OR COALESCE(occurred_date,(occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<NULLIF($4,'')::date)
 			ORDER BY COALESCE(occurred_at, occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, created_at DESC
 			LIMIT $1
 		)
-		ORDER BY COALESCE(e.occurred_at, e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, e.created_at DESC, p.created_at, p.id`, limit)
+		ORDER BY COALESCE(e.occurred_at, e.occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, e.created_at DESC, p.created_at, p.id`, limit, category, from, to)
 	if err != nil {
 		return nil, fmt.Errorf("list financial events: %w", err)
 	}

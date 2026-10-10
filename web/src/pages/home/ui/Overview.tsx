@@ -8,6 +8,8 @@ import {
   accountLabel,
 } from '@/shared/lib/finance-display'
 import { Button } from '@/shared/ui/button'
+import { AccountIcon } from '@/shared/ui/account-icon'
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
 
 export function Overview({
   cash,
@@ -50,7 +52,7 @@ export function Overview({
             </div>
           </>
         ) : pending ? (
-          <p className="mt-4 text-muted-foreground">Рассчитываем…</p>
+          <LoadingSkeleton label="Рассчитываем доступные деньги…" />
         ) : cash?.currencies.length ? (
           cash.currencies.map((c) => (
             <div key={c.currency}>
@@ -212,6 +214,7 @@ export function Overview({
         </div>
         {accounts.map((a) => (
           <Link key={a.id} to="/accounts" className="grace-row mt-1">
+            <AccountIcon type={a.type} />
             <span className="min-w-0 flex-1">
               <strong className="block break-words">{accountLabel(a)}</strong>
               <small className="mt-1 block text-muted-foreground">

@@ -1,270 +1,35 @@
-import { eventTimeText } from '@/shared/lib/finance-display'
 import { Link } from 'react-router-dom'
-import type {
-  Account,
-  Category,
-  FinancialEvent,
-  Obligation,
-  Receipt,
-} from '@/shared/api/types'
-import {
-  accountLabel,
-  formatMoney,
-  dateText,
-} from '@/shared/lib/finance-display'
-const columns: Record<string, string[]> = {
-  Сводка: [
-    'Анализируемый месяц',
-    'Зарплата',
-    'Все расходы',
-    'За свои деньги',
-    'По кредитным инструментам',
-    'Погашено карт',
-    'Платежи по другим долгам',
-    'Остаток потока месяца',
-    'Для grace в выбранном месяце',
-    'Уже оплачено',
-    'Осталось внести',
-    'Срочных / просроченных выписок',
-    'Ошибок источника в операциях',
-    'Источник расходов',
-    'Расходы месяца, ₽',
-    'Доля расходов',
-    'Комментарий',
-    'Категория',
-    'Факт, ₽',
-    'Лимит, ₽',
-    'Отклонение, ₽',
-  ],
-  Операции: [
-    'Дата',
-    'Тип',
-    'Описание',
-    'Категория',
-    'Подкатегория',
-    'Сумма, ₽',
-    'Источник финансирования',
-    'Счёт / карта',
-    'Приоритет',
-    'Регулярный?',
-    'Получатель / долг',
-    'Комментарий',
-    'Месяц',
-    'Проверка источника',
-    'ID',
-  ],
-  'Кредитные карты': [
-    'Инструмент',
-    'Организация',
-    'Тип',
-    'Лимит, ₽',
-    'Текущая задолженность, ₽',
-    'Доступно, ₽',
-    'Начало текущего периода',
-    'Конец текущего периода',
-    'Дата платежа',
-    'Нужно внести, ₽',
-    'Мин. платёж, ₽',
-    'Статус',
-    'Комментарий',
-  ],
-  'Выписки карт': [
-    'Карта',
-    'Начало периода',
-    'Конец периода',
-    'Дата платежа',
-    'Покупки периода, ₽',
-    'Для сохранения grace, ₽',
-    'Оплачено, ₽',
-    'Осталось внести, ₽',
-    'Мин. платёж, ₽',
-    'Статус',
-    'Комментарий',
-  ],
-  Зарплата: [
-    'Часть зарплаты',
-    'Базовая дата',
-    'Плановая рабочая дата',
-    'Плановая сумма, ₽',
-    'Фактически получено, ₽',
-    'Отклонение, ₽',
-    'Официальные нерабочие дни',
-  ],
-  Задолженности: [
-    'Приоритет',
-    'Кредитор / долг',
-    'Тип',
-    'Остаток, ₽',
-    'Ставка, %',
-    'Мин. платёж, ₽',
-    'Доп. платёж, ₽',
-    'Плановый платёж, ₽',
-    'Дата платежа',
-    'Просрочка?',
-    'Статус',
-    'Оценка месяцев',
-    'Комментарий',
-  ],
-  Категории: [
-    'Категория',
-    'Типичная роль',
-    'Лимит, ₽',
-    'Подкатегория (пример)',
-    'Приоритет расходов',
-    'Пояснение',
-  ],
-  'Сверка счетов': [
-    'Счёт / инструмент',
-    'Начальный остаток по выписке, ₽',
-    'Поступления, ₽',
-    'Списания, ₽',
-    'Конечный остаток по выписке, ₽',
-    'Контроль',
-    'Комментарий',
-  ],
-  'Первичные документы': [
-    '№',
-    'Файл',
-    'Тип',
-    'Группа',
-    'Сообщение',
-    'Статус',
-    'Комментарий',
-  ],
-  Инструкция: ['Шаг', 'Что сделать'],
-}
-const eventLabels: Record<FinancialEvent['kind'], string> = {
-  purchase: 'Покупка',
-  income_received: 'Доход',
-  internal_transfer: 'Перевод',
-  refund: 'Возврат',
-  debt_payment: 'Платёж по обязательству',
-}
-const debtLabels: Record<Obligation['kind'], string> = {
-  loan: 'Кредит',
-  installment: 'Рассрочка',
-  other_fixed: 'Другое обязательство',
-}
-type RecordRow = { title: string; values: Record<string, string> }
-export function FinancialHealth({
-  accounts,
-  categories,
-  events,
-  obligations,
-  receipts,
-}: {
-  accounts: Account[]
-  categories: Category[]
-  events: FinancialEvent[]
-  obligations: Obligation[]
-  receipts: Receipt[]
+import { CircleAlert, ShieldCheck, CalendarClock, BarChart3 } from 'lucide-react'
+import type { Account, Category, FinancialEvent, Obligation, Receipt, CashPosition } from '@/shared/api/types'
+import { accountLabel, formatMoney, dateText } from '@/shared/lib/finance-display'
+import { AccountIcon } from '@/shared/ui/account-icon'
+import { Button } from '@/shared/ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/ui/card'
+import { Disclosure } from '@/shared/ui/disclosure'
+
+export function FinancialHealth({ accounts, categories, events, obligations, receipts, cash, incomplete = false }: {
+  accounts: Account[]; categories: Category[]; events: FinancialEvent[]; obligations: Obligation[]; receipts: Receipt[]; cash?: CashPosition; incomplete?: boolean
 }) {
-  const sections: Record<string, RecordRow[]> = {
-    'Кредитные карты': accounts
-      .filter((a) => a.type === 'credit')
-      .map((a) => ({
-        title: accountLabel(a),
-        values: {
-          Инструмент: accountLabel(a),
-          Организация: a.paymentInstruments?.[0]?.bank ?? 'Не указано',
-          Тип: 'Кредитный счёт',
-        },
-      })),
-    Операции: events.map((e) => ({
-      title: e.merchant || e.description || e.id,
-      values: {
-        ID: e.id,
-        Дата: eventTimeText(e),
-        Тип: eventLabels[e.kind],
-        Описание: e.description,
-        Категория: e.categoryName ?? 'Не указано',
-        'Сумма, ₽': e.postings[0]
-          ? formatMoney(e.postings[0].amountMinor, e.postings[0].currency)
-          : 'Не указано',
-        'Счёт / карта': e.postings
-          .map((p) => {
-            const a = accounts.find((a) => a.id === p.accountId)
-            return a ? accountLabel(a) : p.accountName
-          })
-          .join(' → '),
-        'Получатель / долг': e.merchant,
-        Комментарий: e.description,
-        Месяц: new Intl.DateTimeFormat('ru-RU', {
-          timeZone: 'Asia/Yekaterinburg',
-          month: 'long',
-          year: 'numeric',
-        }).format(new Date(e.occurredAt ?? `${e.occurredDate}T00:00:00Z`)),
-      },
-    })),
-    // A general income event does not establish a salary component.
-    Зарплата: [],
-    Задолженности: obligations.map((o) => ({
-      title: o.name,
-      values: {
-        'Кредитор / долг': o.name,
-        Тип: debtLabels[o.kind],
-        'Остаток, ₽': formatMoney(o.remainingMinor, o.currency),
-        Статус: o.status === 'completed' ? 'Завершено' : 'Действует',
-      },
-    })),
-    Категории: categories.map((c) => ({
-      title: c.name,
-      values: {
-        Категория: c.name,
-        'Типичная роль': c.kind === 'expense' ? 'Расходы' : 'Доходы',
-      },
-    })),
-    'Первичные документы': receipts.map((r) => ({
-      title: r.seller,
-      values: {
-        '№': r.id,
-        Тип: 'Подтверждённый чек',
-        Статус: 'Подтверждён',
-        Комментарий: `${r.seller} · ${dateText(r.issuedAt)} · ${formatMoney(r.totalMinor, r.currency)}`,
-      },
-    })),
-  }
-  return (
-    <section className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Сведения в структуре таблицы «Финансовое здоровье». Отсутствующие данные
-        обозначены «Не указано».
-      </p>
-      {Object.entries(columns).map(([section, fields]) => (
-        <details key={section} className="rounded-2xl border border-border/70 bg-card p-5">
-          <summary className="min-h-11 rounded-xl px-3 py-2 font-semibold hover:bg-accent">
-            {section}
-          </summary>
-          <div className="mt-5 space-y-4">
-            {section === 'Сводка' && (
-              <Link
-                className="inline-flex min-h-11 items-center rounded-xl px-3 text-primary hover:bg-accent"
-                to="/analytics"
-              >
-                Открыть сводку и расчёт доступности
-              </Link>
-            )}
-            {(sections[section]?.length
-              ? sections[section]
-              : [{ title: 'Сведения не указаны', values: {} }]
-            ).map((record, i) => (
-              <details key={i} open={!sections[section]?.length}>
-                <summary className="min-h-11 rounded-xl px-3 py-2 hover:bg-accent">
-                  {record.title}
-                </summary>
-                <dl className="grace-fields mt-3">
-                  {fields.map((field) => (
-                    <div key={field}>
-                      <dt>{field}</dt>
-                      <dd>{record.values[field] || 'Не указано'}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </details>
-            ))}
-          </div>
-        </details>
-      ))}
-    </section>
-  )
+  const unknown = accounts.filter(a => a.balanceMinor === null || !a.balanceReconciled)
+  const overdue = obligations.flatMap(o => o.payments.filter(p => p.isOverdue).map(p => ({ ...p, name: o.name, currency: o.currency })))
+  return <section className="space-y-6">
+    <div className="rounded-2xl bg-accent p-5 text-accent-foreground"><p className="font-medium">Хватит ли денег на ближайшие обязательства и можно ли доверять расчёту?</p><p className="mt-2 text-sm leading-relaxed">Здесь собраны известные платежи и пробелы в данных. Это проверка текущего положения, а не оценка в баллах. Отдельные валюты не складываются.</p></div>
+    <div className="grid gap-5 lg:grid-cols-2">
+      <Card><CardHeader><CardTitle className="flex items-center gap-2"><CalendarClock aria-hidden="true" className="size-5 text-primary" />После обязательных платежей</CardTitle><CardDescription>По известным платежам до {cash ? dateText(cash.through) : 'выбранной даты'}</CardDescription></CardHeader><CardContent className="space-y-4">
+        {cash?.currencies.length ? cash.currencies.map(c => <div key={c.currency} className="space-y-2"><p className="grace-money text-3xl font-semibold">{formatMoney(c.availableAfterObligationsMinor,c.currency)}</p><p className="text-sm text-muted-foreground">Дебетовые счета и наличные: {formatMoney(c.liquidBalanceMinor,c.currency)} · Известные платежи: {formatMoney(c.obligationsThroughMinor,c.currency)}</p></div>) : <p>Расчёт пока недоступен. Проверьте счета и даты платежей.</p>}
+        <p className="text-sm text-muted-foreground">Будущие доходы, незапланированные расходы и кредитный лимит не учитываются. Несверенные остатки обозначены явно.</p><Button variant="outline" asChild><Link to="/analytics">Посмотреть расчёт</Link></Button>
+      </CardContent></Card>
+      <Card><CardHeader><CardTitle className="flex items-center gap-2"><CircleAlert aria-hidden="true" className="size-5 text-primary" />Что требует внимания</CardTitle><CardDescription>Сведения о просрочке рассчитаны Grace по графику платежей.</CardDescription></CardHeader><CardContent className="space-y-3">
+        {overdue.length ? overdue.map(p => <div key={p.id} className="flex flex-wrap justify-between gap-2 rounded-xl border p-3"><span>{p.name} · {dateText(p.dueOn)}</span><strong>{formatMoney(p.remainingMinor,p.currency)}</strong></div>) : <p>{incomplete ? 'Часть данных недоступна. Статус просрочки нельзя подтвердить.' : 'В загруженном графике просроченных платежей нет.'}</p>}
+        <p className="text-sm text-muted-foreground">Платежи вне Grace здесь не видны. Отметка оплаты создаёт финансовую операцию только после вашего подтверждения.</p><Button variant="outline" asChild><Link to="/payments">Проверить график</Link></Button>
+      </CardContent></Card>
+    </div>
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck aria-hidden="true" className="size-5 text-primary" />Насколько полны данные</CardTitle><CardDescription>Даже точный расчёт зависит от того, какие записи добавлены.</CardDescription></CardHeader><CardContent className="space-y-4">
+      {unknown.length ? <><p>Остатки требуют сверки:</p><div className="space-y-2">{unknown.map(a => <div key={a.id} className="flex items-center gap-3 rounded-xl border p-3"><AccountIcon type={a.type} /><span className="flex-1">{accountLabel(a)}</span><span className="text-sm text-muted-foreground">Не сверён</span></div>)}</div></> : <p>{incomplete ? 'Сведения загружены частично. Проверьте доступность счетов.' : accounts.length ? 'Все загруженные остатки отмечены как сверенные.' : 'Счета ещё не добавлены.'}</p>}
+      <p className="text-sm text-muted-foreground">Полнота истории не подтверждена. Ноль в отчёте означает отсутствие записей, а не доказанное отсутствие расходов. Импорт в черновике не входит в расчёты.</p>
+      <div className="flex flex-wrap gap-3"><Button variant="outline" asChild><Link to="/accounts">Проверить счета</Link></Button><Button variant="ghost" asChild><Link to="/imports">Проверить импорт</Link></Button></div>
+      <Disclosure title="Какие сведения используются"><dl className="grace-fields"><div><dt>Операции</dt><dd>{events.length} последних загруженных записей</dd></div><div><dt>Категории</dt><dd>{categories.length}</dd></div><div><dt>Подтверждённые чеки</dt><dd>{receipts.length} последних загруженных записей</dd></div></dl><p className="mt-3 text-sm text-muted-foreground">Доход от аренды или другое поступление не считается зарплатой автоматически. Кредитные льготные периоды и условия договоров здесь пока не анализируются.</p></Disclosure>
+    </CardContent></Card>
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><BarChart3 aria-hidden="true" className="size-5 text-primary" />Куда уходят деньги</CardTitle><CardDescription>Сравните расходы по категориям и периодам в статистике. Для объяснения подтверждённых итогов можно обратиться к ИИ.</CardDescription></CardHeader><CardContent className="flex flex-wrap gap-3"><Button asChild><Link to="/analytics">Открыть статистику</Link></Button><Button variant="outline" asChild><Link to="/assistant">Обсудить расходы</Link></Button></CardContent></Card>
+  </section>
 }

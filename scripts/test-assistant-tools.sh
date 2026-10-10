@@ -27,8 +27,8 @@ test -n "$postgres_port"
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
   go test -tags=integration ./internal/assistanttest -run '^TestReadToolsAgainstPostgreSQL$' -count=1
 
-if rg -n --glob '*.go' '(SELECT|INSERT|UPDATE|DELETE)[[:space:]]' internal/assistant; then
-  echo "SQL found in internal/assistant" >&2
+if rg -ni --glob '*.go' '(FROM|JOIN|INTO|UPDATE)[[:space:]]+(accounts|categories|financial_events|postings|receipts|receipt_items|obligations|scheduled_payments|scheduled_payment_settlements)([[:space:]]|$)' internal/assistant; then
+  echo "direct financial SQL found in internal/assistant (SPEC-0026 permits only assistant-owned storage)" >&2
   exit 1
 fi
 

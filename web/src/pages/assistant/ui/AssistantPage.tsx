@@ -1,4 +1,9 @@
 import { PageHeader } from '@/shared/ui/page-header'
+import { Disclosure } from '@/shared/ui/disclosure'
+import { AIGuide } from './AIGuide'
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { AccountIcon } from '@/shared/ui/account-icon'
 import { AlertCircle, CheckCircle2, Send, ShieldCheck } from 'lucide-react'
 import { Component, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 
@@ -21,6 +26,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Label } from '@/shared/ui/label'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 import { Textarea } from '@/shared/ui/textarea'
+import { AIAnalysis } from './AIAnalysis'
+import { ReceiptPhoto } from './ReceiptPhoto'
 
 const MAX_UTTERANCE_BYTES = 2000
 
@@ -99,8 +106,9 @@ function CompletedResult({ result }: { result: AssistantCompleted }) {
             <div className="grid gap-3 sm:grid-cols-2">
               {result.data.data.items.map((account) => (
                 <article key={account.id} className="rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">{account.type} · {account.currency}</p>
-                  <h4 className="font-semibold">{account.name}</h4>
+                  <AccountIcon type={account.type} />
+                  <p className="text-sm text-muted-foreground">{account.currency}</p>
+                  <h4 className="font-semibold">{accountLabel(account)}</h4>
                   <p className="mt-2 text-xl font-semibold">{formatMoney(account.balanceMinor, account.currency)}</p>
                 </article>
               ))}
@@ -141,7 +149,7 @@ function CompletedResult({ result }: { result: AssistantCompleted }) {
               {result.data.data.items.map((receipt) => (
                 <article key={receipt.id} className="rounded-lg border p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div><h4 className="font-semibold">{receipt.seller}</h4><p className="text-sm text-muted-foreground">{formatDateTime(receipt.issuedAt)}</p></div>
+                    <div><h4 className="font-semibold">{receipt.seller}</h4><p className="text-sm text-muted-foreground">{receipt.issuedDate ? `${receipt.issuedDate} · время неизвестно` : receipt.issuedAt ? formatDateTime(receipt.issuedAt) : 'Дата неизвестна'}</p></div>
                     <p className="font-semibold">{formatMoney(receipt.totalMinor, receipt.currency)}</p>
                   </div>
                   <div className="mt-3 space-y-1 border-t pt-3 text-sm">
@@ -307,6 +315,10 @@ export function AssistantPage({ submitAssistant = queryAssistant }: { submitAssi
     <AppLayout>
       <section className="space-y-6">
         <PageHeader title="Ассистент" description="Спросите о своих деньгах. Ответы опираются на проверяемые расчёты Grace." />
+      <AIAnalysis />
+      <ReceiptPhoto />
+      <AIGuide />
+      <Disclosure title="Быстрые запросы к данным Grace">
 
         <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-sm leading-relaxed text-accent-foreground shadow-sm sm:p-5">
           <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card"><ShieldCheck className="size-5" aria-hidden="true" /></div>
@@ -344,10 +356,11 @@ export function AssistantPage({ submitAssistant = queryAssistant }: { submitAssi
         </Card>
 
         <div role="status" aria-live="polite">
-          {isSubmitting && <p className="text-sm text-muted-foreground">Grace выбирает безопасный источник данных…</p>}
+          {isSubmitting && <LoadingSkeleton label="Grace выбирает безопасный источник данных…" />}
           {error && <Notice title="Не удалось выполнить запрос" text={error} />}
           {result && <ResultBoundary result={result}><AssistantResultView result={result} /></ResultBoundary>}
         </div>
+      </Disclosure>
       </section>
     </AppLayout>
   )

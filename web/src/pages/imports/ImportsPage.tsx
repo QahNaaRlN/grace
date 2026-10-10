@@ -1,3 +1,5 @@
+import { Disclosure } from '@/shared/ui/disclosure'
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { PageHeader } from '@/shared/ui/page-header'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
@@ -14,7 +16,7 @@ import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
-import { formatMoney, eventTimeText } from '@/shared/lib/finance-display'
+import { formatMoney, eventTimeText, accountLabel } from '@/shared/lib/finance-display'
 import { PreviewPanel } from './PreviewPanel'
 import { MonthPanel } from './MonthPanel'
 
@@ -102,9 +104,10 @@ export function ImportsPage() {
     <PageHeader title="Импорт" description="Загрузите таблицу, проверьте строки и подтвердите результат." />
     {error && <p role="alert" className="text-destructive">{error}</p>}
     {notice && <p role="status">{notice}</p>}
+    {(batches.isPending || (batchId && (batch.isPending || records.isPending))) && <LoadingSkeleton label="Загружаем черновики…" />}
     <Card><CardHeader><CardTitle>Новый черновик</CardTitle></CardHeader><CardContent className="space-y-3">
       <Label htmlFor="snapshot">Таблица CSV или снимок JSON (до 16 MiB)</Label><Input id="snapshot" type="file" accept=".csv,.json,text/csv,application/json" onChange={event => setFile(event.target.files?.[0])} />
-      <details className="rounded-xl border p-3 text-sm"><summary className="min-h-11 content-center font-medium">Как подготовить файл</summary><p className="mt-2 leading-relaxed text-muted-foreground">Для CSV экспортируйте полный лист «Операции» из «Финансового здоровья»: UTF-8, столбцы A:O, заголовки в строке 4, данные с строки 5. CSV сохраняет значения; для формул и других листов используйте снимок JSON.</p></details>
+      <Disclosure className="rounded-xl border p-3 text-sm" triggerClassName="min-h-11 content-center font-medium" title={<>Как подготовить файл</>}><p className="mt-2 leading-relaxed text-muted-foreground">Для CSV экспортируйте полный лист «Операции» из «Финансового здоровья»: UTF-8, столбцы A:O, заголовки в строке 4, данные с строки 5. CSV сохраняет значения; для формул и других листов используйте снимок JSON.</p></Disclosure>
       {file?.name.toLowerCase().endsWith('.csv') && <div><Label htmlFor="csv-source">Название источника</Label><Input id="csv-source" maxLength={500} value={sourceId} onChange={event => setSourceId(event.target.value)} /></div>}
       <Button disabled={pending || !file || file.name.toLowerCase().endsWith('.csv') && !sourceId.trim()} onClick={() => void action(upload)}>Сохранить черновик</Button>
     </CardContent></Card>
@@ -134,7 +137,7 @@ export function ImportsPage() {
       {detail.data && <ReviewForm key={`${detail.data.id}:${JSON.stringify(detail.data.decision)}`} record={detail.data} batchId={batchId} revision={batch.data.revision} onSaved={async () => { setPreview(undefined); await cache.invalidateQueries({ queryKey: ['imports'] }); setNotice('Решение сохранено. Финансовый журнал ещё не изменён.') }} />}
       <Button disabled={pending || selected.length === 0 || selected.length > 100} onClick={() => void action(makePreview)}>Предварительный просмотр ({selected.length})</Button>
       {preview && <PreviewPanel preview={preview} pending={pending} onConfirm={() => void action(confirm)} />}
-      {shownReceipt && <Card><CardHeader><CardTitle>Подтверждение сохранено</CardTitle></CardHeader><CardContent><ul className="space-y-3">{shownReceipt.outcomes.map(o => <li key={o.recordId}>{names[o.action]} {o.event && <details id={`event-${o.eventId}`} className="rounded-md border p-3"><summary className="cursor-pointer py-2">{names[o.event.kind]}: {o.event.merchant || o.event.description} · {eventTimeText(o.event)}</summary><p>{o.event.description}</p>{o.event.postings.map(p => <p key={p.id}>{p.accountName}: {p.direction === 'debit' ? 'Списание' : 'Зачисление'} {p.amountMinor} коп. {p.currency}</p>)}<Link className="underline" to={`/imports?batch=${batchId}&confirmation=${shownReceipt.id}#event-${o.eventId}`}>Ссылка на подтверждённую операцию</Link></details>}</li>)}</ul></CardContent></Card>}
+      {shownReceipt && <Card><CardHeader><CardTitle>Подтверждение сохранено</CardTitle></CardHeader><CardContent><ul className="space-y-3">{shownReceipt.outcomes.map(o => <li key={o.recordId}>{names[o.action]} {o.event && <Disclosure id={`event-${o.eventId}`} className="rounded-md border p-3" triggerClassName="cursor-pointer py-2" title={<>{names[o.event.kind]}: {o.event.merchant || o.event.description} · {eventTimeText(o.event)}</>}><p>{o.event.description}</p>{o.event.postings.map(p => <p key={p.id}>{p.accountName}: {p.direction === 'debit' ? 'Списание' : 'Зачисление'} {p.amountMinor} коп. {p.currency}</p>)}<Link className="underline" to={`/imports?batch=${batchId}&confirmation=${shownReceipt.id}#event-${o.eventId}`}>Ссылка на подтверждённую операцию</Link></Disclosure>}</li>)}</ul></CardContent></Card>}
     </>}
   </div></AppLayout>
 }
@@ -171,10 +174,10 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
       await onSaved()
     } catch (err) { setError(message(err)) } finally { setPending(false) }
   }
-  const chooseAccount = (name: 'accountId' | 'destinationAccountId', label: string) => <div><Label htmlFor={name}>{label}</Label><ChoiceSelect id={name} value={fields[name] || ''} onValueChange={value => field(name, value)}><option value="">Выберите счёт</option>{accounts.data?.items.map(a => <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>)}</ChoiceSelect></div>
+  const chooseAccount = (name: 'accountId' | 'destinationAccountId', label: string) => <div><Label htmlFor={name}>{label}</Label><ChoiceSelect id={name} value={fields[name] || ''} onValueChange={value => field(name, value)}><option value="">Выберите счёт</option>{accounts.data?.items.map(a => <option key={a.id} value={a.id}>{accountLabel(a)} ({a.currency})</option>)}</ChoiceSelect></div>
   return <Card><CardHeader><CardTitle>Проверка: {record.source.sheet}, строка {record.source.row}</CardTitle></CardHeader><CardContent className="space-y-4">
-    <details><summary className="cursor-pointer py-3">Исходные значения и нормализация</summary><pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted p-3 text-xs">{JSON.stringify(record.source, null, 2)}</pre></details>
-    <details><summary className="cursor-pointer py-3">История решений ({record.history.length})</summary>{record.history.map(h => <p key={h.revision}>{new Date(h.createdAt).toLocaleString('ru-RU')} · {names[h.decision.action]} · {h.decision.reason}</p>)}</details>
+    <Disclosure triggerClassName="cursor-pointer py-3" title={<>Исходные значения и нормализация</>}><pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted p-3 text-xs">{JSON.stringify(record.source, null, 2)}</pre></Disclosure>
+    <Disclosure triggerClassName="cursor-pointer py-3" title={<>История решений ({record.history.length})</>}>{record.history.map(h => <p key={h.revision}>{new Date(h.createdAt).toLocaleString('ru-RU')} · {names[h.decision.action]} · {h.decision.reason}</p>)}</Disclosure>
     {record.published ? <p>Эта строка уже подтверждена. Решение сохранено вместе с происхождением данных.</p> : record.source.domain !== 'transaction' ? <p>Этот лист сохранён как свидетельство. Публикация его данных появится в отдельном этапе.</p> : <form className="space-y-4" onSubmit={event => void save(event)}>
       <Label htmlFor="review-action">Решение</Label><ChoiceSelect id="review-action" value={action} onValueChange={value => setAction(value as Decision['action'])}>{['unresolved', 'create', 'link_existing', 'duplicate_of', 'exclude'].map(a => <option key={a} value={a}>{names[a]}</option>)}</ChoiceSelect>
       {action === 'create' && <div className="grid gap-3 sm:grid-cols-2">

@@ -12,7 +12,7 @@ postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 race_flag=''
 if [ "$(go env CGO_ENABLED)" = '1' ]; then race_flag='-race'; fi
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" go test $race_flag -tags=integration ./internal/auth -run TestPassword -count=1
-if docker compose run --rm migrate -path=/migrations -database='postgres://grace:grace@postgres:5432/grace?sslmode=disable' down 1; then
+if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000012_password_credentials.down.sql; then
   echo 'Unsafe password credential deletion was accepted' >&2; exit 1
 fi
 echo 'SPEC-0031 password authentication integration checks passed'

@@ -15,6 +15,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
+	"github.com/QahNaaRlN/grace/internal/receiptdrafts"
 	"github.com/QahNaaRlN/grace/internal/receipts"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -51,6 +52,13 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		}
 	}
 	assistantHandler := assistant.NewHandler(assistantRouter)
+	aiHandler := assistant.NewAIHandler(assistant.AISettings{Enabled: cfg.AIEnabled, Key: cfg.OpenRouterAPIKey, AnalysisPolicy: cfg.AIAnalysisPolicy, ReceiptPolicy: cfg.AIReceiptPolicy, PhotoDir: cfg.AIPhotoDir}, pool, analyticsRepository)
+	var photoStore *receiptdrafts.PhotoStore
+	if cfg.AIPhotoDir != "" {
+		photoStore, _ = receiptdrafts.NewPhotoStore(cfg.AIPhotoDir)
+	}
+	aiHandler.SetReceiptStorageAvailable(photoStore!=nil)
+	draftHandler := receiptdrafts.NewHandler(pool, photoStore, aiHandler.ReceiptExtractor())
 	var identityProvider auth.Provider
 	if cfg.AuthMode == "telegram" {
 		identityProvider = auth.NewTelegramProvider(cfg.TelegramClientID, cfg.TelegramClientSecret, cfg.PublicURL+"/api/auth/callback")
@@ -124,11 +132,18 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Use(authHandler.Require)
 		imports.NewHandler(imports.NewRepository(pool)).Routes(router)
 	})
+	router.Route("/api/assistant", func(router chi.Router) {
+		router.Use(authHandler.Require)
+		aiHandler.Routes(router)
+	})
+	router.Route("/api/receipt-drafts", func(r chi.Router) { r.Use(authHandler.Require); draftHandler.Routes(r) })
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Use(authHandler.Require)
 		router.Get("/accounts", accountsHandler.List)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Get("/categories", categoriesHandler.List)
+		router.Post("/categories", categoriesHandler.Create)
+		router.Patch("/categories/{categoryId}", categoriesHandler.Rename)
 		router.Get("/financial-events", financialEventsHandler.List)
 		router.Post("/financial-events/purchases", financialEventsHandler.CreatePurchase)
 		router.Post("/financial-events/incomes", financialEventsHandler.CreateIncome)
@@ -148,7 +163,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Post("/assistant/query", assistantHandler.Query)
 	})
 
-	return &http.Server{
+	server := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -156,4 +171,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
+	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
+	server.RegisterOnShutdown(stopCleanup)
+	if photoStore != nil {
+		go draftHandler.RunCleanup(cleanupCtx, pool)
+	}
+	return server
 }

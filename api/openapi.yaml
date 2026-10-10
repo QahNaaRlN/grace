@@ -8,6 +8,242 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/receipt-drafts:
+    post:
+      operationId: uploadReceiptPhoto
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [photo], properties: { photo: { type: string, format: binary } } }
+      responses:
+        '201':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getReceiptDraft
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+    patch:
+      operationId: editReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EditReceiptDraft' }
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+    delete:
+      operationId: cancelReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/extract:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: extractReceiptPhoto
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/previews:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: previewReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [revision], properties: { revision: { type: integer, format: int64 } } }
+      responses:
+        '201':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraftPreview' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/receipt-drafts/{draftId}/confirmations:
+    parameters:
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: confirmReceiptDraft
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [previewId, hash], properties: { previewId: { type: string, format: uuid }, hash: { type: string, minLength: 64, maxLength: 64 } } }
+      responses:
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReceiptDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/assistant/capabilities:
+    get:
+      operationId: getAICapabilities
+      responses:
+        '200':
+          description: Enabled modes, data disclosure, consent and shared experiment allowance.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AICapabilities' }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/assistant/consents:
+    post:
+      operationId: grantAIConsent
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, policyHash]
+              additionalProperties: false
+              properties:
+                scope: { type: string, enum: [analysis, receipt] }
+                policyHash: { type: string, minLength: 64, maxLength: 64 }
+      responses:
+        '200':
+          description: Consent granted for the current named provider and data scope.
+          content:
+            application/json:
+              schema: { type: object, required: [granted], properties: { granted: { type: boolean } } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/assistant/consents/{scope}:
+    parameters:
+      - { name: scope, in: path, required: true, schema: { type: string, enum: [analysis, receipt] } }
+    delete:
+      operationId: revokeAIConsent
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': { description: Consent revoked; confirmed finance is unchanged. }
+  /api/assistant/conversations:
+    post:
+      operationId: createAIConversation
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '201':
+          description: Private conversation created.
+          content:
+            application/json:
+              schema: { type: object, required: [id], properties: { id: { type: string, format: uuid } } }
+        '503': { $ref: '#/components/responses/InternalError' }
+  /api/assistant/conversations/{conversationId}:
+    parameters:
+      - { name: conversationId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getAIConversation
+      responses:
+        '200':
+          description: Owner-scoped questions, fact snapshots and interpretations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, messages]
+                properties:
+                  id: { type: string, format: uuid }
+                  messages: { type: array, items: { $ref: '#/components/schemas/AIConversationMessage' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteAIConversation
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': { description: Conversation removed; financial provenance remains. }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/assistant/conversations/{conversationId}/messages:
+    parameters:
+      - { name: conversationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: analyzeCalendarMonth
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question, month]
+              additionalProperties: false
+              properties:
+                question: { type: string, minLength: 1, maxLength: 2000 }
+                month: { type: string, pattern: '^[0-9]{4}-[0-9]{2}$' }
+      responses:
+        '200':
+          description: Saved answer or safe failed turn with deterministic facts; replay has no second inference cost.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AIConversationMessage' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /api/imports/csv:
     post:
       operationId: uploadImportCSV
@@ -1145,6 +1381,24 @@ paths:
               schema: { $ref: '#/components/schemas/Account' }
         '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/categories:
+    post:
+      operationId: createExpenseCategory
+      parameters: [{ $ref: '#/components/parameters/CSRF' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryName' }
+      responses:
+        '201':
+          description: Personal expense category created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
     get:
       operationId: listCategories
       responses:
@@ -1163,10 +1417,38 @@ paths:
                   items:
                     type: array
                     items: { $ref: '#/components/schemas/Category' }
+  /api/v1/categories/{categoryId}:
+    patch:
+      operationId: renameExpenseCategory
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryName' }
+      responses:
+        '200':
+          description: Personal category renamed; references retained
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/financial-events:
     get:
       operationId: listFinancialEvents
+      parameters:
+        - { name: categoryId, in: query, description: Category UUID or uncategorized (purchases only); applied before the 100-event limit, schema: { type: string } }
+        - { name: from, in: query, description: Inclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
+        - { name: to, in: query, description: Exclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
       responses:
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/AuthenticationError'
         '503':
@@ -1527,6 +1809,11 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    InternalError:
+      description: Service temporarily unavailable; ordinary financial functions remain independent of AI.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     ImportError:
       description: Safe import error with code and message; no private source values
       content:
@@ -1574,6 +1861,161 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    ReceiptDraftItem:
+      type: object
+      additionalProperties: false
+      required: [name, quantity, unitPrice, lineTotal, discount, brand, package, broadGroup]
+      properties:
+        name: { type: [string, "null"] }
+        quantity: { type: [string, "null"] }
+        unitPrice: { type: [string, "null"] }
+        lineTotal: { type: [string, "null"] }
+        discount: { type: [string, "null"] }
+        brand: { type: [string, "null"] }
+        package: { type: [string, "null"] }
+        broadGroup: { type: [string, "null"] }
+    ReceiptDraftFields:
+      type: object
+      additionalProperties: false
+      required: [seller, issuedAt, issuedDate, currency, total, fiscalDocumentNumber, categoryId, accountId, action, existingEventId, candidateReason, items]
+      properties:
+        seller: { type: [string, "null"] }
+        issuedAt: { type: [string, "null"] }
+        issuedDate: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        total: { type: [string, "null"] }
+        fiscalDocumentNumber: { type: [string, "null"] }
+        categoryId: { type: [string, "null"] }
+        accountId: { type: string }
+        action: { type: string }
+        existingEventId: { type: string }
+        candidateReason: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/ReceiptDraftItem' } }
+    ReceiptExtraction:
+      type: object
+      additionalProperties: false
+      required: [fields, sourceText, model, provider, costMicros]
+      properties:
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+        sourceText: { type: string }
+        model: { type: string }
+        provider: { type: string }
+        costMicros: { type: string }
+    ReceiptDraft:
+      type: object
+      additionalProperties: false
+      required: [id, revision, status, fields, extractions, warnings, photoStatus, expiresAt, receiptId, eventId]
+      properties:
+        id: { type: string }
+        revision: { type: integer, format: int64 }
+        status: { type: string }
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+        extractions: { type: array, items: { $ref: '#/components/schemas/ReceiptExtraction' } }
+        warnings: { type: array, items: { type: string } }
+        photoStatus: { type: string }
+        expiresAt: { type: string }
+        receiptId: { type: [string, "null"] }
+        eventId: { type: [string, "null"] }
+    EditReceiptDraft:
+      type: object
+      additionalProperties: false
+      required: [revision, fields]
+      properties:
+        revision: { type: integer, format: int64 }
+        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
+    ReceiptDraftCandidate:
+      type: object
+      additionalProperties: false
+      required: [eventId, description, amountMinor, currency, hasReceipt]
+      properties:
+        eventId: { type: string }
+        description: { type: string }
+        amountMinor: { type: string }
+        currency: { type: string }
+        hasReceipt: { type: boolean }
+    ReceiptDraftPreview:
+      type: object
+      additionalProperties: false
+      required: [id, hash, revision, expiresAt, action, amountMinor, currency, accountId, existingEventId, candidates, warnings]
+      properties:
+        id: { type: string }
+        hash: { type: string }
+        revision: { type: integer, format: int64 }
+        expiresAt: { type: string }
+        action: { type: string }
+        amountMinor: { type: string }
+        currency: { type: string }
+        accountId: { type: string }
+        existingEventId: { type: string }
+        candidates: { type: array, items: { $ref: '#/components/schemas/ReceiptDraftCandidate' } }
+        warnings: { type: array, items: { type: string } }
+    AIMode:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+        model: { type: string }
+        provider: { type: string }
+        consentGranted: { type: boolean }
+        policyHash: { type: string }
+        dataDescription: { type: string }
+        privacy: { type: string }
+    AICapabilities:
+      type: object
+      required: [analysis, receipt, remainingMicros, policyVersion]
+      properties:
+        analysis: { $ref: '#/components/schemas/AIMode' }
+        receipt: { $ref: '#/components/schemas/AIMode' }
+        remainingMicros: { type: string, pattern: '^[0-9]+$' }
+        policyVersion: { type: string }
+    AIAnalysisFact:
+      type: object
+      required: [id, label, valueMinor, currency]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        valueMinor: { type: string, pattern: '^-?[0-9]+$' }
+        currency: { type: string }
+        shareBasisPoints: { type: integer, format: int64, description: 'Share of gross purchases computed by Go; 10000 means 100 percent.' }
+    AIAnalysisFacts:
+      type: object
+      required: [month, from, to, capturedAt, coverage, facts]
+      properties:
+        month: { type: string }
+        from: { type: string, format: date-time }
+        to: { type: string, format: date-time }
+        capturedAt: { type: string, format: date-time }
+        coverage: { type: string, enum: [confirmed_only_coverage_unknown] }
+        facts: { type: array, items: { $ref: '#/components/schemas/AIAnalysisFact' } }
+    AIAnalysisAnswer:
+      type: object
+      required: [facts, interpretations, model, provider, costMicros, notice]
+      properties:
+        facts: { $ref: '#/components/schemas/AIAnalysisFacts' }
+        interpretations:
+          type: array
+          items:
+            type: object
+            required: [kind, text, factIds]
+            properties:
+              kind: { type: string, enum: [assumption, suggestion] }
+              text: { type: string }
+              factIds: { type: array, items: { type: string } }
+        model: { type: string }
+        provider: { type: string }
+        costMicros: { type: string }
+        notice: { type: string }
+    AIConversationMessage:
+      type: object
+      required: [id, question, month, status, facts, response, errorCode]
+      properties:
+        id: { type: string, format: uuid }
+        question: { type: string }
+        month: { type: string }
+        status: { type: string, enum: [pending, completed, failed] }
+        facts: { $ref: '#/components/schemas/AIAnalysisFacts' }
+        response: { oneOf: [{ $ref: '#/components/schemas/AIAnalysisAnswer' }, { type: 'null' }] }
+        errorCode: { type: [string, 'null'] }
     ImportMonthRow:
       type: object
       required: [recordId, sheet, row, sourceDate, sourceKind, sourceAmountMinor, sourceCurrency, description, action, published, reason, targetDate, targetKind, targetAmountMinor, targetCurrency, differences]
@@ -2510,6 +2952,12 @@ components:
         name: { type: string }
         bank: { type: string }
         last4: { type: string, pattern: '^[0-9]{4}$' }
+    CategoryName:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
     Category:
       type: object
       required: [id, name, kind, createdAt]
@@ -2517,6 +2965,7 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         kind: { type: string, enum: [expense, income] }
+        editable: { type: boolean, description: True only for a personal category belonging to the authenticated user }
         createdAt: { type: string, format: date-time }
     Posting:
       type: object
@@ -2688,6 +3137,7 @@ components:
         description: { type: string }
         occurredAt: { type: string, format: date-time }
     ReceiptItem:
+
       type: object
       required: [id, position, name, quantityMilli, unitPriceMinor, lineTotalMinor]
       properties:
@@ -2697,14 +3147,19 @@ components:
         quantityMilli: { type: integer, format: int64, minimum: 1 }
         unitPriceMinor: { type: integer, format: int64, minimum: 1 }
         lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        brand: { type: [string, "null"], maxLength: 300 }
+        package: { type: [string, "null"], maxLength: 300 }
+        broadGroup: { type: [string, "null"], maxLength: 300 }
     Receipt:
       type: object
-      required: [id, purchaseEventId, seller, issuedAt, currency, totalMinor, fiscalDocumentNumber, createdAt, items]
+      required: [id, purchaseEventId, seller, issuedAt, issuedDate, datePrecision, currency, totalMinor, fiscalDocumentNumber, createdAt, items]
       properties:
         id: { type: string, format: uuid }
         purchaseEventId: { type: string, format: uuid }
         seller: { type: string }
-        issuedAt: { type: string, format: date-time }
+        issuedAt: { type: [string, "null"], format: date-time }
+        issuedDate: { type: [string, "null"], format: date }
+        datePrecision: { type: string, enum: [instant, date] }
         currency: { type: string, minLength: 3, maxLength: 3 }
         totalMinor: { type: integer, format: int64, minimum: 1 }
         fiscalDocumentNumber: { type: string }
@@ -2714,6 +3169,7 @@ components:
           minItems: 1
           items: { $ref: '#/components/schemas/ReceiptItem' }
     CreateReceiptItem:
+
       type: object
       additionalProperties: false
       required: [name, quantityMilli, unitPriceMinor, lineTotalMinor]
@@ -2722,6 +3178,9 @@ components:
         quantityMilli: { type: integer, format: int64, minimum: 1 }
         unitPriceMinor: { type: integer, format: int64, minimum: 1 }
         lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        brand: { type: [string, "null"], maxLength: 300 }
+        package: { type: [string, "null"], maxLength: 300 }
+        broadGroup: { type: [string, "null"], maxLength: 300 }
     CreateReceipt:
       type: object
       additionalProperties: false

@@ -4,6 +4,196 @@
  */
 
 export interface paths {
+    "/api/receipt-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadReceiptPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getReceiptDraft"];
+        put?: never;
+        post?: never;
+        delete: operations["cancelReceiptDraft"];
+        options?: never;
+        head?: never;
+        patch: operations["editReceiptDraft"];
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["extractReceiptPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewReceiptDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmReceiptDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAICapabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["grantAIConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/consents/{scope}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scope: "analysis" | "receipt";
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revokeAIConsent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createAIConversation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations/{conversationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getAIConversation"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteAIConversation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["analyzeCalendarMonth"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/imports/csv": {
         parameters: {
             query?: never;
@@ -509,11 +699,27 @@ export interface paths {
         };
         get: operations["listCategories"];
         put?: never;
-        post?: never;
+        post: operations["createExpenseCategory"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["renameExpenseCategory"];
         trace?: never;
     };
     "/api/v1/financial-events": {
@@ -762,6 +968,138 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ReceiptDraftItem: {
+            name: string | null;
+            quantity: string | null;
+            unitPrice: string | null;
+            lineTotal: string | null;
+            discount: string | null;
+            brand: string | null;
+            package: string | null;
+            broadGroup: string | null;
+        };
+        ReceiptDraftFields: {
+            seller: string | null;
+            issuedAt: string | null;
+            issuedDate: string | null;
+            currency: string | null;
+            total: string | null;
+            fiscalDocumentNumber: string | null;
+            categoryId: string | null;
+            accountId: string;
+            action: string;
+            existingEventId: string;
+            candidateReason: string;
+            items: components["schemas"]["ReceiptDraftItem"][];
+        };
+        ReceiptExtraction: {
+            fields: components["schemas"]["ReceiptDraftFields"];
+            sourceText: string;
+            model: string;
+            provider: string;
+            costMicros: string;
+        };
+        ReceiptDraft: {
+            id: string;
+            /** Format: int64 */
+            revision: number;
+            status: string;
+            fields: components["schemas"]["ReceiptDraftFields"];
+            extractions: components["schemas"]["ReceiptExtraction"][];
+            warnings: string[];
+            photoStatus: string;
+            expiresAt: string;
+            receiptId: string | null;
+            eventId: string | null;
+        };
+        EditReceiptDraft: {
+            /** Format: int64 */
+            revision: number;
+            fields: components["schemas"]["ReceiptDraftFields"];
+        };
+        ReceiptDraftCandidate: {
+            eventId: string;
+            description: string;
+            amountMinor: string;
+            currency: string;
+            hasReceipt: boolean;
+        };
+        ReceiptDraftPreview: {
+            id: string;
+            hash: string;
+            /** Format: int64 */
+            revision: number;
+            expiresAt: string;
+            action: string;
+            amountMinor: string;
+            currency: string;
+            accountId: string;
+            existingEventId: string;
+            candidates: components["schemas"]["ReceiptDraftCandidate"][];
+            warnings: string[];
+        };
+        AIMode: {
+            enabled: boolean;
+            model?: string;
+            provider?: string;
+            consentGranted?: boolean;
+            policyHash?: string;
+            dataDescription?: string;
+            privacy?: string;
+        };
+        AICapabilities: {
+            analysis: components["schemas"]["AIMode"];
+            receipt: components["schemas"]["AIMode"];
+            remainingMicros: string;
+            policyVersion: string;
+        };
+        AIAnalysisFact: {
+            id: string;
+            label: string;
+            valueMinor: string;
+            currency: string;
+            /**
+             * Format: int64
+             * @description Share of gross purchases computed by Go; 10000 means 100 percent.
+             */
+            shareBasisPoints?: number;
+        };
+        AIAnalysisFacts: {
+            month: string;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            /** Format: date-time */
+            capturedAt: string;
+            /** @enum {string} */
+            coverage: "confirmed_only_coverage_unknown";
+            facts: components["schemas"]["AIAnalysisFact"][];
+        };
+        AIAnalysisAnswer: {
+            facts: components["schemas"]["AIAnalysisFacts"];
+            interpretations: {
+                /** @enum {string} */
+                kind: "assumption" | "suggestion";
+                text: string;
+                factIds: string[];
+            }[];
+            model: string;
+            provider: string;
+            costMicros: string;
+            notice: string;
+        };
+        AIConversationMessage: {
+            /** Format: uuid */
+            id: string;
+            question: string;
+            month: string;
+            /** @enum {string} */
+            status: "pending" | "completed" | "failed";
+            facts: components["schemas"]["AIAnalysisFacts"];
+            response: components["schemas"]["AIAnalysisAnswer"] | null;
+            errorCode: string | null;
+        };
         ImportMonthRow: {
             /** Format: uuid */
             recordId: string;
@@ -1369,12 +1707,17 @@ export interface components {
             bank: string;
             last4: string;
         };
+        CategoryName: {
+            name: string;
+        };
         Category: {
             /** Format: uuid */
             id: string;
             name: string;
             /** @enum {string} */
             kind: "expense" | "income";
+            /** @description True only for a personal category belonging to the authenticated user */
+            editable?: boolean;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1563,6 +1906,9 @@ export interface components {
             unitPriceMinor: number;
             /** Format: int64 */
             lineTotalMinor: number;
+            brand?: string | null;
+            package?: string | null;
+            broadGroup?: string | null;
         };
         Receipt: {
             /** Format: uuid */
@@ -1571,7 +1917,11 @@ export interface components {
             purchaseEventId: string;
             seller: string;
             /** Format: date-time */
-            issuedAt: string;
+            issuedAt: string | null;
+            /** Format: date */
+            issuedDate: string | null;
+            /** @enum {string} */
+            datePrecision: "instant" | "date";
             currency: string;
             /** Format: int64 */
             totalMinor: number;
@@ -1588,6 +1938,9 @@ export interface components {
             unitPriceMinor: number;
             /** Format: int64 */
             lineTotalMinor: number;
+            brand?: string | null;
+            package?: string | null;
+            broadGroup?: string | null;
         };
         CreateReceipt: {
             /** Format: uuid */
@@ -1671,6 +2024,15 @@ export interface components {
         };
     };
     responses: {
+        /** @description Service temporarily unavailable; ordinary financial functions remain independent of AI. */
+        InternalError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Safe import error with code and message; no private source values */
         ImportError: {
             headers: {
@@ -1767,6 +2129,423 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    uploadReceiptPhoto: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    photo: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getReceiptDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    cancelReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    editReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditReceiptDraft"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    extractReceiptPhoto: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    previewReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: int64 */
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraftPreview"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    confirmReceiptDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    previewId: string;
+                    hash: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getAICapabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enabled modes, data disclosure, consent and shared experiment allowance. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AICapabilities"];
+                };
+            };
+            503: components["responses"]["InternalError"];
+        };
+    };
+    grantAIConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    scope: "analysis" | "receipt";
+                    policyHash: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Consent granted for the current named provider and data scope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        granted: boolean;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    revokeAIConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                scope: "analysis" | "receipt";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consent revoked; confirmed finance is unchanged. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createAIConversation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private conversation created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getAIConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped questions, fact snapshots and interpretations. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        messages: components["schemas"]["AIConversationMessage"][];
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAIConversation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversation removed; financial provenance remains. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    analyzeCalendarMonth: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    question: string;
+                    month: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved answer or safe failed turn with deterministic facts; replay has no second inference cost. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIConversationMessage"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
     uploadImportCSV: {
         parameters: {
             query: {
@@ -3617,9 +4396,81 @@ export interface operations {
             503: components["responses"]["AuthenticationError"];
         };
     };
-    listFinancialEvents: {
+    createExpenseCategory: {
         parameters: {
             query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryName"];
+            };
+        };
+        responses: {
+            /** @description Personal expense category created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Category"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    renameExpenseCategory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryName"];
+            };
+        };
+        responses: {
+            /** @description Personal category renamed; references retained */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Category"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listFinancialEvents: {
+        parameters: {
+            query?: {
+                /** @description Category UUID or uncategorized (purchases only); applied before the 100-event limit */
+                categoryId?: string;
+                /** @description Inclusive local calendar date Asia/Yekaterinburg */
+                from?: string;
+                /** @description Exclusive local calendar date Asia/Yekaterinburg */
+                to?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3638,6 +4489,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationError"];
+            422: components["responses"]["ValidationError"];
             503: components["responses"]["AuthenticationError"];
         };
     };

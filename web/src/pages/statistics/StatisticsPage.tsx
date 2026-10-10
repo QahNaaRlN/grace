@@ -1,4 +1,6 @@
+import { Disclosure } from '@/shared/ui/disclosure'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
@@ -61,7 +63,7 @@ export function SeriesChart({ item, comparison = false, compact = false }: { ite
       </svg>}
     </div>
     {chosen && <p aria-live="polite" className="text-sm"><span className="text-muted-foreground">{rangeText(chosen)}</span><br />{keys.map(key => `${labels[key]}: ${formatMoney(chosen[key], item.currency)}`).join(' · ')}</p>}
-    {!compact && <details className="rounded-xl border p-3"><summary className="min-h-11 content-center font-medium">Таблица значений</summary><div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption className="sr-only">Суммы записанных событий в {item.currency}</caption><thead><tr><th className="p-2">Период (конец не включается)</th><th className="p-2">Доходы</th><th className="p-2">Покупки</th><th className="p-2">Платежи</th><th className="p-2">Возвраты</th></tr></thead><tbody>{item.series.map(bucket => <tr key={bucket.from} className="border-t"><th scope="row" className="p-2 font-normal">{rangeText(bucket)}</th>{[bucket.incomeMinor, bucket.purchasesMinor, bucket.debtPaymentsMinor, bucket.refundsMinor].map((value, i) => <td key={i} className="p-2 whitespace-nowrap tabular-nums">{formatMoney(value, item.currency)}</td>)}</tr>)}</tbody></table></div></details>}
+    {!compact && <Disclosure className="rounded-xl border p-3" triggerClassName="min-h-11 content-center font-medium" title={<>Таблица значений</>}><div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption className="sr-only">Суммы записанных событий в {item.currency}</caption><thead><tr><th className="p-2">Период (конец не включается)</th><th className="p-2">Доходы</th><th className="p-2">Покупки</th><th className="p-2">Платежи</th><th className="p-2">Возвраты</th></tr></thead><tbody>{item.series.map(bucket => <tr key={bucket.from} className="border-t"><th scope="row" className="p-2 font-normal">{rangeText(bucket)}</th>{[bucket.incomeMinor, bucket.purchasesMinor, bucket.debtPaymentsMinor, bucket.refundsMinor].map((value, i) => <td key={i} className="p-2 whitespace-nowrap tabular-nums">{formatMoney(value, item.currency)}</td>)}</tr>)}</tbody></table></div></Disclosure>}
   </div>
 }
 
@@ -74,6 +76,7 @@ export function CategoryChart({ item }: { item: StatisticsCurrency }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm"><span className="font-medium">{category.categoryName}</span><span className="tabular-nums">{formatMoney(category.purchasesMinor, item.currency)} · {(category.shareBasisPoints / 100).toLocaleString('ru-RU')}%</span></div>
       <div aria-hidden="true" className="h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-chart-1" style={{ width: `${category.purchasesMinor / max * 100}%` }} /></div>
       {category.refundsMinor > 0 && <p className="text-sm text-muted-foreground">Возвраты {formatMoney(category.refundsMinor, item.currency)} · после возвратов {formatMoney(category.netExpenseMinor, item.currency)}</p>}
+      <Link to={`/operations?category=${encodeURIComponent(category.categoryId ?? 'uncategorized')}`} className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">Посмотреть покупки: {category.categoryName}</Link>
     </div>)}
     <Link to="/operations" className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">Открыть последние операции</Link>
   </div>
@@ -113,7 +116,7 @@ export function StatisticsPage({ compact = false }: { compact?: boolean }) {
       <div className="space-y-2"><Label htmlFor="stats-currency">Валюта</Label><ChoiceSelect id="stats-currency" value={item?.currency ?? ''} onValueChange={value => setCurrency(value)} disabled={!query.data?.currencies.length} className="h-11 w-full rounded-xl border border-input bg-card px-3 focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed">{query.data?.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</ChoiceSelect></div>
     </div>}
     <p className="text-sm text-muted-foreground">Только записанные события · Asia/Yekaterinburg. Полнота истории не подтверждена; ноль на графике означает отсутствие записей. Неполные крайние периоды показаны по выбранным датам.</p>
-    {!valid ? <p role="alert">Выберите период до одного года; конец должен быть позже начала.</p> : query.isError ? <div role="alert" className="space-y-3"><p>{query.error.message}</p><Button variant="outline" onClick={() => void query.refetch()}>Повторить загрузку</Button></div> : query.isPending ? <p role="status">Загружаем статистику…</p> : item ? <>
+    {!valid ? <p role="alert">Выберите период до одного года; конец должен быть позже начала.</p> : query.isError ? <div role="alert" className="space-y-3"><p>{query.error.message}</p><Button variant="outline" onClick={() => void query.refetch()}>Повторить загрузку</Button></div> : query.isPending ? <LoadingSkeleton label="Загружаем статистику…" /> : item ? <>
       <p className="text-sm">{dayText(from)} — до {dayText(to)}, не включая · {item.currency} · Покупки {formatMoney(item.summary.purchasesMinor, item.currency)}</p>
       {compact && query.data.currencies.length > 1 && <div className="space-y-2"><Label htmlFor="overview-stats-currency">Валюта графика</Label><ChoiceSelect id="overview-stats-currency" className="h-11 rounded-xl border bg-card px-3" value={item.currency} onValueChange={value => setCurrency(value)}>{query.data.currencies.map(c => <option key={c.currency}>{c.currency}</option>)}</ChoiceSelect></div>}
       <StatisticsCharts key={`${from}:${to}:${granularity}:${item.currency}`} item={item} compact={compact} />

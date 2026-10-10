@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -73,7 +73,7 @@ const receiptsResult = {
         id: '00000000-0000-0000-0000-000000000004',
         purchaseEventId: '00000000-0000-0000-0000-000000000005',
         seller: 'Магазин',
-        issuedAt: '2026-10-04T14:00:00+05:00',
+        issuedAt: '2026-10-04T14:00:00+05:00', issuedDate: null, datePrecision: 'instant',
         currency: 'RUB',
         totalMinor: 350_00,
         fiscalDocumentNumber: '42',
@@ -131,11 +131,13 @@ const incomePeriodResult = {
 } satisfies AssistantResult
 
 function renderPage(submitAssistant: SubmitAssistant) {
-  return render(
+  const view = render(
     <MemoryRouter initialEntries={['/assistant']}>
       <AssistantPage submitAssistant={submitAssistant} />
     </MemoryRouter>,
   )
+  fireEvent.click(screen.getByRole('button', { name: 'Быстрые запросы к данным Grace' }))
+  return view
 }
 
 async function ask(submitAssistant: SubmitAssistant, text = '  Покажи мои счета  ') {
