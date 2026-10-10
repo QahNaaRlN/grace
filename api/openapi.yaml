@@ -8,6 +8,246 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/v1/payment-reminders:
+    get:
+      operationId: listPaymentReminders
+      responses:
+        '200':
+          description: Last 100 owner-scoped reminder delivery states.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/PaymentReminderStatus' } }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/subscriptions:
+    get:
+      operationId: listSubscriptions
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubscriptionList' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    post:
+      operationId: createSubscription
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionInput' }
+      responses:
+        '201':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/subscriptions/{subscriptionId}:
+    parameters:
+      - { name: subscriptionId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateSubscription
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionInput' }
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/subscriptions/{subscriptionId}/expenses:
+    parameters:
+      - { name: subscriptionId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: listSubscriptionExpenses
+      responses:
+        '200':
+          description: Last 100 linked purchases, independent of the recent-event picker.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/FinancialEvent' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    post:
+      operationId: linkSubscriptionExpense
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionExpense' }
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubscriptionExpense' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getLoan
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDetails' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    patch:
+      operationId: updateLoan
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoanDetailsInput' }
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDetails' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/documents:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: uploadLoanDocument
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } }
+      responses:
+        '201':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDocument' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/documents/{documentId}:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: documentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: downloadLoanDocument
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/schedule-drafts:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: copyPaymentSchedule
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '201':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentScheduleDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/schedule-drafts/{draftId}:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: editPaymentSchedule
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentScheduleEdit' }
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentScheduleDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/schedule-drafts/{draftId}/apply:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: applyPaymentSchedule
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentScheduleConfirm' }
+      responses:
+        '200':
+          description: Owner-scoped commitment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentScheduleDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /api/receipt-drafts:
     post:
       operationId: uploadReceiptPhoto
@@ -1861,6 +2101,107 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    PaymentReminderStatus:
+      type: object
+      required: [id, sourceKind, sourceId, dueOn, leadDays, status]
+      properties:
+        id: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [subscription, loan] }
+        sourceId: { type: string, format: uuid }
+        dueOn: { type: string, format: date }
+        leadDays: { type: integer, enum: [1, 3] }
+        status: { type: string, enum: [pending, dispatching, sent, cancelled, uncertain] }
+    SubscriptionInput:
+      type: object
+      required: [name, amountMinor, currency, period, startsOn, endsOn, accountId, paymentInstrumentId, paused, reminders, revision]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        amountMinor: { type: integer, minimum: 1, maximum: 9007199254740991 }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        period: { type: string, enum: [weekly, monthly, yearly] }
+        startsOn: { type: string, format: date }
+        endsOn: { type: [string, 'null'], format: date }
+        accountId: { type: [string, 'null'], format: uuid }
+        paymentInstrumentId: { type: [string, 'null'], format: uuid }
+        paused: { type: boolean }
+        reminders: { type: boolean }
+        revision: { type: integer, minimum: 0 }
+    Subscription:
+      allOf:
+        - $ref: '#/components/schemas/SubscriptionInput'
+        - type: object
+          required: [id, nextDueOn, expenseIds]
+          properties:
+            id: { type: string, format: uuid }
+            nextDueOn: { type: [string, 'null'], format: date }
+            expenseIds: { type: array, items: { type: string, format: uuid } }
+    SubscriptionList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Subscription' } }
+    SubscriptionExpense:
+      type: object
+      required: [financialEventId]
+      properties:
+        financialEventId: { type: string, format: uuid }
+    LoanDetailsInput:
+      type: object
+      required: [lender, agreementNumber, agreementOn, principalMinor, annualRateBasisPoints, reminders, revision]
+      properties:
+        lender: { type: string, maxLength: 160 }
+        agreementNumber: { type: string, maxLength: 160 }
+        agreementOn: { type: [string, 'null'], format: date }
+        principalMinor: { type: [integer, 'null'], minimum: 1, maximum: 9007199254740991 }
+        annualRateBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 100000 }
+        reminders: { type: boolean }
+        revision: { type: integer, minimum: 0 }
+    LoanDetails:
+      allOf:
+        - $ref: '#/components/schemas/LoanDetailsInput'
+        - type: object
+          required: [documents, drafts]
+          properties:
+            documents: { type: array, items: { $ref: '#/components/schemas/LoanDocument' } }
+            drafts: { type: array, items: { $ref: '#/components/schemas/PaymentScheduleDraft' } }
+    LoanDocument:
+      type: object
+      required: [id, filename, version, sha256, size, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        filename: { type: string }
+        version: { type: integer }
+        sha256: { type: string }
+        size: { type: integer }
+        createdAt: { type: string, format: date-time }
+    DraftPayment:
+      type: object
+      required: [sourceId, dueOn, amountMinor, paidMinor]
+      properties:
+        sourceId: { type: string }
+        dueOn: { type: string, format: date }
+        amountMinor: { type: integer, minimum: 1, maximum: 9007199254740991 }
+        paidMinor: { type: integer, minimum: 0 }
+    PaymentScheduleEdit:
+      type: object
+      required: [revision, payments]
+      properties:
+        revision: { type: integer, minimum: 1 }
+        payments: { type: array, minItems: 1, maxItems: 600, items: { $ref: '#/components/schemas/DraftPayment' } }
+    PaymentScheduleConfirm:
+      type: object
+      required: [revision, confirm]
+      properties:
+        revision: { type: integer, minimum: 1 }
+        confirm: { type: boolean, const: true }
+    PaymentScheduleDraft:
+      allOf:
+        - $ref: '#/components/schemas/PaymentScheduleEdit'
+        - type: object
+          required: [id, appliedAt]
+          properties:
+            id: { type: string, format: uuid }
+            appliedAt: { type: [string, 'null'], format: date-time }
     ReceiptDraftItem:
       type: object
       additionalProperties: false

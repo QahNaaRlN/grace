@@ -27,6 +27,10 @@ current_link="$grace_root/current"
 previous_link="$grace_root/previous"
 previous_dir=""
 rollback_auth_mode="locked"
+rollback_ai_enabled="false"
+rollback_analysis_policy=""
+rollback_receipt_policy=""
+ai_configured="false"
 
 if [ ! -f "$release_env" ]; then
   echo "missing release environment: $release_env" >&2
@@ -65,6 +69,19 @@ if [ -f "$email_env" ]; then
   set +a
 fi
 
+ai_env="$grace_root/shared/secrets/ai.env"
+if [ -f "$ai_env" ]; then
+  case "$(stat -c '%a' "$ai_env")" in 400|600) ;; *) echo "AI environment must have mode 400 or 600" >&2; exit 1 ;; esac
+  ai_owner="$(stat -c '%u' "$ai_env")"
+  if [ "$ai_owner" != "$(id -u)" ] && [ "$ai_owner" != "0" ]; then echo "AI environment must belong to the deployment operator or root" >&2; exit 1; fi
+  set -a
+  . "$ai_env"
+  set +a
+  case "${GRACE_AI_ENABLED:-false}" in true|false) ;; *) echo "Invalid AI enable setting" >&2; exit 1 ;; esac
+  if [ ! -f "$release_dir/compose.ai.yaml" ]; then echo "Missing AI override" >&2; exit 1; fi
+  ai_configured="true"
+fi
+
 postgres_password_file="$(sed -n 's/^GRACE_SECRETS_DIR=//p' "$release_env")/postgres_password"
 if [ ! -r "$postgres_password_file" ]; then
   echo "PostgreSQL password file is not readable" >&2
@@ -74,6 +91,11 @@ POSTGRES_PASSWORD="$(cat "$postgres_password_file")"
 export POSTGRES_PASSWORD
 
 compose_release() {
+  if [ "$ai_configured" = "true" ]; then
+    docker compose --project-name "$compose_project" --env-file "$release_env" \
+      -f "$release_dir/compose.yaml" -f "$release_dir/compose.ai.yaml" "$@"
+    return
+  fi
   docker compose --project-name "$compose_project" --env-file "$release_env" \
     -f "$release_dir/compose.yaml" "$@"
 }
@@ -89,6 +111,10 @@ if [ -L "$current_link" ]; then
       telegram|email|password|locked) rollback_auth_mode="$previous_mode" ;;
       *) echo "cannot determine previous production authentication mode" >&2; exit 1 ;;
     esac
+    previous_ai="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_AI_ENABLED=//p')"
+    case "$previous_ai" in true) rollback_ai_enabled="true" ;; false|'') rollback_ai_enabled="false" ;; *) echo "Cannot snapshot previous AI setting" >&2; exit 1 ;; esac
+    rollback_analysis_policy="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_AI_ANALYSIS_POLICY=//p')"
+    rollback_receipt_policy="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_AI_RECEIPT_POLICY=//p')"
   else
     echo "cannot snapshot previous authentication mode: API container is missing" >&2
     exit 1
@@ -97,13 +123,32 @@ fi
 
 rollback_application() {
   if [ -n "$previous_dir" ] && [ -f "$previous_dir/release.env" ]; then
+    if [ ! -f "$previous_dir/migrations/000018_commitments.up.sql" ]; then
+      has_active_column="$(compose_release exec -T postgres psql -U grace -d grace -At -c "SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='scheduled_payments' AND column_name='plan_active');")" || return 1
+      if [ "$has_active_column" = "t" ]; then
+        retained_history="$(compose_release exec -T postgres psql -U grace -d grace -At -c 'SELECT EXISTS(SELECT 1 FROM scheduled_payments WHERE NOT plan_active);')" || return 1
+        if [ "$retained_history" = "t" ]; then
+          echo "Rollback refused: previous image cannot read retained schedule history. Keep schema and use a compatible release." >&2
+          return 1
+        fi
+      fi
+    fi
     echo "rolling application containers back to $previous_dir" >&2
     # Restore the mode actually used by the previous image, not a new operator override.
     GRACE_AUTH_MODE="$rollback_auth_mode"
     export GRACE_AUTH_MODE
-    docker compose --project-name "$compose_project" \
-      --env-file "$previous_dir/release.env" -f "$previous_dir/compose.yaml" \
-      up -d --no-deps api web caddy || true
+    GRACE_AI_ENABLED="$rollback_ai_enabled"
+    GRACE_AI_ANALYSIS_POLICY="$rollback_analysis_policy"
+    GRACE_AI_RECEIPT_POLICY="$rollback_receipt_policy"
+    export GRACE_AI_ENABLED GRACE_AI_ANALYSIS_POLICY GRACE_AI_RECEIPT_POLICY
+    if [ "$ai_configured" = "true" ] && [ -f "$previous_dir/compose.ai.yaml" ]; then
+      docker compose --project-name "$compose_project" --env-file "$previous_dir/release.env" \
+        -f "$previous_dir/compose.yaml" -f "$previous_dir/compose.ai.yaml" up -d --no-deps api web caddy || return 1
+    else
+      docker compose --project-name "$compose_project" \
+        --env-file "$previous_dir/release.env" -f "$previous_dir/compose.yaml" \
+        up -d --no-deps api web caddy || return 1
+    fi
     ln -sfn "$previous_dir" "$current_link"
   else
     compose_release stop api web caddy >/dev/null 2>&1 || true
@@ -113,7 +158,7 @@ rollback_application() {
 on_failure() {
   status="$?"
   trap - EXIT HUP INT TERM
-  rollback_application
+  if ! rollback_application; then echo "Automatic application rollback requires operator review" >&2; fi
   exit "$status"
 }
 trap on_failure EXIT HUP INT TERM
@@ -150,6 +195,9 @@ echo "verified pre-deploy backup: $backup"
 
 compose_release run --rm migrate
 compose_release up -d api web caddy
+if [ "$ai_configured" = "true" ] && [ "${GRACE_AI_ENABLED:-false}" = "true" ]; then
+  compose_release exec -T api /bin/sh -ec 'test "$(id -u)" = 10001 && test -r /run/secrets/openrouter_api_key && test -w /var/lib/grace/temporary-receipt-photos'
+fi
 
 attempt=0
 until compose_release exec -T api wget -qO- http://127.0.0.1:8080/ready >/dev/null 2>&1; do

@@ -295,7 +295,7 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 		FROM scheduled_payments sp
 		JOIN obligations o ON o.id = sp.obligation_id
 		LEFT JOIN scheduled_payment_settlements s ON s.scheduled_payment_id = sp.id
-		WHERE sp.due_on <= $1::date
+		WHERE sp.due_on <= $1::date AND sp.plan_active
 		GROUP BY o.currency, sp.id, o.id, o.name, sp.due_on, sp.amount_minor
 		HAVING sp.amount_minor - COALESCE(SUM(s.amount_minor), 0) > 0
 		ORDER BY o.currency, sp.due_on, sp.position, sp.id`, through)

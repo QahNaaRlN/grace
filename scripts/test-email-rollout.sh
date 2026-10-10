@@ -23,6 +23,7 @@ case "$*" in
   inspect*) printf 'GRACE_AUTH_MODE=%s\n' "$PREVIOUS_AUTH_MODE" ;;
   *'ps -q api'*) printf 'previous-api\n' ;;
   *'pull --policy'*) exit 1 ;;
+  *'information_schema.columns'*) printf 'f\n' ;;
   *'up -d --no-deps api web caddy'*) printf '%s\n' "$GRACE_AUTH_MODE" > "$ROLLBACK_MODE_FILE" ;;
   *) echo "unexpected mock Docker call" >&2; exit 1 ;;
 esac

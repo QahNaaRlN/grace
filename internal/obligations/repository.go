@@ -132,7 +132,7 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 		SELECT sp.amount_minor, o.currency
 		FROM scheduled_payments sp
 		JOIN obligations o ON o.id = sp.obligation_id
-		WHERE sp.id::text = $1 AND o.id::text = $2
+		WHERE sp.id::text = $1 AND o.id::text = $2 AND sp.plan_active
 		FOR UPDATE OF sp, o`, command.PaymentID, command.ObligationID,
 	).Scan(&paymentAmount, &currency)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -223,7 +223,7 @@ const obligationQuery = `
 		sp.id::text, sp.position, sp.due_on::text, sp.amount_minor,
 		s.id::text, s.financial_event_id::text, s.amount_minor, s.created_at
 	FROM obligations o
-	JOIN scheduled_payments sp ON sp.obligation_id = o.id
+	JOIN scheduled_payments sp ON sp.obligation_id = o.id AND sp.plan_active
 	LEFT JOIN scheduled_payment_settlements s ON s.scheduled_payment_id = sp.id
 	`
 

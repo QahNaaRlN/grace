@@ -1,3 +1,5 @@
+import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
+import { LoanPanel } from '@/features/loan-details/LoanPanel'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { PageHeader } from '@/shared/ui/page-header'
 import { AccountIcon } from '@/shared/ui/account-icon'
@@ -622,6 +624,7 @@ function Obligations({
                     : `Осталось ${formatMoney(item.remainingMinor, item.currency)}`}
                 </Badge>
               </div>
+              {item.kind === 'loan' && <LoanPanel obligationId={item.id} />}
               <div className="space-y-3">
                 {item.payments.map((payment) => (
                   <div key={payment.id} className="rounded-md bg-muted/50 p-3">
@@ -1099,6 +1102,7 @@ export function HomePage() {
             )}
             {path === '/payments' && (
               <div className="space-y-6">
+                <ReminderHistory />
                 <Disclosure className="rounded-2xl border bg-card p-5" triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
                     Добавить обязательство
                   </>}>

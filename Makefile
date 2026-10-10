@@ -24,6 +24,7 @@ test-jev-eval:
 	./scripts/test-jev-evaluation.sh
 
 test-integration:
+	./scripts/test-commitments.sh
 	./scripts/test-ux-refinement.sh
 	./scripts/test-password-authentication.sh
 	./scripts/test-ai-experiment.sh
@@ -38,6 +39,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	./scripts/test-commitments-rollout.sh
 	./scripts/test-production-deployment.sh
 
 build:
