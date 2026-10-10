@@ -86,7 +86,7 @@ if [ -L "$current_link" ]; then
     previous_mode="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" \
       | sed -n 's/^GRACE_AUTH_MODE=//p')"
     case "$previous_mode" in
-      telegram|email|locked) rollback_auth_mode="$previous_mode" ;;
+      telegram|email|password|locked) rollback_auth_mode="$previous_mode" ;;
       *) echo "cannot determine previous production authentication mode" >&2; exit 1 ;;
     esac
   else
