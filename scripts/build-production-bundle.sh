@@ -17,6 +17,7 @@ fi
 
 mkdir -p "$output/migrations"
 cp "$repo_root/deployments/production/compose.yaml" "$output/compose.yaml"
+cp "$repo_root/deployments/production/compose.ai.yaml" "$output/compose.ai.yaml"
 cp "$repo_root/deployments/production/Caddyfile" "$output/Caddyfile"
 cp "$repo_root/deployments/production/deploy.sh" "$output/deploy.sh"
 cp "$repo_root/scripts/check-public-entrypoint.sh" "$output/check-public-entrypoint.sh"

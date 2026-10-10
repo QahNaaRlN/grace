@@ -1,3 +1,9 @@
+import { Disclosure } from '@/shared/ui/disclosure'
+import { PageHeader } from '@/shared/ui/page-header'
+import { AccountIcon } from '@/shared/ui/account-icon'
+import { LoadingSkeleton } from '@/shared/ui/skeleton'
+import { ChoiceSelect } from '@/shared/ui/choice-select'
+import { Categories } from './Categories'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowDownRight,
@@ -9,8 +15,9 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { Overview } from './Overview'
+import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
 import { accountLabel, today, eventDateText, eventTimeText } from '@/shared/lib/finance-display'
@@ -112,9 +119,9 @@ async function loadCategories() {
   return data.items
 }
 
-async function loadEvents() {
-  const { data } = await apiClient.GET('/api/v1/financial-events')
-  if (!data) throw new Error('Не удалось загрузить финансовые события')
+async function loadEvents(categoryId = '', from = '', to = '') {
+  const { data, error } = await apiClient.GET('/api/v1/financial-events', { params: { query: { categoryId: categoryId || undefined, from: from || undefined, to: to || undefined } } })
+  if (!data) throw new Error(error?.message ?? 'Не удалось загрузить финансовые события')
   return data.items
 }
 
@@ -139,18 +146,16 @@ function Accounts({ items }: { items: Account[] }) {
     <>
       <div className="rounded-2xl border bg-card p-5">
         {items.map((account) => (
-          <button
+          <Button
+            variant="ghost"
             key={account.id}
-            className="grace-row mt-1"
+            className="grace-row mt-1 h-auto justify-start whitespace-normal font-normal"
             onClick={(event) => {
               opener.current = event.currentTarget
               setSelected(account)
             }}
           >
-            <WalletCards
-              aria-hidden="true"
-              className="size-5 text-muted-foreground"
-            />
+            <AccountIcon type={account.type} />
             <span className="min-w-0 flex-1">
               <strong className="block break-words">
                 {accountLabel(account)}
@@ -168,7 +173,7 @@ function Accounts({ items }: { items: Account[] }) {
             <strong className="grace-money max-w-[48%] text-right">
               {formatMoney(account.balanceMinor, account.currency)}
             </strong>
-          </button>
+          </Button>
         ))}
       </div>
       <Dialog
@@ -193,8 +198,8 @@ function Accounts({ items }: { items: Account[] }) {
             <>
               <dl className="grace-fields">
                 <div>
-                  <dt>Название счёта</dt>
-                  <dd>{selected.name}</dd>
+                  <dt>Счёт / карта</dt>
+                  <dd>{accountLabel(selected)}</dd>
                 </div>
                 <div>
                   <dt>Текущий баланс</dt>
@@ -204,10 +209,6 @@ function Accounts({ items }: { items: Account[] }) {
                 </div>
                 {selected.paymentInstruments?.map((card) => (
                   <Fragment key={card.id}>
-                    <div>
-                      <dt>Название карты</dt>
-                      <dd>{card.name}</dd>
-                    </div>
                     <div>
                       <dt>Банк</dt>
                       <dd>{card.bank}</dd>
@@ -230,10 +231,9 @@ function Accounts({ items }: { items: Account[] }) {
                 )}
               </dl>
               {selected.type === 'credit' && (
-                <details>
-                  <summary className="min-h-11 rounded-xl px-3 py-2 hover:bg-accent">
+                <Disclosure triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
                     Кредитные условия и выписка
-                  </summary>
+                  </>}>
                   <dl className="grace-fields">
                     {[
                       'Лимит',
@@ -256,7 +256,7 @@ function Accounts({ items }: { items: Account[] }) {
                       </div>
                     ))}
                   </dl>
-                </details>
+                </Disclosure>
               )}
               <p className="text-sm text-muted-foreground">
                 Баланс хранится на счёте. Карта не создаёт отдельный остаток.
@@ -391,10 +391,9 @@ function Events({
                       </div>
                     )}
                   </div>
-                  <details className="mt-4">
-                    <summary className="min-h-11 rounded-xl px-3 py-2 hover:bg-accent">
+                  <Disclosure className="mt-4" triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
                       Все сведения операции
-                    </summary>
+                    </>}>
                     <dl className="grace-fields">
                       {[
                         [
@@ -435,7 +434,7 @@ function Events({
                         </div>
                       ))}
                     </dl>
-                  </details>
+                  </Disclosure>
                   {receipt && <ReceiptDetails receipt={receipt} />}
                   {item.kind === 'purchase' && !receipt && (
                     <div className="mt-3 pl-11">
@@ -926,6 +925,10 @@ function Analytics() {
 
 export function HomePage() {
   const path = useLocation().pathname
+  const [filters, setFilters] = useSearchParams()
+  const category = path === '/operations' ? filters.get('category') ?? '' : ''
+  const from = path === '/operations' ? filters.get('from') ?? '' : ''
+  const to = path === '/operations' ? filters.get('to') ?? '' : ''
   const queryClient = useQueryClient()
   const [operationOpen, setOperationOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -935,10 +938,11 @@ export function HomePage() {
     queryFn: loadCategories,
   })
   const events = useQuery({
-    queryKey: ['financial-events'],
-    queryFn: loadEvents,
+    queryKey: ['financial-events', category, from, to],
+    queryFn: () => loadEvents(category, from, to),
   })
   const receipts = useQuery({ queryKey: ['receipts'], queryFn: loadReceipts })
+  const recentEvents = useQuery({ queryKey: ['financial-events', '', '', ''], queryFn: () => loadEvents(), enabled: operationOpen && !!(category || from || to) })
   const asOf = today()
   const obligations = useQuery({
     queryKey: ['obligations', asOf],
@@ -965,29 +969,20 @@ export function HomePage() {
     '/operations': 'Операции',
     '/payments': 'Платежи',
     '/accounts': 'Счета и карты',
-    '/analytics': 'Подробный расчёт',
+    '/analytics': 'Статистика',
     '/health': 'Финансовое здоровье',
     '/profile': 'Профиль и доступ',
+    '/categories': 'Категории',
   }
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="mb-1 text-sm text-muted-foreground">Личные финансы</p>
-            <h1>{title[path] ?? 'Обзор'}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {error
-                ? 'Часть данных недоступна'
-                : pending
-                  ? 'Обновляем данные…'
-                  : 'Данные загружены'}
-            </p>
-          </div>
+          <PageHeader title={title[path] ?? 'Обзор'} description={{'/':'Деньги и ближайшие дела — в одном месте.','/operations':'Покупки, поступления и переводы.','/accounts':'Счета, карты и подтверждённые остатки.','/payments':'Обязательства и ближайшие платежи.','/analytics':'Посмотрите, куда уходят деньги и как меняются траты.','/health':'Ближайшие обязательства, доступные деньги и качество данных.','/profile':'Личные данные, почта и управление доступом.'}[path]} status={error ? 'Часть данных недоступна' : pending ? 'Обновляем данные…' : undefined} />
           <div className="flex flex-wrap gap-3">
             <Dialog open={accountOpen} onOpenChange={setAccountOpen}>
               <DialogTrigger asChild>
-                <Button variant={empty ? 'default' : 'outline'}>
+                <Button className={!empty && path !== '/accounts' ? 'hidden' : undefined} variant={empty || path === '/accounts' ? 'default' : 'outline'}>
                   <Plus className="size-4" />
                   Добавить {empty ? 'первый ' : ''}счёт
                 </Button>
@@ -1006,6 +1001,7 @@ export function HomePage() {
               <Dialog open={operationOpen} onOpenChange={setOperationOpen}>
                 <DialogTrigger asChild>
                   <Button
+                    className={!['/', '/operations'].includes(path) ? 'hidden' : undefined}
                     disabled={
                       !accounts.data?.length ||
                       categories.isPending ||
@@ -1027,7 +1023,7 @@ export function HomePage() {
                     <CreateFinancialEventForm
                       accounts={accounts.data}
                       categories={categories.data}
-                      events={events.data ?? []}
+                      events={(category || from || to) ? recentEvents.data ?? [] : events.data ?? []}
                       onSaved={() => setOperationOpen(false)}
                     />
                   )}
@@ -1056,7 +1052,14 @@ export function HomePage() {
             </Button>
           </div>
         )}
-        {empty && path !== '/profile' ? (
+        {path === '/operations' && <Card><CardContent className="pt-5"><form key={filters.toString()} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" onSubmit={e => {
+          e.preventDefault(); const values = new FormData(e.currentTarget); const next = new URLSearchParams()
+          for (const key of ['from', 'to']) { const value = String(values.get(key) ?? ''); if (value) next.set(key, value) }
+          if (category) next.set('category',category)
+          setFilters(next)
+        }}><div className="space-y-2"><Label htmlFor="filter-category">Категория</Label><ChoiceSelect id="filter-category" value={category} onValueChange={value => { const next = new URLSearchParams(filters); if(value) next.set('category',value); else next.delete('category'); setFilters(next) }}><option value="">Все категории</option><option value="uncategorized">Покупки без категории</option>{categories.data?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</ChoiceSelect></div><div className="space-y-2"><Label htmlFor="filter-from">С даты</Label><Input id="filter-from" name="from" type="date" defaultValue={from} /></div><div className="space-y-2"><Label htmlFor="filter-to">До даты (не включая)</Label><Input id="filter-to" name="to" type="date" defaultValue={to} /></div><div className="flex items-end gap-2"><Button type="submit">Показать</Button><Button variant="ghost" type="reset" onClick={() => setFilters({})}>Сбросить</Button></div></form><p className="mt-4 text-sm text-muted-foreground">До 100 последних операций выбранного периода и категории. <Link className="text-primary underline" to="/categories">Управлять категориями</Link></p></CardContent></Card>}
+        {path === '/categories' && (categories.isPending ? <LoadingSkeleton label="Загружаем категории…" /> : categories.data && <Categories items={categories.data} />)}
+        {pending && !['/profile','/categories'].includes(path) ? <LoadingSkeleton /> : empty && !['/profile','/categories'].includes(path) ? (
           <section className="rounded-2xl border bg-card px-5 py-12 text-center">
             <WalletCards
               aria-hidden="true"
@@ -1075,14 +1078,14 @@ export function HomePage() {
         ) : (
           <>
             {path === '/' && (
-              <Overview
+              <div className="space-y-6"><Overview
                 cash={cash.data}
                 pending={cash.isPending}
                 failed={cash.isError}
                 events={events.data ?? []}
                 accounts={accounts.data ?? []}
                 retry={() => void cash.refetch()}
-              />
+              /><StatisticsPage compact /></div>
             )}
             {path === '/accounts' && accounts.data && (
               <Accounts items={accounts.data} />
@@ -1096,14 +1099,13 @@ export function HomePage() {
             )}
             {path === '/payments' && (
               <div className="space-y-6">
-                <details className="rounded-2xl border bg-card p-5">
-                  <summary className="min-h-11 rounded-xl px-3 py-2 hover:bg-accent">
+                <Disclosure className="rounded-2xl border bg-card p-5" triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
                     Добавить обязательство
-                  </summary>
+                  </>}>
                   <div className="mt-5">
                     <CreateObligationForm />
                   </div>
-                </details>
+                </Disclosure>
                 {obligations.data && (
                   <Obligations
                     items={obligations.data}
@@ -1112,9 +1114,11 @@ export function HomePage() {
                 )}
               </div>
             )}
-            {path === '/analytics' && <Analytics />}
+            {path === '/analytics' && <div className="space-y-8"><StatisticsPage /><Disclosure className="rounded-2xl border bg-card p-5" triggerClassName="min-h-11 content-center font-medium" title={<>Подробные расчёты остатков и платежей</>}><div className="mt-5"><Analytics /></div></Disclosure></div>}
             {path === '/health' && (
               <FinancialHealth
+                incomplete={Boolean(error)}
+                cash={cash.isError ? undefined : cash.data}
                 accounts={accounts.data ?? []}
                 categories={categories.data ?? []}
                 events={events.data ?? []}

@@ -5,8 +5,8 @@
 - Дата: 2026-10-08
 - Acceptance owner: owner
 - Acceptance record: 2026-10-08 владелец явно ответил «Принимаю, можно реализовывать» на review SPEC-0026, включая роли ядра/Jev/LLM, временные фото, отдельное подтверждение расхода и бюджет $10 с комиссиями.
-- Implementation branch: не создана
-- Implementation commit: отсутствует
+- Implementation branch: `codex/ai-assistant-receipts`
+- Implementation commit: foundation `d0031ca`; дальнейшая реализация и проверки продолжаются, см. `0026-evidence.md`.
 - Budget authorization: эксперимент с API до $10; не разрешает превышение
   лимита, автоматическое продление или передачу неуказанных реальных данных.
 

@@ -51,14 +51,15 @@ json_value() {
 }
 
 api="http://localhost:${api_port}/api/v1"
-purchase_payload='{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":34990,"merchant":"Жизньмарт","description":"Покупка с чеком","occurredAt":"2026-10-04T12:00:00Z"}'
+# JSON Unicode escapes preserve Cyrillic with native curl on Windows as well as Linux.
+purchase_payload='{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":34990,"merchant":"\u0416\u0438\u0437\u043d\u044c\u043c\u0430\u0440\u0442","description":"\u041f\u043e\u043a\u0443\u043f\u043a\u0430 \u0441 \u0447\u0435\u043a\u043e\u043c","occurredAt":"2026-10-04T12:00:00Z"}'
 purchase="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-purchase-1' -d "$purchase_payload" "$api/financial-events/purchases")"
 purchase_id="$(printf '%s' "$purchase" | json_value 'data.id')"
 
 balance_before="$(curl --fail --silent "$api/accounts" | json_value 'data.items.find(item => item.id === "10000000-0000-0000-0000-000000000001").balanceMinor')"
 postings_before="$(docker compose exec -T postgres psql -U grace -d grace -Atc 'SELECT count(*) FROM postings')"
 
-receipt_payload='{"purchaseEventId":"'"$purchase_id"'","seller":"Жизньмарт","issuedAt":"2026-10-04T12:00:00Z","fiscalDocumentNumber":"FD-42","items":[{"name":"Молоко","quantityMilli":1000,"unitPriceMinor":12990,"lineTotalMinor":12990},{"name":"Овощи","quantityMilli":650,"unitPriceMinor":33846,"lineTotalMinor":22000}]}'
+receipt_payload='{"purchaseEventId":"'"$purchase_id"'","seller":"\u0416\u0438\u0437\u043d\u044c\u043c\u0430\u0440\u0442","issuedAt":"2026-10-04T12:00:00Z","fiscalDocumentNumber":"FD-42","items":[{"name":"\u041c\u043e\u043b\u043e\u043a\u043e","quantityMilli":1000,"unitPriceMinor":12990,"lineTotalMinor":12990},{"name":"\u041e\u0432\u043e\u0449\u0438","quantityMilli":650,"unitPriceMinor":33846,"lineTotalMinor":22000}]}'
 receipt_response="$(curl --fail --silent --write-out '\n%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-1' -d "$receipt_payload" "$api/receipts")"
 receipt_status="$(printf '%s' "$receipt_response" | tail -n 1)"
 receipt_body="$(printf '%s' "$receipt_response" | sed '$d')"
@@ -73,7 +74,7 @@ test "$(printf '%s' "$retry_response" | tail -n 1)" = "200"
 retry_id="$(printf '%s' "$retry_response" | sed '$d' | json_value 'data.id')"
 test "$receipt_id" = "$retry_id"
 
-conflict_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-1' -d '{"purchaseEventId":"'"$purchase_id"'","seller":"Другой продавец","issuedAt":"2026-10-04T12:00:00Z","items":[{"name":"Иная позиция","quantityMilli":1000,"unitPriceMinor":34990,"lineTotalMinor":34990}]}' "$api/receipts")"
+conflict_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-1' -d '{"purchaseEventId":"'"$purchase_id"'","seller":"\u0414\u0440\u0443\u0433\u043e\u0439 \u043f\u0440\u043e\u0434\u0430\u0432\u0435\u0446","issuedAt":"2026-10-04T12:00:00Z","items":[{"name":"\u0418\u043d\u0430\u044f \u043f\u043e\u0437\u0438\u0446\u0438\u044f","quantityMilli":1000,"unitPriceMinor":34990,"lineTotalMinor":34990}]}' "$api/receipts")"
 test "$conflict_status" = "409"
 
 second_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-2' -d "$receipt_payload" "$api/receipts")"
@@ -87,37 +88,37 @@ postings_after="$(docker compose exec -T postgres psql -U grace -d grace -Atc 'S
 test "$balance_before" = "$balance_after"
 test "$postings_before" = "$postings_after"
 
-mismatch_purchase="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-purchase-2' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":10000,"merchant":"Магазин","description":"Несовпадение","occurredAt":"2026-10-04T13:00:00Z"}' "$api/financial-events/purchases")"
+mismatch_purchase="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-purchase-2' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":10000,"merchant":"\u041c\u0430\u0433\u0430\u0437\u0438\u043d","description":"\u041d\u0435\u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435","occurredAt":"2026-10-04T13:00:00Z"}' "$api/financial-events/purchases")"
 mismatch_purchase_id="$(printf '%s' "$mismatch_purchase" | json_value 'data.id')"
-mismatch_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-mismatch' -d '{"purchaseEventId":"'"$mismatch_purchase_id"'","seller":"Магазин","issuedAt":"2026-10-04T13:00:00Z","items":[{"name":"Товар","quantityMilli":1000,"unitPriceMinor":9999,"lineTotalMinor":9999}]}' "$api/receipts")"
+mismatch_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-mismatch' -d '{"purchaseEventId":"'"$mismatch_purchase_id"'","seller":"\u041c\u0430\u0433\u0430\u0437\u0438\u043d","issuedAt":"2026-10-04T13:00:00Z","items":[{"name":"\u0422\u043e\u0432\u0430\u0440","quantityMilli":1000,"unitPriceMinor":9999,"lineTotalMinor":9999}]}' "$api/receipts")"
 test "$mismatch_status" = "422"
 
-income="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-income-1' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000004","amountMinor":10000,"merchant":"Работодатель","description":"Доход","occurredAt":"2026-10-04T14:00:00Z"}' "$api/financial-events/incomes")"
+income="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-income-1' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000004","amountMinor":10000,"merchant":"\u0420\u0430\u0431\u043e\u0442\u043e\u0434\u0430\u0442\u0435\u043b\u044c","description":"\u0414\u043e\u0445\u043e\u0434","occurredAt":"2026-10-04T14:00:00Z"}' "$api/financial-events/incomes")"
 income_id="$(printf '%s' "$income" | json_value 'data.id')"
-income_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-income' -d '{"purchaseEventId":"'"$income_id"'","seller":"Не чек","issuedAt":"2026-10-04T14:00:00Z","items":[{"name":"Строка","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
+income_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-income' -d '{"purchaseEventId":"'"$income_id"'","seller":"\u041d\u0435 \u0447\u0435\u043a","issuedAt":"2026-10-04T14:00:00Z","items":[{"name":"\u0421\u0442\u0440\u043e\u043a\u0430","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
 test "$income_receipt_status" = "422"
 
-savings="$(curl --fail --silent -H 'Content-Type: application/json' -d '{"name":"Второй счёт","type":"debit","currency":"RUB","openingBalanceMinor":0}' "$api/accounts")"
+savings="$(curl --fail --silent -H 'Content-Type: application/json' -d '{"name":"\u0412\u0442\u043e\u0440\u043e\u0439 \u0441\u0447\u0451\u0442","type":"debit","currency":"RUB","openingBalanceMinor":0}' "$api/accounts")"
 savings_id="$(printf '%s' "$savings" | json_value 'data.id')"
-transfer="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-transfer-1' -d '{"sourceAccountId":"10000000-0000-0000-0000-000000000001","destinationAccountId":"'"$savings_id"'","amountMinor":10000,"description":"Перевод","occurredAt":"2026-10-04T14:10:00Z"}' "$api/financial-events/transfers")"
+transfer="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-transfer-1' -d '{"sourceAccountId":"10000000-0000-0000-0000-000000000001","destinationAccountId":"'"$savings_id"'","amountMinor":10000,"description":"\u041f\u0435\u0440\u0435\u0432\u043e\u0434","occurredAt":"2026-10-04T14:10:00Z"}' "$api/financial-events/transfers")"
 transfer_id="$(printf '%s' "$transfer" | json_value 'data.id')"
-transfer_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-transfer' -d '{"purchaseEventId":"'"$transfer_id"'","seller":"Не чек","issuedAt":"2026-10-04T14:10:00Z","items":[{"name":"Строка","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
+transfer_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-transfer' -d '{"purchaseEventId":"'"$transfer_id"'","seller":"\u041d\u0435 \u0447\u0435\u043a","issuedAt":"2026-10-04T14:10:00Z","items":[{"name":"\u0421\u0442\u0440\u043e\u043a\u0430","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
 test "$transfer_receipt_status" = "422"
 
-refund="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-refund-1' -d '{"originalEventId":"'"$mismatch_purchase_id"'","amountMinor":5000,"merchant":"Магазин","description":"Возврат","occurredAt":"2026-10-04T14:20:00Z"}' "$api/financial-events/refunds")"
+refund="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-refund-1' -d '{"originalEventId":"'"$mismatch_purchase_id"'","amountMinor":5000,"merchant":"\u041c\u0430\u0433\u0430\u0437\u0438\u043d","description":"\u0412\u043e\u0437\u0432\u0440\u0430\u0442","occurredAt":"2026-10-04T14:20:00Z"}' "$api/financial-events/refunds")"
 refund_id="$(printf '%s' "$refund" | json_value 'data.id')"
-refund_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-refund' -d '{"purchaseEventId":"'"$refund_id"'","seller":"Не чек","issuedAt":"2026-10-04T14:20:00Z","items":[{"name":"Строка","quantityMilli":1000,"unitPriceMinor":5000,"lineTotalMinor":5000}]}' "$api/receipts")"
+refund_receipt_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-refund' -d '{"purchaseEventId":"'"$refund_id"'","seller":"\u041d\u0435 \u0447\u0435\u043a","issuedAt":"2026-10-04T14:20:00Z","items":[{"name":"\u0421\u0442\u0440\u043e\u043a\u0430","quantityMilli":1000,"unitPriceMinor":5000,"lineTotalMinor":5000}]}' "$api/receipts")"
 test "$refund_receipt_status" = "422"
 
-empty_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-empty' -d '{"purchaseEventId":"'"$mismatch_purchase_id"'","seller":"Магазин","issuedAt":"2026-10-04T13:00:00Z","items":[]}' "$api/receipts")"
+empty_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-empty' -d '{"purchaseEventId":"'"$mismatch_purchase_id"'","seller":"\u041c\u0430\u0433\u0430\u0437\u0438\u043d","issuedAt":"2026-10-04T13:00:00Z","items":[]}' "$api/receipts")"
 test "$empty_status" = "422"
 
-missing_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-missing' -d '{"purchaseEventId":"00000000-0000-0000-0000-000000000000","seller":"Магазин","issuedAt":"2026-10-04T13:00:00Z","items":[{"name":"Товар","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
+missing_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-missing' -d '{"purchaseEventId":"00000000-0000-0000-0000-000000000000","seller":"\u041c\u0430\u0433\u0430\u0437\u0438\u043d","issuedAt":"2026-10-04T13:00:00Z","items":[{"name":"\u0422\u043e\u0432\u0430\u0440","quantityMilli":1000,"unitPriceMinor":10000,"lineTotalMinor":10000}]}' "$api/receipts")"
 test "$missing_status" = "422"
 
-concurrent_purchase="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-purchase-concurrent' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":5000,"merchant":"Параллельный чек","description":"Конкурентная запись","occurredAt":"2026-10-04T15:00:00Z"}' "$api/financial-events/purchases")"
+concurrent_purchase="$(curl --fail --silent -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-purchase-concurrent' -d '{"accountId":"10000000-0000-0000-0000-000000000001","categoryId":"20000000-0000-0000-0000-000000000001","amountMinor":5000,"merchant":"\u041f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u044b\u0439 \u0447\u0435\u043a","description":"\u041a\u043e\u043d\u043a\u0443\u0440\u0435\u043d\u0442\u043d\u0430\u044f \u0437\u0430\u043f\u0438\u0441\u044c","occurredAt":"2026-10-04T15:00:00Z"}' "$api/financial-events/purchases")"
 concurrent_purchase_id="$(printf '%s' "$concurrent_purchase" | json_value 'data.id')"
-concurrent_payload='{"purchaseEventId":"'"$concurrent_purchase_id"'","seller":"Параллельный чек","issuedAt":"2026-10-04T15:00:00Z","items":[{"name":"Товар","quantityMilli":1000,"unitPriceMinor":5000,"lineTotalMinor":5000}]}'
+concurrent_payload='{"purchaseEventId":"'"$concurrent_purchase_id"'","seller":"\u041f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u044b\u0439 \u0447\u0435\u043a","issuedAt":"2026-10-04T15:00:00Z","items":[{"name":"\u0422\u043e\u0432\u0430\u0440","quantityMilli":1000,"unitPriceMinor":5000,"lineTotalMinor":5000}]}'
 curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-concurrent-a' -d "$concurrent_payload" "$api/receipts" >"$result_dir/a.status" &
 first_pid=$!
 curl --silent --output /dev/null --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'Idempotency-Key: receipt-concurrent-b' -d "$concurrent_payload" "$api/receipts" >"$result_dir/b.status" &

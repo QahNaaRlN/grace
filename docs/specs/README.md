@@ -1,9 +1,33 @@
 # Spec-first процесс Grace
 
+[SPEC-0033 — понятные счета, категории, здоровье и ИИ](0033-ux-refinement.md)
+принята прямым поручением владельца 2026-10-10. Работа объединяет локальные
+SPEC-0026/0031/0032. Деплой только после пользовательской проверки.
+[Гайд ИИ](../ai-user-guide.md), [отчёт и проверки](0033-evidence.md).
+
+[SPEC-0032 — единый полный интерфейс](0032-ui-redesign.md) принят прямым
+поручением владельца; все действующие экраны переработаны локально.
+[Система компонентов](../design-system.md), [evidence](0032-evidence.md).
+
+[SPEC-0031 — почта, пароль и приглашения](0031-password-registration.md) —
+accepted прямым поручением и выбором password-only login / email-bound invites.
+Реализация локально; [evidence](0031-evidence.md), [rollout](../password-authentication-rollout.md).
+
+[SPEC-0030 — графики статистики](0030-statistics-charts.md) — accepted прямым
+поручением владельца после обсуждения трёх графиков. Реализация в отдельной
+ветке codex/statistics-charts, проверки: [evidence](0030-evidence.md).
+
+[SPEC-0029 — проработка палитры и единое оформление](0029-design-foundations.md)
+— accepted по поручению владельца 2026-10-09: три palette previews,
+прозрачная favicon и согласованные общие controls. Выбрана петрольная палитра
+и знак ₽ с пульсом; применены локально, production rollout ещё не выполнен.
+[Проработка](../design-direction.md), [evidence](0029-evidence.md).
+
 [SPEC-0026 — встроенный ассистент и фото чеков](0026-ai-assistant-receipts.md)
 — accepted: архитектура ядра/Jev/LLM, серверный OpenRouter adapter, бюджет $10,
 временные фото и отдельное подтверждение AI-originated expense. Реализация
-не начата; scope и политика записи приняты владельцем 2026-10-08. Проработка:
+ведётся в `codex/ai-assistant-receipts`; live experiment и rollout ещё не выполнены.
+Scope и политика записи приняты владельцем 2026-10-08. Проработка:
 [архитектура взаимодействия](../ai-interaction-architecture.md).
 
 [SPEC-0027 — исторические операции с неизвестным временем](0027-date-only-history.md)

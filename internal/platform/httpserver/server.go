@@ -15,6 +15,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
+	"github.com/QahNaaRlN/grace/internal/receiptdrafts"
 	"github.com/QahNaaRlN/grace/internal/receipts"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -51,6 +52,13 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		}
 	}
 	assistantHandler := assistant.NewHandler(assistantRouter)
+	aiHandler := assistant.NewAIHandler(assistant.AISettings{Enabled: cfg.AIEnabled, Key: cfg.OpenRouterAPIKey, AnalysisPolicy: cfg.AIAnalysisPolicy, ReceiptPolicy: cfg.AIReceiptPolicy, PhotoDir: cfg.AIPhotoDir}, pool, analyticsRepository)
+	var photoStore *receiptdrafts.PhotoStore
+	if cfg.AIPhotoDir != "" {
+		photoStore, _ = receiptdrafts.NewPhotoStore(cfg.AIPhotoDir)
+	}
+	aiHandler.SetReceiptStorageAvailable(photoStore!=nil)
+	draftHandler := receiptdrafts.NewHandler(pool, photoStore, aiHandler.ReceiptExtractor())
 	var identityProvider auth.Provider
 	if cfg.AuthMode == "telegram" {
 		identityProvider = auth.NewTelegramProvider(cfg.TelegramClientID, cfg.TelegramClientSecret, cfg.PublicURL+"/api/auth/callback")
@@ -60,8 +68,20 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	sender := auth.NewSMTPSender(auth.SMTPSettings{Host: cfg.SMTPHost, Port: cfg.SMTPPort, Username: cfg.SMTPUsername, Password: cfg.SMTPPassword, From: cfg.SMTPFrom, Security: cfg.SMTPSecurity})
 	emailHandler := auth.NewEmailHandler(authRepository, sender, cfg.AuthMode, cfg.PublicURL, cfg.EmailBudget)
 	profileHandler := auth.NewProfileHandler(authRepository)
+	passwordHandler := auth.NewPasswordHandler(authRepository, sender, cfg.AuthMode, cfg.PublicURL, cfg.EmailBudget)
 	router.Route("/api/auth", func(router chi.Router) {
-		router.Get("/methods", emailHandler.Methods)
+		router.Get("/methods", func(w http.ResponseWriter, r *http.Request) {
+			if cfg.AuthMode == "password" {
+				passwordHandler.Methods(w, r)
+			} else {
+				emailHandler.Methods(w, r)
+			}
+		})
+		router.Post("/password/login", passwordHandler.Login)
+		router.Post("/password/register", passwordHandler.Register)
+		router.Post("/password/confirm", passwordHandler.Confirm)
+		router.Post("/password/forgot", passwordHandler.Forgot)
+		router.Post("/password/reset", passwordHandler.Reset)
 		router.Post("/email/request", emailHandler.Request)
 		router.Post("/email/verify", emailHandler.Verify)
 		router.Post("/login", authHandler.Login)
@@ -78,7 +98,14 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 			router.Delete("/profile/avatar", profileHandler.DeleteAvatar)
 			router.Post("/logout", authHandler.Logout)
 			router.Post("/revoke-sessions", authHandler.RevokeSessions)
-			router.Post("/invitations", authHandler.Invite)
+			router.Post("/invitations", func(w http.ResponseWriter, r *http.Request) {
+				if cfg.AuthMode == "password" {
+					web.WriteError(w, 503, "invitation_unavailable", "Используйте приглашение для конкретной почты.")
+					return
+				}
+				authHandler.Invite(w, r)
+			})
+			router.Post("/password/invitations", passwordHandler.Invite)
 			router.Post("/users/{userId}/disable", func(w http.ResponseWriter, r *http.Request) {
 				r.SetPathValue("userId", chi.URLParam(r, "userId"))
 				authHandler.Disable(w, r)
@@ -105,11 +132,18 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Use(authHandler.Require)
 		imports.NewHandler(imports.NewRepository(pool)).Routes(router)
 	})
+	router.Route("/api/assistant", func(router chi.Router) {
+		router.Use(authHandler.Require)
+		aiHandler.Routes(router)
+	})
+	router.Route("/api/receipt-drafts", func(r chi.Router) { r.Use(authHandler.Require); draftHandler.Routes(r) })
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Use(authHandler.Require)
 		router.Get("/accounts", accountsHandler.List)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Get("/categories", categoriesHandler.List)
+		router.Post("/categories", categoriesHandler.Create)
+		router.Patch("/categories/{categoryId}", categoriesHandler.Rename)
 		router.Get("/financial-events", financialEventsHandler.List)
 		router.Post("/financial-events/purchases", financialEventsHandler.CreatePurchase)
 		router.Post("/financial-events/incomes", financialEventsHandler.CreateIncome)
@@ -124,11 +158,12 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Post("/obligations", obligationsHandler.Create)
 		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
 		router.Get("/analytics/period-summary", analyticsHandler.PeriodSummary)
+		router.Get("/analytics/statistics", analyticsHandler.Statistics)
 		router.Get("/analytics/cash-position", analyticsHandler.CashPosition)
 		router.Post("/assistant/query", assistantHandler.Query)
 	})
 
-	return &http.Server{
+	server := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -136,4 +171,10 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
+	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
+	server.RegisterOnShutdown(stopCleanup)
+	if photoStore != nil {
+		go draftHandler.RunCleanup(cleanupCtx, pool)
+	}
+	return server
 }

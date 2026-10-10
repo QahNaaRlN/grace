@@ -1,3 +1,4 @@
+import { Checkbox } from '@/shared/ui/checkbox'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
@@ -81,9 +82,9 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           const f = new FormData(e.currentTarget)
           const balanceText = String(f.get('balance') ?? '').trim()
           const balance = unreconciled && !balanceText ? null : parseMinor(balanceText)
-          const name = String(f.get('name')).trim(),
-            bank = String(f.get('bank') ?? '').trim(),
+          const bank = String(f.get('bank') ?? '').trim(),
             last4 = String(f.get('last4') ?? '')
+          const name = card ? `${bank} *${last4}` : String(f.get('name') ?? '').trim()
           if (
             !name ||
             ((!unreconciled || balanceText !== "") && balance === null) ||
@@ -97,10 +98,10 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         }}
         className="space-y-4"
       >
-        <div className="space-y-2">
+        {!card && <div className="space-y-2">
           <Label htmlFor="new-account-name">Название</Label>
           <Input id="new-account-name" name="name" required maxLength={160} />
-        </div>
+        </div>}
         <div className="space-y-2">
           <Label htmlFor="new-account-type">Тип счёта</Label>
           <Select
@@ -123,10 +124,10 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         </div>
         {(type === 'debit' || type === 'credit') && (
           <label className="flex min-h-11 cursor-pointer items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
+
               checked={card}
-              onChange={(e) => setCard(e.target.checked)}
+              onCheckedChange={checked => setCard(checked)}
             />
             Есть карта
           </label>
@@ -135,7 +136,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           <>
             <div className="space-y-2">
               <Label htmlFor="new-bank">Банк</Label>
-              <Input id="new-bank" name="bank" required maxLength={160} />
+              <Input id="new-bank" name="bank" required maxLength={150} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-last4">Последние четыре цифры карты</Label>
@@ -152,7 +153,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           </>
         )}
         <div className="space-y-2">
-          <label className="flex min-h-11 cursor-pointer items-center gap-3"><input type="checkbox" checked={unreconciled} onChange={e => setUnreconciled(e.target.checked)} />Остаток пока не сверён</label>
+          <label className="flex min-h-11 cursor-pointer items-center gap-3"><Checkbox  checked={unreconciled} onCheckedChange={checked => setUnreconciled(checked)} />Остаток пока не сверён</label>
           <Label htmlFor="new-balance">{unreconciled ? "Известный начальный остаток, ₽ (необязательно)" : "Текущий остаток, ₽"}</Label>
           <Input
             id="new-balance"

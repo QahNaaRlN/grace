@@ -1,3 +1,4 @@
+import { Disclosure } from '@/shared/ui/disclosure'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -323,10 +324,9 @@ export function CreateFinancialEventForm({
           <Label htmlFor="event-description">Описание / комментарий</Label>
           <Input name="description" id="event-description" maxLength={500} />
         </div>
-        <details className="rounded-xl border p-3">
-          <summary className="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent">
+        <Disclosure className="rounded-xl border p-3" triggerClassName="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent" title={<>
             Дополнительные сведения
-          </summary>
+          </>}>
           <div className="mt-4 space-y-4">
             {kind !== 'transfer' && kind !== 'refund' && (
               <div className="space-y-2">
@@ -355,7 +355,7 @@ export function CreateFinancialEventForm({
               </div>
             )}
           </div>
-        </details>
+        </Disclosure>
         <div className="grace-actions">
           <Button type="submit" disabled={accounts.length === 0}>
             Посмотреть подтверждение

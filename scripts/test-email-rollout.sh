@@ -20,7 +20,7 @@ ln -s "$test_root/previous" "$test_root/current"
 cat > "$test_root/mock-bin/docker" <<'EOF'
 #!/bin/sh
 case "$*" in
-  inspect*) printf 'GRACE_AUTH_MODE=telegram\n' ;;
+  inspect*) printf 'GRACE_AUTH_MODE=%s\n' "$PREVIOUS_AUTH_MODE" ;;
   *'ps -q api'*) printf 'previous-api\n' ;;
   *'pull --policy'*) exit 1 ;;
   *'up -d --no-deps api web caddy'*) printf '%s\n' "$GRACE_AUTH_MODE" > "$ROLLBACK_MODE_FILE" ;;
@@ -28,11 +28,13 @@ case "$*" in
 esac
 EOF
 chmod 0755 "$test_root/mock-bin/docker"
-if GRACE_ROOT="$test_root" ROLLBACK_MODE_FILE="$test_root/rollback-mode" \
+for previous_mode in telegram email password locked; do
+if GRACE_ROOT="$test_root" PREVIOUS_AUTH_MODE="$previous_mode" ROLLBACK_MODE_FILE="$test_root/rollback-mode" \
   PATH="$test_root/mock-bin:$PATH" sh "$test_root/next/deploy.sh" \
   0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then
   echo "failing deployment unexpectedly succeeded" >&2; exit 1
 fi
-test "$(cat "$test_root/rollback-mode")" = telegram
+test "$(cat "$test_root/rollback-mode")" = "$previous_mode"
 test "$(readlink "$test_root/current")" = "$test_root/previous"
+done
 echo "SPEC-0022 email rollout rollback preserves previous authentication mode"

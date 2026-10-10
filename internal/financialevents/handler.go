@@ -17,7 +17,12 @@ type Handler struct{ repo *Repository }
 func NewHandler(repo *Repository) *Handler { return &Handler{repo: repo} }
 
 func (handler *Handler) List(w http.ResponseWriter, r *http.Request) {
-	items, err := handler.repo.List(r.Context(), 100)
+	category, from, to := r.URL.Query().Get("categoryId"), r.URL.Query().Get("from"), r.URL.Query().Get("to")
+	if (from != "" && !ValidCalendarDate(from)) || (to != "" && !ValidCalendarDate(to)) || (from != "" && to != "" && from >= to) {
+		web.WriteError(w, 422, "validation_error", "Проверьте даты: конец периода не включается и должен быть позже начала.")
+		return
+	}
+	items, err := handler.repo.ListFiltered(r.Context(), 100, category, from, to)
 	if err != nil {
 		web.WriteError(w, http.StatusInternalServerError, "internal_error", "Не удалось получить финансовые события.")
 		return

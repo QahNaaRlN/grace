@@ -13,6 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -120,6 +121,9 @@ func (repo *Repository) Create(ctx context.Context, request CreateRequest) (Acco
 		return Account{}, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	if err = financialevents.LockOwner(ctx, tx); err != nil {
+		return Account{}, err
+	}
 	var item Account
 	err = tx.QueryRow(ctx, `INSERT INTO accounts (name, type, currency, opening_balance_minor, balance_reconciled)
  VALUES ($1, $2, $3, $4, $5) RETURNING id::text, name, type::text, currency, CASE WHEN balance_reconciled THEN opening_balance_minor ELSE NULL END, balance_reconciled, created_at`,

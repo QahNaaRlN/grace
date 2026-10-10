@@ -1,3 +1,4 @@
+import { Disclosure } from '@/shared/ui/disclosure'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
@@ -44,7 +45,7 @@ export function MonthPanel({ batchId, onOpenRecord }: { batchId: string; onOpenR
       {report.data.totals.map(t => <div key={t.currency} className="space-y-1 rounded-lg bg-muted p-3"><p className="font-medium">{t.currency || 'Валюта неизвестна'} · Исходных покупок: {t.sourceRows}</p><p>В таблице: {money(t.sourceMinor, t.currency)}</p><p>Подготовлено: {money(t.preparedMinor, t.currency)}</p><p>Подтверждено: {money(t.confirmedMinor, t.currency)}</p></div>)}
       {report.data.rows.length === 0 && <p>В выбранном месяце нет строк с известной датой.</p>}
       {report.data.unknownDateRows.length > 0 && <div><p className="font-medium">{report.data.unknownDateRows.some(row => !row.published || row.action !== 'exclude') ? 'Сначала уточните строки без даты: они могут относиться к этому месяцу.' : 'Строки без даты исключены с подтверждёнными причинами и сохранены для проверки.'}</p><ul className="mt-3 space-y-2">{report.data.unknownDateRows.map(showRow)}</ul></div>}
-      <details><summary className="min-h-11 cursor-pointer py-3">Все строки месяца и причины расхождений ({report.data.rows.length})</summary><ul className="space-y-2">{report.data.rows.map(showRow)}</ul></details>
+      <Disclosure triggerClassName="min-h-11 cursor-pointer py-3" title={<>Все строки месяца и причины расхождений ({report.data.rows.length})</>}><ul className="space-y-2">{report.data.rows.map(showRow)}</ul></Disclosure>
     </>}
   </CardContent></Card>
 }

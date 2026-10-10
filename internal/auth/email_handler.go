@@ -53,7 +53,7 @@ func NewEmailHandler(store EmailStore, sender EmailSender, mode, origin string, 
 func (h *EmailHandler) configured() bool { return h.sender != nil && h.sender.Ready() }
 func (h *EmailHandler) Methods(w http.ResponseWriter, r *http.Request) {
 	noStore(w)
-	web.WriteJSON(w, 200, map[string]any{"mode": h.mode, "email": h.mode == "email" && h.configured(), "telegram": h.mode == "telegram", "emailLinkAvailable": h.configured() && (h.mode == "email" || h.mode == "telegram")})
+	web.WriteJSON(w, 200, map[string]any{"mode": h.mode, "password": false, "email": h.mode == "email" && h.configured(), "telegram": h.mode == "telegram", "emailLinkAvailable": h.configured() && (h.mode == "email" || h.mode == "telegram")})
 }
 func (h *EmailHandler) Request(w http.ResponseWriter, r *http.Request) { h.request(w, r, "login", "") }
 func (h *EmailHandler) RequestLink(w http.ResponseWriter, r *http.Request) {

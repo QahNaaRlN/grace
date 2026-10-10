@@ -1,4 +1,14 @@
 /* Presentation only: no remounts, timers or delayed actions. */
+.grace-disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 220ms var(--motion-ease), visibility 220ms;
+}
+.grace-disclosure[data-state='open'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
 @keyframes grace-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

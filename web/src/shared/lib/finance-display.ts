@@ -1,7 +1,7 @@
 import type { Account, FinancialEvent } from '@/shared/api/types'
 export function accountLabel(account: Account) {
   const card = account.paymentInstruments?.[0]
-  return card ? `${card.name} · ${card.bank} · •• ${card.last4}` : account.name
+  return card ? `${card.bank} *${card.last4}` : account.name
 }
 export function formatMoney(valueMinor: number | null, currency: string) {
   if (valueMinor === null) return "Не сверён"

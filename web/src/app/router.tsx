@@ -5,6 +5,7 @@ import { AssistantPage } from '@/pages/assistant'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { ImportsPage } from '@/pages/imports/ImportsPage'
 import { AuthBoundary } from './AuthBoundary'
+import { PasswordEntry } from '@/pages/login/PasswordEntry'
 
 /**
  * Маршрутизатор приложения с корневой страницей разработки.
@@ -30,6 +31,7 @@ export const appRouter = createBrowserRouter([
     'operations',
     'payments',
     'accounts',
+    'categories',
     'analytics',
     'health',
     'profile',
@@ -42,5 +44,8 @@ export const appRouter = createBrowserRouter([
     ),
   })),
   { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <PasswordEntry view="register" /> },
+  { path: '/forgot-password', element: <PasswordEntry view="forgot" /> },
+  { path: '/reset-password', element: <PasswordEntry view="reset" /> },
   { path: '/imports', element: <AuthBoundary><ImportsPage /></AuthBoundary> },
 ])
