@@ -1,6 +1,22 @@
 # Roadmap Grace
 
-## Локальный выпуск для проверки владельцем — 2026-10-10
+## Текущая работа — 2026-10-10
+
+SPEC-0034 принят прямым поручением владельца. В `codex/commitments-ai` реализованы
+подписки, сведения и PDF кредитов, копии графика внутри Grace, почтовые 3/1
+напоминания и проверка OpenRouter. Сравнение моделей завершено на синтетическом
+корпусе. [Критерии, evidence, стоимость и оставшиеся gates](specs/0034-evidence.md).
+Новый выпуск пока не развёрнут. Предыдущий объединённый выпуск интегрирован в
+origin/main (`d475cca`); активный серверный SHA проверяется перед следующим деплоем.
+
+| Направление | Сделано | Осталось / зависимость |
+| --- | --- | --- |
+| Подписки / кредиты | Owner-scoped API, единый UI, original PDF, draft apply, history | Проверка владельцем и миграция 18 |
+| Напоминания | Durable worker, opt-in, verified email, общий лимит и видимые статусы | Проверка production SMTP/config; cloud usage snapshot |
+| OpenRouter | Flash receipts / Lite analysis, synthetic gate, price/provider refresh | Protected config/budget, разрешение на новый root доступ для включения |
+| Стоимость | Свежие Postbox тарифы, фактический расход OpenRouter, storage bounds | Сверка reservations с cloud metrics/bill |
+
+## Историческая сводка локального выпуска — 2026-10-10
 
 В `codex/ux-refinement` объединены принятые SPEC-0026/0029/0030/0031/0032
 и доработки SPEC-0033. Это готовящийся выпуск, ещё не main/production.

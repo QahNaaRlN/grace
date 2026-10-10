@@ -6,11 +6,13 @@ import { LoginPage } from '@/pages/login/LoginPage'
 import { ImportsPage } from '@/pages/imports/ImportsPage'
 import { AuthBoundary } from './AuthBoundary'
 import { PasswordEntry } from '@/pages/login/PasswordEntry'
+import { SubscriptionsPage } from '@/pages/subscriptions/SubscriptionsPage'
 
 /**
  * Маршрутизатор приложения с корневой страницей разработки.
  */
 export const appRouter = createBrowserRouter([
+  { path: '/subscriptions', element: <AuthBoundary><SubscriptionsPage /></AuthBoundary> },
   {
     path: '/',
     element: (

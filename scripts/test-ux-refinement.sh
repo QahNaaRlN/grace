@@ -15,7 +15,7 @@ go test -p 1 -tags=integration ./internal/categories ./internal/auth ./internal/
 if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000012_password_credentials.down.sql; then
  echo 'Unsafe password credential deletion was accepted' >&2; exit 1
 fi
-if docker compose run --rm migrate -path=/migrations -database='postgres://grace:grace@postgres:5432/grace?sslmode=disable' down 1; then
+if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000017_personal_categories.down.sql; then
  echo 'Personal category ownership was discarded' >&2; exit 1
 fi
 echo 'SPEC-0033 consolidated integration checks passed'

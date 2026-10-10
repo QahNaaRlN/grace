@@ -23,6 +23,9 @@ func (s *SMTPSender) Ready() bool {
 func (s *SMTPSender) SendCode(ctx context.Context, email, code string) error {
 	return s.send(ctx, email, "Код подтверждения Grace", fmt.Sprintf("Ваш код подтверждения Grace: %s\r\n\r\nВведите его в той же вкладке сайта. Код действует 10 минут.\r\nЕсли вы не запрашивали код, проигнорируйте это письмо.\r\n", code))
 }
+func (s *SMTPSender) SendPaymentReminder(ctx context.Context, email, due, link string) error {
+	return s.send(ctx, email, "Напоминание Grace", "Ближайший платёж запланирован на "+due+".\r\n\r\nПроверьте график в Grace:\r\n"+link+"\r\n\r\nОтключить напоминания можно в настройках подписки или кредита.\r\n")
+}
 func (s *SMTPSender) SendLink(ctx context.Context, email, link, purpose string) error {
 	subject := "Восстановление пароля Grace"
 	if purpose == "register" {

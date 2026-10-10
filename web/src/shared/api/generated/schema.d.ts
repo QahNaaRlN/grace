@@ -4,6 +4,185 @@
  */
 
 export interface paths {
+    "/api/v1/payment-reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPaymentReminders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listSubscriptions"];
+        put?: never;
+        post: operations["createSubscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/subscriptions/{subscriptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateSubscription"];
+        trace?: never;
+    };
+    "/api/v1/subscriptions/{subscriptionId}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["listSubscriptionExpenses"];
+        put?: never;
+        post: operations["linkSubscriptionExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getLoan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateLoan"];
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadLoanDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["downloadLoanDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/schedule-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["copyPaymentSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/schedule-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["editPaymentSchedule"];
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/schedule-drafts/{draftId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["applyPaymentSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/receipt-drafts": {
         parameters: {
             query?: never;
@@ -968,6 +1147,98 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        PaymentReminderStatus: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            sourceKind: "subscription" | "loan";
+            /** Format: uuid */
+            sourceId: string;
+            /** Format: date */
+            dueOn: string;
+            /** @enum {integer} */
+            leadDays: 1 | 3;
+            /** @enum {string} */
+            status: "pending" | "dispatching" | "sent" | "cancelled" | "uncertain";
+        };
+        SubscriptionInput: {
+            name: string;
+            amountMinor: number;
+            currency: string;
+            /** @enum {string} */
+            period: "weekly" | "monthly" | "yearly";
+            /** Format: date */
+            startsOn: string;
+            /** Format: date */
+            endsOn: string | null;
+            /** Format: uuid */
+            accountId: string | null;
+            /** Format: uuid */
+            paymentInstrumentId: string | null;
+            paused: boolean;
+            reminders: boolean;
+            revision: number;
+        };
+        Subscription: components["schemas"]["SubscriptionInput"] & {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            nextDueOn: string | null;
+            expenseIds: string[];
+        };
+        SubscriptionList: {
+            items: components["schemas"]["Subscription"][];
+        };
+        SubscriptionExpense: {
+            /** Format: uuid */
+            financialEventId: string;
+        };
+        LoanDetailsInput: {
+            lender: string;
+            agreementNumber: string;
+            /** Format: date */
+            agreementOn: string | null;
+            principalMinor: number | null;
+            annualRateBasisPoints: number | null;
+            reminders: boolean;
+            revision: number;
+        };
+        LoanDetails: components["schemas"]["LoanDetailsInput"] & {
+            documents: components["schemas"]["LoanDocument"][];
+            drafts: components["schemas"]["PaymentScheduleDraft"][];
+        };
+        LoanDocument: {
+            /** Format: uuid */
+            id: string;
+            filename: string;
+            version: number;
+            sha256: string;
+            size: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        DraftPayment: {
+            sourceId: string;
+            /** Format: date */
+            dueOn: string;
+            amountMinor: number;
+            paidMinor: number;
+        };
+        PaymentScheduleEdit: {
+            revision: number;
+            payments: components["schemas"]["DraftPayment"][];
+        };
+        PaymentScheduleConfirm: {
+            revision: number;
+            /** @constant */
+            confirm: true;
+        };
+        PaymentScheduleDraft: components["schemas"]["PaymentScheduleEdit"] & {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            appliedAt: string | null;
+        };
         ReceiptDraftItem: {
             name: string | null;
             quantity: string | null;
@@ -2129,6 +2400,396 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listPaymentReminders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Last 100 owner-scoped reminder delivery states. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PaymentReminderStatus"][];
+                    };
+                };
+            };
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listSubscriptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionList"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createSubscription: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Subscription"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateSubscription: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Subscription"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listSubscriptionExpenses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Last 100 linked purchases, independent of the recent-event picker. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["FinancialEvent"][];
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    linkSubscriptionExpense: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionExpense"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionExpense"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDetails"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateLoan: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanDetailsInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDetails"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    uploadLoanDocument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDocument"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    downloadLoanDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    copyPaymentSchedule: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped commitment. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentScheduleDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    editPaymentSchedule: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentScheduleEdit"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentScheduleDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    applyPaymentSchedule: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentScheduleConfirm"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped commitment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentScheduleDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
     uploadReceiptPhoto: {
         parameters: {
             query?: never;

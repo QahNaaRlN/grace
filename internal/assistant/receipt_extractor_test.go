@@ -6,6 +6,20 @@ import (
 	"testing"
 )
 
+func TestGeminiImageBoundCoversTilesAndRejectsUnboundedGeometry(t *testing.T) {
+	for _, size := range []struct{ width, height, minimum int }{
+		{384, 384, 258}, {960, 540, 6 * 258}, {2048, 2048, 9 * 258}, {2048, 384, 16 * 258}, {0, 100, 10000}, {2049, 10, 10000},
+	} {
+		bound := geminiImageBound(size.width, size.height)
+		if bound < size.minimum {
+			t.Fatalf("%dx%d bound %d below %d", size.width, size.height, bound, size.minimum)
+		}
+		if bound != geminiImageBound(size.height, size.width) {
+			t.Fatal("orientation changed bound")
+		}
+	}
+}
+
 func TestReceiptDecoderRetainsLimitsOutsideProviderSchema(t *testing.T) {
 	fixture := func() map[string]any {
 		return map[string]any{"seller": "Синтетический магазин", "issuedAt": nil, "issuedDate": "2026-09-10", "currency": "RUB", "total": "90.00", "fiscalDocumentNumber": nil, "sourceText": "Искусственный чек", "items": []any{map[string]any{"name": "Молоко", "quantity": "1", "unitPrice": "90.00", "lineTotal": "90.00", "discount": nil, "brand": nil, "package": nil, "broadGroup": nil}}}

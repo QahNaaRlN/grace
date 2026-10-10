@@ -10,6 +10,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/assistant"
 	"github.com/QahNaaRlN/grace/internal/auth"
 	"github.com/QahNaaRlN/grace/internal/categories"
+	"github.com/QahNaaRlN/grace/internal/commitments"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/imports"
 	"github.com/QahNaaRlN/grace/internal/obligations"
@@ -57,7 +58,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	if cfg.AIPhotoDir != "" {
 		photoStore, _ = receiptdrafts.NewPhotoStore(cfg.AIPhotoDir)
 	}
-	aiHandler.SetReceiptStorageAvailable(photoStore!=nil)
+	aiHandler.SetReceiptStorageAvailable(photoStore != nil)
 	draftHandler := receiptdrafts.NewHandler(pool, photoStore, aiHandler.ReceiptExtractor())
 	var identityProvider auth.Provider
 	if cfg.AuthMode == "telegram" {
@@ -140,6 +141,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router.Route("/api/v1", func(router chi.Router) {
 		router.Use(authHandler.Require)
 		router.Get("/accounts", accountsHandler.List)
+		commitments.NewHandler(pool).Routes(router)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Get("/categories", categoriesHandler.List)
 		router.Post("/categories", categoriesHandler.Create)
@@ -173,6 +175,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	}
 	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
 	server.RegisterOnShutdown(stopCleanup)
+	go commitments.NewReminderWorker(pool, sender, authRepository, cfg.EmailBudget, cfg.PublicURL).Run(cleanupCtx)
 	if photoStore != nil {
 		go draftHandler.RunCleanup(cleanupCtx, pool)
 	}

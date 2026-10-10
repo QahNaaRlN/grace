@@ -22,6 +22,7 @@ type AISettings struct {
 	PhotoDir       string
 }
 type AIHandler struct {
+	verifier        *PolicyVerifier
 	enabled         bool
 	policy          ModelPolicy
 	receiptPolicy   ModelPolicy
@@ -37,14 +38,15 @@ func NewAIHandler(settings AISettings, pool *pgxpool.Pool, reader MonthlyReader)
 	if !settings.Enabled {
 		return h
 	}
-	analysisValid := json.Unmarshal([]byte(settings.AnalysisPolicy), &h.policy) == nil && h.policy.Valid(time.Now())
+	analysisValid := json.Unmarshal([]byte(settings.AnalysisPolicy), &h.policy) == nil && approvedPolicyShape(h.policy)
 	provider, err := NewOpenRouterProvider(settings.Key, nil)
 	if err != nil {
 		return h
 	}
 	h.provider = provider
+	h.verifier = NewPolicyVerifier()
 	h.enabled = analysisValid
-	if json.Unmarshal([]byte(settings.ReceiptPolicy), &h.receiptPolicy) == nil && h.receiptPolicy.Vision && h.receiptPolicy.Valid(time.Now()) && settings.PhotoDir != "" {
+	if json.Unmarshal([]byte(settings.ReceiptPolicy), &h.receiptPolicy) == nil && h.receiptPolicy.Vision && approvedPolicyShape(h.receiptPolicy) && settings.PhotoDir != "" {
 		h.receiptsEnabled = true
 	}
 	return h
@@ -55,13 +57,14 @@ func (h *AIHandler) SetReceiptStorageAvailable(available bool) {
 	}
 }
 func (h *AIHandler) available() bool {
-	return h.enabled && h.provider != nil && h.policy.Valid(time.Now())
+	_, err := h.verifier.Current(context.Background(), h.policy)
+	return h.enabled && h.provider != nil && err == nil
 }
 func (h *AIHandler) ReceiptExtractor() *ReceiptExtractor {
 	if !h.receiptsEnabled {
 		return nil
 	}
-	return &ReceiptExtractor{Policy: h.receiptPolicy, Provider: h.provider, Meter: h.usage, Consents: h.conversations}
+	return &ReceiptExtractor{Verifier: h.verifier, Policy: h.receiptPolicy, Provider: h.provider, Meter: h.usage, Consents: h.conversations}
 }
 func (h *AIHandler) Routes(r chi.Router) {
 	r.Get("/capabilities", h.Capabilities)
@@ -107,7 +110,7 @@ func (h *AIHandler) Capabilities(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	web.WriteJSON(w, 200, map[string]any{"analysis": map[string]any{"enabled": h.available() && remaining > 0, "model": h.policy.Model, "provider": h.policy.DisplayProvider(), "consentGranted": consent, "policyHash": ConsentHash("analysis", h.policy), "dataDescription": "Твой вопрос, выбранный календарный месяц и итоги подтверждённых операций по категориям. Без номеров карт, снимка таблицы и фото.", "privacy": "OpenRouter и выбранный провайдер; ZDR, без обучения, внешних инструментов и скрытой смены маршрута."}, "receipt": map[string]any{"enabled": h.receiptsEnabled && h.receiptPolicy.Valid(time.Now()) && remaining > 0, "model": h.receiptPolicy.Model, "provider": h.receiptPolicy.DisplayProvider(), "consentGranted": receiptConsent, "policyHash": ConsentHash("receipt", h.receiptPolicy), "dataDescription": "Нормализованное фото чека без метаданных. Передача отдельно от подтверждения расхода.", "privacy": "OpenRouter и выбранный провайдер; маршрут с ZDR и запретом сбора данных."}, "remainingMicros": strconv.FormatInt(remaining, 10), "policyVersion": "grace.ai.20261008.zdr.confirmed"})
+	web.WriteJSON(w, 200, map[string]any{"analysis": map[string]any{"enabled": h.available() && remaining > 0, "model": h.policy.Model, "provider": h.policy.DisplayProvider(), "consentGranted": consent, "policyHash": ConsentHash("analysis", h.policy), "dataDescription": "Твой вопрос, выбранный календарный месяц и итоги подтверждённых операций по категориям. Без номеров карт, снимка таблицы и фото.", "privacy": "OpenRouter и выбранный провайдер; ZDR, без обучения, внешних инструментов и скрытой смены маршрута."}, "receipt": map[string]any{"enabled": h.receiptsEnabled && h.receiptAvailable() && remaining > 0, "model": h.receiptPolicy.Model, "provider": h.receiptPolicy.DisplayProvider(), "consentGranted": receiptConsent, "policyHash": ConsentHash("receipt", h.receiptPolicy), "dataDescription": "Нормализованное фото чека без метаданных. Передача отдельно от подтверждения расхода.", "privacy": "OpenRouter и выбранный провайдер; маршрут с ZDR и запретом сбора данных."}, "remainingMicros": strconv.FormatInt(remaining, 10), "policyVersion": "grace.ai.20261008.zdr.confirmed"})
 }
 func (h *AIHandler) Consent(w http.ResponseWriter, r *http.Request) {
 	var in struct {
@@ -117,7 +120,7 @@ func (h *AIHandler) Consent(w http.ResponseWriter, r *http.Request) {
 	if !web.DecodeJSON(w, r, &in) {
 		return
 	}
-	if !h.available() && !(in.Scope == "receipt" && h.receiptsEnabled && h.receiptPolicy.Valid(time.Now())) {
+	if !h.available() && !(in.Scope == "receipt" && h.receiptsEnabled && h.receiptAvailable()) {
 		aiError(w, errors.New("ai_disabled"))
 		return
 	}
@@ -187,10 +190,15 @@ func (h *AIHandler) Message(w http.ResponseWriter, r *http.Request) {
 		aiError(w, errors.New("ai_disabled"))
 		return
 	}
+	policy, policyErr := h.verifier.Current(r.Context(), h.policy)
+	if policyErr != nil {
+		aiError(w, policyErr)
+		return
+	}
 	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)
 	defer cancel()
 	_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(95 * time.Second))
-	consent, err := h.conversations.HasConsent(ctx, "analysis", ConsentHash("analysis", h.policy))
+	consent, err := h.conversations.HasConsent(ctx, "analysis", ConsentHash("analysis", policy))
 	if err != nil {
 		aiError(w, err)
 		return
@@ -210,6 +218,11 @@ func (h *AIHandler) Message(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	facts := BuildAnalysisFacts(in.Month, summary, time.Now())
+	policy, err = h.verifier.Current(ctx, h.policy)
+	if err != nil {
+		aiError(w, err)
+		return
+	}
 	conversation := chi.URLParam(r, "conversationId")
 	id, old, err := h.conversations.BeginMessage(ctx, conversation, key, aiHash(in), in.Question, in.Month, facts)
 	if err != nil {
@@ -221,12 +234,12 @@ func (h *AIHandler) Message(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	answer := AnalysisAnswer{Facts: facts, Interpretations: []AnalysisInterpretation{}, Notice: "Числа рассчитаны Grace. Текст модели — предположения и предложения, а не подтверждённые финансовые факты. Полнота исходной истории неизвестна."}
-	request, err := AnalysisRequest(h.policy, in.Question, facts)
+	request, err := AnalysisRequest(policy, in.Question, facts)
 	var out LLMResponse
 	if err == nil {
 		// Recheck consent immediately before transmission, including route changes.
 		var yes bool
-		yes, err = h.conversations.HasConsent(ctx, "analysis", ConsentHash("analysis", h.policy))
+		yes, err = h.conversations.HasConsent(ctx, "analysis", ConsentHash("analysis", policy))
 		if err == nil && !yes {
 			err = errors.New("consent_required")
 		}
@@ -275,4 +288,9 @@ func aiError(w http.ResponseWriter, err error) {
 		status = 409
 	}
 	web.WriteError(w, status, code, "ИИ-запрос не выполнен. Обычные функции Grace доступны; проверь согласие, выбранный период и лимит эксперимента.")
+}
+
+func (h *AIHandler) receiptAvailable() bool {
+	_, err := h.verifier.Current(context.Background(), h.receiptPolicy)
+	return h.receiptsEnabled && err == nil
 }

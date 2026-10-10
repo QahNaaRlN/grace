@@ -15,6 +15,7 @@ import {
   TableProperties,
   Import,
   Tags,
+  Repeat2,
 } from 'lucide-react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { useTheme } from 'next-themes'
@@ -36,6 +37,7 @@ const mainLinks = [
   { to: '/payments', label: 'Платежи', icon: CalendarClock },
 ]
 const moreLinks = [
+  { to: '/subscriptions', label: 'Подписки', icon: Repeat2 },
   { to: '/categories', label: 'Категории', icon: Tags },
   { to: '/imports', label: 'Импорт', icon: Import },
   { to: '/accounts', label: 'Счета и карты', icon: WalletCards },
