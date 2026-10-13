@@ -1,12 +1,12 @@
 # SPEC-0036: читаемый ввод сумм и обратная связь в профиле
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-13 в чате: «Принимаю все три спеки, начинай реализацию»
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/amount-input-profile
+- Implementation commit: 09fd14a ([evidence](0036-evidence.md))
 - Основа: скриншоты владельца 2026-10-13 (форма обязательства, профиль).
 
 ## Проблема и пользовательский результат
