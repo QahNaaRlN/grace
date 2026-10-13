@@ -1,6 +1,6 @@
 # SPEC-0037: ввод длинных графиков платежей
 
-- Статус: verified
+- Статус: integrated
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
