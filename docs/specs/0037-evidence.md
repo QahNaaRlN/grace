@@ -28,5 +28,7 @@ lint, build, офлайн Jev; `git diff --check` — чисто.
 `internal/platform/calendar` (commitments вызывает его через прежнюю функцию):
 иначе `obligations` → `commitments` давал цикл импорта в
 `commitments/integration_test.go`. Юнит-тесты календаря commitments проходят;
-`make test-integration` (PostgreSQL) в этой среде не запускался — нужен Linux CI
-или Docker перед интеграцией.
+`scripts/test-commitments.sh` (Docker PostgreSQL, миграции 1–18, `-tags=integration`)
+прошёл: «SPEC-0034 commitment integration checks passed» (на Windows — с
+`MSYS_NO_PATHCONV=1`, иначе Git Bash переписывает путь `/migrations`).
+Полный `make test-integration` не запускался — перед интеграцией нужен Linux CI.
