@@ -31,3 +31,6 @@ ALTER TABLE category_hidden FORCE ROW LEVEL SECURITY;
 CREATE POLICY owner_access ON category_hidden TO grace_financial
     USING (owner_id = grace_owner_id()) WITH CHECK (owner_id = grace_owner_id());
 GRANT SELECT, INSERT, DELETE ON category_hidden TO grace_financial;
+
+-- Operation counts per category and category filters (SPEC-0042/0043).
+CREATE INDEX financial_events_category_idx ON financial_events (category_id) WHERE category_id IS NOT NULL;

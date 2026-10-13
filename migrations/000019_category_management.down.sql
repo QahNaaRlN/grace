@@ -1,4 +1,5 @@
 -- Icons and hidden flags are presentation data; deleted categories are not restored.
+DROP INDEX financial_events_category_idx;
 DROP TABLE category_hidden;
 DROP POLICY category_delete ON categories;
 REVOKE DELETE, INSERT(icon), UPDATE(name, icon) ON categories FROM grace_financial;
