@@ -119,7 +119,7 @@ export function ImportsPage() {
     </div>
     {(batches.isError || batch.isError || records.isError || detail.isError) && <p role="alert">Не удалось загрузить данные. <Button variant="outline" onClick={() => void cache.invalidateQueries({ queryKey: ['imports'] })}>Повторить</Button></p>}
     {batch.data && <>
-      <h2 className="text-xl font-semibold">{batch.data.source.sourceId}</h2>
+      <h2>{batch.data.source.sourceId}</h2>
       <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
       <p>Операций по статусам: {Object.entries(batch.data.counts).map(([k, v]) => `${names[k] ?? k}: ${v}`).join(' · ')}</p>
       <p className="text-sm text-muted-foreground">Другие листы сохранены как свидетельства. Их данные не публикуются в финансовый журнал.</p>

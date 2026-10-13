@@ -191,14 +191,15 @@
 }
 
 @layer base {
+  /* SPEC-0035: headings follow the title-1 / title-2 steps. */
   h1 {
-    font-size: 1.75rem;
-    line-height: 1.3;
+    font-size: var(--text-title-1);
+    line-height: var(--text-title-1--line-height);
     font-weight: 600;
   }
   h2 {
-    font-size: 1.125rem;
-    line-height: 1.5;
+    font-size: var(--text-title-2);
+    line-height: var(--text-title-2--line-height);
     font-weight: 600;
   }
   input[type='date']::-webkit-calendar-picker-indicator,
@@ -282,7 +283,6 @@
    SPEC-0035: the page fade-in lives in motion.css; nothing here cancels it. */
 .grace-page > * { min-width: 0; }
 [data-slot='label'] { font-size: .875rem; font-weight: 500; line-height: 1.5; }
-[data-slot='card-title'] { letter-spacing: -.015em; }
 [data-slot='card-description'] { line-height: 1.6; }
 [data-slot='dialog-header'] { padding-right: 32px; }
 .grace-page section { scroll-margin-top: 88px; }

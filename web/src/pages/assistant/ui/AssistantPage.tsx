@@ -1,3 +1,4 @@
+import { Money } from '@/shared/ui/money'
 import { PageHeader } from '@/shared/ui/page-header'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { AIGuide } from './AIGuide'
@@ -109,7 +110,7 @@ function CompletedResult({ result }: { result: AssistantCompleted }) {
                   <AccountIcon type={account.type} />
                   <p className="text-sm text-muted-foreground">{account.currency}</p>
                   <h4 className="font-semibold">{accountLabel(account)}</h4>
-                  <p className="mt-2 text-xl font-semibold">{formatMoney(account.balanceMinor, account.currency)}</p>
+                  <p className="mt-2"><Money valueMinor={account.balanceMinor} currency={account.currency} /></p>
                 </article>
               ))}
             </div>

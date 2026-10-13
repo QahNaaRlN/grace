@@ -147,7 +147,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
       <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Личные данные</h2>
         <div className="mt-5 flex flex-wrap items-center gap-5">
-          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-3xl text-primary">
+          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-title-1 text-primary">
             {profile.avatarUrl ? (
               <img
                 src={env.VITE_API_BASE_URL + profile.avatarUrl}
