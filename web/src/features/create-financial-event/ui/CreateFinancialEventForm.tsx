@@ -74,7 +74,8 @@ export function CreateFinancialEventForm({
       ? originalPurchase?.postings[0]?.currency
       : selected?.currency
   const categoriesVisible = categories.filter(
-    (c) => c.kind === (kind === 'income' ? 'income' : 'expense'),
+    // SPEC-0042: hidden categories are not offered for new operations.
+    (c) => c.kind === (kind === 'income' ? 'income' : 'expense') && !c.hidden,
   )
   const eventAccount =
     kind === 'refund'

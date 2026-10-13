@@ -72,6 +72,9 @@ describe('SPEC-0020', () => {
             id: 'cat',
             name: 'Продукты',
             kind: 'expense',
+            icon: null,
+            hidden: false,
+            operationCount: 0,
             createdAt: '2026-10-01T00:00:00Z',
           },
         ]}

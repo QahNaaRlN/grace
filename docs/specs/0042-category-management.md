@@ -1,12 +1,12 @@
 # SPEC-0042: категории — редактирование, удаление, иконки
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-13 в чате: принять 0040–0045; решения: корректировка остатка операцией, правка денежных полей на месте, удаление категории с переносом
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/category-management
+- Implementation commit: 6e8b6c7 ([evidence](0042-evidence.md))
 - Основа: замечание владельца 2026-10-13, п. 4 и п. 6 (иконки категорий).
 
 ## Проблема и пользовательский результат
