@@ -98,7 +98,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline">
           <ReceiptText aria-hidden="true" />
           Добавить состав
         </Button>
@@ -152,7 +152,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
                   <MoneyInput id={`item-total-${field.id}`} currency={currency} aria-invalid={errors.items?.[index]?.lineTotal ? true : undefined} {...register(`items.${index}.lineTotal`)} />
                   {errors.items?.[index]?.lineTotal && <p className="text-xs text-destructive">{errors.items[index].lineTotal.message}</p>}
                 </div>
-                <Button className="self-end" type="button" variant="ghost" size="icon-sm" disabled={fields.length === 1} onClick={() => remove(index)}>
+                <Button className="self-end" type="button" variant="ghost" size="icon" disabled={fields.length === 1} onClick={() => remove(index)}>
                   <Trash2 aria-hidden="true" />
                   <span className="sr-only">Удалить позицию</span>
                 </Button>

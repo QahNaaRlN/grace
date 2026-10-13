@@ -81,9 +81,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const allLinks = [...mainLinks, ...moreLinks]
   const navClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring',
+      'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+      // SPEC-0035: the current section is `selected`, never the hover fill.
       isActive
-        ? 'bg-accent text-primary'
+        ? 'bg-selected font-semibold text-selected-foreground'
         : 'text-muted-foreground hover:bg-accent hover:text-foreground',
     )
   return (

@@ -197,8 +197,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border-radius: 11px;
-  padding: 14px 12px;
+  border-radius: 12px;
+  padding: 16px 12px;
   text-align: left;
 }
 .grace-row:hover,
@@ -231,21 +231,19 @@
   }
 }
 
-/* SPEC-0032: shared visual rhythm across every route and form. */
-.grace-page { animation: none; }
+/* SPEC-0032: shared visual rhythm across every route and form.
+   SPEC-0035: the page fade-in lives in motion.css; nothing here cancels it. */
 .grace-page > * { min-width: 0; }
 [data-slot='label'] { font-size: .875rem; font-weight: 500; line-height: 1.5; }
 [data-slot='card-title'] { letter-spacing: -.015em; }
 [data-slot='card-description'] { line-height: 1.6; }
 [data-slot='dialog-header'] { padding-right: 32px; }
 .grace-page section { scroll-margin-top: 88px; }
-.grace-row { border-radius: 12px; padding: 16px 12px; }
 .grace-row + .grace-row { border-top: 1px solid var(--border); }
 .grace-fields > div:last-child { border-bottom: 0; }
 .grace-page table th { color: var(--muted-foreground); font-weight: 500; }
 .grace-page table td { font-variant-numeric: tabular-nums; }
 .grace-page details > summary { cursor: pointer; border-radius: 10px; }
-.grace-page details > summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 input::-ms-reveal, input::-ms-clear { display: none; }
 @media(max-width:639px) {
  [data-slot='card'] { --card-spacing: 20px; }
@@ -253,3 +251,12 @@ input::-ms-reveal, input::-ms-clear { display: none; }
 }
 
 label:has([data-slot='checkbox'][data-disabled]) { cursor: not-allowed; }
+
+/* SPEC-0035: one focus style for everything focusable — a solid 2px ring
+   outline at 2px offset (≥3:1 on every surface in both themes). Unlayered so
+   it wins over `outline-none` utilities. Programmatic focus targets (the main
+   column after navigation, dialog panels, list options) keep their own cue. */
+:focus-visible:not([tabindex='-1'], [role='option'], [data-slot='dialog-content'], [data-slot='select-content']) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

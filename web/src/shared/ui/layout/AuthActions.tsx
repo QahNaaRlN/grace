@@ -40,7 +40,7 @@ export function AuthActions() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Dialog onOpenChange={() => { setInvitation(''); setInviteUrl('');setBoundEmail('');setInviteExpires(''); setNotice(''); setError('') }}>
-        <DialogTrigger asChild><Button variant="outline" size="sm">Доступ</Button></DialogTrigger>
+        <DialogTrigger asChild><Button variant="outline">Доступ</Button></DialogTrigger>
         <DialogContent>
           <DialogHeader><DialogTitle>Доступ к Grace</DialogTitle></DialogHeader>
           <p>{auth.session.user.name}</p>
