@@ -1,5 +1,8 @@
 #!/bin/sh
 set -eu
+# Git Bash on Windows rewrites the migrate -path=/migrations argument into a host
+# path (#25); exclude only that argument so native tools still get /tmp and /dev/null.
+export MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:+$MSYS2_ARG_CONV_EXCL;}-path="
 cd "$(dirname "$0")/.."
 export COMPOSE_PROJECT_NAME="grace-spec0017-test-$$"
 export POSTGRES_PORT=0
