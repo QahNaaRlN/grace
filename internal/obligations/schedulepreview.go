@@ -34,6 +34,9 @@ type previewRequest struct {
 	Text             string                 `json:"text,omitempty"`
 	AmountColumn     int                    `json:"amountColumn,omitempty"`
 	Payments         []createPaymentRequest `json:"payments,omitempty"`
+	DayOfMonth       int                    `json:"dayOfMonth,omitempty"`
+	FromMonth        string                 `json:"fromMonth,omitempty"`
+	ToMonth          string                 `json:"toMonth,omitempty"`
 }
 
 type RejectedLine struct {
@@ -56,6 +59,8 @@ func PreviewSchedule(request previewRequest) (SchedulePreview, error) {
 	switch request.Mode {
 	case "equal":
 		return previewEqual(request)
+	case "period":
+		return previewPeriod(request)
 	case "paste":
 		return previewPaste(request.Text, request.AmountColumn)
 	case "rows":
@@ -76,28 +81,64 @@ func previewEqual(request previewRequest) (SchedulePreview, error) {
 	if request.Interval != "monthly" {
 		return SchedulePreview{}, fmt.Errorf("%w: поддерживаются только ежемесячные платежи", ErrPreviewInvalid)
 	}
+	dates := make([]time.Time, request.Count)
+	for index := range dates {
+		dates[index] = calendar.Occurrence(first, "monthly", index)
+	}
+	return equalPayments(dates, request)
+}
+
+// SPEC-0045: one payment per month on a day of month, from a month to a month
+// inclusive. Each month clamps the day on its own (31 → 28/29 Feb → 31 Mar),
+// so day 31 is "the last day of every month".
+func previewPeriod(request previewRequest) (SchedulePreview, error) {
+	from, errFrom := time.Parse("2006-01", strings.TrimSpace(request.FromMonth))
+	to, errTo := time.Parse("2006-01", strings.TrimSpace(request.ToMonth))
+	if errFrom != nil || errTo != nil {
+		return SchedulePreview{}, fmt.Errorf("%w: укажите месяц начала и месяц окончания", ErrPreviewInvalid)
+	}
+	if request.DayOfMonth < 1 || request.DayOfMonth > 31 {
+		return SchedulePreview{}, fmt.Errorf("%w: число месяца — от 1 до 31", ErrPreviewInvalid)
+	}
+	if to.Before(from) {
+		return SchedulePreview{}, fmt.Errorf("%w: срок окончания раньше начала", ErrPreviewInvalid)
+	}
+	months := (to.Year()-from.Year())*12 + int(to.Month()-from.Month()) + 1
+	if months > maxSchedulePayments {
+		return SchedulePreview{}, fmt.Errorf("%w: не больше %d месяцев", ErrPreviewInvalid, maxSchedulePayments)
+	}
+	dates := make([]time.Time, months)
+	for index := range dates {
+		month := from.AddDate(0, index, 0)
+		last := month.AddDate(0, 1, -1).Day()
+		day := min(request.DayOfMonth, last)
+		dates[index] = month.AddDate(0, 0, day-1)
+	}
+	return equalPayments(dates, request)
+}
+
+// equalPayments puts the same amount on every date, with optional first and
+// last amounts, and validates the amounts for both pattern modes.
+func equalPayments(dates []time.Time, request previewRequest) (SchedulePreview, error) {
 	if request.AmountMinor <= 0 ||
 		(request.FirstAmountMinor != nil && *request.FirstAmountMinor <= 0) ||
 		(request.LastAmountMinor != nil && *request.LastAmountMinor <= 0) {
 		return SchedulePreview{}, fmt.Errorf("%w: суммы платежей должны быть больше нуля", ErrPreviewInvalid)
 	}
-	if request.Count == 1 && request.FirstAmountMinor != nil && request.LastAmountMinor != nil &&
+	if len(dates) == 1 && request.FirstAmountMinor != nil && request.LastAmountMinor != nil &&
 		*request.FirstAmountMinor != *request.LastAmountMinor {
 		return SchedulePreview{}, fmt.Errorf("%w: при одном платеже первая и последняя суммы совпадают", ErrPreviewInvalid)
 	}
-	payments := make([]createPaymentRequest, request.Count)
-	for index := range payments {
+	payments := make([]createPaymentRequest, len(dates))
+	for index, date := range dates {
 		amount := request.AmountMinor
 		if index == 0 && request.FirstAmountMinor != nil {
 			amount = *request.FirstAmountMinor
 		}
-		if index == request.Count-1 && request.LastAmountMinor != nil {
+		if index == len(dates)-1 && request.LastAmountMinor != nil {
 			amount = *request.LastAmountMinor
 		}
-		payments[index] = createPaymentRequest{
-			DueOn:       calendar.Occurrence(first, "monthly", index).Format(dateLayout),
-			AmountMinor: amount,
-		}
+		payments[index] = createPaymentRequest{DueOn: date.Format(dateLayout), AmountMinor: amount}
 	}
 	return summarize(payments, nil)
 }

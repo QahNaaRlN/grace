@@ -3,7 +3,10 @@
 // mirrors the response shapes the UI depends on.
 type Payment = { dueOn: string; amountMinor: number }
 type Body = {
-  mode: 'equal' | 'paste' | 'rows'
+  mode: 'equal' | 'period' | 'paste' | 'rows'
+  dayOfMonth?: number
+  fromMonth?: string
+  toMonth?: string
   firstDueOn?: string
   count?: number
   amountMinor?: number
@@ -34,6 +37,17 @@ function summary(payments: Payment[], rejectedLines: { line: number; text: strin
 }
 
 export function fakeSchedulePreview(body: Body) {
+  if (body.mode === 'period') {
+    const [fy, fm] = (body.fromMonth ?? '').split('-').map(Number)
+    const [ty, tm] = (body.toMonth ?? '').split('-').map(Number)
+    const count = (ty - fy) * 12 + (tm - fm) + 1
+    return summary(Array.from({ length: count }, (_, index) => {
+      const first = new Date(Date.UTC(fy, fm - 1 + index, 1))
+      const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
+      first.setUTCDate(Math.min(body.dayOfMonth ?? 1, last))
+      return { dueOn: first.toISOString().slice(0, 10), amountMinor: body.amountMinor ?? 0 }
+    }))
+  }
   if (body.mode === 'equal') {
     const count = body.count ?? 0
     return summary(Array.from({ length: count }, (_, index) => ({
