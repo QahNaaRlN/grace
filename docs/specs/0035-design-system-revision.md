@@ -1,12 +1,12 @@
 # SPEC-0035: ревизия дизайн-системы — состояния, статусы, суммы, поля
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-13 в чате: «Принимаю все три спеки, начинай реализацию»
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/design-system-revision
+- Implementation commit: 4dc5c2f..c6691d7 ([evidence](0035-evidence.md))
 - Основа: ревью дизайн-системы 2026-10-13; живое сравнение — тема
   «Light/Dark (proposed)» в артефакте Grace Design System
   (https://claude.ai/artifact/3ZBvYBywqV5npnG36BwcXu, раздел «Предлагаемая ревизия»).
