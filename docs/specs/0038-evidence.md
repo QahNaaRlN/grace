@@ -4,7 +4,7 @@
 GitHub issue [#14](https://github.com/QahNaaRlN/grace/issues/14).
 Ветка: `codex/import-file-feedback`, база `06d055f` (SPEC-0035: `Notice`, `Field`),
 implementation commit `590013c`.
-Статус: `verified` локально (Windows); интеграция в `main` и production не выполнялись.
+Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

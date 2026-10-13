@@ -3,7 +3,7 @@
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0036](0036-amount-input-profile-feedback.md).
 Ветка: `codex/amount-input-profile`, база `f0fce1c` (принятые SPEC-0035–0037),
 implementation commit `09fd14a`.
-Статус: `verified` локально (Windows); интеграция в `main` и production не выполнялись.
+Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

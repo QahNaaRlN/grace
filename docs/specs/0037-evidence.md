@@ -3,7 +3,7 @@
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0037](0037-long-schedule-entry.md).
 Ветка: `codex/long-schedule-entry`, база `765e36a` (SPEC-0036, потому что
 `MoneyInput` используется в графике), implementation commit `b846159`.
-Статус: `verified` локально (Windows); интеграция в `main` и production не выполнялись.
+Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
