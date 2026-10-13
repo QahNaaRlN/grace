@@ -1,12 +1,12 @@
 # SPEC-0038: обратная связь при выборе и сохранении файла импорта
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-13 в чате: «Принять, с «Убрать»»; #15 закрыт с комментарием по решению владельца
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/import-file-feedback
+- Implementation commit: 590013c ([evidence](0038-evidence.md))
 - Основа: GitHub issue [#14](https://github.com/QahNaaRlN/grace/issues/14);
   связанный [#15](https://github.com/QahNaaRlN/grace/issues/15) уже устранён
   SPEC-0032 (см. «Текущее поведение»).
