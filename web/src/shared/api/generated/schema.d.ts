@@ -895,10 +895,45 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
+        /** @description SPEC-0042. Deletes a personal category. Its operations move to moveTo in the same transaction; expectedOperations comes from the delete preview and guards against operations added meanwhile. */
+        delete: operations["deleteExpenseCategory"];
+        options?: never;
+        head?: never;
+        /** @description SPEC-0042. Changes the name and/or icon of a personal category. */
+        patch: operations["renameExpenseCategory"];
+        trace?: never;
+    };
+    "/api/v1/categories/{categoryId}/delete-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewCategoryDeletion"];
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["renameExpenseCategory"];
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{categoryId}/hidden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description SPEC-0042. Hides a category from this owner's choices for new operations. */
+        put: operations["hideCategory"];
+        post?: never;
+        delete: operations["unhideCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/financial-events": {
@@ -1995,8 +2030,19 @@ export interface components {
             bank: string;
             last4: string;
         };
+        /**
+         * @description SPEC-0042 fixed icon set (Lucide names); mirrors migration 000019.
+         * @enum {string}
+         */
+        CategoryIcon: "shopping-cart" | "utensils" | "coffee" | "car" | "bus" | "fuel" | "home" | "zap" | "wifi" | "smartphone" | "heart-pulse" | "pill" | "shirt" | "gift" | "gamepad-2" | "film" | "music" | "book-open" | "graduation-cap" | "baby" | "paw-print" | "plane" | "dumbbell" | "scissors" | "wrench" | "credit-card" | "landmark" | "receipt" | "repeat" | "briefcase" | "banknote" | "piggy-bank" | "sparkles" | "tag" | "sofa" | "cigarette";
         CategoryName: {
             name: string;
+            icon?: components["schemas"]["CategoryIcon"];
+        };
+        CategoryUpdate: {
+            name?: string;
+            /** @description An icon from the set, or "" to clear it. */
+            icon?: components["schemas"]["CategoryIcon"] | "";
         };
         Category: {
             /** Format: uuid */
@@ -2008,6 +2054,11 @@ export interface components {
             editable?: boolean;
             /** Format: date-time */
             createdAt: string;
+            icon: components["schemas"]["CategoryIcon"] | null;
+            /** @description Hidden by this owner from choices for new operations */
+            hidden: boolean;
+            /** @description Operations of this owner in the category */
+            operationCount: number;
         };
         Posting: {
             /** Format: uuid */
@@ -5111,6 +5162,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         items: components["schemas"]["Category"][];
+                        icons: components["schemas"]["CategoryIcon"][];
                     };
                 };
             };
@@ -5149,6 +5201,41 @@ export interface operations {
             422: components["responses"]["ValidationError"];
         };
     };
+    deleteExpenseCategory: {
+        parameters: {
+            query: {
+                expectedOperations: number;
+                moveTo?: string;
+            };
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Category deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        movedOperations: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
     renameExpenseCategory: {
         parameters: {
             query?: never;
@@ -5163,11 +5250,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoryName"];
+                "application/json": components["schemas"]["CategoryUpdate"];
             };
         };
         responses: {
-            /** @description Personal category renamed; references retained */
+            /** @description Personal category updated; references retained */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5181,6 +5268,92 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+        };
+    };
+    previewCategoryDeletion: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operations that the deletion would move */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        operations: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    hideCategory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Category hidden */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Category"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    unhideCategory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Category shown again */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Category"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
         };
     };
     listFinancialEvents: {

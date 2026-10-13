@@ -1652,14 +1652,18 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [items]
+                required: [items, icons]
                 properties:
                   items:
                     type: array
                     items: { $ref: '#/components/schemas/Category' }
+                  icons:
+                    type: array
+                    items: { $ref: '#/components/schemas/CategoryIcon' }
   /api/v1/categories/{categoryId}:
     patch:
       operationId: renameExpenseCategory
+      description: SPEC-0042. Changes the name and/or icon of a personal category.
       parameters:
         - { $ref: '#/components/parameters/CSRF' }
         - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1667,10 +1671,10 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/CategoryName' }
+            schema: { $ref: '#/components/schemas/CategoryUpdate' }
       responses:
         '200':
-          description: Personal category renamed; references retained
+          description: Personal category updated; references retained
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Category' }
@@ -1679,6 +1683,81 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      operationId: deleteExpenseCategory
+      description: >-
+        SPEC-0042. Deletes a personal category. Its operations move to moveTo in
+        the same transaction; expectedOperations comes from the delete preview
+        and guards against operations added meanwhile.
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: expectedOperations, in: query, required: true, schema: { type: integer, minimum: 0 } }
+        - { name: moveTo, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Category deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [movedOperations]
+                properties:
+                  movedOperations: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/categories/{categoryId}/delete-preview:
+    post:
+      operationId: previewCategoryDeletion
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Operations that the deletion would move
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [operations]
+                properties:
+                  operations: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/categories/{categoryId}/hidden:
+    put:
+      operationId: hideCategory
+      description: SPEC-0042. Hides a category from this owner's choices for new operations.
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Category hidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: unhideCategory
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { name: categoryId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Category shown again
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /api/v1/financial-events:
     get:
       operationId: listFinancialEvents
@@ -3333,21 +3412,43 @@ components:
         name: { type: string }
         bank: { type: string }
         last4: { type: string, pattern: '^[0-9]{4}$' }
+    CategoryIcon:
+      type: string
+      description: SPEC-0042 fixed icon set (Lucide names); mirrors migration 000019.
+      enum: [shopping-cart, utensils, coffee, car, bus, fuel, home, zap, wifi, smartphone, heart-pulse, pill, shirt, gift, gamepad-2, film, music, book-open, graduation-cap, baby, paw-print, plane, dumbbell, scissors, wrench, credit-card, landmark, receipt, repeat, briefcase, banknote, piggy-bank, sparkles, tag, sofa, cigarette]
     CategoryName:
       type: object
       additionalProperties: false
       required: [name]
       properties:
         name: { type: string, minLength: 1, maxLength: 80 }
+        icon: { $ref: '#/components/schemas/CategoryIcon' }
+    CategoryUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        icon:
+          description: An icon from the set, or "" to clear it.
+          oneOf:
+            - { $ref: '#/components/schemas/CategoryIcon' }
+            - { type: string, const: '' }
     Category:
       type: object
-      required: [id, name, kind, createdAt]
+      required: [id, name, kind, createdAt, icon, hidden, operationCount]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         kind: { type: string, enum: [expense, income] }
         editable: { type: boolean, description: True only for a personal category belonging to the authenticated user }
         createdAt: { type: string, format: date-time }
+        icon:
+          oneOf:
+            - { $ref: '#/components/schemas/CategoryIcon' }
+            - { type: 'null' }
+        hidden: { type: boolean, description: Hidden by this owner from choices for new operations }
+        operationCount: { type: integer, minimum: 0, description: Operations of this owner in the category }
     Posting:
       type: object
       required: [id, accountId, accountName, direction, amountMinor, currency]
