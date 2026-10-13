@@ -17,6 +17,7 @@ type Event struct {
 	Source          string     `json:"source"`
 	CategoryID      *string    `json:"categoryId"`
 	CategoryName    *string    `json:"categoryName"`
+	CategoryIcon    *string    `json:"categoryIcon"`
 	OriginalEventID *string    `json:"originalEventId"`
 	Merchant        string     `json:"merchant"`
 	Description     string     `json:"description"`

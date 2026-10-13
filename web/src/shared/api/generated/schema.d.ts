@@ -2081,6 +2081,7 @@ export interface components {
             source: "manual" | "bank_import" | "receipt" | "import";
             categoryId?: string | null;
             categoryName?: string | null;
+            categoryIcon?: components["schemas"]["CategoryIcon"] | null;
             originalEventId?: string | null;
             merchant: string;
             description: string;
@@ -5377,6 +5378,15 @@ export interface operations {
                 from?: string;
                 /** @description Exclusive local calendar date Asia/Yekaterinburg */
                 to?: string;
+                /** @description SPEC-0043. Events with a posting on this account */
+                accountId?: string;
+                kind?: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment";
+                /** @description Case-insensitive substring of merchant or description */
+                q?: string;
+                /** @description nextCursor of the previous page */
+                cursor?: string;
+                /** @description Page size; default 100 */
+                limit?: number;
             };
             header?: never;
             path?: never;
@@ -5384,7 +5394,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Recent financial events with postings */
+            /** @description A page of financial events with postings, newest first, with totals for every local day on the page computed over the whole filter. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5392,6 +5402,16 @@ export interface operations {
                 content: {
                     "application/json": {
                         items: components["schemas"]["FinancialEvent"][];
+                        nextCursor: string | null;
+                        dayTotals: {
+                            /** Format: date */
+                            date: string;
+                            currency: string;
+                            /** Format: int64 */
+                            inflowMinor: number;
+                            /** Format: int64 */
+                            outflowMinor: number;
+                        }[];
                     };
                 };
             };

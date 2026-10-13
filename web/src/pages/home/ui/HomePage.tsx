@@ -4,12 +4,9 @@ import { Disclosure } from '@/shared/ui/disclosure'
 import { PageHeader } from '@/shared/ui/page-header'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
-import { ChoiceSelect } from '@/shared/ui/choice-select'
 import { Categories } from './Categories'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  ArrowDownRight,
-  ArrowRightLeft,
   BarChart3,
   CalendarClock,
   Link2,
@@ -17,12 +14,13 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { Overview } from './Overview'
+import { Operations } from './Operations'
 import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { accountLabel, today, eventDateText, eventTimeText, formatMoney } from '@/shared/lib/finance-display'
+import { accountLabel, today, formatMoney } from '@/shared/lib/finance-display'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge, type Tone } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
@@ -41,7 +39,6 @@ import { toast } from 'sonner'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { CreateObligationForm } from '@/features/create-obligation'
-import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
 import type {
@@ -50,7 +47,6 @@ import type {
   FinancialEvent,
   Obligation,
   PeriodSummary,
-  Receipt,
   ScheduledPayment,
 } from '@/shared/api/types'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
@@ -74,13 +70,6 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 
-const kindLabels: Record<FinancialEvent['kind'], string> = {
-  purchase: 'Покупка',
-  income_received: 'Доход',
-  internal_transfer: 'Перевод',
-  refund: 'Возврат',
-  debt_payment: 'Платёж по обязательству',
-}
 
 
 function localDateValue(date: Date) {
@@ -267,180 +256,6 @@ function Accounts({ items }: { items: Account[] }) {
         </DialogContent>
       </Dialog>
     </>
-  )
-}
-
-function ReceiptDetails({ receipt }: { receipt: Receipt }) {
-  return (
-    <div className="mt-3 rounded-lg bg-muted/50 p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className="font-medium">Чек · {receipt.seller}</span>
-        <span>{formatMoney(receipt.totalMinor, receipt.currency)}</span>
-      </div>
-      <div className="space-y-1 text-sm text-muted-foreground">
-        {receipt.items.map((item) => (
-          <div key={item.id} className="flex items-start justify-between gap-3">
-            <span>
-              {item.position}. {item.name} · {item.quantityMilli / 1000}
-            </span>
-            <span className="shrink-0">
-              {formatMoney(item.lineTotalMinor, receipt.currency)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Events({
-  items,
-  receipts,
-  accounts,
-}: {
-  items: FinancialEvent[]
-  receipts: Receipt[]
-  accounts: Account[]
-}) {
-  const receiptsByPurchase = new Map(
-    receipts.map((receipt) => [receipt.purchaseEventId, receipt]),
-  )
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Операции</CardTitle>
-        <CardDescription>
-          Подтверждённые операции и связанные чеки.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Событий пока нет.</p>
-        ) : (
-          <div className="space-y-2">
-            {items.map((item) => {
-              const posting = item.postings[0]
-              const isTransfer = item.kind === 'internal_transfer'
-              const positive = posting?.direction === 'credit'
-              const sourcePosting = item.postings.find(
-                (value) => value.direction === 'debit',
-              )
-              const destinationPosting = item.postings.find(
-                (value) => value.direction === 'credit',
-              )
-              const label = (
-                id: string | undefined,
-                fallback: string | undefined,
-              ) => {
-                const a = accounts.find((a) => a.id === id)
-                return a ? accountLabel(a) : (fallback ?? 'Не указан счёт')
-              }
-              const accountDescription = isTransfer
-                ? `${label(sourcePosting?.accountId, sourcePosting?.accountName)} → ${label(destinationPosting?.accountId, destinationPosting?.accountName)}`
-                : label(posting?.accountId, posting?.accountName)
-              const receipt = receiptsByPurchase.get(item.id)
-              return (
-                <article key={item.id} className="rounded-xl border p-3 sm:p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="rounded-full bg-muted p-2">
-                        {isTransfer ? (
-                          <ArrowRightLeft
-                            aria-hidden="true"
-                            className="size-4"
-                          />
-                        ) : (
-                          <ArrowDownRight
-                            aria-hidden="true"
-                            className="size-4"
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="break-words font-medium">
-                          {item.merchant ||
-                            item.description ||
-                            kindLabels[item.kind]}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {eventDateText(item)} ·{' '}
-                          {item.categoryName ?? kindLabels[item.kind]} ·{' '}
-                          {accountDescription}
-                        </p>
-                      </div>
-                    </div>
-                    {posting && (
-                      <div className="min-w-0 space-y-1 text-right">
-                        <p>
-                          <Money
-                            valueMinor={posting.amountMinor}
-                            currency={posting.currency}
-                            direction={isTransfer ? undefined : positive ? 'credit' : 'debit'}
-                          />
-                        </p>
-                        <Badge variant="secondary">
-                          {kindLabels[item.kind]}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  <Disclosure className="mt-4" triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
-                      Все сведения операции
-                    </>}>
-                    <dl className="grace-fields">
-                      {[
-                        [
-                          'Дата',
-                          eventTimeText(item),
-                        ],
-                        ['Тип', kindLabels[item.kind]],
-                        ['Описание', item.description || 'Не указано'],
-                        ['Категория', item.categoryName || 'Не указано'],
-                        ['Подкатегория', 'Не указано'],
-                        [
-                          'Сумма',
-                          posting
-                            ? formatMoney(posting.amountMinor, posting.currency)
-                            : 'Не указано',
-                        ],
-                        ['Источник финансирования', 'Не указано'],
-                        ['Счёт / карта', accountDescription],
-                        ['Приоритет', 'Не указано'],
-                        ['Регулярный?', 'Не указано'],
-                        ['Получатель / долг', item.merchant || 'Не указано'],
-                        ['Комментарий', item.description || 'Не указано'],
-                        [
-                          'Месяц',
-                          new Intl.DateTimeFormat('ru-RU', {
-                            timeZone: 'Asia/Yekaterinburg',
-                            month: 'long',
-                            year: 'numeric',
-                          }).format(new Date(item.occurredAt ?? `${item.occurredDate}T00:00:00Z`)),
-                        ],
-                        ['Источник записи', item.source],
-                        ['Проверка источника', 'Не указано'],
-                        ['ID', item.id],
-                      ].map(([label, value]) => (
-                        <div key={label}>
-                          <dt>{label}</dt>
-                          <dd>{value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </Disclosure>
-                  {receipt && <ReceiptDetails receipt={receipt} />}
-                  {item.kind === 'purchase' && !receipt && (
-                    <div className="mt-3 pl-11">
-                      <CreateReceiptForm purchase={item} />
-                    </div>
-                  )}
-                </article>
-              )
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   )
 }
 
@@ -921,10 +736,6 @@ function Analytics() {
 
 export function HomePage() {
   const path = useLocation().pathname
-  const [filters, setFilters] = useSearchParams()
-  const category = path === '/operations' ? filters.get('category') ?? '' : ''
-  const from = path === '/operations' ? filters.get('from') ?? '' : ''
-  const to = path === '/operations' ? filters.get('to') ?? '' : ''
   const queryClient = useQueryClient()
   const [operationOpen, setOperationOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -934,11 +745,10 @@ export function HomePage() {
     queryFn: loadCategories,
   })
   const events = useQuery({
-    queryKey: ['financial-events', category, from, to],
-    queryFn: () => loadEvents(category, from, to),
+    queryKey: ['financial-events', '', '', ''],
+    queryFn: () => loadEvents(),
   })
   const receipts = useQuery({ queryKey: ['receipts'], queryFn: loadReceipts })
-  const recentEvents = useQuery({ queryKey: ['financial-events', '', '', ''], queryFn: () => loadEvents(), enabled: operationOpen && !!(category || from || to) })
   const asOf = today()
   const obligations = useQuery({
     queryKey: ['obligations', asOf],
@@ -1022,7 +832,7 @@ export function HomePage() {
                     <CreateFinancialEventForm
                       accounts={accounts.data}
                       categories={categories.data}
-                      events={(category || from || to) ? recentEvents.data ?? [] : events.data ?? []}
+                      events={events.data ?? []}
                       onSaved={() => setOperationOpen(false)}
                     />
                   )}
@@ -1051,12 +861,6 @@ export function HomePage() {
             </Button>
           </div>
         )}
-        {path === '/operations' && <Card><CardContent className="pt-5"><form key={filters.toString()} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" onSubmit={e => {
-          e.preventDefault(); const values = new FormData(e.currentTarget); const next = new URLSearchParams()
-          for (const key of ['from', 'to']) { const value = String(values.get(key) ?? ''); if (value) next.set(key, value) }
-          if (category) next.set('category',category)
-          setFilters(next)
-        }}><div className="space-y-2"><Label htmlFor="filter-category">Категория</Label><ChoiceSelect id="filter-category" value={category} onValueChange={value => { const next = new URLSearchParams(filters); if(value) next.set('category',value); else next.delete('category'); setFilters(next) }}><option value="">Все категории</option><option value="uncategorized">Покупки без категории</option>{categories.data?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</ChoiceSelect></div><div className="space-y-2"><Label htmlFor="filter-from">С даты</Label><Input id="filter-from" name="from" type="date" defaultValue={from} /></div><div className="space-y-2"><Label htmlFor="filter-to">До даты (не включая)</Label><Input id="filter-to" name="to" type="date" defaultValue={to} /></div><div className="flex items-end gap-2"><Button type="submit">Показать</Button><Button variant="ghost" type="reset" onClick={() => setFilters({})}>Сбросить</Button></div></form><p className="mt-4 text-sm text-muted-foreground">До 100 последних операций выбранного периода и категории. <Link className="text-primary underline" to="/categories">Управлять категориями</Link></p></CardContent></Card>}
         {path === '/categories' && (categories.isPending ? <LoadingSkeleton label="Загружаем категории…" /> : categories.data && <Categories items={categories.data} />)}
         {pending && !['/profile','/categories'].includes(path) ? <LoadingSkeleton /> : empty && !['/profile','/categories'].includes(path) ? (
           <section className="rounded-2xl border bg-card px-5 py-12 text-center">
@@ -1089,11 +893,11 @@ export function HomePage() {
             {path === '/accounts' && accounts.data && (
               <Accounts items={accounts.data} />
             )}
-            {path === '/operations' && events.data && (
-              <Events
-                items={events.data}
-                receipts={receipts.data ?? []}
+            {path === '/operations' && (
+              <Operations
+                categories={categories.data ?? []}
                 accounts={accounts.data ?? []}
+                receipts={receipts.data ?? []}
               />
             )}
             {path === '/payments' && (

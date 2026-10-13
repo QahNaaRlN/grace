@@ -94,7 +94,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <Link to="/" aria-label="Grace — обзор" className="mb-8 flex min-h-11 items-center gap-3 px-2 text-xl font-semibold tracking-tight"><GraceMark className="size-9 text-primary" aria-hidden="true"/>Grace</Link>
         <p className="mb-3 px-3 text-xs font-medium tracking-wide text-muted-foreground">Личное пространство</p>
         <nav aria-label="Навигация" className="grid gap-1">{allLinks.map(({icon:Icon,...link})=><NavLink key={link.to} to={link.to} end={link.to==='/'} className={navClass}><Icon className="size-[18px]" aria-hidden="true"/>{link.label}</NavLink>)}</nav>
-        <div className="mt-auto border-t pt-4"><Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>{resolvedTheme==='dark'?<Sun className="size-[18px]"/>:<Moon className="size-[18px]"/>}{resolvedTheme==='dark'?'Светлая тема':'Тёмная тема'}</Button>{auth && <p className="mt-3 truncate px-3 text-sm text-muted-foreground" title={auth.session.user.name}>{auth.session.user.name}</p>}</div>
+        <div className="mt-auto border-t pt-4"><Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>{resolvedTheme==='dark'?<Sun className="size-[18px]"/>:<Moon className="size-[18px]"/>}{resolvedTheme==='dark'?'Светлая тема':'Тёмная тема'}</Button>{auth && <ProfileLink user={auth.session.user} />}</div>
       </aside>
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
@@ -189,5 +189,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </nav>
       )}
     </div>
+  )
+}
+
+// SPEC-0043: who is signed in, at the foot of the sidebar, one tap to the profile.
+function ProfileLink({ user }: { user: { name: string; avatarUrl?: string | null } }) {
+  return (
+    <NavLink to="/profile" className={({ isActive }) => cn('mt-2 flex min-h-11 items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium transition-colors hover:bg-accent', isActive ? 'text-selected-foreground' : 'text-foreground')}>
+      <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
+        {user.avatarUrl ? <img src={env.VITE_API_BASE_URL + user.avatarUrl} alt="" className="size-full object-cover" /> : Array.from(user.name)[0]?.toUpperCase()}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate" title={user.name}>{user.name}</span>
+        <span className="block text-xs font-normal text-muted-foreground">Профиль и доступ</span>
+      </span>
+    </NavLink>
   )
 }
