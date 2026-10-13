@@ -75,3 +75,29 @@ describe('SPEC-0037 schedule builder', () => {
     expect(screen.getByLabelText('Удалить платёж 1')).toBeDisabled()
   })
 })
+
+describe('SPEC-0045 schedule by contract term', () => {
+  it('builds payments from a day of month and a from–to month range', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.click(screen.getByRole('radio', { name: 'По сроку договора' }))
+    expect(screen.queryByLabelText('Количество, ежемесячно')).not.toBeInTheDocument()
+    await user.type(screen.getByLabelText('С (месяц и год)'), '2027-01')
+    await user.type(screen.getByLabelText('По (включительно)'), '2036-12')
+    await user.type(screen.getByLabelText('Сумма платежа'), '25000')
+    await user.click(screen.getByRole('button', { name: 'Построить график' }))
+    expect(post.mock.calls[0][1].body).toEqual({ mode: 'period', dayOfMonth: 15, fromMonth: '2027-01', toMonth: '2036-12', amountMinor: 2_500_000 })
+    expect(await screen.findByRole('button', { name: 'Показать все 120' })).toBeVisible()
+    expect(screen.getByLabelText('Дата платежа 120')).toHaveValue('2036-12-15')
+  })
+
+  it('asks for both months before building', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.click(screen.getByRole('radio', { name: 'По сроку договора' }))
+    await user.type(screen.getByLabelText('Сумма платежа'), '100')
+    await user.click(screen.getByRole('button', { name: 'Построить график' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('Укажите месяц начала и месяц окончания.')
+    expect(post).not.toHaveBeenCalled()
+  })
+})

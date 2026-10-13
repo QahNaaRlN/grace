@@ -2318,6 +2318,18 @@ export interface components {
             lastAmountMinor?: number;
         } | {
             /** @constant */
+            mode: "period";
+            dayOfMonth: number;
+            fromMonth: string;
+            toMonth: string;
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: int64 */
+            firstAmountMinor?: number;
+            /** Format: int64 */
+            lastAmountMinor?: number;
+        } | {
+            /** @constant */
             mode: "paste";
             text: string;
             /** @description Which money column after the date is the payment; default 1. */

@@ -3653,6 +3653,21 @@ components:
             lastAmountMinor: { type: integer, format: int64, minimum: 1 }
         - type: object
           additionalProperties: false
+          required: [mode, dayOfMonth, fromMonth, toMonth, amountMinor]
+          description: >-
+            SPEC-0045. One payment per month on dayOfMonth from fromMonth to
+            toMonth inclusive; a day past the month end becomes its last day,
+            so 31 means the last day of every month.
+          properties:
+            mode: { type: string, const: period }
+            dayOfMonth: { type: integer, minimum: 1, maximum: 31 }
+            fromMonth: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+            toMonth: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+            amountMinor: { type: integer, format: int64, minimum: 1 }
+            firstAmountMinor: { type: integer, format: int64, minimum: 1 }
+            lastAmountMinor: { type: integer, format: int64, minimum: 1 }
+        - type: object
+          additionalProperties: false
           required: [mode, text]
           properties:
             mode: { type: string, const: paste }

@@ -13,6 +13,7 @@ import {
   previewSchedule,
   type RejectedScheduleLine,
   type SchedulePreview,
+  type SchedulePreviewRequest,
 } from '../api/preview-schedule'
 import {
   replaceUnlocked,
@@ -246,11 +247,13 @@ function EqualForm({ idPrefix, currency, busy, onBuild }: {
   idPrefix: string
   currency: string
   busy: boolean
-  onBuild: (request: {
-    mode: 'equal'; firstDueOn: string; count: number; interval: 'monthly'; amountMinor: number
-    firstAmountMinor?: number; lastAmountMinor?: number
-  }) => void
+  onBuild: (request: Extract<SchedulePreviewRequest, { mode: 'equal' | 'period' }>) => void
 }) {
+  // SPEC-0045: by count (first date + N) or by term (day of month, from–to month).
+  const [basis, setBasis] = useState<'count' | 'period'>('count')
+  const [day, setDay] = useState('15')
+  const [fromMonth, setFromMonth] = useState('')
+  const [toMonth, setToMonth] = useState('')
   const [firstDueOn, setFirstDueOn] = useState('')
   const [count, setCount] = useState('')
   const [amount, setAmount] = useState('')
@@ -263,28 +266,58 @@ function EqualForm({ idPrefix, currency, busy, onBuild }: {
     const optional = (text: string) => (text.trim() ? parseMinor(text) : undefined)
     const first = optional(firstAmount)
     const final = optional(lastAmount)
-    if (!firstDueOn || !Number.isInteger(total) || total < 1 || total > 600)
+    if (basis === 'count' && (!firstDueOn || !Number.isInteger(total) || total < 1 || total > 600))
       return setError('Укажите дату первого платежа и количество от 1 до 600.')
+    if (basis === 'period' && (!fromMonth || !toMonth))
+      return setError('Укажите месяц начала и месяц окончания.')
     if (amountMinor === null || amountMinor <= 0 || first === null || final === null)
       return setError('Проверьте суммы: больше нуля, не больше двух знаков после запятой.')
     setError('')
-    onBuild({
-      mode: 'equal', firstDueOn, count: total, interval: 'monthly', amountMinor,
+    const amounts = {
+      amountMinor,
       ...(first !== undefined ? { firstAmountMinor: first } : {}),
       ...(final !== undefined ? { lastAmountMinor: final } : {}),
-    })
+    }
+    onBuild(basis === 'count'
+      ? { mode: 'equal', firstDueOn, count: total, interval: 'monthly', ...amounts }
+      : { mode: 'period', dayOfMonth: Number(day), fromMonth, toMonth, ...amounts })
   }
   return (
     <div className="space-y-4 rounded-xl border p-4">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="grid gap-2">
-          <Label htmlFor={`${idPrefix}-first`}>Первый платёж</Label>
-          <Input id={`${idPrefix}-first`} type="date" value={firstDueOn} onChange={e => setFirstDueOn(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor={`${idPrefix}-count`}>Количество, ежемесячно</Label>
-          <Input id={`${idPrefix}-count`} inputMode="numeric" className="tabular-nums" value={count} onChange={e => setCount(e.target.value.replace(/\D/g, ''))} placeholder="120" />
-        </div>
+      <div role="radiogroup" aria-label="Как задать график" className="flex flex-wrap gap-2">
+        {([['count', 'По количеству'], ['period', 'По сроку договора']] as const).map(([id, label]) => (
+          <Button key={id} type="button" role="radio" aria-checked={basis === id} variant={basis === id ? 'secondary' : 'ghost'} onClick={() => setBasis(id)}>
+            {label}
+          </Button>
+        ))}
+      </div>
+      <div className={basis === 'count' ? 'grid gap-4 sm:grid-cols-3' : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4'}>
+        {basis === 'count' ? <>
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-first`}>Первый платёж</Label>
+            <Input id={`${idPrefix}-first`} type="date" value={firstDueOn} onChange={e => setFirstDueOn(e.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-count`}>Количество, ежемесячно</Label>
+            <Input id={`${idPrefix}-count`} inputMode="numeric" className="tabular-nums" value={count} onChange={e => setCount(e.target.value.replace(/\D/g, ''))} placeholder="120" />
+          </div>
+        </> : <>
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-day`}>Число месяца</Label>
+            <ChoiceSelect id={`${idPrefix}-day`} value={day} onValueChange={setDay}>
+              {Array.from({ length: 30 }, (_, i) => <option key={i + 1} value={String(i + 1)}>{i + 1}</option>)}
+              <option value="31">Последний день месяца</option>
+            </ChoiceSelect>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-from`}>С (месяц и год)</Label>
+            <Input id={`${idPrefix}-from`} type="month" value={fromMonth} onChange={e => setFromMonth(e.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-to`}>По (включительно)</Label>
+            <Input id={`${idPrefix}-to`} type="month" value={toMonth} onChange={e => setToMonth(e.target.value)} />
+          </div>
+        </>}
         <div className="grid gap-2">
           <Label htmlFor={`${idPrefix}-amount`}>Сумма платежа</Label>
           <MoneyInput id={`${idPrefix}-amount`} currency={currency} value={amount} onChange={e => setAmount(e.target.value)} />

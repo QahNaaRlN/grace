@@ -198,3 +198,52 @@ func TestPreviewScheduleHandler(t *testing.T) {
 		}
 	}
 }
+
+func TestPreviewPeriodMortgage(t *testing.T) {
+	preview, err := PreviewSchedule(previewRequest{Mode: "period", DayOfMonth: 15, FromMonth: "2027-01", ToMonth: "2036-12", AmountMinor: 2_500_000})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Payments) != 120 || preview.FirstDueOn != "2027-01-15" || preview.LastDueOn != "2036-12-15" || preview.TotalMinor != 120*2_500_000 {
+		t.Fatalf("unexpected schedule: %d payments %s..%s total %d", len(preview.Payments), preview.FirstDueOn, preview.LastDueOn, preview.TotalMinor)
+	}
+}
+
+func TestPreviewPeriodClampsEachMonthIndependently(t *testing.T) {
+	preview, err := PreviewSchedule(previewRequest{Mode: "period", DayOfMonth: 31, FromMonth: "2028-01", ToMonth: "2028-04", AmountMinor: 100, LastAmountMinor: ptr(50)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var dates []string
+	for _, payment := range preview.Payments {
+		dates = append(dates, payment.DueOn)
+	}
+	if got := strings.Join(dates, ","); got != "2028-01-31,2028-02-29,2028-03-31,2028-04-30" {
+		t.Fatalf("day 31 must mean the last day of every month, got %s", got)
+	}
+	if preview.TotalMinor != 350 {
+		t.Fatalf("last amount not applied: %d", preview.TotalMinor)
+	}
+	single, err := PreviewSchedule(previewRequest{Mode: "period", DayOfMonth: 30, FromMonth: "2027-02", ToMonth: "2027-02", AmountMinor: 100})
+	if err != nil || len(single.Payments) != 1 || single.Payments[0].DueOn != "2027-02-28" {
+		t.Fatalf("single month: %#v %v", single, err)
+	}
+}
+
+func TestPreviewPeriodRejectsInvalidRequests(t *testing.T) {
+	for name, request := range map[string]previewRequest{
+		"end before start": {Mode: "period", DayOfMonth: 15, FromMonth: "2027-05", ToMonth: "2027-04", AmountMinor: 1},
+		"day 0":            {Mode: "period", DayOfMonth: 0, FromMonth: "2027-01", ToMonth: "2027-02", AmountMinor: 1},
+		"day 32":           {Mode: "period", DayOfMonth: 32, FromMonth: "2027-01", ToMonth: "2027-02", AmountMinor: 1},
+		"bad month":        {Mode: "period", DayOfMonth: 1, FromMonth: "2027-13", ToMonth: "2028-01", AmountMinor: 1},
+		"601 months":       {Mode: "period", DayOfMonth: 1, FromMonth: "2027-01", ToMonth: "2077-01", AmountMinor: 1},
+		"no amount":        {Mode: "period", DayOfMonth: 1, FromMonth: "2027-01", ToMonth: "2027-02"},
+	} {
+		if _, err := PreviewSchedule(request); !errors.Is(err, ErrPreviewInvalid) {
+			t.Fatalf("%s: expected ErrPreviewInvalid, got %v", name, err)
+		}
+	}
+	if _, err := PreviewSchedule(previewRequest{Mode: "period", DayOfMonth: 1, FromMonth: "2027-01", ToMonth: "2076-12", AmountMinor: 1}); err != nil {
+		t.Fatalf("600 months must be allowed: %v", err)
+	}
+}
