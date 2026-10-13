@@ -54,7 +54,7 @@ func (repo *Repository) ListFiltered(ctx context.Context, limit int, category, f
 		WHERE e.id IN (
 			SELECT id
 			FROM financial_events
-			WHERE ($2='' OR ($2='uncategorized' AND category_id IS NULL AND kind='purchase') OR category_id::text=$2)
+			WHERE voided_at IS NULL AND ($2='' OR ($2='uncategorized' AND category_id IS NULL AND kind='purchase') OR category_id::text=$2)
 			AND ($3='' OR COALESCE(occurred_date,(occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)>=NULLIF($3,'')::date)
 			AND ($4='' OR COALESCE(occurred_date,(occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<NULLIF($4,'')::date)
 			ORDER BY COALESCE(occurred_at, occurred_date::timestamp AT TIME ZONE 'Asia/Yekaterinburg') DESC, created_at DESC
@@ -333,6 +333,10 @@ const eventQuery = `
 		e.occurred_at,
 		e.occurred_date::text,
 		e.created_at,
+		e.revision,
+		e.edited_by_user,
+		e.voided_at,
+		e.void_reason,
 		p.id::text,
 		p.account_id::text,
 		a.name,
@@ -341,7 +345,11 @@ const eventQuery = `
 		p.currency
 	FROM financial_events e
 	LEFT JOIN categories c ON c.id = e.category_id
-	JOIN postings p ON p.financial_event_id = e.id
+	JOIN (
+		SELECT id, financial_event_id, account_id, direction, amount_minor, currency, created_at FROM postings
+		UNION ALL
+		SELECT id, financial_event_id, account_id, direction, amount_minor, currency, created_at FROM voided_postings
+	) p ON p.financial_event_id = e.id
 	JOIN accounts a ON a.id = p.account_id
 	`
 
@@ -371,6 +379,7 @@ func collectEvents(rows pgx.Rows) ([]Event, error) {
 			&event.ID, &event.Kind, &event.Source, &event.CategoryID, &event.CategoryName,
 			&event.CategoryIcon, &event.OriginalEventID, &event.Merchant, &event.Description,
 			&event.OccurredAt, &event.OccurredDate, &event.CreatedAt,
+			&event.Revision, &event.EditedByUser, &event.VoidedAt, &event.VoidReason,
 			&posting.ID, &posting.AccountID, &posting.Account, &posting.Direction,
 			&posting.Amount, &posting.Currency,
 		); err != nil {

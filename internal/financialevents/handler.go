@@ -27,7 +27,7 @@ func (handler *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	query := r.URL.Query()
 	filter := ListFilter{Limit: 100, Cursor: query.Get("cursor"), Category: category, From: from, To: to,
-		AccountID: query.Get("accountId"), Kind: query.Get("kind"), Query: query.Get("q")}
+		AccountID: query.Get("accountId"), Kind: query.Get("kind"), Query: query.Get("q"), Voided: query.Get("voided") == "true"}
 	if raw := query.Get("limit"); raw != "" {
 		limit, err := strconv.Atoi(raw)
 		if err != nil || limit < 1 || limit > 100 {

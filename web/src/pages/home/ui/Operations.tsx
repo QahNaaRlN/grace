@@ -16,7 +16,9 @@ import { Field } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Money } from '@/shared/ui/money'
-import { Notice } from '@/shared/ui/status'
+import { Notice, StatusBadge } from '@/shared/ui/status'
+
+import { OperationActions, OperationHistory } from './OperationEditor'
 
 const kindLabels: Record<FinancialEvent['kind'], string> = {
   purchase: 'Покупка',
@@ -27,7 +29,7 @@ const kindLabels: Record<FinancialEvent['kind'], string> = {
 }
 const kindIcons = { income_received: ArrowDownLeft, internal_transfer: ArrowRightLeft, refund: Undo2, debt_payment: Landmark }
 const sourceLabels: Record<string, string> = { manual: 'Ручной ввод', import: 'Импорт таблицы', bank_import: 'Импорт выписки', receipt: 'Фото чека' }
-const filterKeys = ['q', 'category', 'account', 'kind', 'from', 'to'] as const
+const filterKeys = ['q', 'category', 'account', 'kind', 'from', 'to', 'voided'] as const
 type DayTotal = { date: string; currency: string; inflowMinor: number; outflowMinor: number }
 
 function localDay(event: FinancialEvent) {
@@ -89,7 +91,7 @@ export function Operations({ categories, accounts, receipts }: { categories: Cat
       const { data, error } = await apiClient.GET('/api/v1/financial-events', { params: { query: {
         limit: 50, cursor: pageParam || undefined, q: filter.q || undefined, categoryId: filter.category || undefined,
         accountId: filter.account || undefined, kind: (filter.kind || undefined) as FinancialEvent['kind'] | undefined,
-        from: filter.from || undefined, to: filter.to || undefined,
+        from: filter.from || undefined, to: filter.to || undefined, voided: filter.voided === 'true' || undefined,
       } } })
       if (!data) throw new Error(error?.message ?? 'Не удалось загрузить операции.')
       return data
@@ -160,6 +162,10 @@ export function Operations({ categories, accounts, receipts }: { categories: Cat
             <Field label="До даты, не включая"><Input name="to" type="date" defaultValue={filter.to} /></Field>
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-6">
               <Button type="submit"><Search />Найти</Button>
+              <label className="flex min-h-11 items-center gap-2 text-sm">
+                <input type="checkbox" className="size-4 accent-primary" checked={filter.voided === 'true'} onChange={e => setFilter('voided', e.target.checked ? 'true' : '')} />
+                Показать отменённые
+              </label>
               {active && <Button type="button" variant="ghost" onClick={() => setParams({})}>Сбросить фильтры</Button>}
               <Link className="ml-auto text-sm text-primary underline-offset-4 hover:underline" to="/categories">Управлять категориями</Link>
             </div>
@@ -212,12 +218,12 @@ export function Operations({ categories, accounts, receipts }: { categories: Cat
         </Card>
       )}
 
-      {selected && <OperationSheet event={selected} accounts={accounts} receipt={receiptsByPurchase.get(selected.id)} onClose={() => setSelected(null)} />}
+      {selected && <OperationSheet event={selected} accounts={accounts} categories={categories} onChanged={setSelected} receipt={receiptsByPurchase.get(selected.id)} onClose={() => setSelected(null)} />}
     </div>
   )
 }
 
-function OperationSheet({ event, accounts, receipt, onClose }: { event: FinancialEvent; accounts: Account[]; receipt?: Receipt; onClose: () => void }) {
+function OperationSheet({ event, accounts, categories, receipt, onClose, onChanged }: { event: FinancialEvent; accounts: Account[]; categories: Category[]; receipt?: Receipt; onClose: () => void; onChanged: (next: FinancialEvent) => void }) {
   const posting = event.postings[0]
   // Only facts that exist are shown; nothing reads «Не указано».
   const facts: [string, string][] = [
@@ -236,12 +242,16 @@ function OperationSheet({ event, accounts, receipt, onClose }: { event: Financia
           <DialogTitle className="flex items-center gap-3"><EventIcon event={event} /><span className="min-w-0 break-words">{event.merchant || event.description || kindLabels[event.kind]}</span></DialogTitle>
           <DialogDescription>{timeText(event)}</DialogDescription>
         </DialogHeader>
+        {event.voidedAt && <Notice tone="warning" title="Операция отменена">{event.voidReason} Она не учитывается в остатках и статистике.</Notice>}
+        {event.editedByUser && !event.voidedAt && <p><StatusBadge tone="info">Изменена вручную</StatusBadge></p>}
         {posting && <p><Money valueMinor={posting.amountMinor} currency={posting.currency} direction={direction(event)} size="lg" /></p>}
         <dl className="grace-fields">
           {facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
         </dl>
+        <OperationActions event={event} accounts={accounts} categories={categories} onChanged={onChanged} />
+        <OperationHistory event={event} accounts={accounts} categories={categories} />
         {receipt && <ReceiptDetails receipt={receipt} />}
-        {event.kind === 'purchase' && !receipt && <CreateReceiptForm purchase={event} />}
+        {event.kind === 'purchase' && !receipt && !event.voidedAt && <CreateReceiptForm purchase={event} />}
       </DialogContent>
     </Dialog>
   )

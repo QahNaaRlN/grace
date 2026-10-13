@@ -25,6 +25,8 @@ type ListFilter struct {
 	AccountID string
 	Kind      string
 	Query     string
+	// Voided lists only voided operations; otherwise they are excluded.
+	Voided bool
 }
 
 type DayTotal struct {
@@ -97,7 +99,10 @@ func (filter ListFilter) where(args *[]any) string {
 		*args = append(*args, value)
 		return fmt.Sprintf("$%d", len(*args))
 	}
-	conditions := []string{"TRUE"}
+	conditions := []string{"e.voided_at IS NULL"}
+	if filter.Voided {
+		conditions[0] = "e.voided_at IS NOT NULL"
+	}
 	switch filter.Category {
 	case "":
 	case "uncategorized":
@@ -112,7 +117,7 @@ func (filter ListFilter) where(args *[]any) string {
 		conditions = append(conditions, localDate+"<"+add(filter.To)+"::date")
 	}
 	if filter.AccountID != "" {
-		conditions = append(conditions, "EXISTS (SELECT 1 FROM postings f WHERE f.financial_event_id=e.id AND f.account_id::text="+add(filter.AccountID)+")")
+		conditions = append(conditions, "(SELECT bool_or(f.account_id::text="+add(filter.AccountID)+") FROM (SELECT account_id FROM postings WHERE financial_event_id=e.id UNION ALL SELECT account_id FROM voided_postings WHERE financial_event_id=e.id) f)")
 	}
 	if filter.Kind != "" {
 		conditions = append(conditions, "e.kind::text="+add(filter.Kind))
