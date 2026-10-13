@@ -20,6 +20,7 @@ import { formatMoney, eventTimeText, accountLabel, minorToInput, parseMinor } fr
 import { MoneyInput } from '@/shared/ui/money-input'
 import { PreviewPanel } from './PreviewPanel'
 import { MonthPanel } from './MonthPanel'
+import { NewDraftCard } from './NewDraftCard'
 
 type Record = components['schemas']['ImportRecord']
 type Decision = components['schemas']['ImportDecision']
@@ -39,8 +40,6 @@ export function ImportsPage() {
   const [domain, setDomain] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [recordId, setRecordId] = useState('')
-  const [file, setFile] = useState<File>()
-  const [sourceId, setSourceId] = useState('Финансовое здоровье')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -72,17 +71,9 @@ export function ImportsPage() {
     setPending(true); setError('')
     try { await run() } catch (err) { setError(message(err)) } finally { setPending(false) }
   }
-  async function upload() {
-    if (!file) return
-    if (file.name.toLowerCase().endsWith('.csv')) {
-      const { data, error: failure } = await apiClient.POST('/api/imports/csv', { body: '', bodySerializer: () => file, headers: { 'Content-Type': 'text/csv' }, params: { query: { sourceId }, header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() } } })
-      if (!data) throw new Error(failure?.code === 'invalid_csv' ? 'Не удалось прочитать CSV. Экспортируйте полный лист «Операции» в UTF-8 с исходными строками и столбцами A:O.' : failure?.message ?? 'CSV не сохранён.')
-      await cache.invalidateQueries({ queryKey: ['imports'] }); openBatch(data.id); setNotice('Сохранён черновик CSV. Выберите месяц и проверьте строки перед подтверждением.'); return
-    }
-    // Pass original bytes: parsing/re-serializing JSON would round source decimals.
-    const { data, error: failure } = await apiClient.POST('/api/imports/batches', { body: {} as components['schemas']['ImportSnapshot'], bodySerializer: () => file, params: { header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() } } })
-    if (!data) throw new Error(failure?.message ?? 'Снимок не сохранён. Проверьте формат и размер файла.')
-    await cache.invalidateQueries({ queryKey: ['imports'] }); openBatch(data.id); setNotice('Сохранён черновик. Финансовые операции ещё не созданы.')
+  // SPEC-0038: the new-draft card owns its own states and messages.
+  async function draftSaved(id: string) {
+    await cache.invalidateQueries({ queryKey: ['imports'] }); openBatch(id); setNotice('')
   }
   async function makePreview() {
     if (!batch.data) return
@@ -106,12 +97,7 @@ export function ImportsPage() {
     {error && <p role="alert" className="text-destructive">{error}</p>}
     {notice && <p role="status">{notice}</p>}
     {(batches.isPending || (batchId && (batch.isPending || records.isPending))) && <LoadingSkeleton label="Загружаем черновики…" />}
-    <Card><CardHeader><CardTitle>Новый черновик</CardTitle></CardHeader><CardContent className="space-y-3">
-      <Label htmlFor="snapshot">Таблица CSV или снимок JSON (до 16 MiB)</Label><Input id="snapshot" type="file" accept=".csv,.json,text/csv,application/json" onChange={event => setFile(event.target.files?.[0])} />
-      <Disclosure className="rounded-xl border p-3 text-sm" triggerClassName="min-h-11 content-center font-medium" title={<>Как подготовить файл</>}><p className="mt-2 leading-relaxed text-muted-foreground">Для CSV экспортируйте полный лист «Операции» из «Финансового здоровья»: UTF-8, столбцы A:O, заголовки в строке 4, данные с строки 5. CSV сохраняет значения; для формул и других листов используйте снимок JSON.</p></Disclosure>
-      {file?.name.toLowerCase().endsWith('.csv') && <div><Label htmlFor="csv-source">Название источника</Label><Input id="csv-source" maxLength={500} value={sourceId} onChange={event => setSourceId(event.target.value)} /></div>}
-      <Button disabled={pending || !file || file.name.toLowerCase().endsWith('.csv') && !sourceId.trim()} onClick={() => void action(upload)}>Сохранить черновик</Button>
-    </CardContent></Card>
+    <NewDraftCard onSaved={draftSaved} />
     <div className="flex flex-wrap gap-2" aria-label="Сохранённые черновики">
       {batches.data?.items.map(item => <Button key={item.id} variant={item.id === batchId ? 'default' : 'outline'} onClick={() => openBatch(item.id)}>{item.source.sourceId} · {item.status === 'completed' ? 'завершён' : 'на проверке'}</Button>)}
       {batches.data?.nextCursor && <Button variant="outline" onClick={() => setBatchCursor(batches.data!.nextCursor!)}>Другие черновики</Button>}
