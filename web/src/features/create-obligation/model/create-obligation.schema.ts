@@ -1,11 +1,19 @@
 import { z } from 'zod'
 
+import { parseMinor } from '@/shared/lib/finance-display'
+
+// SPEC-0036: amounts stay text until parseMinor turns them into integer minor units.
+const positiveAmount = (message: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, message)
+    .refine(value => parseMinor(value) !== null, 'Не больше двух знаков после запятой')
+    .refine(value => (parseMinor(value) ?? 0) > 0, 'Сумма должна быть больше нуля')
+
 const PaymentSchema = z.object({
   dueOn: z.string().min(1, 'Укажите дату'),
-  amount: z
-    .number({ message: 'Укажите сумму' })
-    .positive('Сумма должна быть больше нуля')
-    .multipleOf(0.01, 'Не больше двух знаков после запятой'),
+  amount: positiveAmount('Укажите сумму'),
 })
 
 export const CreateObligationSchema = z
@@ -13,17 +21,17 @@ export const CreateObligationSchema = z
     name: z.string().trim().min(1, 'Укажите название').max(200),
     kind: z.enum(['loan', 'installment', 'other_fixed']),
     currency: z.string().trim().length(3, 'Трёхбуквенный код валюты'),
-    total: z
-      .number({ message: 'Укажите общую сумму' })
-      .positive('Сумма должна быть больше нуля')
-      .multipleOf(0.01, 'Не больше двух знаков после запятой'),
+    total: positiveAmount('Укажите общую сумму'),
     payments: z.array(PaymentSchema).min(1, 'Добавьте хотя бы один платёж').max(600),
   })
   .superRefine((value, context) => {
-    const totalMinor = Math.round(value.total * 100)
-    const scheduleMinor = value.payments.reduce((sum, payment) => sum + Math.round(payment.amount * 100), 0)
-    if (totalMinor !== scheduleMinor) {
-      context.addIssue({ code: 'custom', path: ['payments'], message: 'Сумма графика должна совпадать с общей суммой' })
+    const totalMinor = parseMinor(value.total)
+    const amounts = value.payments.map(payment => parseMinor(payment.amount))
+    if (totalMinor !== null && amounts.every(amount => amount !== null)) {
+      const scheduleMinor = amounts.reduce((sum: bigint, amount) => sum + BigInt(amount ?? 0), 0n)
+      if (BigInt(totalMinor) !== scheduleMinor) {
+        context.addIssue({ code: 'custom', path: ['payments'], message: 'Сумма графика должна совпадать с общей суммой' })
+      }
     }
     for (let index = 1; index < value.payments.length; index += 1) {
       if (value.payments[index].dueOn <= value.payments[index - 1].dueOn) {

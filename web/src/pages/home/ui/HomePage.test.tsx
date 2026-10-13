@@ -77,7 +77,8 @@ describe('SPEC-0020', () => {
         ]}
       />,
     )
-    await user.type(screen.getByLabelText('Сумма (RUB)'), '1200,50')
+    await user.type(screen.getByLabelText('Сумма'), '1200,50')
+    expect(screen.getByLabelText('Сумма')).toHaveValue('1 200,50')
     await user.type(screen.getByLabelText('Описание / комментарий'), 'Пример')
     await user.click(
       screen.getByRole('button', { name: 'Посмотреть подтверждение' }),
@@ -108,7 +109,7 @@ describe('SPEC-0020', () => {
       screen.getByLabelText('Последние четыре цифры карты'),
       '0012',
     )
-    await user.type(screen.getByLabelText('Текущий остаток, ₽'), '100,01')
+    await user.type(screen.getByLabelText('Текущий остаток'), '100,01')
     await user.click(screen.getByRole('button', { name: 'Проверить данные' }))
     expect(post).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'Создать счёт' }))
@@ -144,6 +145,28 @@ describe('SPEC-0020', () => {
     expect(screen.getByText('Расчёт недоступен')).toBeVisible()
     expect(screen.queryByText(/999\s999/)).not.toBeInTheDocument()
     expect(screen.getByText('Банк *0012')).toBeVisible()
+  })
+})
+
+describe('SPEC-0036 header account action', () => {
+  it('does not offer the first account on the profile page', async () => {
+    get.mockImplementation(async (path: string) => ({
+      data:
+        path === '/api/auth/profile'
+          ? { id: 'u', displayName: 'Number One', firstName: '', lastName: '', email: null, avatarUrl: null }
+          : path === '/api/v1/analytics/cash-position'
+            ? { asOf: '2026-10-06', through: '2026-10-31', currencies: [] }
+            : { items: [] },
+    }))
+    render(
+      <MemoryRouter initialEntries={['/profile']}>
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <HomePage />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    )
+    expect(await screen.findByRole('heading', { name: 'Личные данные' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Добавить .*счёт/ })).not.toBeInTheDocument()
   })
 })
 

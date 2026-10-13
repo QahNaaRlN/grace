@@ -7,7 +7,8 @@ import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
-import { dateText, eventDateText, formatMoney, parseMinor } from '@/shared/lib/finance-display'
+import { dateText, eventDateText, formatMoney, minorToInput, parseMinor } from '@/shared/lib/finance-display'
+import { MoneyInput } from '@/shared/ui/money-input'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -64,7 +65,7 @@ function SubscriptionForm({initial,accounts,onSaved}:{initial?:Subscription;acco
  },onSuccess:()=>{toast.success('Подписка сохранена');onSaved()},onError:e=>toast.error(e.message)})
  return <form className="space-y-4" onSubmit={e=>{e.preventDefault();save.mutate(new FormData(e.currentTarget))}}>
   <div className="space-y-2"><Label htmlFor="sub-name">Название</Label><Input id="sub-name" name="name" defaultValue={initial?.name} required maxLength={160}/></div>
-  <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="sub-amount">Сумма</Label><Input id="sub-amount" name="amount" inputMode="decimal" defaultValue={initial?String(initial.amountMinor/100):''} required/></div><div className="space-y-2"><Label htmlFor="sub-currency">Валюта</Label><Input id="sub-currency" name="currency" defaultValue={initial?.currency??'RUB'} required maxLength={3} pattern="[A-Za-z]{3}"/></div></div>
+  <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="sub-amount">Сумма</Label><MoneyInput id="sub-amount" name="amount" defaultValue={initial?minorToInput(initial.amountMinor):''} required/></div><div className="space-y-2"><Label htmlFor="sub-currency">Валюта</Label><Input id="sub-currency" name="currency" defaultValue={initial?.currency??'RUB'} required maxLength={3} pattern="[A-Za-z]{3}"/></div></div>
   <div className="space-y-2"><Label htmlFor="sub-period">Период</Label><ChoiceSelect id="sub-period" value={period} onValueChange={v=>setPeriod(v as InputData['period'])}>{Object.entries(periodLabels).map(([v,label])=><option key={v} value={v}>{label}</option>)}</ChoiceSelect></div>
   <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="sub-start">Первое списание</Label><Input id="sub-start" name="start" type="date" defaultValue={initial?.startsOn} required/></div><div className="space-y-2"><Label htmlFor="sub-end">До даты · необязательно</Label><Input id="sub-end" name="end" type="date" defaultValue={initial?.endsOn??''}/></div></div>
   <div className="space-y-2"><Label htmlFor="sub-account">С какой карты или счёта</Label><ChoiceSelect id="sub-account" value={account} onValueChange={setAccount}><option value="">Не указывать</option>{accounts.flatMap(a=>[<option key={a.id} value={a.id}>{a.name} · счёт</option>,...(a.paymentInstruments??[]).map(c=><option key={c.id} value={c.id}>{c.bank} *{c.last4}</option>)])}</ChoiceSelect></div>

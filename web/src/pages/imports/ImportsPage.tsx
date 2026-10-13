@@ -16,7 +16,8 @@ import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
-import { formatMoney, eventTimeText, accountLabel } from '@/shared/lib/finance-display'
+import { formatMoney, eventTimeText, accountLabel, minorToInput, parseMinor } from '@/shared/lib/finance-display'
+import { MoneyInput } from '@/shared/ui/money-input'
 import { PreviewPanel } from './PreviewPanel'
 import { MonthPanel } from './MonthPanel'
 
@@ -156,6 +157,7 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
   const [eventId, setEventId] = useState(record.decision.action === 'link_existing' ? record.decision.eventId : '')
   const [canonicalRecordId, setCanonical] = useState(record.decision.action === 'duplicate_of' ? record.decision.canonicalRecordId : '')
   const [resolutions, setResolutions] = useState(record.decision.resolutions || [])
+  const [amountText, setAmountText] = useState(() => (fields.amountMinor ? minorToInput(fields.amountMinor) : ''))
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const accounts = useQuery({ queryKey: ['accounts', 'import-options'], queryFn: async () => (await apiClient.GET('/api/v1/accounts')).data })
@@ -168,7 +170,7 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
     try {
       const common = { reason, resolutions }
       const decision: Decision = action === 'create' ? { action, fields, ...common } : action === 'link_existing' ? { action, eventId, ...common } : action === 'duplicate_of' ? { action, canonicalRecordId, ...common } : { action, ...common }
-      if (action === 'create' && !Number.isSafeInteger(fields.amountMinor)) throw new Error('Укажите целую сумму в копейках, которую браузер может передать точно.')
+      if (action === 'create' && !(Number.isSafeInteger(fields.amountMinor) && fields.amountMinor > 0)) throw new Error('Укажите положительную сумму с точностью до копейки.')
       const { data, error: failure } = await apiClient.PATCH('/api/imports/batches/{batchId}/records/{recordId}', { params: { path: { batchId, recordId: record.id }, header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() } }, body: { expectedRevision: revision, decision } })
       if (!data) throw new Error(failure?.code === 'revision_conflict' ? 'Черновик изменился. Обновите страницу.' : 'Не удалось сохранить решение. Проверьте поля.')
       await onSaved()
@@ -182,7 +184,7 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
       <Label htmlFor="review-action">Решение</Label><ChoiceSelect id="review-action" value={action} onValueChange={value => setAction(value as Decision['action'])}>{['unresolved', 'create', 'link_existing', 'duplicate_of', 'exclude'].map(a => <option key={a} value={a}>{names[a]}</option>)}</ChoiceSelect>
       {action === 'create' && <div className="grid gap-3 sm:grid-cols-2">
         <div><Label htmlFor="kind">Вид операции</Label><ChoiceSelect id="kind" value={fields.kind} onValueChange={value => field('kind', value as Fields['kind'])}>{['purchase', 'income_received', 'debt_payment', 'internal_transfer', 'refund'].map(k => <option key={k} value={k}>{names[k]}</option>)}</ChoiceSelect></div>
-        <div><Label htmlFor="amount">Сумма в копейках</Label><Input id="amount" type="number" min="1" step="1" value={fields.amountMinor || ''} onChange={e => field('amountMinor', Number(e.target.value))} /></div>
+        <div><Label htmlFor="amount">Сумма</Label><MoneyInput id="amount" currency={/^[A-Z]{3}$/.test(fields.currency) ? fields.currency : undefined} value={amountText} onChange={e => { setAmountText(e.target.value); field('amountMinor', parseMinor(e.target.value) ?? Number.NaN) }} /></div>
         <div><Label htmlFor="currency">Валюта</Label><Input id="currency" maxLength={3} value={fields.currency} onChange={e => field('currency', e.target.value.toUpperCase())} /></div>
         <div className="sm:col-span-2"><label className="flex min-h-11 items-center gap-3"><Checkbox  checked={fields.occurredDate !== undefined} onCheckedChange={checked => setFields({ ...fields, occurredDate: checked ? record.source.normalized.date?.local.slice(0, 10) || '' : undefined, occurredAt: checked ? undefined : '' })} />Известен только день, время неизвестно</label></div>
         {fields.occurredDate !== undefined ? <div><Label htmlFor="occurredDate">Дата операции</Label><Input id="occurredDate" type="date" value={fields.occurredDate} onChange={e => field('occurredDate', e.target.value)} /></div> : <><div><Label htmlFor="occurredAt">Дата и время (с часовым поясом, например +05:00)</Label><Input id="occurredAt" placeholder="2026-10-06T12:30:00+05:00" value={fields.occurredAt || ''} onChange={e => field('occurredAt', e.target.value)} /></div><div><Label htmlFor="timeReason">Основание уточнения времени</Label><Input id="timeReason" value={fields.timeReason || ''} onChange={e => field('timeReason', e.target.value)} /></div></>}

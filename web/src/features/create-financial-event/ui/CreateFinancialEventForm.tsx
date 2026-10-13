@@ -13,6 +13,7 @@ import {
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import {
   Select,
@@ -238,13 +239,11 @@ export function CreateFinancialEventForm({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="event-amount">
-            Сумма{currency ? ` (${currency})` : ''}
-          </Label>
-          <Input
+          <Label htmlFor="event-amount">Сумма</Label>
+          <MoneyInput
             name="amount"
             id="event-amount"
-            inputMode="decimal"
+            currency={currency || undefined}
             required
             placeholder="0,00"
           />

@@ -21,6 +21,8 @@ import {
   CardTitle,
 } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
+import { MoneyInput } from '@/shared/ui/money-input'
+import { parseMinor } from '@/shared/lib/finance-display'
 import { Label } from '@/shared/ui/label'
 import {
   Select,
@@ -37,7 +39,7 @@ const kindLabels = {
 } as const
 
 function emptyPayment() {
-  return { dueOn: '', amount: Number.NaN }
+  return { dueOn: '', amount: '' }
 }
 
 export function CreateObligationForm() {
@@ -55,7 +57,7 @@ export function CreateObligationForm() {
       name: '',
       kind: 'installment',
       currency: 'RUB',
-      total: Number.NaN,
+      total: '',
       payments: [emptyPayment()],
     },
   })
@@ -64,6 +66,7 @@ export function CreateObligationForm() {
     name: 'payments',
   })
   const kind = useWatch({ control, name: 'kind' })
+  const currency = useWatch({ control, name: 'currency' })
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await apiClient.POST('/api/v1/obligations', {
@@ -77,10 +80,10 @@ export function CreateObligationForm() {
         name: values.name,
         kind: values.kind,
         currency: values.currency.toUpperCase(),
-        totalMinor: Math.round(values.total * 100),
+        totalMinor: parseMinor(values.total) as number,
         payments: values.payments.map((payment) => ({
           dueOn: payment.dueOn,
-          amountMinor: Math.round(payment.amount * 100),
+          amountMinor: parseMinor(payment.amount) as number,
         })),
       },
     })
@@ -96,7 +99,7 @@ export function CreateObligationForm() {
       name: '',
       kind: values.kind,
       currency: values.currency,
-      total: Number.NaN,
+      total: '',
       payments: [emptyPayment()],
     })
     toast.success('Обязательство сохранено')
@@ -148,12 +151,11 @@ export function CreateObligationForm() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="obligation-total">Общая сумма</Label>
-              <Input
+              <MoneyInput
                 id="obligation-total"
-                type="number"
-                min="0.01"
-                step="0.01"
-                {...register('total', { valueAsNumber: true })}
+                currency={currency}
+                aria-invalid={errors.total ? true : undefined}
+                {...register('total')}
               />
               {errors.total && (
                 <p className="text-sm text-destructive">
@@ -211,14 +213,11 @@ export function CreateObligationForm() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`payment-amount-${index}`}>Сумма</Label>
-                  <Input
+                  <MoneyInput
                     id={`payment-amount-${index}`}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    {...register(`payments.${index}.amount`, {
-                      valueAsNumber: true,
-                    })}
+                    currency={currency}
+                    aria-invalid={errors.payments?.[index]?.amount ? true : undefined}
+                    {...register(`payments.${index}.amount`)}
                   />
                   {errors.payments?.[index]?.amount && (
                     <p className="text-sm text-destructive">

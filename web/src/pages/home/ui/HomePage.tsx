@@ -984,12 +984,15 @@ export function HomePage() {
           <PageHeader title={title[path] ?? 'Обзор'} description={{'/':'Деньги и ближайшие дела — в одном месте.','/operations':'Покупки, поступления и переводы.','/accounts':'Счета, карты и подтверждённые остатки.','/payments':'Обязательства и ближайшие платежи.','/analytics':'Посмотрите, куда уходят деньги и как меняются траты.','/health':'Ближайшие обязательства, доступные деньги и качество данных.','/profile':'Личные данные, почта и управление доступом.'}[path]} status={error ? 'Часть данных недоступна' : pending ? 'Обновляем данные…' : undefined} />
           <div className="flex flex-wrap gap-3">
             <Dialog open={accountOpen} onOpenChange={setAccountOpen}>
-              <DialogTrigger asChild>
-                <Button className={!empty && path !== '/accounts' ? 'hidden' : undefined} variant={empty || path === '/accounts' ? 'default' : 'outline'}>
-                  <Plus className="size-4" />
-                  Добавить {empty ? 'первый ' : ''}счёт
-                </Button>
-              </DialogTrigger>
+              {/* SPEC-0036: only where money lives, never on profile or settings pages. */}
+              {(path === '/accounts' || (empty && ['/', '/operations', '/payments'].includes(path))) && (
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="size-4" />
+                    Добавить {empty ? 'первый ' : ''}счёт
+                  </Button>
+                </DialogTrigger>
+              )}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Новый счёт</DialogTitle>

@@ -25,6 +25,12 @@ import {
 } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { MoneyInput } from '@/shared/ui/money-input'
+import { parseMilli, parseMinor } from '@/shared/lib/finance-display'
+
+function emptyItem() {
+  return { name: '', quantity: '1', unitPrice: '', lineTotal: '' }
+}
 
 function localDateTime(value: string | null) {
   if (!value) return ''
@@ -49,14 +55,12 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
       seller: purchase.merchant,
       issuedAt: localDateTime(purchase.occurredAt),
       fiscalDocumentNumber: '',
-      items: [{ name: '', quantity: 1, unitPrice: Number.NaN, lineTotal: Number.NaN }],
+      items: [emptyItem()],
     },
   })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const watchedItems = useWatch({ control, name: 'items' })
-  const enteredTotalMinor = watchedItems.reduce((sum, item) => (
-    sum + (Number.isFinite(item.lineTotal) ? Math.round(item.lineTotal * 100) : 0)
-  ), 0)
+  const enteredTotalMinor = watchedItems.reduce((sum, item) => sum + (parseMinor(item.lineTotal ?? '') ?? 0), 0)
   const purchasePosting = purchase.postings.find((posting) => posting.direction === 'debit')
   const currency = purchasePosting?.currency ?? 'RUB'
   const purchaseAmountMinor = purchasePosting?.amountMinor ?? 0
@@ -75,9 +79,9 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
         fiscalDocumentNumber: values.fiscalDocumentNumber,
         items: values.items.map((item) => ({
           name: item.name,
-          quantityMilli: Math.round(item.quantity * 1000),
-          unitPriceMinor: Math.round(item.unitPrice * 100),
-          lineTotalMinor: Math.round(item.lineTotal * 100),
+          quantityMilli: parseMilli(item.quantity) as number,
+          unitPriceMinor: parseMinor(item.unitPrice) as number,
+          lineTotalMinor: parseMinor(item.lineTotal) as number,
         })),
       },
     })
@@ -135,15 +139,18 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`item-quantity-${field.id}`}>Количество</Label>
-                  <Input id={`item-quantity-${field.id}`} type="number" min="0.001" step="0.001" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
+                  <Input id={`item-quantity-${field.id}`} inputMode="decimal" className="tabular-nums" aria-invalid={errors.items?.[index]?.quantity ? true : undefined} {...register(`items.${index}.quantity`)} />
+                  {errors.items?.[index]?.quantity && <p className="text-xs text-destructive">{errors.items[index].quantity.message}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor={`item-price-${field.id}`}>Цена, ₽</Label>
-                  <Input id={`item-price-${field.id}`} type="number" min="0.01" step="0.01" {...register(`items.${index}.unitPrice`, { valueAsNumber: true })} />
+                  <Label htmlFor={`item-price-${field.id}`}>Цена</Label>
+                  <MoneyInput id={`item-price-${field.id}`} currency={currency} aria-invalid={errors.items?.[index]?.unitPrice ? true : undefined} {...register(`items.${index}.unitPrice`)} />
+                  {errors.items?.[index]?.unitPrice && <p className="text-xs text-destructive">{errors.items[index].unitPrice.message}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor={`item-total-${field.id}`}>Итого, ₽</Label>
-                  <Input id={`item-total-${field.id}`} type="number" min="0.01" step="0.01" {...register(`items.${index}.lineTotal`, { valueAsNumber: true })} />
+                  <Label htmlFor={`item-total-${field.id}`}>Итого</Label>
+                  <MoneyInput id={`item-total-${field.id}`} currency={currency} aria-invalid={errors.items?.[index]?.lineTotal ? true : undefined} {...register(`items.${index}.lineTotal`)} />
+                  {errors.items?.[index]?.lineTotal && <p className="text-xs text-destructive">{errors.items[index].lineTotal.message}</p>}
                 </div>
                 <Button className="self-end" type="button" variant="ghost" size="icon-sm" disabled={fields.length === 1} onClick={() => remove(index)}>
                   <Trash2 aria-hidden="true" />
@@ -153,7 +160,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
             ))}
           </div>
 
-          <Button type="button" variant="outline" onClick={() => append({ name: '', quantity: 1, unitPrice: Number.NaN, lineTotal: Number.NaN })}>
+          <Button type="button" variant="outline" onClick={() => append(emptyItem())}>
             <Plus aria-hidden="true" />
             Добавить позицию
           </Button>
