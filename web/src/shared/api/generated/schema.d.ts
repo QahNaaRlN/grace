@@ -1094,6 +1094,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/obligations/schedule-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SPEC-0037. Builds explicit payments from equal monthly payments, a pasted bank table or edited rows. Writes nothing; the result is saved through createObligation or a loan schedule draft. */
+        post: operations["previewObligationSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/obligations/{obligationId}": {
         parameters: {
             query?: never;
@@ -2284,6 +2301,50 @@ export interface components {
             /** Format: int64 */
             totalMinor: number;
             payments: components["schemas"]["CreateScheduledPayment"][];
+        };
+        SchedulePreviewRequest: {
+            /** @constant */
+            mode: "equal";
+            /** Format: date */
+            firstDueOn: string;
+            count: number;
+            /** @enum {string} */
+            interval: "monthly";
+            /** Format: int64 */
+            amountMinor: number;
+            /** Format: int64 */
+            firstAmountMinor?: number;
+            /** Format: int64 */
+            lastAmountMinor?: number;
+        } | {
+            /** @constant */
+            mode: "paste";
+            text: string;
+            /** @description Which money column after the date is the payment; default 1. */
+            amountColumn?: number;
+        } | {
+            /** @constant */
+            mode: "rows";
+            payments: {
+                dueOn: string;
+                /** Format: int64 */
+                amountMinor: number;
+            }[];
+        };
+        RejectedScheduleLine: {
+            line: number;
+            text: string;
+            reason: string;
+        };
+        SchedulePreview: {
+            payments: components["schemas"]["CreateScheduledPayment"][];
+            /** Format: int64 */
+            totalMinor: number;
+            /** Format: date */
+            firstDueOn?: string;
+            /** Format: date */
+            lastDueOn?: string;
+            rejectedLines: components["schemas"]["RejectedScheduleLine"][];
         };
         CreateScheduledPaymentSettlement: {
             /** Format: uuid */
@@ -5508,6 +5569,51 @@ export interface operations {
             403: components["responses"]["AuthenticationError"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["ValidationError"];
+            503: components["responses"]["AuthenticationError"];
+        };
+    };
+    previewObligationSchedule: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchedulePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Payments, their total computed by Grace, and rejected pasted lines */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchedulePreview"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            /** @description No payment could be recognised */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        code: "no_payments";
+                        message: string;
+                        rejectedLines: components["schemas"]["RejectedScheduleLine"][];
+                    };
+                };
+            };
             503: components["responses"]["AuthenticationError"];
         };
     };
