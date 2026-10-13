@@ -1,12 +1,12 @@
 # SPEC-0037: ввод длинных графиков платежей
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-13 в чате: «Принимаю все три спеки, начинай реализацию»
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: codex/long-schedule-entry
+- Implementation commit: b846159 ([evidence](0037-evidence.md))
 - Основа: замечание владельца 2026-10-13 — «вводить график неудобно,
   120+ строк, да даже 24+»; скриншот формы «Новое обязательство».
 
