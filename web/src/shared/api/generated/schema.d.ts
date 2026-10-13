@@ -952,6 +952,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/financial-events/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description SPEC-0041. Corrects an operation in place: descriptive fields always; amount, account and kind only without a receipt, settlement, subscription or refund link. Every change is kept in the history. */
+        patch: operations["correctFinancialEvent"];
+        trace?: never;
+    };
+    "/api/v1/financial-events/{eventId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SPEC-0041. Voids an operation: its postings move to an archive, so it no longer counts in balances or analytics; the record and history remain. */
+        post: operations["voidFinancialEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/{eventId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["financialEventHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/financial-events/purchases": {
         parameters: {
             query?: never;
@@ -2072,6 +2122,34 @@ export interface components {
             amountMinor: number;
             currency: string;
         };
+        FinancialEventCorrection: {
+            revision: number;
+            merchant?: string;
+            description?: string;
+            /** @description null clears it (not for a purchase) */
+            categoryId?: string | null;
+            /** Format: date-time */
+            occurredAt?: string;
+            /**
+             * Format: date
+             * @description Date-only; mutually exclusive with occurredAt
+             */
+            occurredDate?: string;
+            /**
+             * @description Only between these kinds
+             * @enum {string}
+             */
+            kind?: "purchase" | "income_received" | "debt_payment";
+            /** Format: int64 */
+            amountMinor?: number;
+            /** Format: uuid */
+            accountId?: string;
+            /**
+             * Format: uuid
+             * @description Transfers only
+             */
+            destinationAccountId?: string;
+        };
         FinancialEvent: {
             /** Format: uuid */
             id: string;
@@ -2082,6 +2160,10 @@ export interface components {
             categoryId?: string | null;
             categoryName?: string | null;
             categoryIcon?: components["schemas"]["CategoryIcon"] | null;
+            revision: number;
+            editedByUser: boolean;
+            voidedAt: string | null;
+            voidReason: string | null;
             originalEventId?: string | null;
             merchant: string;
             description: string;
@@ -2420,6 +2502,20 @@ export interface components {
         };
     };
     responses: {
+        /** @description Changed meanwhile, voided, or linked (links lists what blocks the change) */
+        FinancialEventConflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    code: "revision_conflict" | "voided" | "linked";
+                    message: string;
+                    links?: string[];
+                };
+            };
+        };
         /** @description Service temporarily unavailable; ordinary financial functions remain independent of AI. */
         InternalError: {
             headers: {
@@ -5387,6 +5483,8 @@ export interface operations {
                 cursor?: string;
                 /** @description Page size; default 100 */
                 limit?: number;
+                /** @description SPEC-0041. true lists only voided operations; otherwise they are excluded */
+                voided?: boolean;
             };
             header?: never;
             path?: never;
@@ -5418,6 +5516,116 @@ export interface operations {
             401: components["responses"]["AuthenticationError"];
             422: components["responses"]["ValidationError"];
             503: components["responses"]["AuthenticationError"];
+        };
+    };
+    correctFinancialEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FinancialEventCorrection"];
+            };
+        };
+        responses: {
+            /** @description Corrected operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinancialEvent"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["FinancialEventConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    voidFinancialEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    revision: number;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Voided operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinancialEvent"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["FinancialEventConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    financialEventHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Corrections, newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            revision: number;
+                            /** Format: date-time */
+                            createdAt: string;
+                            changes: {
+                                /** @enum {string} */
+                                field: "merchant" | "description" | "occurred" | "kind" | "category" | "amountMinor" | "account" | "destinationAccount" | "voided";
+                                before: unknown;
+                                after: unknown;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
         };
     };
     createPurchase: {

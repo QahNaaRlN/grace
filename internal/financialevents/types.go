@@ -25,6 +25,10 @@ type Event struct {
 	OccurredDate    *string    `json:"occurredDate"`
 	DatePrecision   string     `json:"datePrecision"`
 	CreatedAt       time.Time  `json:"createdAt"`
+	Revision        int        `json:"revision"`
+	EditedByUser    bool       `json:"editedByUser"`
+	VoidedAt        *time.Time `json:"voidedAt"`
+	VoidReason      *string    `json:"voidReason"`
 	Postings        []Posting  `json:"postings"`
 }
 

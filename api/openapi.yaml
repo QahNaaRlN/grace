@@ -1770,6 +1770,7 @@ paths:
         - { name: q, in: query, description: Case-insensitive substring of merchant or description, schema: { type: string, maxLength: 100 } }
         - { name: cursor, in: query, description: nextCursor of the previous page, schema: { type: string } }
         - { name: limit, in: query, description: Page size; default 100, schema: { type: integer, minimum: 1, maximum: 100 } }
+        - { name: voided, in: query, description: SPEC-0041. true lists only voided operations; otherwise they are excluded, schema: { type: boolean } }
       responses:
         '422':
           $ref: '#/components/responses/ValidationError'
@@ -1802,6 +1803,99 @@ paths:
                         currency: { type: string }
                         inflowMinor: { type: integer, format: int64, minimum: 0 }
                         outflowMinor: { type: integer, format: int64, minimum: 0 }
+  /api/v1/financial-events/{eventId}:
+    patch:
+      operationId: correctFinancialEvent
+      description: >-
+        SPEC-0041. Corrects an operation in place: descriptive fields always;
+        amount, account and kind only without a receipt, settlement,
+        subscription or refund link. Every change is kept in the history.
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { name: eventId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FinancialEventCorrection' }
+      responses:
+        '200':
+          description: Corrected operation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/FinancialEventConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/financial-events/{eventId}/void:
+    post:
+      operationId: voidFinancialEvent
+      description: >-
+        SPEC-0041. Voids an operation: its postings move to an archive, so it no
+        longer counts in balances or analytics; the record and history remain.
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { name: eventId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [revision, reason]
+              properties:
+                revision: { type: integer, minimum: 1 }
+                reason: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        '200':
+          description: Voided operation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/FinancialEventConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/financial-events/{eventId}/history:
+    get:
+      operationId: financialEventHistory
+      parameters:
+        - { name: eventId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Corrections, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [revision, changes, createdAt]
+                      properties:
+                        revision: { type: integer }
+                        createdAt: { type: string, format: date-time }
+                        changes:
+                          type: array
+                          items:
+                            type: object
+                            required: [field, before, after]
+                            properties:
+                              field: { type: string, enum: [merchant, description, occurred, kind, category, amountMinor, account, destinationAccount, voided] }
+                              before: {}
+                              after: {}
+        '401': { $ref: '#/components/responses/AuthenticationError' }
   /api/v1/financial-events/purchases:
     post:
       operationId: createPurchase
@@ -2187,6 +2281,17 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    FinancialEventConflict:
+      description: Changed meanwhile, voided, or linked (links lists what blocks the change)
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, message]
+            properties:
+              code: { type: string, enum: [revision_conflict, voided, linked] }
+              message: { type: string }
+              links: { type: array, items: { type: string } }
     InternalError:
       description: Service temporarily unavailable; ordinary financial functions remain independent of AI.
       content:
@@ -3478,9 +3583,24 @@ components:
         direction: { type: string, enum: [credit, debit] }
         amountMinor: { type: integer, format: int64, minimum: 1 }
         currency: { type: string }
+    FinancialEventCorrection:
+      type: object
+      additionalProperties: false
+      required: [revision]
+      properties:
+        revision: { type: integer, minimum: 1 }
+        merchant: { type: string, maxLength: 200 }
+        description: { type: string, maxLength: 500 }
+        categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }], description: null clears it (not for a purchase) }
+        occurredAt: { type: string, format: date-time }
+        occurredDate: { type: string, format: date, description: Date-only; mutually exclusive with occurredAt }
+        kind: { type: string, enum: [purchase, income_received, debt_payment], description: Only between these kinds }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        accountId: { type: string, format: uuid }
+        destinationAccountId: { type: string, format: uuid, description: Transfers only }
     FinancialEvent:
       type: object
-      required: [id, kind, source, merchant, description, occurredAt, createdAt, postings]
+      required: [id, kind, source, merchant, description, occurredAt, createdAt, postings, revision, editedByUser, voidedAt, voidReason]
       properties:
         id: { type: string, format: uuid }
         kind: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] }
@@ -3491,6 +3611,10 @@ components:
           oneOf:
             - { $ref: '#/components/schemas/CategoryIcon' }
             - { type: 'null' }
+        revision: { type: integer, minimum: 1 }
+        editedByUser: { type: boolean }
+        voidedAt: { oneOf: [{ type: string, format: date-time }, { type: 'null' }] }
+        voidReason: { oneOf: [{ type: string }, { type: 'null' }] }
         originalEventId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         merchant: { type: string }
         description: { type: string }
