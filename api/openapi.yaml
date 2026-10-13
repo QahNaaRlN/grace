@@ -1765,6 +1765,11 @@ paths:
         - { name: categoryId, in: query, description: Category UUID or uncategorized (purchases only); applied before the 100-event limit, schema: { type: string } }
         - { name: from, in: query, description: Inclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
         - { name: to, in: query, description: Exclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
+        - { name: accountId, in: query, description: SPEC-0043. Events with a posting on this account, schema: { type: string, format: uuid } }
+        - { name: kind, in: query, schema: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] } }
+        - { name: q, in: query, description: Case-insensitive substring of merchant or description, schema: { type: string, maxLength: 100 } }
+        - { name: cursor, in: query, description: nextCursor of the previous page, schema: { type: string } }
+        - { name: limit, in: query, description: Page size; default 100, schema: { type: integer, minimum: 1, maximum: 100 } }
       responses:
         '422':
           $ref: '#/components/responses/ValidationError'
@@ -1773,16 +1778,30 @@ paths:
         '503':
           $ref: '#/components/responses/AuthenticationError'
         '200':
-          description: Recent financial events with postings
+          description: >-
+            A page of financial events with postings, newest first, with totals
+            for every local day on the page computed over the whole filter.
           content:
             application/json:
               schema:
                 type: object
-                required: [items]
+                required: [items, nextCursor, dayTotals]
                 properties:
                   items:
                     type: array
                     items: { $ref: '#/components/schemas/FinancialEvent' }
+                  nextCursor: { oneOf: [{ type: string }, { type: 'null' }] }
+                  dayTotals:
+                    type: array
+                    items:
+                      type: object
+                      required: [date, currency, inflowMinor, outflowMinor]
+                      description: Internal transfers are excluded; with accountId only that account's postings count.
+                      properties:
+                        date: { type: string, format: date }
+                        currency: { type: string }
+                        inflowMinor: { type: integer, format: int64, minimum: 0 }
+                        outflowMinor: { type: integer, format: int64, minimum: 0 }
   /api/v1/financial-events/purchases:
     post:
       operationId: createPurchase
@@ -3468,6 +3487,10 @@ components:
         source: { type: string, enum: [manual, bank_import, receipt, import] }
         categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         categoryName: { oneOf: [{ type: string }, { type: 'null' }] }
+        categoryIcon:
+          oneOf:
+            - { $ref: '#/components/schemas/CategoryIcon' }
+            - { type: 'null' }
         originalEventId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         merchant: { type: string }
         description: { type: string }

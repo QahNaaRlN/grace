@@ -326,6 +326,7 @@ const eventQuery = `
 		e.source::text,
 		e.category_id::text,
 		c.name,
+		c.icon,
 		e.original_event_id::text,
 		e.merchant,
 		e.description,
@@ -368,7 +369,7 @@ func collectEvents(rows pgx.Rows) ([]Event, error) {
 		var posting Posting
 		if err := rows.Scan(
 			&event.ID, &event.Kind, &event.Source, &event.CategoryID, &event.CategoryName,
-			&event.OriginalEventID, &event.Merchant, &event.Description,
+			&event.CategoryIcon, &event.OriginalEventID, &event.Merchant, &event.Description,
 			&event.OccurredAt, &event.OccurredDate, &event.CreatedAt,
 			&posting.ID, &posting.AccountID, &posting.Account, &posting.Direction,
 			&posting.Amount, &posting.Currency,

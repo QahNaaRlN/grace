@@ -49,3 +49,14 @@ describe('SPEC-0032 responsive navigation', () => {
     expect(screen.getByRole('navigation', { name: 'Навигация' }).querySelector('a[aria-current="page"]')).toHaveAttribute('href', '/accounts')
   })
 })
+
+describe('SPEC-0043 profile in the sidebar', () => {
+  it('shows the avatar initial and name and links to the profile', async () => {
+    viewport(true)
+    const { AuthContext } = await import('@/shared/model/auth-context')
+    render(<MemoryRouter><AuthContext.Provider value={{ session: { user: { id: 'u', name: 'Number One', role: 'member', avatarUrl: null }, csrfToken: 't', mode: 'password' }, logout: async () => {}, revokeSessions: async () => {} }}><AppLayout><p>Содержимое</p></AppLayout></AuthContext.Provider></MemoryRouter>)
+    const link = screen.getByRole('link', { name: /Number One/ })
+    expect(link).toHaveAttribute('href', '/profile')
+    expect(link).toHaveTextContent('NNumber OneПрофиль и доступ')
+  })
+})

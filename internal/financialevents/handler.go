@@ -6,10 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/platform/web"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Handler struct{ repo *Repository }
@@ -22,12 +25,36 @@ func (handler *Handler) List(w http.ResponseWriter, r *http.Request) {
 		web.WriteError(w, 422, "validation_error", "Проверьте даты: конец периода не включается и должен быть позже начала.")
 		return
 	}
-	items, err := handler.repo.ListFiltered(r.Context(), 100, category, from, to)
+	query := r.URL.Query()
+	filter := ListFilter{Limit: 100, Cursor: query.Get("cursor"), Category: category, From: from, To: to,
+		AccountID: query.Get("accountId"), Kind: query.Get("kind"), Query: query.Get("q")}
+	if raw := query.Get("limit"); raw != "" {
+		limit, err := strconv.Atoi(raw)
+		if err != nil || limit < 1 || limit > 100 {
+			web.WriteError(w, 422, "validation_error", "Размер страницы — от 1 до 100.")
+			return
+		}
+		filter.Limit = limit
+	}
+	if filter.Kind != "" && !slices.Contains([]string{"purchase", "income_received", "debt_payment", "internal_transfer", "refund"}, filter.Kind) {
+		web.WriteError(w, 422, "validation_error", "Неизвестный вид операции.")
+		return
+	}
+	if len([]rune(filter.Query)) > 100 {
+		web.WriteError(w, 422, "validation_error", "Поисковый запрос — не больше 100 символов.")
+		return
+	}
+	page, err := handler.repo.ListPage(r.Context(), filter)
+	var dbErr *pgconn.PgError
+	if errors.Is(err, ErrInvalidCursor) || (errors.As(err, &dbErr) && dbErr.Code == "22P02") {
+		web.WriteError(w, 422, "invalid_cursor", "Список изменился. Обновите страницу.")
+		return
+	}
 	if err != nil {
 		web.WriteError(w, http.StatusInternalServerError, "internal_error", "Не удалось получить финансовые события.")
 		return
 	}
-	web.WriteJSON(w, http.StatusOK, map[string]any{"items": items})
+	web.WriteJSON(w, http.StatusOK, page)
 }
 
 func (handler *Handler) CreatePurchase(w http.ResponseWriter, r *http.Request) {
