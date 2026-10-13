@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Git Bash on Windows rewrites the migrate -path=/migrations argument into a host
+# path (#25); exclude only that argument so native tools still get /tmp and /dev/null.
+export MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:+$MSYS2_ARG_CONV_EXCL;}-path="
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
