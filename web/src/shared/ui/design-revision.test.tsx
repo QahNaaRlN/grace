@@ -55,6 +55,10 @@ describe('SPEC-0035 status', () => {
     expect(badge.querySelector('svg')).not.toBeNull()
     expect(badge).toHaveClass('bg-warning-subtle', 'text-warning')
   })
+  it('renders an unexpected tone as unknown instead of breaking the page', () => {
+    render(<StatusBadge tone={'pending' as never}>Статус неизвестен</StatusBadge>)
+    expect(screen.getByText('Статус неизвестен')).toHaveClass('bg-unknown-subtle')
+  })
 })
 
 describe('SPEC-0035 Button', () => {

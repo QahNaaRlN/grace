@@ -638,8 +638,8 @@ function Obligations({
                           {formatMoney(payment.remainingMinor, item.currency)}
                         </span>
                       </div>
-                      <StatusBadge tone={payment.isOverdue ? 'danger' : paymentStatusTones[payment.status]}>
-                        {paymentStatusLabels[payment.status]}
+                      <StatusBadge tone={payment.isOverdue ? 'danger' : paymentStatusTones[payment.status] ?? 'unknown'}>
+                        {paymentStatusLabels[payment.status] ?? 'Статус неизвестен'}
                         {payment.isOverdue &&
                         payment.status === 'partially_paid'
                           ? ' · просрочен'

@@ -30,7 +30,7 @@ export function Notice({
   action?: ReactNode
   className?: string
 }) {
-  const { icon: Icon, box, mark } = tones[tone]
+  const { icon: Icon, box, mark } = tones[tone] ?? tones.unknown
   return (
     <div
       data-slot="notice"
@@ -50,7 +50,8 @@ export function Notice({
 
 // A 24px state pill with a mandatory icon. Use plain Badge for kinds.
 export function StatusBadge({ tone, children, className }: { tone: Tone; children: ReactNode; className?: string }) {
-  const { icon: Icon, badge } = tones[tone]
+  // An unexpected tone renders as unknown rather than breaking the page.
+  const { icon: Icon, badge } = tones[tone] ?? tones.unknown
   return (
     <span
       data-slot="status-badge"
