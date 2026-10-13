@@ -123,7 +123,7 @@ export function ImportsPage() {
       <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
       <p>Операций по статусам: {Object.entries(batch.data.counts).map(([k, v]) => `${names[k] ?? k}: ${v}`).join(' · ')}</p>
       <p className="text-sm text-muted-foreground">Другие листы сохранены как свидетельства. Их данные не публикуются в финансовый журнал.</p>
-      <div className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:grid-cols-2" role="group" aria-label="Фильтры строк">
+      <div className="grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2" role="group" aria-label="Фильтры строк">
         <div className="space-y-2"><Label htmlFor="review-filter">Показать строки</Label><ChoiceSelect id="review-filter" value={status} onValueChange={value => { setStatus(value); setCursor('') }}><option value="">Все</option><option value="needs_review">Совпадения и вопросы в исходнике</option>{['unresolved', 'create', 'link_existing', 'duplicate_of', 'exclude', 'published'].map(s => <option key={s} value={s}>{names[s]}</option>)}</ChoiceSelect></div>
         <div className="space-y-2"><Label htmlFor="domain-filter">Листы</Label><ChoiceSelect id="domain-filter" value={domain} onValueChange={value => { setDomain(value); setCursor('') }}><option value="">Все</option><option value="transaction">Финансовые операции</option><option value="unsupported">Свидетельства без публикации</option></ChoiceSelect></div>
       </div>

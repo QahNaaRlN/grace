@@ -38,7 +38,7 @@ export function Overview({
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)]">
       <section
-        className="min-w-0 rounded-2xl bg-accent p-6 lg:col-start-1 lg:row-start-1"
+        className="min-w-0 rounded-2xl bg-secondary p-6 lg:col-start-1 lg:row-start-1"
         aria-labelledby="balance-title"
       >
         <h2 id="balance-title">После известных платежей</h2>
@@ -84,7 +84,7 @@ export function Overview({
         </p>
       </section>
       {late.length > 0 && (
-        <section className="min-w-0 rounded-2xl border border-border/70 bg-card p-6 lg:col-start-2 lg:row-start-1">
+        <section className="min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 lg:row-start-1">
           <h2 className="flex items-center gap-2">
             <CircleAlert
               aria-hidden="true"
@@ -113,7 +113,7 @@ export function Overview({
           </div>
         </section>
       )}
-      <section className={`min-w-0 rounded-2xl border border-border/70 bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-2' : 'lg:row-start-1'}`}>
+      <section className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-2' : 'lg:row-start-1'}`}>
         <h2>Ближайшие платежи</h2>
         {failed ? (
           <p className="mt-4 text-muted-foreground">
@@ -154,7 +154,7 @@ export function Overview({
           </Button>
         </div>
       </section>
-      <section className="min-w-0 rounded-2xl border border-border/70 bg-card p-6 lg:col-start-1 lg:row-start-2">
+      <section className="min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-1 lg:row-start-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2>Последние операции</h2>
           <Button variant="ghost" asChild>
@@ -202,7 +202,7 @@ export function Overview({
           <p className="mt-4 text-muted-foreground">Операций пока нет.</p>
         )}
       </section>
-      <section className={`min-w-0 rounded-2xl border border-border/70 bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-3' : 'lg:row-start-2'}`}>
+      <section className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-3' : 'lg:row-start-2'}`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2>Счета и карты</h2>
           <Button variant="ghost" asChild>

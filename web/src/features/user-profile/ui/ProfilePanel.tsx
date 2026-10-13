@@ -144,10 +144,10 @@ function ProfileForm({ profile }: { profile: Profile }) {
   }
   return (
     <div className="grid items-start gap-6 xl:grid-cols-2">
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Личные данные</h2>
         <div className="mt-5 flex flex-wrap items-center gap-5">
-          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-3xl text-primary">
+          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-3xl text-primary">
             {profile.avatarUrl ? (
               <img
                 src={env.VITE_API_BASE_URL + profile.avatarUrl}
@@ -247,7 +247,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
         </form>
         {feedback('personal')}
       </section>
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Почта и вход</h2>
         <p className="mt-3 break-words">
           {profile.email ?? 'Почта пока не привязана'}
@@ -316,7 +316,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
         </form>
         {feedback('email')}
       </section>
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Доступ и сеансы</h2>
         <div className="grace-actions">
           <AuthActions />
