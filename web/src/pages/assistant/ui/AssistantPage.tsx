@@ -1,3 +1,4 @@
+import { Money } from '@/shared/ui/money'
 import { PageHeader } from '@/shared/ui/page-header'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { AIGuide } from './AIGuide'
@@ -109,7 +110,7 @@ function CompletedResult({ result }: { result: AssistantCompleted }) {
                   <AccountIcon type={account.type} />
                   <p className="text-sm text-muted-foreground">{account.currency}</p>
                   <h4 className="font-semibold">{accountLabel(account)}</h4>
-                  <p className="mt-2 text-xl font-semibold">{formatMoney(account.balanceMinor, account.currency)}</p>
+                  <p className="mt-2"><Money valueMinor={account.balanceMinor} currency={account.currency} /></p>
                 </article>
               ))}
             </div>
@@ -320,7 +321,7 @@ export function AssistantPage({ submitAssistant = queryAssistant }: { submitAssi
       <AIGuide />
       <Disclosure title="Быстрые запросы к данным Grace">
 
-        <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-sm leading-relaxed text-accent-foreground shadow-sm sm:p-5">
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary p-4 text-sm leading-relaxed text-secondary-foreground shadow-sm sm:p-5">
           <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card"><ShieldCheck className="size-5" aria-hidden="true" /></div>
           <p><span className="font-semibold">Перед отправкой:</span> текст текущего вопроса, язык и время передаются TypeSafe. Финансовые записи и результаты инструментов провайдеру не отправляются.</p>
         </div>

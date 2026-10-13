@@ -1,13 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import {
   CreateObligationSchema,
   type CreateObligationValues,
 } from '@/features/create-obligation/model/create-obligation.schema'
+import { previewSchedule } from '@/features/schedule-builder/api/preview-schedule'
+import { rowsForPreview, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
+import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
@@ -20,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card'
+import { Field } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
@@ -36,12 +40,10 @@ const kindLabels = {
   other_fixed: 'Другое фиксированное',
 } as const
 
-function emptyPayment() {
-  return { dueOn: '', amount: Number.NaN }
-}
-
 export function CreateObligationForm() {
   const queryClient = useQueryClient()
+  const [rows, setRows] = useState<ScheduleRow[]>([])
+  const [scheduleError, setScheduleError] = useState('')
   const {
     control,
     register,
@@ -51,21 +53,28 @@ export function CreateObligationForm() {
     formState: { errors, isSubmitting },
   } = useForm<CreateObligationValues>({
     resolver: zodResolver(CreateObligationSchema),
-    defaultValues: {
-      name: '',
-      kind: 'installment',
-      currency: 'RUB',
-      total: Number.NaN,
-      payments: [emptyPayment()],
-    },
-  })
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'payments',
+    defaultValues: { name: '', kind: 'installment', currency: 'RUB' },
   })
   const kind = useWatch({ control, name: 'kind' })
+  const currency = useWatch({ control, name: 'currency' })
 
   const onSubmit = handleSubmit(async (values) => {
+    setScheduleError('')
+    if (rows.length === 0) {
+      setScheduleError('Добавьте хотя бы один платёж.')
+      return
+    }
+    // Go validates the rows and computes the total that the API must match.
+    const checked = await previewSchedule({ mode: 'rows', payments: rowsForPreview(rows) })
+    if (!checked.ok || checked.preview.rejectedLines.length > 0) {
+      const lines = checked.ok ? checked.preview.rejectedLines : checked.rejectedLines
+      setScheduleError(
+        lines.length
+          ? `Исправьте график: ${lines.map(line => `строка ${line.line} — ${line.reason}`).join('; ')}.`
+          : checked.ok ? '' : checked.message,
+      )
+      return
+    }
     const result = await apiClient.POST('/api/v1/obligations', {
       params: {
         header: {
@@ -77,11 +86,8 @@ export function CreateObligationForm() {
         name: values.name,
         kind: values.kind,
         currency: values.currency.toUpperCase(),
-        totalMinor: Math.round(values.total * 100),
-        payments: values.payments.map((payment) => ({
-          dueOn: payment.dueOn,
-          amountMinor: Math.round(payment.amount * 100),
-        })),
+        totalMinor: checked.preview.totalMinor,
+        payments: checked.preview.payments,
       },
     })
     if (result.error) {
@@ -92,13 +98,8 @@ export function CreateObligationForm() {
       queryClient.invalidateQueries({ queryKey: ['obligations'] }),
       queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
     ])
-    reset({
-      name: '',
-      kind: values.kind,
-      currency: values.currency,
-      total: Number.NaN,
-      payments: [emptyPayment()],
-    })
+    reset({ name: '', kind: values.kind, currency: values.currency })
+    setRows([])
     toast.success('Обязательство сохранено')
   })
 
@@ -108,24 +109,15 @@ export function CreateObligationForm() {
         <CardTitle>Новое обязательство</CardTitle>
         <CardDescription>
           График планирует будущие платежи и сам по себе не меняет остатки.
+          Итог считается по графику.
         </CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="obligation-name">Название</Label>
-              <Input
-                id="obligation-name"
-                placeholder="Рассрочка на ноутбук"
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
+            <Field label="Название" error={errors.name?.message}>
+              <Input id="obligation-name" placeholder="Рассрочка на ноутбук" {...register('name')} />
+            </Field>
             <div className="grid gap-2">
               <Label htmlFor="obligation-kind">Тип</Label>
               <Select
@@ -146,105 +138,26 @@ export function CreateObligationForm() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="obligation-total">Общая сумма</Label>
-              <Input
-                id="obligation-total"
-                type="number"
-                min="0.01"
-                step="0.01"
-                {...register('total', { valueAsNumber: true })}
-              />
-              {errors.total && (
-                <p className="text-sm text-destructive">
-                  {errors.total.message}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="obligation-currency">Валюта</Label>
-              <Input
-                id="obligation-currency"
-                maxLength={3}
-                {...register('currency')}
-              />
-              {errors.currency && (
-                <p className="text-sm text-destructive">
-                  {errors.currency.message}
-                </p>
-              )}
-            </div>
+            <Field label="Валюта" error={errors.currency?.message}>
+              <Input id="obligation-currency" maxLength={3} {...register('currency')} />
+            </Field>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <Label>График</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => append(emptyPayment())}
-              >
-                <Plus aria-hidden="true" className="mr-1 size-4" /> Добавить
-                платёж
-              </Button>
-            </div>
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_auto]"
-              >
-                <div className="grid gap-2">
-                  <Label htmlFor={`payment-date-${index}`}>
-                    Дата #{index + 1}
-                  </Label>
-                  <Input
-                    id={`payment-date-${index}`}
-                    type="date"
-                    {...register(`payments.${index}.dueOn`)}
-                  />
-                  {errors.payments?.[index]?.dueOn && (
-                    <p className="text-sm text-destructive">
-                      {errors.payments[index].dueOn.message}
-                    </p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor={`payment-amount-${index}`}>Сумма</Label>
-                  <Input
-                    id={`payment-amount-${index}`}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    {...register(`payments.${index}.amount`, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  {errors.payments?.[index]?.amount && (
-                    <p className="text-sm text-destructive">
-                      {errors.payments[index].amount.message}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="self-end"
-                  disabled={fields.length === 1}
-                  onClick={() => remove(index)}
-                  aria-label={`Удалить платёж ${index + 1}`}
-                >
-                  <Trash2 aria-hidden="true" className="size-4" />
-                </Button>
-              </div>
-            ))}
-            {errors.payments?.message && (
-              <p className="text-sm text-destructive">
-                {errors.payments.message}
-              </p>
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium">График</legend>
+            <ScheduleBuilder
+              rows={rows}
+              onChange={next => {
+                setRows(next)
+                setScheduleError('')
+              }}
+              currency={currency}
+              idPrefix="obligation-schedule"
+            />
+            {scheduleError && (
+              <p role="alert" className="text-sm text-destructive">{scheduleError}</p>
             )}
-          </div>
+          </fieldset>
         </CardContent>
         <CardFooter>
           <Button

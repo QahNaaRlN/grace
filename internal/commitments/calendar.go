@@ -1,23 +1,14 @@
 package commitments
 
-import "time"
+import (
+	"time"
+
+	"github.com/QahNaaRlN/grace/internal/platform/calendar"
+)
 
 // Occurrence preserves the original day even after February or a short month.
 func Occurrence(anchor time.Time, period string, n int) time.Time {
-	if period == "weekly" {
-		return anchor.AddDate(0, 0, 7*n)
-	}
-	months := n
-	if period == "yearly" {
-		months *= 12
-	}
-	first := time.Date(anchor.Year(), anchor.Month()+time.Month(months), 1, 0, 0, 0, 0, anchor.Location())
-	last := first.AddDate(0, 1, -1).Day()
-	day := anchor.Day()
-	if day > last {
-		day = last
-	}
-	return first.AddDate(0, 0, day-1)
+	return calendar.Occurrence(anchor, period, n)
 }
 
 func NextDate(start, period, end, asOf string, paused bool) *string {

@@ -6,6 +6,7 @@ import { csrfToken } from '@/shared/model/auth-session'
 import { parseMinor, formatMoney } from '@/shared/lib/finance-display'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import {
   Select,
@@ -154,11 +155,12 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         )}
         <div className="space-y-2">
           <label className="flex min-h-11 cursor-pointer items-center gap-3"><Checkbox  checked={unreconciled} onCheckedChange={checked => setUnreconciled(checked)} />Остаток пока не сверён</label>
-          <Label htmlFor="new-balance">{unreconciled ? "Известный начальный остаток, ₽ (необязательно)" : "Текущий остаток, ₽"}</Label>
-          <Input
+          <Label htmlFor="new-balance">{unreconciled ? "Известный начальный остаток (необязательно)" : "Текущий остаток"}</Label>
+          <MoneyInput
             id="new-balance"
             name="balance"
-            inputMode="decimal"
+            currency="RUB"
+            allowNegative
             required={!unreconciled}
             placeholder="0,00"
           />

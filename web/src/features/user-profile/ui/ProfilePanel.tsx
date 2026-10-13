@@ -11,6 +11,9 @@ import { Label } from '@/shared/ui/label'
 import { AuthActions } from '@/shared/ui/layout/AuthActions'
 
 type Profile = components['schemas']['UserProfile']
+type Session = components['schemas']['AuthSession']
+type Area = 'personal' | 'email'
+type Status = { area: Area; kind: 'notice' | 'error'; text: string }
 async function loadProfile() {
   const { data } = await apiClient.GET('/api/auth/profile')
   if (!data) throw new Error('Не удалось загрузить профиль.')
@@ -26,29 +29,52 @@ function ProfileForm({ profile }: { profile: Profile }) {
     [code, setCode] = useState(''),
     [emailStep, setEmailStep] = useState(false)
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState(''),
-    [notice, setNotice] = useState('')
+    [status, setStatus] = useState<Status | null>(null)
   const working = useRef(false)
-  async function action(run: () => Promise<void>) {
+  const dirty =
+    firstName.trim() !== profile.firstName ||
+    lastName.trim() !== profile.lastName ||
+    displayName.trim() !== profile.displayName
+  // SPEC-0036: feedback lands in the card whose action produced it.
+  async function action(area: Area, run: () => Promise<string>) {
     if (working.current) return
     working.current = true
     setBusy(true)
-    setError('')
-    setNotice('')
+    setStatus(null)
     try {
-      await run()
+      setStatus({ area, kind: 'notice', text: await run() })
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Не удалось выполнить действие.',
-      )
+      setStatus({
+        area,
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'Не удалось выполнить действие.',
+      })
     } finally {
       working.current = false
       setBusy(false)
     }
   }
+  // The POST response already carries the new name and avatar: update the
+  // session in place instead of refetching /api/auth/me after every save.
   function update(data: Profile) {
     cache.setQueryData(['user-profile'], data)
-    void cache.invalidateQueries({ queryKey: ['auth-session'] })
+    cache.setQueryData<Session | null>(['auth-session'], (current) =>
+      current
+        ? { ...current, user: { ...current.user, name: data.displayName, avatarUrl: data.avatarUrl } }
+        : current,
+    )
+  }
+  function feedback(area: Area) {
+    if (status?.area !== area) return null
+    return status.kind === 'error' ? (
+      <p role="alert" className="mt-4 text-sm text-destructive">
+        {status.text}
+      </p>
+    ) : (
+      <p role="status" className="mt-4 text-sm text-success">
+        {status.text}
+      </p>
+    )
   }
   const headers = { 'X-CSRF-Token': csrfToken }
   async function saveNames() {
@@ -62,7 +88,11 @@ function ProfileForm({ profile }: { profile: Profile }) {
     })
     if (!data) throw new Error(failure?.message ?? 'Профиль не сохранён.')
     update(data)
-    setNotice('Профиль сохранён.')
+    setFirst(data.firstName)
+    setLast(data.lastName)
+    setDisplay(data.displayName)
+    setCustomName(false)
+    return 'Профиль сохранён.'
   }
   async function upload(file: File) {
     if (file.size > 2 * 1024 * 1024)
@@ -79,7 +109,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
     )
     if (!data) throw new Error(failure?.message ?? 'Аватар не сохранён.')
     update(data)
-    setNotice('Аватар обновлён.')
+    return 'Аватар обновлён.'
   }
   async function remove() {
     const { response, error: failure } = await apiClient.DELETE(
@@ -88,8 +118,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
     )
     if (!response.ok)
       throw new Error(failure?.message ?? 'Не удалось удалить аватар.')
-    await cache.invalidateQueries({ queryKey: ['user-profile'] })
-    setNotice('Аватар удалён.')
+    update({ ...profile, avatarUrl: null })
+    return 'Аватар удалён.'
   }
   async function requestEmail() {
     const { data, error: failure } = await apiClient.POST(
@@ -98,6 +128,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
     )
     if (!data) throw new Error(failure?.message ?? 'Не удалось отправить код.')
     setEmailStep(true)
+    return `Код отправлен на ${email}.`
   }
   async function verifyEmail() {
     const { response, error: failure } = await apiClient.POST(
@@ -109,14 +140,14 @@ function ProfileForm({ profile }: { profile: Profile }) {
     setEmailStep(false)
     setCode('')
     await cache.invalidateQueries({ queryKey: ['user-profile'] })
-    setNotice('Почта подтверждена. Другие сеансы завершены.')
+    return 'Почта подтверждена. Другие сеансы завершены.'
   }
   return (
     <div className="grid items-start gap-6 xl:grid-cols-2">
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Личные данные</h2>
         <div className="mt-5 flex flex-wrap items-center gap-5">
-          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-3xl text-primary">
+          <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-title-1 text-primary">
             {profile.avatarUrl ? (
               <img
                 src={env.VITE_API_BASE_URL + profile.avatarUrl}
@@ -136,7 +167,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
               disabled={busy}
               onChange={(e) => {
                 const file = e.target.files?.[0]
-                if (file) void action(() => upload(file))
+                if (file) void action('personal', () => upload(file))
                 e.target.value = ''
               }}
             />
@@ -147,7 +178,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
               <Button
                 variant="outline"
                 disabled={busy}
-                onClick={() => void action(remove)}
+                onClick={() => void action('personal', remove)}
               >
                 Удалить аватар
               </Button>
@@ -158,7 +189,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
           className="mt-6 space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
-            void action(saveNames)
+            if (dirty) void action('personal', saveNames)
           }}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -209,13 +240,14 @@ function ProfileForm({ profile }: { profile: Profile }) {
             />
           </div>
           <div className="grace-actions">
-            <Button type="submit" disabled={busy || !displayName.trim()}>
+            <Button type="submit" disabled={busy || !dirty || !displayName.trim()}>
               {busy ? 'Сохранение…' : 'Сохранить профиль'}
             </Button>
           </div>
         </form>
+        {feedback('personal')}
       </section>
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Почта и вход</h2>
         <p className="mt-3 break-words">
           {profile.email ?? 'Почта пока не привязана'}
@@ -233,7 +265,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
           className="mt-5 space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
-            void action(emailStep ? verifyEmail : requestEmail)
+            void action('email', emailStep ? verifyEmail : requestEmail)
           }}
         >
           {emailStep ? (
@@ -282,18 +314,9 @@ function ProfileForm({ profile }: { profile: Profile }) {
             )}
           </div>
         </form>
+        {feedback('email')}
       </section>
-      {error && (
-        <p role="alert" className="rounded-xl border p-4 text-destructive">
-          {error}
-        </p>
-      )}
-      {notice && (
-        <p role="status" className="rounded-xl border p-4">
-          {notice}
-        </p>
-      )}
-      <section className="rounded-2xl border border-border/70 bg-card p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Доступ и сеансы</h2>
         <div className="grace-actions">
           <AuthActions />

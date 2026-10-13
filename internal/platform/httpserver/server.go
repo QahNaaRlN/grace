@@ -158,6 +158,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Get("/obligations", obligationsHandler.List)
 		router.Get("/obligations/{obligationId}", obligationsHandler.Get)
 		router.Post("/obligations", obligationsHandler.Create)
+		router.Post("/obligations/schedule-preview", obligationsHandler.PreviewSchedule)
 		router.Post("/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements", obligationsHandler.CreateSettlement)
 		router.Get("/analytics/period-summary", analyticsHandler.PeriodSummary)
 		router.Get("/analytics/statistics", analyticsHandler.Statistics)

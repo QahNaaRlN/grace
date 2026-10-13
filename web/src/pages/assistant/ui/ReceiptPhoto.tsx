@@ -1,3 +1,4 @@
+import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState } from 'react'
 import type { components } from '@/shared/api/generated/schema'
 import { apiClient } from '@/shared/api/client'
@@ -5,6 +6,8 @@ import { csrfToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
+import { MoneyInput } from '@/shared/ui/money-input'
+import { ungroupAmount } from '@/shared/lib/amount-text'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
@@ -111,11 +114,13 @@ export function ReceiptPhoto() {
         <div><Label htmlFor="receipt-seller">Магазин</Label><Input id="receipt-seller" value={fields.seller ?? ''} onChange={e => change('seller', e.target.value || null)} /></div>
         <div><Label htmlFor="receipt-date">Дата чека · время неизвестно</Label><Input id="receipt-date" type="date" value={fields.issuedDate ?? ''} onChange={e => { change('issuedDate', e.target.value || null); change('issuedAt', null) }} /></div>
         <div><Label htmlFor="receipt-currency">Валюта чека</Label><ChoiceSelect id="receipt-currency"  value={fields.currency ?? ''} onValueChange={value => change('currency', value || null)}><option value="">Не определена</option><option value="RUB">Российский рубль · RUB</option>{fields.currency && fields.currency !== 'RUB' && <option value={fields.currency} disabled>{fields.currency} · пока не поддерживается</option>}</ChoiceSelect></div>
-        <div><Label htmlFor="receipt-total">Итог{fields.currency === 'RUB' ? ', ₽' : ''}</Label><Input id="receipt-total" inputMode="decimal" value={fields.total ?? ''} onChange={e => change('total', e.target.value || null)} /></div>
+        <div><Label htmlFor="receipt-total">Итог</Label><MoneyInput id="receipt-total" currency={fields.currency ?? undefined} value={fields.total ?? ''} onChange={e => change('total', ungroupAmount(e.target.value) || null)} /></div>
         <div><Label htmlFor="receipt-account">Счёт оплаты</Label><ChoiceSelect id="receipt-account"  value={fields.accountId} onValueChange={value => change('accountId', value)}><option value="">Выбери счёт</option>{accounts.filter(a => a.currency === 'RUB').map(a => <option key={a.id} value={a.id}>{accountLabel(a)}</option>)}</ChoiceSelect></div>
         <div><Label htmlFor="receipt-category">Категория</Label><ChoiceSelect id="receipt-category"  value={fields.categoryId ?? ''} onValueChange={value => change('categoryId', value || null)}><option value="">Выбери категорию расхода</option>{categories.filter(c => c.kind === 'expense').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</ChoiceSelect></div>
         <p className="text-sm font-medium">Позиции · неизвестные поля заполни по чеку</p>
-        {fields.items.map((item, index) => <div key={index} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2">{(['name', 'quantity', 'unitPrice', 'lineTotal', 'discount', 'brand', 'package', 'broadGroup'] as const).map((key, i) => <div key={key}><Label htmlFor={`receipt-${index}-${key}`}>{['Название', 'Количество', 'Цена, ₽', 'Итог позиции, ₽', 'Скидка позиции, ₽', 'Бренд', 'Упаковка', 'Группа товара'][i]}</Label><Input id={`receipt-${index}-${key}`} value={item[key] ?? ''} onChange={e => change('items', fields.items.map((v, j) => j === index ? { ...v, [key]: e.target.value || null } : v))} /></div>)}<Button variant="ghost" onClick={() => change('items', fields.items.filter((_, j) => j !== index))}>Удалить позицию</Button></div>)}
+        {fields.items.map((item, index) => <div key={index} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2">{(['name', 'quantity', 'unitPrice', 'lineTotal', 'discount', 'brand', 'package', 'broadGroup'] as const).map((key, i) => <div key={key}><Label htmlFor={`receipt-${index}-${key}`}>{['Название', 'Количество', 'Цена', 'Итог позиции', 'Скидка позиции', 'Бренд', 'Упаковка', 'Группа товара'][i]}</Label>{key === 'unitPrice' || key === 'lineTotal' || key === 'discount'
+          ? <MoneyInput id={`receipt-${index}-${key}`} currency="RUB" value={item[key] ?? ''} onChange={e => change('items', fields.items.map((v, j) => j === index ? { ...v, [key]: ungroupAmount(e.target.value) || null } : v))} />
+          : <Input id={`receipt-${index}-${key}`} inputMode={key === 'quantity' ? 'decimal' : undefined} value={item[key] ?? ''} onChange={e => change('items', fields.items.map((v, j) => j === index ? { ...v, [key]: e.target.value || null } : v))} />}</div>)}<Button variant="ghost" onClick={() => change('items', fields.items.filter((_, j) => j !== index))}>Удалить позицию</Button></div>)}
         <Button variant="outline" disabled={fields.items.length >= 50} onClick={() => change('items', [...fields.items, { ...emptyItem }])}>Добавить позицию</Button>
         <div><Label htmlFor="receipt-action">Как сохранить</Label><ChoiceSelect id="receipt-action"  value={fields.action} onValueChange={value => change('action', value)}><option value="">Выбери действие</option><option value="create">Создать новый расход</option><option value="link_existing">Добавить чек к существующей покупке</option></ChoiceSelect></div>
         {fields.action === 'link_existing' && <p className="text-sm">Выбери покупку из совпадений ниже. Для поиска сначала покажи результат с действием «Создать новый расход».</p>}
@@ -126,7 +131,7 @@ export function ReceiptPhoto() {
         <p className="font-medium">{preview.action === 'create' ? `Будет создан один расход на ${rubles(preview.amountMinor)}.` : 'Чек будет добавлен к покупке. Баланс не изменится.'}</p>
         <p className="text-sm">{fields?.seller} · {fields?.issuedDate ?? fields?.issuedAt} · {accounts.find(a => a.id === preview.accountId)?.name}</p>
         {preview.candidates.length > 0 && <div><p className="font-medium">Возможные совпадения</p>{preview.candidates.map(c => <div key={c.eventId} className="space-y-2 py-2"><p className="text-sm">{c.description}{c.hasReceipt ? ' · чек уже есть' : ''}</p><Button disabled={busy || c.hasReceipt} variant="outline" onClick={() => { change('action', 'link_existing'); change('existingEventId', c.eventId) }}>Добавить чек к этой покупке</Button></div>)}</div>}
-        {preview.warnings.length > 0 && <p role="alert">Проверь совпадения и укажи причину создания отдельного расхода.</p>}
+        {preview.warnings.length > 0 && <Notice tone="warning" title="Есть похожие покупки">Проверь совпадения и укажи причину создания отдельного расхода.</Notice>}
         <Button disabled={busy || preview.warnings.length > 0} onClick={() => void run(confirm)}>{preview.action === 'create' ? 'Подтвердить расход' : 'Добавить чек к покупке'}</Button>
       </div>}
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

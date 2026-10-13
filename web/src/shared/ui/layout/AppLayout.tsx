@@ -81,21 +81,22 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const allLinks = [...mainLinks, ...moreLinks]
   const navClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring',
+      'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+      // SPEC-0035: the current section is `selected`, never the hover fill.
       isActive
-        ? 'bg-accent text-primary'
+        ? 'bg-selected font-semibold text-selected-foreground'
         : 'text-muted-foreground hover:bg-accent hover:text-foreground',
     )
   return (
     <div className="min-h-dvh lg:pl-60">
       <a href="#main-content" className="sr-only fixed top-3 left-3 z-[100] rounded-xl bg-primary px-4 py-3 text-primary-foreground focus:not-sr-only">Перейти к содержимому</a>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-border/70 bg-card p-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-border bg-card p-5 lg:flex">
         <Link to="/" aria-label="Grace — обзор" className="mb-8 flex min-h-11 items-center gap-3 px-2 text-xl font-semibold tracking-tight"><GraceMark className="size-9 text-primary" aria-hidden="true"/>Grace</Link>
         <p className="mb-3 px-3 text-xs font-medium tracking-wide text-muted-foreground">Личное пространство</p>
         <nav aria-label="Навигация" className="grid gap-1">{allLinks.map(({icon:Icon,...link})=><NavLink key={link.to} to={link.to} end={link.to==='/'} className={navClass}><Icon className="size-[18px]" aria-hidden="true"/>{link.label}</NavLink>)}</nav>
         <div className="mt-auto border-t pt-4"><Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>{resolvedTheme==='dark'?<Sun className="size-[18px]"/>:<Moon className="size-[18px]"/>}{resolvedTheme==='dark'?'Светлая тема':'Тёмная тема'}</Button>{auth && <p className="mt-3 truncate px-3 text-sm text-muted-foreground" title={auth.session.user.name}>{auth.session.user.name}</p>}</div>
       </aside>
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
           <Link to="/" aria-label="Grace — обзор" className="flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight lg:hidden"><GraceMark aria-hidden="true" className="size-8 text-primary"/>Grace</Link>
           <span className="hidden text-sm text-muted-foreground lg:block">Мои финансы</span>

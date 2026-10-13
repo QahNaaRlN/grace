@@ -31,8 +31,10 @@ export function today() {
     day: '2-digit',
   }).format(new Date())
 }
+// Accepts grouped input as MoneyInput renders it ("20 000 000,50", NBSP, "−").
 export function parseMinor(text: string) {
-  const match = /^(-?)(\d+)(?:[.,](\d{1,2}))?$/.exec(text.trim())
+  const normalized = text.replace(/\s/g, '').replace(/\u2212/g, '-')
+  const match = /^(-?)(\d+)(?:[.,](\d{1,2}))?$/.exec(normalized)
   if (!match) return null
   const value =
     BigInt(match[2]) * 100n + BigInt((match[3] ?? '').padEnd(2, '0'))
@@ -41,4 +43,18 @@ export function parseMinor(text: string) {
     signed < BigInt(Number.MIN_SAFE_INTEGER)
     ? null
     : Number(signed)
+}
+// Receipt quantity → integer thousandths ("1,5" → 1500), without float.
+export function parseMilli(text: string) {
+  const match = /^(\d+)(?:[.,](\d{1,3}))?$/.exec(text.replace(/\s/g, ''))
+  if (!match) return null
+  const value = BigInt(match[1]) * 1000n + BigInt((match[2] ?? '').padEnd(3, '0'))
+  return value > BigInt(Number.MAX_SAFE_INTEGER) ? null : Number(value)
+}
+// Integer minor units → editable text ("1897" → "18,97") without float division.
+export function minorToInput(valueMinor: number | null) {
+  if (valueMinor === null) return ''
+  const negative = valueMinor < 0
+  const digits = String(Math.abs(valueMinor)).padStart(3, '0')
+  return `${negative ? '-' : ''}${digits.slice(0, -2)},${digits.slice(-2)}`
 }

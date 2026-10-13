@@ -82,6 +82,33 @@ func (handler *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	web.WriteJSON(w, status, obligation)
 }
 
+// PreviewSchedule builds payments from a pattern, a pasted table or edited rows
+// without writing anything (SPEC-0037).
+func (handler *Handler) PreviewSchedule(w http.ResponseWriter, r *http.Request) {
+	var request previewRequest
+	if !web.DecodeJSON(w, r, &request) {
+		return
+	}
+	preview, err := PreviewSchedule(request)
+	if errors.Is(err, ErrPreviewInvalid) {
+		message := strings.TrimPrefix(err.Error(), ErrPreviewInvalid.Error()+": ")
+		web.WriteError(w, http.StatusBadRequest, "validation_error", message)
+		return
+	}
+	if err != nil {
+		web.WriteError(w, http.StatusInternalServerError, "internal_error", "Не удалось построить график.")
+		return
+	}
+	if len(preview.Payments) == 0 {
+		web.WriteJSON(w, http.StatusUnprocessableEntity, map[string]any{
+			"code": "no_payments", "message": "Ни одной строки графика не распознано.",
+			"rejectedLines": preview.RejectedLines,
+		})
+		return
+	}
+	web.WriteJSON(w, http.StatusOK, preview)
+}
+
 func (handler *Handler) CreateSettlement(w http.ResponseWriter, r *http.Request) {
 	var request settlementRequest
 	if !web.DecodeJSON(w, r, &request) {

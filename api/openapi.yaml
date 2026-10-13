@@ -1937,6 +1937,46 @@ paths:
         '400': { $ref: '#/components/responses/ValidationError' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/obligations/schedule-preview:
+    post:
+      operationId: previewObligationSchedule
+      description: >-
+        SPEC-0037. Builds explicit payments from equal monthly payments, a pasted
+        bank table or edited rows. Writes nothing; the result is saved through
+        createObligation or a loan schedule draft.
+      parameters:
+        - { $ref: '#/components/parameters/CSRF' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SchedulePreviewRequest' }
+      responses:
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/AuthenticationError'
+        '503':
+          $ref: '#/components/responses/AuthenticationError'
+        '200':
+          description: Payments, their total computed by Grace, and rejected pasted lines
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SchedulePreview' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '422':
+          description: No payment could be recognised
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, message, rejectedLines]
+                properties:
+                  code: { type: string, const: no_payments }
+                  message: { type: string }
+                  rejectedLines:
+                    type: array
+                    items: { $ref: '#/components/schemas/RejectedScheduleLine' }
   /api/v1/obligations/{obligationId}:
     get:
       operationId: getObligation
@@ -3598,6 +3638,67 @@ components:
           minItems: 1
           maxItems: 600
           items: { $ref: '#/components/schemas/CreateScheduledPayment' }
+    SchedulePreviewRequest:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [mode, firstDueOn, count, interval, amountMinor]
+          properties:
+            mode: { type: string, const: equal }
+            firstDueOn: { type: string, format: date }
+            count: { type: integer, minimum: 1, maximum: 600 }
+            interval: { type: string, enum: [monthly] }
+            amountMinor: { type: integer, format: int64, minimum: 1 }
+            firstAmountMinor: { type: integer, format: int64, minimum: 1 }
+            lastAmountMinor: { type: integer, format: int64, minimum: 1 }
+        - type: object
+          additionalProperties: false
+          required: [mode, text]
+          properties:
+            mode: { type: string, const: paste }
+            text: { type: string, minLength: 1, maxLength: 65536 }
+            amountColumn:
+              type: integer
+              minimum: 1
+              maximum: 12
+              description: Which money column after the date is the payment; default 1.
+        - type: object
+          additionalProperties: false
+          required: [mode, payments]
+          properties:
+            mode: { type: string, const: rows }
+            payments:
+              type: array
+              minItems: 1
+              maxItems: 600
+              items:
+                type: object
+                additionalProperties: false
+                required: [dueOn, amountMinor]
+                properties:
+                  dueOn: { type: string }
+                  amountMinor: { type: integer, format: int64 }
+    RejectedScheduleLine:
+      type: object
+      required: [line, text, reason]
+      properties:
+        line: { type: integer, minimum: 1 }
+        text: { type: string }
+        reason: { type: string }
+    SchedulePreview:
+      type: object
+      required: [payments, totalMinor, rejectedLines]
+      properties:
+        payments:
+          type: array
+          maxItems: 600
+          items: { $ref: '#/components/schemas/CreateScheduledPayment' }
+        totalMinor: { type: integer, format: int64, minimum: 0 }
+        firstDueOn: { type: string, format: date }
+        lastDueOn: { type: string, format: date }
+        rejectedLines:
+          type: array
+          items: { $ref: '#/components/schemas/RejectedScheduleLine' }
     CreateScheduledPaymentSettlement:
       type: object
       additionalProperties: false

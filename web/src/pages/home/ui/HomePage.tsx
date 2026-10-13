@@ -22,7 +22,9 @@ import { Overview } from './Overview'
 import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { accountLabel, today, eventDateText, eventTimeText } from '@/shared/lib/finance-display'
+import { accountLabel, today, eventDateText, eventTimeText, formatMoney } from '@/shared/lib/finance-display'
+import { Money } from '@/shared/ui/money'
+import { StatusBadge, type Tone } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
 import {
   Dialog,
@@ -80,12 +82,6 @@ const kindLabels: Record<FinancialEvent['kind'], string> = {
   debt_payment: 'Платёж по обязательству',
 }
 
-function formatMoney(valueMinor: number | null, currency: string) {
-  if (valueMinor === null) return "Не сверён"
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(
-    valueMinor / 100,
-  )
-}
 
 function localDateValue(date: Date) {
   const year = date.getFullYear()
@@ -172,9 +168,7 @@ function Accounts({ items }: { items: Account[] }) {
                       : 'Рассрочка'}
               </small>
             </span>
-            <strong className="grace-money max-w-[48%] text-right">
-              {formatMoney(account.balanceMinor, account.currency)}
-            </strong>
+            <Money valueMinor={account.balanceMinor} currency={account.currency} className="max-w-[48%] text-right" />
           </Button>
         ))}
       </div>
@@ -206,7 +200,7 @@ function Accounts({ items }: { items: Account[] }) {
                 <div>
                   <dt>Текущий баланс</dt>
                   <dd>
-                    {formatMoney(selected.balanceMinor, selected.currency)}
+                    <Money valueMinor={selected.balanceMinor} currency={selected.currency} size="sm" />
                   </dd>
                 </div>
                 {selected.paymentInstruments?.map((card) => (
@@ -377,15 +371,12 @@ function Events({
                     </div>
                     {posting && (
                       <div className="min-w-0 space-y-1 text-right">
-                        <p
-                          className={
-                            positive && !isTransfer
-                              ? 'grace-money font-medium text-success'
-                              : 'grace-money font-medium'
-                          }
-                        >
-                          {isTransfer ? '' : positive ? '+' : '−'}
-                          {formatMoney(posting.amountMinor, posting.currency)}
+                        <p>
+                          <Money
+                            valueMinor={posting.amountMinor}
+                            currency={posting.currency}
+                            direction={isTransfer ? undefined : positive ? 'credit' : 'debit'}
+                          />
                         </p>
                         <Badge variant="secondary">
                           {kindLabels[item.kind]}
@@ -464,6 +455,13 @@ const paymentStatusLabels: Record<ScheduledPayment['status'], string> = {
   overdue: 'Просрочен',
   partially_paid: 'Частично оплачен',
   paid: 'Оплачен',
+}
+// SPEC-0035: a payment state is a word, an icon and a tone.
+const paymentStatusTones: Record<ScheduledPayment['status'], Tone> = {
+  planned: 'info',
+  overdue: 'danger',
+  partially_paid: 'warning',
+  paid: 'success',
 }
 
 function SettlementControl({
@@ -614,15 +612,14 @@ function Obligations({
                     {formatMoney(item.totalMinor, item.currency)}
                   </p>
                 </div>
-                <Badge
-                  variant={
-                    item.status === 'completed' ? 'secondary' : 'outline'
-                  }
-                >
-                  {item.status === 'completed'
-                    ? 'Завершено'
-                    : `Осталось ${formatMoney(item.remainingMinor, item.currency)}`}
-                </Badge>
+                {item.status === 'completed' ? (
+                  <StatusBadge tone="success">Завершено</StatusBadge>
+                ) : (
+                  <p className="text-right text-sm text-muted-foreground">
+                    Осталось{' '}
+                    <Money valueMinor={item.remainingMinor} currency={item.currency} />
+                  </p>
+                )}
               </div>
               {item.kind === 'loan' && <LoanPanel obligationId={item.id} />}
               <div className="space-y-3">
@@ -641,17 +638,13 @@ function Obligations({
                           {formatMoney(payment.remainingMinor, item.currency)}
                         </span>
                       </div>
-                      <Badge
-                        variant={
-                          payment.isOverdue ? 'destructive' : 'secondary'
-                        }
-                      >
-                        {paymentStatusLabels[payment.status]}
+                      <StatusBadge tone={payment.isOverdue ? 'danger' : paymentStatusTones[payment.status] ?? 'unknown'}>
+                        {paymentStatusLabels[payment.status] ?? 'Статус неизвестен'}
                         {payment.isOverdue &&
                         payment.status === 'partially_paid'
                           ? ' · просрочен'
                           : ''}
-                      </Badge>
+                      </StatusBadge>
                     </div>
                     <SettlementControl
                       obligation={item}
@@ -984,12 +977,15 @@ export function HomePage() {
           <PageHeader title={title[path] ?? 'Обзор'} description={{'/':'Деньги и ближайшие дела — в одном месте.','/operations':'Покупки, поступления и переводы.','/accounts':'Счета, карты и подтверждённые остатки.','/payments':'Обязательства и ближайшие платежи.','/analytics':'Посмотрите, куда уходят деньги и как меняются траты.','/health':'Ближайшие обязательства, доступные деньги и качество данных.','/profile':'Личные данные, почта и управление доступом.'}[path]} status={error ? 'Часть данных недоступна' : pending ? 'Обновляем данные…' : undefined} />
           <div className="flex flex-wrap gap-3">
             <Dialog open={accountOpen} onOpenChange={setAccountOpen}>
-              <DialogTrigger asChild>
-                <Button className={!empty && path !== '/accounts' ? 'hidden' : undefined} variant={empty || path === '/accounts' ? 'default' : 'outline'}>
-                  <Plus className="size-4" />
-                  Добавить {empty ? 'первый ' : ''}счёт
-                </Button>
-              </DialogTrigger>
+              {/* SPEC-0036: only where money lives, never on profile or settings pages. */}
+              {(path === '/accounts' || (empty && ['/', '/operations', '/payments'].includes(path))) && (
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="size-4" />
+                    Добавить {empty ? 'первый ' : ''}счёт
+                  </Button>
+                </DialogTrigger>
+              )}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Новый счёт</DialogTitle>
