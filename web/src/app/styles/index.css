@@ -141,6 +141,19 @@
   --radius-3xl: 24px;
 }
 
+/* SPEC-0035 type scale: amount (display), title-1, title-2; body, secondary
+   and caption are Tailwind's text-base / text-sm / text-xs. */
+@theme {
+  --text-amount: 2.5rem;
+  --text-amount--line-height: 3rem;
+  --text-amount-sm: 2rem;
+  --text-amount-sm--line-height: 2.5rem;
+  --text-title-1: 1.75rem;
+  --text-title-1--line-height: 2.25rem;
+  --text-title-2: 1.125rem;
+  --text-title-2--line-height: 1.625rem;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

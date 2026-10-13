@@ -1,3 +1,4 @@
+import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { components } from '@/shared/api/generated/schema'
@@ -112,7 +113,7 @@ export function AIAnalysis() {
         <h3 className="font-semibold">{message.month} · {message.question}</h3>
         <p className="text-sm text-muted-foreground">Расчёт Grace по подтверждённым операциям. Полнота истории неизвестна.</p>
         <dl className="space-y-2">{message.facts.facts.map(fact => <div id={`ai-${message.id}-${fact.id}`} key={fact.id} className="flex flex-wrap items-start justify-between gap-2 text-sm"><dt className="min-w-0 break-words">{fact.label}</dt><dd className="font-medium">{amount(fact.valueMinor, fact.currency)}</dd></div>)}</dl>
-        {message.status === 'failed' && <p role="alert" className="text-sm">ИИ не смог завершить объяснение. Расчёт Grace сохранён; финансовые данные не изменены.</p>}
+        {message.status === 'failed' && <Notice tone="danger" title="ИИ не смог завершить объяснение">Расчёт Grace сохранён; финансовые данные не изменены.</Notice>}
         {message.response && <div className="space-y-3 border-t pt-3"><p className="text-xs text-muted-foreground">{message.response.notice}</p>{message.response.interpretations.map((item, i) => <div key={i}><p className="text-xs font-medium text-muted-foreground">{item.kind === 'assumption' ? 'Возможная интерпретация' : 'Что можно проверить'}</p><p className="text-sm">{item.text}</p><div className="flex flex-wrap gap-2 text-xs">{item.factIds.map(id => <a key={id} className="underline" href={`#ai-${message.id}-${id}`}>{message.facts.facts.find(f => f.id === id)?.label}</a>)}</div></div>)}<p className="text-xs text-muted-foreground">Стоимость запроса: {dollars(message.response.costMicros)}.</p></div>}
       </article>)}
     </CardContent>

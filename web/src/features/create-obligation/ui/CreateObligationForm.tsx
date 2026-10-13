@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card'
+import { Field } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
@@ -114,18 +115,9 @@ export function CreateObligationForm() {
       <form onSubmit={onSubmit}>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
-            <div className="grid gap-2">
-              <Label htmlFor="obligation-name">Название</Label>
-              <Input
-                id="obligation-name"
-                placeholder="Рассрочка на ноутбук"
-                aria-invalid={errors.name ? true : undefined}
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
+            <Field label="Название" error={errors.name?.message}>
+              <Input id="obligation-name" placeholder="Рассрочка на ноутбук" {...register('name')} />
+            </Field>
             <div className="grid gap-2">
               <Label htmlFor="obligation-kind">Тип</Label>
               <Select
@@ -146,18 +138,9 @@ export function CreateObligationForm() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="obligation-currency">Валюта</Label>
-              <Input
-                id="obligation-currency"
-                maxLength={3}
-                aria-invalid={errors.currency ? true : undefined}
-                {...register('currency')}
-              />
-              {errors.currency && (
-                <p className="text-sm text-destructive">{errors.currency.message}</p>
-              )}
-            </div>
+            <Field label="Валюта" error={errors.currency?.message}>
+              <Input id="obligation-currency" maxLength={3} {...register('currency')} />
+            </Field>
           </div>
 
           <fieldset className="space-y-3">

@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CircleAlert } from 'lucide-react'
 import type { Account, CashPosition, FinancialEvent } from '@/shared/api/types'
 import {
-  formatMoney,
   dateText,
   eventDateText,
   accountLabel,
 } from '@/shared/lib/finance-display'
 import { Button } from '@/shared/ui/button'
 import { AccountIcon } from '@/shared/ui/account-icon'
+import { Money } from '@/shared/ui/money'
+import { StatusBadge } from '@/shared/ui/status'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 
 export function Overview({
@@ -56,8 +57,8 @@ export function Overview({
         ) : cash?.currencies.length ? (
           cash.currencies.map((c) => (
             <div key={c.currency}>
-              <p className="grace-money mt-3 text-[clamp(1.75rem,5vw,2.5rem)] leading-tight font-semibold">
-                {formatMoney(c.availableAfterObligationsMinor, c.currency)}
+              <p className="mt-3">
+                <Money valueMinor={c.availableAfterObligationsMinor} currency={c.currency} size="display" />
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 Расчёт по {dateText(cash.through)} включительно
@@ -65,11 +66,11 @@ export function Overview({
               <dl className="grace-fields mt-5 text-sm">
                 <div>
                   <dt>Деньги на дебетовых счетах и наличные</dt>
-                  <dd>{formatMoney(c.liquidBalanceMinor, c.currency)}</dd>
+                  <dd><Money valueMinor={c.liquidBalanceMinor} currency={c.currency} size="sm" /></dd>
                 </div>
                 <div>
                   <dt>Известные платежи до этой даты</dt>
-                  <dd>{formatMoney(c.obligationsThroughMinor, c.currency)}</dd>
+                  <dd><Money valueMinor={c.obligationsThroughMinor} currency={c.currency} size="sm" /></dd>
                 </div>
               </dl>
             </div>
@@ -95,11 +96,12 @@ export function Overview({
           {late.slice(0, 3).map((p) => (
             <div key={p.scheduledPaymentId} className="mt-4">
               <p className="font-medium">{p.obligationName}</p>
-              <p className="mt-1 text-sm text-destructive">
-                Просрочено · {dateText(p.dueOn)}
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <StatusBadge tone="danger">Просрочено</StatusBadge>
+                {dateText(p.dueOn)}
               </p>
-              <p className="grace-money mt-3 text-2xl font-semibold">
-                {formatMoney(p.remainingMinor, p.currency)}
+              <p className="mt-3">
+                <Money valueMinor={p.remainingMinor} currency={p.currency} size="lg" />
               </p>
             </div>
           ))}
@@ -135,9 +137,7 @@ export function Overview({
                   {dateText(p.dueOn)}
                 </small>
               </span>
-              <strong className="grace-money max-w-[50%] text-right">
-                {formatMoney(p.remainingMinor, p.currency)}
-              </strong>
+              <Money valueMinor={p.remainingMinor} currency={p.currency} className="max-w-[50%] text-right" />
             </Link>
           ))
         ) : (
@@ -179,17 +179,14 @@ export function Overview({
                 </small>
               </span>
               {p && (
-                <span
-                  className={`grace-money max-w-[50%] text-right font-semibold ${e.kind !== 'internal_transfer' && p.direction === 'credit' ? 'text-success' : ''}`}
-                >
-                  {e.kind === 'internal_transfer'
-                    ? ''
-                    : p.direction === 'credit'
-                      ? '+'
-                      : '−'}
-                  {formatMoney(p.amountMinor, p.currency)}
+                <span className="max-w-[50%] text-right">
+                  <Money
+                    valueMinor={p.amountMinor}
+                    currency={p.currency}
+                    direction={e.kind === 'internal_transfer' ? undefined : p.direction === 'credit' ? 'credit' : 'debit'}
+                  />
                   {e.kind === 'internal_transfer' && (
-                    <small className="block font-normal text-muted-foreground">
+                    <small className="block text-muted-foreground">
                       Перевод
                     </small>
                   )}
@@ -225,9 +222,7 @@ export function Overview({
                     : 'Баланс счёта'}
               </small>
             </span>
-            <strong className="grace-money max-w-[48%] text-right">
-              {formatMoney(a.balanceMinor, a.currency)}
-            </strong>
+            <Money valueMinor={a.balanceMinor} currency={a.currency} className="max-w-[48%] text-right" />
           </Link>
         ))}
       </section>

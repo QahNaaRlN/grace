@@ -1,3 +1,4 @@
+import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState } from 'react'
 import type { components } from '@/shared/api/generated/schema'
 import { apiClient } from '@/shared/api/client'
@@ -130,7 +131,7 @@ export function ReceiptPhoto() {
         <p className="font-medium">{preview.action === 'create' ? `Будет создан один расход на ${rubles(preview.amountMinor)}.` : 'Чек будет добавлен к покупке. Баланс не изменится.'}</p>
         <p className="text-sm">{fields?.seller} · {fields?.issuedDate ?? fields?.issuedAt} · {accounts.find(a => a.id === preview.accountId)?.name}</p>
         {preview.candidates.length > 0 && <div><p className="font-medium">Возможные совпадения</p>{preview.candidates.map(c => <div key={c.eventId} className="space-y-2 py-2"><p className="text-sm">{c.description}{c.hasReceipt ? ' · чек уже есть' : ''}</p><Button disabled={busy || c.hasReceipt} variant="outline" onClick={() => { change('action', 'link_existing'); change('existingEventId', c.eventId) }}>Добавить чек к этой покупке</Button></div>)}</div>}
-        {preview.warnings.length > 0 && <p role="alert">Проверь совпадения и укажи причину создания отдельного расхода.</p>}
+        {preview.warnings.length > 0 && <Notice tone="warning" title="Есть похожие покупки">Проверь совпадения и укажи причину создания отдельного расхода.</Notice>}
         <Button disabled={busy || preview.warnings.length > 0} onClick={() => void run(confirm)}>{preview.action === 'create' ? 'Подтвердить расход' : 'Добавить чек к покупке'}</Button>
       </div>}
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
