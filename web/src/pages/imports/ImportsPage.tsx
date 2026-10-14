@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 import { formatMoney, eventTimeText, accountLabel, minorToInput, parseMinor } from '@/shared/lib/finance-display'
 import { MoneyInput } from '@/shared/ui/money-input'
+import { CurrencySelect } from '@/shared/ui/currency-select'
 import { PreviewPanel } from './PreviewPanel'
 import { MonthPanel } from './MonthPanel'
 import { NewDraftCard } from './NewDraftCard'
@@ -179,7 +180,7 @@ function ReviewForm({ record, batchId, revision, onSaved }: { record: Record; ba
       {action === 'create' && <div className="grid gap-3 sm:grid-cols-2">
         <div><Label htmlFor="kind">Вид операции</Label><ChoiceSelect id="kind" value={fields.kind} onValueChange={value => field('kind', value as Fields['kind'])}>{['purchase', 'income_received', 'debt_payment', 'internal_transfer', 'refund'].map(k => <option key={k} value={k}>{names[k]}</option>)}</ChoiceSelect></div>
         <div><Label htmlFor="amount">Сумма</Label><MoneyInput id="amount" currency={/^[A-Z]{3}$/.test(fields.currency) ? fields.currency : undefined} value={amountText} onChange={e => { setAmountText(e.target.value); field('amountMinor', parseMinor(e.target.value) ?? Number.NaN) }} /></div>
-        <div><Label htmlFor="currency">Валюта</Label><Input id="currency" maxLength={3} value={fields.currency} onChange={e => field('currency', e.target.value.toUpperCase())} /></div>
+        <div><Label htmlFor="currency">Валюта</Label><CurrencySelect id="currency" value={fields.currency} onValueChange={value => field('currency', value)} /></div>
         <div className="sm:col-span-2"><label className="flex min-h-11 items-center gap-3"><Checkbox  checked={fields.occurredDate !== undefined} onCheckedChange={checked => setFields({ ...fields, occurredDate: checked ? record.source.normalized.date?.local.slice(0, 10) || '' : undefined, occurredAt: checked ? undefined : '' })} />Известен только день, время неизвестно</label></div>
         {fields.occurredDate !== undefined ? <div><Label htmlFor="occurredDate">Дата операции</Label><Input id="occurredDate" type="date" value={fields.occurredDate} onChange={e => field('occurredDate', e.target.value)} /></div> : <><div><Label htmlFor="occurredAt">Дата и время (с часовым поясом, например +05:00)</Label><Input id="occurredAt" placeholder="2026-10-06T12:30:00+05:00" value={fields.occurredAt || ''} onChange={e => field('occurredAt', e.target.value)} /></div><div><Label htmlFor="timeReason">Основание уточнения времени</Label><Input id="timeReason" value={fields.timeReason || ''} onChange={e => field('timeReason', e.target.value)} /></div></>}
         {chooseAccount('accountId', 'Счёт операции')}

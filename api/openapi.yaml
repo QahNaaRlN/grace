@@ -2525,7 +2525,7 @@ components:
         status: { type: string, enum: [pending, dispatching, sent, cancelled, uncertain] }
     SubscriptionInput:
       type: object
-      required: [name, amountMinor, currency, period, startsOn, endsOn, accountId, paymentInstrumentId, paused, reminders, revision]
+      required: [name, amountMinor, currency, period, startsOn, endsOn, accountId, paymentInstrumentId, categoryId, paused, reminders, revision]
       properties:
         name: { type: string, minLength: 1, maxLength: 160 }
         amountMinor: { type: integer, minimum: 1, maximum: 9007199254740991 }
@@ -2535,6 +2535,7 @@ components:
         endsOn: { type: [string, 'null'], format: date }
         accountId: { type: [string, 'null'], format: uuid }
         paymentInstrumentId: { type: [string, 'null'], format: uuid }
+        categoryId: { type: [string, 'null'], format: uuid, description: 'SPEC-0047: expense category; required to create; on update null keeps the stored one.' }
         paused: { type: boolean }
         reminders: { type: boolean }
         revision: { type: integer, minimum: 0 }

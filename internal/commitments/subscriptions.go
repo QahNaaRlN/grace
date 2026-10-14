@@ -29,6 +29,7 @@ type Subscription struct {
 	EndsOn              *string  `json:"endsOn"`
 	AccountID           *string  `json:"accountId"`
 	PaymentInstrumentID *string  `json:"paymentInstrumentId"`
+	CategoryID          *string  `json:"categoryId"`
 	Paused              bool     `json:"paused"`
 	Reminders           bool     `json:"reminders"`
 	Revision            int      `json:"revision"`
@@ -140,11 +141,11 @@ func (h *Handler) ListReminders(w http.ResponseWriter, r *http.Request) {
 	web.WriteJSON(w, 200, map[string]any{"items": items})
 }
 
-const subscriptionColumns = `id::text,name,amount_minor,currency,period,starts_on::text,ends_on::text,account_id::text,payment_instrument_id::text,paused,reminders,revision`
+const subscriptionColumns = `id::text,name,amount_minor,currency,period,starts_on::text,ends_on::text,account_id::text,payment_instrument_id::text,paused,reminders,revision,category_id::text`
 
 func scanSubscription(row pgx.Row) (Subscription, error) {
 	var s Subscription
-	err := row.Scan(&s.ID, &s.Name, &s.AmountMinor, &s.Currency, &s.Period, &s.StartsOn, &s.EndsOn, &s.AccountID, &s.PaymentInstrumentID, &s.Paused, &s.Reminders, &s.Revision)
+	err := row.Scan(&s.ID, &s.Name, &s.AmountMinor, &s.Currency, &s.Period, &s.StartsOn, &s.EndsOn, &s.AccountID, &s.PaymentInstrumentID, &s.Paused, &s.Reminders, &s.Revision, &s.CategoryID)
 	end := ""
 	if s.EndsOn != nil {
 		end = *s.EndsOn
@@ -221,6 +222,12 @@ func (h *Handler) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := chi.URLParam(r, "subscriptionId")
+	// SPEC-0047: a new subscription needs an expense category, like a purchase.
+	// On update null keeps the stored one, so older subscriptions still pause.
+	if s.CategoryID == nil && id == "" {
+		invalid(w)
+		return
+	}
 	creationKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
 	if id == "" && (creationKey == "" || len(creationKey) > 160) {
 		web.WriteError(w, 400, "idempotency_required", "Нужен ключ повторной отправки.")
@@ -232,6 +239,17 @@ func (h *Handler) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
+	if s.CategoryID != nil {
+		var categoryKind string
+		if err = tx.QueryRow(r.Context(), `SELECT kind::text FROM categories WHERE id::text=$1`, *s.CategoryID).Scan(&categoryKind); err != nil || categoryKind != "expense" {
+			if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+				failure(w, err)
+				return
+			}
+			invalid(w)
+			return
+		}
+	}
 	if id == "" {
 		canonical := s
 		canonical.ID = ""
@@ -264,9 +282,9 @@ func (h *Handler) Save(w http.ResponseWriter, r *http.Request) {
 			failure(w, err)
 			return
 		}
-		s, err = scanSubscription(tx.QueryRow(r.Context(), `INSERT INTO subscriptions(name,amount_minor,currency,period,starts_on,ends_on,account_id,paused,reminders,payment_instrument_id,creation_key,request_hash) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING `+subscriptionColumns, s.Name, s.AmountMinor, s.Currency, s.Period, s.StartsOn, s.EndsOn, s.AccountID, s.Paused, s.Reminders, s.PaymentInstrumentID, creationKey, hash))
+		s, err = scanSubscription(tx.QueryRow(r.Context(), `INSERT INTO subscriptions(name,amount_minor,currency,period,starts_on,ends_on,account_id,paused,reminders,payment_instrument_id,creation_key,request_hash,category_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING `+subscriptionColumns, s.Name, s.AmountMinor, s.Currency, s.Period, s.StartsOn, s.EndsOn, s.AccountID, s.Paused, s.Reminders, s.PaymentInstrumentID, creationKey, hash, s.CategoryID))
 	} else {
-		s, err = scanSubscription(tx.QueryRow(r.Context(), `UPDATE subscriptions SET name=$2,amount_minor=$3,currency=$4,period=$5,starts_on=$6,ends_on=$7,account_id=$8,paused=$9,reminders=$10,payment_instrument_id=$12,revision=revision+1 WHERE id::text=$1 AND revision=$11 RETURNING `+subscriptionColumns, id, s.Name, s.AmountMinor, s.Currency, s.Period, s.StartsOn, s.EndsOn, s.AccountID, s.Paused, s.Reminders, s.Revision, s.PaymentInstrumentID))
+		s, err = scanSubscription(tx.QueryRow(r.Context(), `UPDATE subscriptions SET name=$2,amount_minor=$3,currency=$4,period=$5,starts_on=$6,ends_on=$7,account_id=$8,paused=$9,reminders=$10,payment_instrument_id=$12,category_id=COALESCE($13::uuid,category_id),revision=revision+1 WHERE id::text=$1 AND revision=$11 RETURNING `+subscriptionColumns, id, s.Name, s.AmountMinor, s.Currency, s.Period, s.StartsOn, s.EndsOn, s.AccountID, s.Paused, s.Reminders, s.Revision, s.PaymentInstrumentID, s.CategoryID))
 	}
 	if err != nil {
 		failure(w, err)

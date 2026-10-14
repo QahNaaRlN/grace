@@ -11,7 +11,7 @@ export function Disclosure({ title, children, defaultOpen = false, className, tr
       <span className="min-w-0">{title}</span><ChevronDown aria-hidden="true" className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
     </Collapsible.Trigger>
     <Collapsible.Content forceMount className="grace-disclosure" inert={!open} aria-hidden={!open}>
-      <div className="min-h-0 overflow-hidden"><div className="pt-3">{children}</div></div>
+      <div className="min-h-0 overflow-hidden"><div className="pb-1 pt-3">{children}</div></div>
     </Collapsible.Content>
   </Collapsible.Root>
 }
