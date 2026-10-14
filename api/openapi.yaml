@@ -491,6 +491,7 @@ paths:
         - $ref: '#/components/parameters/CSRF'
         - $ref: '#/components/parameters/IdempotencyKey'
         - { name: sourceId, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 500 } }
+        - {name: fileName, in: query, required: false, description: 'Uploaded file name for the history (SPEC-0044); only the base name is kept.', schema: {type: string, maxLength: 1000}}
       requestBody:
         required: true
         content:
@@ -521,7 +522,8 @@ paths:
   "/api/imports/batches":
     "get":
       "operationId": "listImportBatches"
-      "parameters": [{"name":"cursor","in":"query","required":false,"schema":{"type":"string","format":"uuid"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}}]
+      "description": "Newest first. The cursor is opaque."
+      "parameters": [{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}}]
       "responses":
         "200":
           "description": "Owner-scoped result or idempotent replay"
@@ -579,7 +581,7 @@ paths:
                 "$ref": "#/components/schemas/Error"
     "post":
       "operationId": "uploadImportSnapshot"
-      "parameters": [{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"}]
+      "parameters": [{"$ref":"#/components/parameters/CSRF"},{"$ref":"#/components/parameters/IdempotencyKey"},{"name":"fileName","in":"query","required":false,"description":"Uploaded file name for the history (SPEC-0044); only the base name is kept.","schema":{"type":"string","maxLength":1000}}]
       "responses":
         "201":
           "description": "New draft saved"
@@ -706,10 +708,36 @@ paths:
             "application/json":
               "schema":
                 "$ref": "#/components/schemas/Error"
+  /api/imports/batches/{batchId}/records/next-unresolved:
+    get:
+      operationId: nextUnresolvedImportRecord
+      description: SPEC-0044. First unresolved transaction row after the given one in sheet order, wrapping around.
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: after, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The next row to review, or null when none remain
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [record, remaining]
+                properties:
+                  record:
+                    oneOf:
+                      - { $ref: '#/components/schemas/ImportRecord' }
+                      - { type: 'null' }
+                  remaining: { type: integer, minimum: 0 }
+        '400': { $ref: '#/components/responses/ImportError' }
+        '401': { $ref: '#/components/responses/ImportError' }
+        '404': { $ref: '#/components/responses/ImportError' }
+        '500': { $ref: '#/components/responses/ImportError' }
   "/api/imports/batches/{batchId}/records":
     "get":
       "operationId": "listImportRecords"
-      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string","format":"uuid"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}},{"name":"domain","in":"query","required":false,"schema":{"type":"string"}},{"name":"status","in":"query","required":false,"schema":{"type":"string"}}]
+      "parameters": [{"name":"batchId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":100}},{"name":"domain","in":"query","required":false,"schema":{"$ref":"#/components/schemas/ImportRecordDomain"}},{"name":"status","in":"query","required":false,"schema":{"$ref":"#/components/schemas/ImportRecordStatus"}},{"name":"q","in":"query","required":false,"description":"Literal search in description and recipient.","schema":{"type":"string","maxLength":100}},{"name":"sort","in":"query","required":false,"schema":{"type":"string","enum":["row","date","-date","amount","-amount"],"default":"row"}}]
       "responses":
         "200":
           "description": "Owner-scoped result or idempotent replay"
@@ -3129,7 +3157,7 @@ components:
     "ImportBatch":
       "type": "object"
       "additionalProperties": false
-      "required": ["id","source","payloadHash","revision","status","createdAt","counts","domainCounts"]
+      "required": ["id","source","payloadHash","revision","status","createdAt","counts","domainCounts","fileName","format","periodFrom","periodTo","total","reviewed","needsReview","lastConfirmation"]
       "properties":
         "id":
           "type": "string"
@@ -3156,6 +3184,39 @@ components:
           "type": "object"
           "additionalProperties":
             "type": "integer"
+        "fileName": { "type": ["string","null"], "maxLength": 255 }
+        "format": { "type": ["string","null"], "enum": ["json","csv",null] }
+        "periodFrom": { "type": ["string","null"], "format": "date", "description": "Earliest operation date among transaction rows." }
+        "periodTo": { "type": ["string","null"], "format": "date" }
+        "total": { "type": "integer", "minimum": 0, "description": "Transaction rows." }
+        "reviewed": { "type": "integer", "minimum": 0, "description": "Transaction rows with a decision or already published." }
+        "needsReview": { "type": "integer", "minimum": 0, "description": "Unpublished rows with source issues or match candidates." }
+        "lastConfirmation":
+          "oneOf":
+            - { "$ref": "#/components/schemas/ImportConfirmationSummary" }
+            - { "type": "null" }
+    "ImportConfirmationSummary":
+      "type": "object"
+      "additionalProperties": false
+      "required": ["id","at","createdEvents","outcomes"]
+      "properties":
+        "id": { "type": "string", "format": "uuid" }
+        "at": { "type": "string", "format": "date-time" }
+        "createdEvents": { "type": "integer", "minimum": 0 }
+        "outcomes": { "type": "integer", "minimum": 0 }
+    "ImportRecordDomain":
+      "type": "string"
+      "enum": ["transaction","unsupported"]
+    "ImportRecordStatus":
+      "type": "string"
+      "enum": ["needs_review","unresolved","create","link_existing","duplicate_of","exclude","published"]
+    "ImportRecordFilter":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "domain": { "$ref": "#/components/schemas/ImportRecordDomain" }
+        "status": { "$ref": "#/components/schemas/ImportRecordStatus" }
+        "q": { "type": "string", "maxLength": 100 }
     "ImportCandidate":
       "type": "object"
       "additionalProperties": false
@@ -3196,7 +3257,7 @@ components:
     "ImportRecord":
       "type": "object"
       "additionalProperties": false
-      "required": ["id","source","decision","published","candidates","history","eventId"]
+      "required": ["id","source","decision","published","candidates","history","eventId","questions"]
       "properties":
         "id":
           "type": "string"
@@ -3218,6 +3279,10 @@ components:
         "eventId":
           "type": ["string","null"]
           "format": "uuid"
+        "questions":
+          "type": "integer"
+          "minimum": 0
+          "description": "Source issues plus match candidates involving this row."
     "ImportChange":
       "type": "object"
       "additionalProperties": false
@@ -3347,7 +3412,8 @@ components:
     "ImportSelection":
       "type": "object"
       "additionalProperties": false
-      "required": ["expectedRevision","recordIds"]
+      "description": "Either recordIds (up to 100) or filter (up to 1000 matching unpublished transaction rows), never both."
+      "required": ["expectedRevision"]
       "properties":
         "expectedRevision":
           "type": "integer"
@@ -3361,6 +3427,8 @@ components:
           "minItems": 1
           "maxItems": 100
           "uniqueItems": true
+        "filter":
+          "$ref": "#/components/schemas/ImportRecordFilter"
     "ImportConfirmation":
       "type": "object"
       "additionalProperties": false
@@ -3383,7 +3451,6 @@ components:
             "$ref": "#/components/schemas/ImportBatch"
         "nextCursor":
           "type": "string"
-          "format": "uuid"
     "ImportRecordPage":
       "type": "object"
       "additionalProperties": false
@@ -3395,7 +3462,10 @@ components:
             "$ref": "#/components/schemas/ImportRecord"
         "nextCursor":
           "type": "string"
-          "format": "uuid"
+        "total":
+          "type": "integer"
+          "minimum": 0
+          "description": "Rows matching the filter."
     AuthUser:
       type: object
       required:

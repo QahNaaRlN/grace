@@ -23,6 +23,7 @@ func (h *Handler) Routes(r chi.Router) {
 	r.Get("/batches/{batchId}", h.Batch)
 	r.Get("/batches/{batchId}/month", h.Month)
 	r.Get("/batches/{batchId}/records", h.Records)
+	r.Get("/batches/{batchId}/records/next-unresolved", h.NextUnresolved)
 	r.Get("/batches/{batchId}/records/{recordId}", h.Record)
 	r.Patch("/batches/{batchId}/records/{recordId}", h.Edit)
 	r.Post("/batches/{batchId}/previews", h.Preview)
@@ -57,7 +58,7 @@ func pagination(w http.ResponseWriter, r *http.Request) (string, int, bool) {
 		}
 		limit = n
 	}
-	if c != "" && !uuid.MatchString(c) {
+	if _, ok := parseOffset(c); !ok {
 		web.WriteError(w, 400, "invalid_pagination", "Некорректный cursor.")
 		return "", 0, false
 	}
@@ -84,7 +85,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		web.WriteError(w, 413, "body_too_large", "Снимок не должен превышать 16 MiB.")
 		return
 	}
-	b, err := h.repo.Upload(r.Context(), raw, key(r))
+	b, err := h.repo.UploadNamed(r.Context(), raw, key(r), fileName(r))
 	if err == nil && b.created {
 		web.WriteJSON(w, http.StatusCreated, b)
 		return
@@ -107,7 +108,7 @@ func (h *Handler) UploadCSV(w http.ResponseWriter, r *http.Request) {
 		web.WriteError(w, 413, "body_too_large", "Файл не должен превышать 16 MiB.")
 		return
 	}
-	b, err := h.repo.UploadCSV(r.Context(), raw, r.URL.Query().Get("sourceId"), key(r))
+	b, err := h.repo.UploadCSVNamed(r.Context(), raw, r.URL.Query().Get("sourceId"), key(r), fileName(r))
 	if err == nil && b.created {
 		web.WriteJSON(w, http.StatusCreated, b)
 		return
@@ -140,7 +141,8 @@ func (h *Handler) Records(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	v, e := h.repo.Records(r.Context(), b, c, r.URL.Query().Get("domain"), r.URL.Query().Get("status"), l)
+	q := r.URL.Query()
+	v, e := h.repo.RecordsQuery(r.Context(), b, RecordQuery{Cursor: c, Limit: l, Sort: q.Get("sort"), RecordFilter: RecordFilter{Domain: q.Get("domain"), Status: q.Get("status"), Q: q.Get("q")}})
 	respond(w, v, e)
 }
 func (h *Handler) Record(w http.ResponseWriter, r *http.Request) {
@@ -205,5 +207,22 @@ func (h *Handler) Receipt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, e := h.repo.Receipt(r.Context(), b, id)
+	respond(w, v, e)
+}
+
+// fileName is the uploaded file name for the history; cleaned by cleanFileName.
+func fileName(r *http.Request) string { return r.URL.Query().Get("fileName") }
+
+func (h *Handler) NextUnresolved(w http.ResponseWriter, r *http.Request) {
+	b, ok := path(w, r, "batchId")
+	if !ok {
+		return
+	}
+	after := r.URL.Query().Get("after")
+	if after != "" && !uuid.MatchString(after) {
+		web.WriteError(w, 400, "invalid_reference", "Некорректный идентификатор.")
+		return
+	}
+	v, e := h.repo.NextUnresolved(r.Context(), b, after)
 	respond(w, v, e)
 }

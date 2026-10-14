@@ -81,6 +81,10 @@ func csvSnapshot(raw []byte, sourceID, capturedAt string) (importreview.Snapshot
 }
 
 func (r *Repository) UploadCSV(ctx context.Context, raw []byte, sourceID, key string) (Batch, error) {
+	return r.UploadCSVNamed(ctx, raw, sourceID, key, "")
+}
+
+func (r *Repository) UploadCSVNamed(ctx context.Context, raw []byte, sourceID, key, fileName string) (Batch, error) {
 	snapshot, err := csvSnapshot(raw, sourceID, r.now().Format("2006-01-02T15:04:05Z07:00"))
 	if err != nil {
 		return Batch{}, err
@@ -89,5 +93,5 @@ func (r *Repository) UploadCSV(ctx context.Context, raw []byte, sourceID, key st
 	if err != nil {
 		return Batch{}, fault("review_limit", 422)
 	}
-	return r.uploadReport(ctx, raw, key, report)
+	return r.uploadReport(ctx, raw, key, report, upload{"csv", fileName})
 }

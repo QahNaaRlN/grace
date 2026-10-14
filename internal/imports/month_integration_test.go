@@ -46,7 +46,7 @@ func TestCSVMainBlockDuplicateNeedsReview(t *testing.T) {
 	if !found {
 		t.Fatal("duplicate inside main block hidden")
 	}
-	preview, err := r.Preview(ctx, b.ID, "main-duplicate-preview", Selection{b.Revision, []string{rows.Items[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "main-duplicate-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows.Items[0].ID}})
 	if err != nil || len(preview.Blockers) == 0 {
 		t.Fatal("unreviewed main duplicate accepted", err)
 	}
@@ -141,7 +141,7 @@ func TestCSVMonthLifecycleAndHistoricalAnalytics(t *testing.T) {
 	if err != nil || purchases(unchanged) != purchases(before) {
 		t.Fatal("draft changed ledger", err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "single-preview", Selection{b.Revision, []string{page.Items[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "single-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{page.Items[0].ID}})
 	if err != nil || len(preview.Blockers) > 0 {
 		t.Fatal(err, preview.Blockers)
 	}

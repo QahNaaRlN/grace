@@ -412,6 +412,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Newest first. The cursor is opaque. */
         get: operations["listImportBatches"];
         put?: never;
         post: operations["uploadImportSnapshot"];
@@ -429,6 +430,23 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getImportBatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/records/next-unresolved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description SPEC-0044. First unresolved transaction row after the given one in sheet order, wrapping around. */
+        get: operations["nextUnresolvedImportRecord"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1840,6 +1858,40 @@ export interface components {
             domainCounts: {
                 [key: string]: number;
             };
+            fileName: string | null;
+            /** @enum {string|null} */
+            format: "json" | "csv" | null;
+            /**
+             * Format: date
+             * @description Earliest operation date among transaction rows.
+             */
+            periodFrom: string | null;
+            /** Format: date */
+            periodTo: string | null;
+            /** @description Transaction rows. */
+            total: number;
+            /** @description Transaction rows with a decision or already published. */
+            reviewed: number;
+            /** @description Unpublished rows with source issues or match candidates. */
+            needsReview: number;
+            lastConfirmation: components["schemas"]["ImportConfirmationSummary"] | null;
+        };
+        ImportConfirmationSummary: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            at: string;
+            createdEvents: number;
+            outcomes: number;
+        };
+        /** @enum {string} */
+        ImportRecordDomain: "transaction" | "unsupported";
+        /** @enum {string} */
+        ImportRecordStatus: "needs_review" | "unresolved" | "create" | "link_existing" | "duplicate_of" | "exclude" | "published";
+        ImportRecordFilter: {
+            domain?: components["schemas"]["ImportRecordDomain"];
+            status?: components["schemas"]["ImportRecordStatus"];
+            q?: string;
         };
         ImportCandidate: {
             source?: components["schemas"]["ImportSourceRecord"];
@@ -1871,6 +1923,8 @@ export interface components {
             history: components["schemas"]["ImportAudit"][];
             /** Format: uuid */
             eventId: string | null;
+            /** @description Source issues plus match candidates involving this row. */
+            questions: number;
         };
         ImportChange: {
             accountName: string;
@@ -1933,10 +1987,12 @@ export interface components {
             expectedRevision: number;
             decision: components["schemas"]["ImportDecision"];
         };
+        /** @description Either recordIds (up to 100) or filter (up to 1000 matching unpublished transaction rows), never both. */
         ImportSelection: {
             /** Format: int64 */
             expectedRevision: number;
-            recordIds: string[];
+            recordIds?: string[];
+            filter?: components["schemas"]["ImportRecordFilter"];
         };
         ImportConfirmation: {
             /** Format: uuid */
@@ -1945,13 +2001,13 @@ export interface components {
         };
         ImportBatchPage: {
             items: components["schemas"]["ImportBatch"][];
-            /** Format: uuid */
             nextCursor?: string;
         };
         ImportRecordPage: {
             items: components["schemas"]["ImportRecord"][];
-            /** Format: uuid */
             nextCursor?: string;
+            /** @description Rows matching the filter. */
+            total?: number;
         };
         AuthUser: {
             /** Format: uuid */
@@ -3614,6 +3670,8 @@ export interface operations {
         parameters: {
             query: {
                 sourceId: string;
+                /** @description Uploaded file name for the history (SPEC-0044); only the base name is kept. */
+                fileName?: string;
             };
             header: {
                 /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
@@ -3781,7 +3839,10 @@ export interface operations {
     };
     uploadImportSnapshot: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Uploaded file name for the history (SPEC-0044); only the base name is kept. */
+                fileName?: string;
+            };
             header: {
                 /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
                 "X-CSRF-Token": components["parameters"]["CSRF"];
@@ -3982,13 +4043,47 @@ export interface operations {
             };
         };
     };
+    nextUnresolvedImportRecord: {
+        parameters: {
+            query?: {
+                after?: string;
+            };
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The next row to review, or null when none remain */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        record: components["schemas"]["ImportRecord"] | null;
+                        remaining: number;
+                    };
+                };
+            };
+            400: components["responses"]["ImportError"];
+            401: components["responses"]["ImportError"];
+            404: components["responses"]["ImportError"];
+            500: components["responses"]["ImportError"];
+        };
+    };
     listImportRecords: {
         parameters: {
             query?: {
                 cursor?: string;
                 limit?: number;
-                domain?: string;
-                status?: string;
+                domain?: components["schemas"]["ImportRecordDomain"];
+                status?: components["schemas"]["ImportRecordStatus"];
+                /** @description Literal search in description and recipient. */
+                q?: string;
+                sort?: "row" | "date" | "-date" | "amount" | "-amount";
             };
             header?: never;
             path: {

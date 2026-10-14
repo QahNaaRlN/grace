@@ -64,6 +64,21 @@ type Batch struct {
 	CreatedAt    time.Time             `json:"createdAt"`
 	Counts       map[string]int        `json:"counts"`
 	DomainCounts map[string]int        `json:"domainCounts"`
+	// SPEC-0044: what the history and the review summary show.
+	FileName         *string              `json:"fileName"`
+	Format           *string              `json:"format"`
+	PeriodFrom       *string              `json:"periodFrom"`
+	PeriodTo         *string              `json:"periodTo"`
+	Total            int                  `json:"total"`
+	Reviewed         int                  `json:"reviewed"`
+	NeedsReview      int                  `json:"needsReview"`
+	LastConfirmation *ConfirmationSummary `json:"lastConfirmation"`
+}
+type ConfirmationSummary struct {
+	ID            string    `json:"id"`
+	At            time.Time `json:"at"`
+	CreatedEvents int       `json:"createdEvents"`
+	Outcomes      int       `json:"outcomes"`
 }
 type Candidate struct {
 	ID          string                 `json:"id"`
@@ -88,6 +103,8 @@ type Record struct {
 	Candidates []Candidate         `json:"candidates"`
 	History    []Audit             `json:"history"`
 	EventID    *string             `json:"eventId"`
+	// Questions = source issues + match candidates; Go counts them at upload.
+	Questions int `json:"questions"`
 }
 type Change struct {
 	AccountID   string `json:"accountId"`
@@ -137,8 +154,16 @@ type Edit struct {
 	Decision         Decision `json:"decision"`
 }
 type Selection struct {
-	ExpectedRevision int64    `json:"expectedRevision"`
-	RecordIDs        []string `json:"recordIds"`
+	ExpectedRevision int64         `json:"expectedRevision"`
+	RecordIDs        []string      `json:"recordIds,omitempty"`
+	Filter           *RecordFilter `json:"filter,omitempty"`
+}
+
+// RecordFilter selects rows by what the review list shows, not by ids.
+type RecordFilter struct {
+	Domain string `json:"domain,omitempty"`
+	Status string `json:"status,omitempty"`
+	Q      string `json:"q,omitempty"`
 }
 type Confirmation struct {
 	PreviewID   string `json:"previewId"`
@@ -147,6 +172,8 @@ type Confirmation struct {
 type Page[T any] struct {
 	Items      []T    `json:"items"`
 	NextCursor string `json:"nextCursor,omitempty"`
+	// Total is the number of rows matching the filter (records only).
+	Total *int `json:"total,omitempty"`
 }
 
 func validateDecision(d Decision) error {

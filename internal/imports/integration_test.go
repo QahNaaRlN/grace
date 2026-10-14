@@ -114,7 +114,7 @@ func TestPersistentImportLifecycle(t *testing.T) {
 	}
 	_, err = r.Edit(ctx, b.ID, extra.ID, "stale", Edit{b.Revision - 1, Decision{Action: "exclude", Reason: "review"}})
 	requireCode(t, err, "revision_conflict")
-	blocked, err := r.Preview(ctx, b.ID, "blocked", Selection{b.Revision, []string{base.ID}})
+	blocked, err := r.Preview(ctx, b.ID, "blocked", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{base.ID}})
 	if err != nil || len(blocked.Blockers) == 0 {
 		t.Fatal("unreviewed candidate published", err)
 	}
@@ -128,7 +128,7 @@ func TestPersistentImportLifecycle(t *testing.T) {
 	if err != nil || len(detail.History) != 1 || detail.Source.Raw["F"].UserEnteredValue == nil {
 		t.Fatal("reload lost evidence", err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "preview", Selection{b.Revision, []string{base.ID, extra.ID}})
+	preview, err := r.Preview(ctx, b.ID, "preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{base.ID, extra.ID}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +185,7 @@ func TestPersistentImportLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	np, err := r.Preview(ctx, nb.ID, "link-preview", Selection{nb.Revision, []string{nd.ID}})
+	np, err := r.Preview(ctx, nb.ID, "link-preview", Selection{ExpectedRevision: nb.Revision, RecordIDs: []string{nd.ID}})
 	if err != nil || len(np.Blockers) > 0 {
 		t.Fatal("link preview", err, np.Blockers)
 	}
@@ -247,7 +247,7 @@ func TestIsolationAndHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(other, otherBatch.ID, "foreign-preview", Selection{otherBatch.Revision, []string{otherRows[0].ID}})
+	preview, err := r.Preview(other, otherBatch.ID, "foreign-preview", Selection{ExpectedRevision: otherBatch.Revision, RecordIDs: []string{otherRows[0].ID}})
 	if err != nil || !strings.Contains(strings.Join(preview.Blockers, ","), "event_not_found") {
 		t.Fatal("foreign event linked", err, preview.Blockers)
 	}
@@ -263,7 +263,7 @@ func TestExpiredAndChangedPreview(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "expiry-preview", Selection{b.Revision, []string{rows[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "expiry-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -289,7 +289,7 @@ func TestConcurrentConfirmation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "concurrent-preview", Selection{b.Revision, []string{rows[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "concurrent-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 	if err != nil || len(preview.Blockers) > 0 {
 		t.Fatal(err, preview.Blockers)
 	}
@@ -330,7 +330,7 @@ func TestBlockedDateAndFinancialGroup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "date-preview", Selection{b.Revision, []string{rows[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "date-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 	if err != nil || len(preview.Blockers) == 0 {
 		t.Fatal("invented time accepted", err)
 	}
@@ -339,7 +339,7 @@ func TestBlockedDateAndFinancialGroup(t *testing.T) {
 	if _, err = r.Upload(ctx, []byte(`{"schemaVersion":"unknown"}`), "bad"); asFault(err).Code != "invalid_snapshot" {
 		t.Fatal("invalid snapshot accepted")
 	}
-	if _, err = r.Preview(ctx, b.ID, "bad-selection", Selection{b.Revision, []string{rows[0].ID, rows[0].ID}}); asFault(err).Code != "invalid_selection" {
+	if _, err = r.Preview(ctx, b.ID, "bad-selection", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID, rows[0].ID}}); asFault(err).Code != "invalid_selection" {
 		t.Fatal("duplicate selection")
 	}
 }
@@ -371,7 +371,7 @@ func TestFiveKindsAndAtomicRollback(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		preview, err := r.Preview(ctx, b.ID, "five-preview-"+kind, Selection{b.Revision, []string{rows[0].ID}})
+		preview, err := r.Preview(ctx, b.ID, "five-preview-"+kind, Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 		if err != nil || len(preview.Blockers) > 0 {
 			t.Fatal(kind, err, preview.Blockers)
 		}
@@ -408,7 +408,7 @@ func TestFiveKindsAndAtomicRollback(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	preview, err := r.Preview(ctx, b.ID, "atomic-preview", Selection{b.Revision, []string{rows[0].ID, rows[1].ID}})
+	preview, err := r.Preview(ctx, b.ID, "atomic-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID, rows[1].ID}})
 	if err != nil || len(preview.Blockers) > 0 {
 		t.Fatal(err, preview.Blockers)
 	}
@@ -462,7 +462,7 @@ func TestUnsupportedSemanticsAndSourceFilters(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			preview, err := r.Preview(ctx, b.ID, "blocked-preview-"+tc.name, Selection{b.Revision, []string{rows.Items[0].ID}})
+			preview, err := r.Preview(ctx, b.ID, "blocked-preview-"+tc.name, Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows.Items[0].ID}})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -570,7 +570,7 @@ func TestReviewedImportPreservesUnknownCategory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "spec28-unknown-preview", Selection{b.Revision, []string{rows[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "spec28-unknown-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 	if err != nil || len(preview.Blockers) > 0 {
 		t.Fatal("unknown category preview", err, preview.Blockers)
 	}

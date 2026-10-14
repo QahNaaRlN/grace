@@ -85,7 +85,7 @@ it('keeps a saved decision when batch revision refreshes before record details',
   const source = { sheet: 'Операции', row: 5, domain: 'transaction', raw: {}, normalized: { kind: 'purchase', amountMinor: 1000, currency: 'RUB' }, issues: [] }
   const original = { id: 'record', source, decision: { action: 'unresolved' }, candidates: [], history: [], published: false }
   const saved = { ...original, decision: { action: 'exclude', reason: 'Проверенный дубль' } }
-  const batch = () => ({ id: 'batch', revision, counts: {}, domainCounts: {}, source: { sourceId: 'synthetic' } })
+  const batch = () => ({ id: 'batch', revision, counts: {}, domainCounts: {}, createdAt: '2026-10-13T09:00:00Z', source: { sourceId: 'synthetic' } })
   client.GET.mockImplementation(async (path: string) => {
     if (path.endsWith('/records/{recordId}')) return ++detailReads === 1 ? { data: original } : delayedDetails
     if (path.endsWith('/records')) return { data: { items: [original] } }
@@ -127,6 +127,7 @@ it('uploads original CSV bytes and waits for separate review and confirmation', 
   expect(path).toBe('/api/imports/csv')
   expect(options.bodySerializer()).toBe(file)
   expect(options.params.query.sourceId).toBe('Финансовое здоровье')
+  expect(options.params.query.fileName).toBe('Операции.csv')
   expect(client.PATCH).not.toHaveBeenCalled()
 })
 

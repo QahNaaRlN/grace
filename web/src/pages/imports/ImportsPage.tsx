@@ -21,6 +21,9 @@ import { MoneyInput } from '@/shared/ui/money-input'
 import { PreviewPanel } from './PreviewPanel'
 import { MonthPanel } from './MonthPanel'
 import { NewDraftCard } from './NewDraftCard'
+import { ImportHistory } from './ImportHistory'
+import { RecordReview, type Selection, type View } from './RecordReview'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 
 type Record = components['schemas']['ImportRecord']
 type Decision = components['schemas']['ImportDecision']
@@ -34,11 +37,8 @@ export function ImportsPage() {
   const cache = useQueryClient()
   const [params, setParams] = useSearchParams()
   const batchId = params.get('batch') ?? ''
-  const [batchCursor, setBatchCursor] = useState('')
-  const [cursor, setCursor] = useState('')
-  const [status, setStatus] = useState('')
-  const [domain, setDomain] = useState('')
-  const [selected, setSelected] = useState<string[]>([])
+  const [view, setView] = useState<View>(initialView)
+  const [selection, setSelection] = useState<Selection>({ mode: 'ids', ids: [] })
   const [recordId, setRecordId] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
@@ -46,14 +46,8 @@ export function ImportsPage() {
   const [preview, setPreview] = useState<Preview>()
   const [receipt, setReceipt] = useState<Receipt>()
   const [confirmationKey, setConfirmationKey] = useState('')
-  const batches = useQuery({ queryKey: ['imports', 'batches', batchCursor], queryFn: async () => {
-    const { data } = await apiClient.GET('/api/imports/batches', { params: { query: { cursor: batchCursor || undefined } } }); if (!data) throw new Error('Не удалось загрузить черновики.'); return data
-  } })
   const batch = useQuery({ queryKey: ['imports', 'batch', batchId], enabled: !!batchId, queryFn: async () => {
     const { data } = await apiClient.GET('/api/imports/batches/{batchId}', { params: { path: { batchId } } }); if (!data) throw new Error('Черновик недоступен.'); return data
-  } })
-  const records = useQuery({ queryKey: ['imports', 'records', batchId, cursor, status, domain], enabled: !!batchId, queryFn: async () => {
-    const { data } = await apiClient.GET('/api/imports/batches/{batchId}/records', { params: { path: { batchId }, query: { cursor: cursor || undefined, status: status || undefined, domain: domain || undefined } } }); if (!data) throw new Error('Не удалось загрузить строки.'); return data
   } })
   const detail = useQuery({ queryKey: ['imports', 'record', batchId, recordId], enabled: !!batchId && !!recordId, queryFn: async () => {
     const { data } = await apiClient.GET('/api/imports/batches/{batchId}/records/{recordId}', { params: { path: { batchId, recordId } } }); if (!data) throw new Error('Строка недоступна.'); return data
@@ -63,9 +57,12 @@ export function ImportsPage() {
     const { data } = await apiClient.GET('/api/imports/batches/{batchId}/confirmations/{confirmationId}', { params: { path: { batchId, confirmationId: receiptId } } }); if (!data) throw new Error('Подтверждение недоступно.'); return data
   } })
   const shownReceipt = receipt || savedReceipt.data
+  const selectedCount = selection.mode === 'filter' ? selection.total : selection.ids.length
   function openBatch(id: string) {
-    setParams({ batch: id }); setCursor(''); setSelected([]); setRecordId(''); setPreview(undefined); setReceipt(undefined); setError('')
+    setParams({ batch: id }); setView(initialView); setSelection({ mode: 'ids', ids: [] }); setRecordId(''); setPreview(undefined); setReceipt(undefined); setError('')
   }
+  function changeView(next: Partial<View>) { setView(current => ({ ...current, ...next })); setPreview(undefined) }
+  function changeSelection(next: Selection) { setSelection(next); setPreview(undefined) }
   async function action(run: () => Promise<void>) {
     if (pending) return
     setPending(true); setError('')
@@ -75,10 +72,20 @@ export function ImportsPage() {
   async function draftSaved(id: string) {
     await cache.invalidateQueries({ queryKey: ['imports'] }); openBatch(id); setNotice('')
   }
+  // SPEC-0044: walk unresolved rows in sheet order without scrolling.
+  async function openNextUnresolved(after?: string) {
+    const { data } = await apiClient.GET('/api/imports/batches/{batchId}/records/next-unresolved', { params: { path: { batchId }, query: { after: after || undefined } } })
+    if (!data) throw new Error('Не удалось найти следующую строку.')
+    if (data.record) { setRecordId(data.record.id); return true }
+    setNotice('Нерешённых строк больше нет. Можно подготовить предварительный просмотр.')
+    return false
+  }
   async function makePreview() {
     if (!batch.data) return
-    const { data, error: failure } = await apiClient.POST('/api/imports/batches/{batchId}/previews', { params: { path: { batchId }, header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() } }, body: { expectedRevision: batch.data.revision, recordIds: selected } })
-    if (!data) throw new Error(failure?.code === 'revision_conflict' ? 'Черновик изменился. Обновите страницу.' : 'Не удалось подготовить предварительный просмотр.')
+    const filter = { domain: view.domain, status: view.status || undefined, q: view.q || undefined }
+    const body = selection.mode === 'filter' ? { expectedRevision: batch.data.revision, filter } : { expectedRevision: batch.data.revision, recordIds: selection.ids }
+    const { data, error: failure } = await apiClient.POST('/api/imports/batches/{batchId}/previews', { params: { path: { batchId }, header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() } }, body })
+    if (!data) throw new Error(failure?.code === 'revision_conflict' ? 'Черновик изменился. Обновите страницу.' : failure?.code === 'selection_too_large' ? 'За раз можно проверить не больше 1 000 строк. Сузьте фильтр и повторите.' : 'Не удалось подготовить предварительный просмотр.')
     setPreview(data); setReceipt(undefined); setConfirmationKey(crypto.randomUUID())
   }
   async function confirm() {
@@ -89,45 +96,46 @@ export function ImportsPage() {
       throw new Error('Подтверждение не завершено. Можно повторить действие: повторная запись защищена.')
     }
     const nextParams = new URLSearchParams(params); nextParams.set('batch', batchId); nextParams.set('confirmation', data.id)
-    setReceipt(data); setParams(nextParams); setPreview(undefined); setSelected([]); setNotice('Решения подтверждены. Оставшиеся строки можно проверить позже.')
+    setReceipt(data); setParams(nextParams); setPreview(undefined); setSelection({ mode: 'ids', ids: [] }); setNotice('Решения подтверждены. Оставшиеся строки можно проверить позже.')
     await Promise.all(['imports', 'accounts', 'financial-events', 'period-summary', 'cash-position'].map(key => cache.invalidateQueries({ queryKey: [key] })))
   }
   return <AppLayout><div className="space-y-6">
     <PageHeader title="Импорт" description="Загрузите таблицу, проверьте строки и подтвердите результат." />
     {error && <p role="alert" className="text-destructive">{error}</p>}
     {notice && <p role="status">{notice}</p>}
-    {(batches.isPending || (batchId && (batch.isPending || records.isPending))) && <LoadingSkeleton label="Загружаем черновики…" />}
     <NewDraftCard onSaved={draftSaved} />
-    <div className="flex flex-wrap gap-2" aria-label="Сохранённые черновики">
-      {batches.data?.items.map(item => <Button key={item.id} variant={item.id === batchId ? 'default' : 'outline'} onClick={() => openBatch(item.id)}>{item.source.sourceId} · {item.status === 'completed' ? 'завершён' : 'на проверке'}</Button>)}
-      {batches.data?.nextCursor && <Button variant="outline" onClick={() => setBatchCursor(batches.data!.nextCursor!)}>Другие черновики</Button>}
-      {batchCursor && <Button variant="outline" onClick={() => setBatchCursor('')}>Первые черновики</Button>}
-    </div>
-    {(batches.isError || batch.isError || records.isError || detail.isError) && <p role="alert">Не удалось загрузить данные. <Button variant="outline" onClick={() => void cache.invalidateQueries({ queryKey: ['imports'] })}>Повторить</Button></p>}
+    <ImportHistory selectedId={batchId} onOpen={openBatch} />
+    {batchId && batch.isPending && <LoadingSkeleton label="Загружаем черновик…" />}
+    {(batch.isError || detail.isError) && <p role="alert">Не удалось загрузить данные. <Button variant="outline" onClick={() => void cache.invalidateQueries({ queryKey: ['imports'] })}>Повторить</Button></p>}
     {batch.data && <>
-      <h2>{batch.data.source.sourceId}</h2>
-      <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
-      <p>Операций по статусам: {Object.entries(batch.data.counts).map(([k, v]) => `${names[k] ?? k}: ${v}`).join(' · ')}</p>
-      <p className="text-sm text-muted-foreground">Другие листы сохранены как свидетельства. Их данные не публикуются в финансовый журнал.</p>
-      <div className="grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2" role="group" aria-label="Фильтры строк">
-        <div className="space-y-2"><Label htmlFor="review-filter">Показать строки</Label><ChoiceSelect id="review-filter" value={status} onValueChange={value => { setStatus(value); setCursor('') }}><option value="">Все</option><option value="needs_review">Совпадения и вопросы в исходнике</option>{['unresolved', 'create', 'link_existing', 'duplicate_of', 'exclude', 'published'].map(s => <option key={s} value={s}>{names[s]}</option>)}</ChoiceSelect></div>
-        <div className="space-y-2"><Label htmlFor="domain-filter">Листы</Label><ChoiceSelect id="domain-filter" value={domain} onValueChange={value => { setDomain(value); setCursor('') }}><option value="">Все</option><option value="transaction">Финансовые операции</option><option value="unsupported">Свидетельства без публикации</option></ChoiceSelect></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">{batch.data.fileName ?? batch.data.source.sourceId}</h2>
+        <Button variant="outline" disabled={pending} onClick={() => void action(async () => { await openNextUnresolved(recordId) })}>Следующая нерешённая</Button>
       </div>
-      <div className="grid gap-3 lg:grid-cols-2">{records.data?.items.map(row => <Card key={row.id}><CardContent className="space-y-2 pt-4">
-        <div className="flex items-center gap-3"><label className="grid size-11 shrink-0 cursor-pointer place-items-center"><Checkbox className="size-5"  aria-label={`Выбрать строку ${row.source.row}`} disabled={row.published || row.source.domain !== 'transaction' || pending} checked={selected.includes(row.id)} onCheckedChange={checked => { setSelected(checked ? [...selected, row.id] : selected.filter(id => id !== row.id)); setPreview(undefined) }} /></label>
-          <Button variant="ghost" onClick={() => setRecordId(row.id)}>{row.source.sheet}, строка {row.source.row}</Button></div>
-        <p>{names[row.source.normalized.kind ?? ''] ?? row.source.domain} · {row.source.normalized.date?.local} · {Number.isSafeInteger(row.source.normalized.amountMinor) && /^[A-Z]{3}$/.test(row.source.normalized.currency ?? '') ? formatMoney(row.source.normalized.amountMinor!, row.source.normalized.currency!) : 'Точная сумма — в исходнике'}</p>
-        <p>{row.source.normalized.description}</p><p>{names[row.published ? 'published' : row.decision.action]}</p>
-        {row.source.issues.length > 0 && <p className="text-sm text-muted-foreground">Вопросов в исходнике: {row.source.issues.length}</p>}
-      </CardContent></Card>)}</div>
-      <div className="flex flex-wrap gap-2">{records.data?.nextCursor && <Button variant="outline" onClick={() => setCursor(records.data!.nextCursor!)}>Следующие строки</Button>}{cursor && <Button variant="outline" onClick={() => setCursor('')}>Первые строки</Button>}</div>
-      {detail.data && <ReviewForm key={`${detail.data.id}:${JSON.stringify(detail.data.decision)}`} record={detail.data} batchId={batchId} revision={batch.data.revision} onSaved={async () => { setPreview(undefined); await cache.invalidateQueries({ queryKey: ['imports'] }); setNotice('Решение сохранено. Финансовый журнал ещё не изменён.') }} />}
-      <Button disabled={pending || selected.length === 0 || selected.length > 100} onClick={() => void action(makePreview)}>Предварительный просмотр ({selected.length})</Button>
+      <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
+      <RecordReview batchId={batchId} batch={batch.data} view={view} onView={changeView} selection={selection} onSelection={changeSelection} onOpen={setRecordId} disabled={pending} />
+      <Button disabled={pending || selectedCount === 0 || (selection.mode === 'ids' && selectedCount > 100)} onClick={() => void action(makePreview)}>Предварительный просмотр ({selectedCount})</Button>
       {preview && <PreviewPanel preview={preview} pending={pending} onConfirm={() => void action(confirm)} />}
-      {shownReceipt && <Card><CardHeader><CardTitle>Подтверждение сохранено</CardTitle></CardHeader><CardContent><ul className="space-y-3">{shownReceipt.outcomes.map(o => <li key={o.recordId}>{names[o.action]} {o.event && <Disclosure id={`event-${o.eventId}`} className="rounded-md border p-3" triggerClassName="cursor-pointer py-2" title={<>{names[o.event.kind]}: {o.event.merchant || o.event.description} · {eventTimeText(o.event)}</>}><p>{o.event.description}</p>{o.event.postings.map(p => <p key={p.id}>{p.accountName}: {p.direction === 'debit' ? 'Списание' : 'Зачисление'} {p.amountMinor} коп. {p.currency}</p>)}<Link className="underline" to={`/imports?batch=${batchId}&confirmation=${shownReceipt.id}#event-${o.eventId}`}>Ссылка на подтверждённую операцию</Link></Disclosure>}</li>)}</ul></CardContent></Card>}
+      {shownReceipt && <Card><CardHeader><CardTitle>Подтверждение сохранено</CardTitle></CardHeader><CardContent><ul className="space-y-3">{shownReceipt.outcomes.map(o => <li key={o.recordId}>{names[o.action]} {o.event && <Disclosure id={`event-${o.eventId}`} className="rounded-md border p-3" triggerClassName="cursor-pointer py-2" title={<>{names[o.event.kind]}: {o.event.merchant || o.event.description} · {eventTimeText(o.event)}</>}><p>{o.event.description}</p>{o.event.postings.map(p => <p key={p.id}>{p.accountName}: {p.direction === 'debit' ? 'Списание' : 'Зачисление'} {formatMoney(p.amountMinor, p.currency)}</p>)}<Link className="underline" to={`/imports?batch=${batchId}&confirmation=${shownReceipt.id}#event-${o.eventId}`}>Ссылка на подтверждённую операцию</Link></Disclosure>}</li>)}</ul></CardContent></Card>}
+      {recordId && <Dialog open onOpenChange={open => { if (!open) setRecordId('') }}>
+        <DialogContent data-motion="menu" className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(560px,calc(100%-1rem))] translate-x-0 translate-y-0 overflow-y-auto rounded-r-none sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>{detail.data ? `${detail.data.source.sheet}, строка ${detail.data.source.row}` : 'Строка'}</DialogTitle>
+            <DialogDescription>Решение сохраняется в черновике; финансовый журнал меняется только после предварительного просмотра и подтверждения.</DialogDescription>
+          </DialogHeader>
+          {detail.isPending ? <LoadingSkeleton label="Загружаем строку…" /> : detail.data && <ReviewForm key={`${detail.data.id}:${JSON.stringify(detail.data.decision)}`} record={detail.data} batchId={batchId} revision={batch.data.revision} onSaved={async () => {
+            const saved = recordId
+            setPreview(undefined); await cache.invalidateQueries({ queryKey: ['imports'] }); setNotice('Решение сохранено. Финансовый журнал ещё не изменён.')
+            // After a decision, move straight to the next unresolved row.
+            try { await openNextUnresolved(saved) } catch { /* the saved row stays open */ }
+          }} />}
+        </DialogContent>
+      </Dialog>}
     </>}
   </div></AppLayout>
 }
+
+const initialView: View = { status: '', domain: 'transaction', q: '', sort: 'row', cursor: '', limit: 100 }
 
 function initialFields(row: Record): Fields {
   if (row.decision.action === 'create') return row.decision.fields
