@@ -20,6 +20,18 @@ docker compose run --rm migrate -path=/migrations -database="$database_url" up
 postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
   go test -tags=integration ./internal/imports -count=1
+# Production 2026-10-14: migration 22 must apply over published import rows,
+# which a trigger keeps immutable.
+published="$(docker compose exec -T postgres psql -U grace -d grace -Atc 'SELECT count(*) FROM import_records WHERE published')"
+test "$published" -gt 0
+questions_sql='SELECT md5(string_agg(id::text || ":" || questions, "," ORDER BY id)) FROM import_records WHERE NOT published'
+questions_sql="$(printf '%s' "$questions_sql" | tr '"' "'")"
+counted_on_upload="$(docker compose exec -T postgres psql -U grace -d grace -Atc "$questions_sql")"
+test -n "$counted_on_upload"
+docker compose run --rm migrate -path=/migrations -database="$database_url" goto 21
+docker compose run --rm migrate -path=/migrations -database="$database_url" up
+# The backfill counts exactly what Go counted on upload.
+test "$(docker compose exec -T postgres psql -U grace -d grace -Atc "$questions_sql")" = "$counted_on_upload"
 if docker compose run --rm migrate -path=/migrations -database="$database_url" goto 8; then
   echo "rollback destroyed published import provenance" >&2; exit 1
 fi
