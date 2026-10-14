@@ -179,21 +179,23 @@ case "$*" in
 esac
 exit 0
 EOF
-GRACE_ROOT="$promotion_root" REAL_CURL="$real_curl" APPLIED_COLUMNS=0 FORCE_MARKER="$tmp_dir/forced" \
+# Fresh roots: with a current release the mock Docker has no previous API.
+mkdir -p "$tmp_dir/dirty-root" "$tmp_dir/partial-root"
+GRACE_ROOT="$tmp_dir/dirty-root" REAL_CURL="$real_curl" APPLIED_COLUMNS=0 FORCE_MARKER="$tmp_dir/forced" \
   PUBLIC_CHECK_BASE="http://127.0.0.1:$proxy_port" PATH="$promotion_bin:$PATH" \
   "$bundle/deploy.sh" 0000000000000000000000000000000000000000 \
-  >"$tmp_dir/dirty.log" 2>&1
+  >"$tmp_dir/dirty.log" 2>&1 || { cat "$tmp_dir/dirty.log" >&2; exit 1; }
 test -f "$tmp_dir/forced"
 grep -q 'clearing its dirty mark' "$tmp_dir/dirty.log"
 rm -f "$tmp_dir/forced"
-if GRACE_ROOT="$promotion_root" REAL_CURL="$real_curl" APPLIED_COLUMNS=1 FORCE_MARKER="$tmp_dir/forced" \
+if GRACE_ROOT="$tmp_dir/partial-root" REAL_CURL="$real_curl" APPLIED_COLUMNS=1 FORCE_MARKER="$tmp_dir/forced" \
   PUBLIC_CHECK_BASE="http://127.0.0.1:$proxy_port" PATH="$promotion_bin:$PATH" \
   "$bundle/deploy.sh" 0000000000000000000000000000000000000000 \
   >"$tmp_dir/partial.log" 2>&1; then
   echo "deployment forced a partly applied migration" >&2; exit 1
 fi
 test ! -e "$tmp_dir/forced"
-grep -q 'operator review required' "$tmp_dir/partial.log"
+grep -q 'operator review required' "$tmp_dir/partial.log" || { cat "$tmp_dir/partial.log" >&2; exit 1; }
 docker rm -f "$proxy_container" >/dev/null
 proxy_container=""
 
