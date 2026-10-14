@@ -296,6 +296,8 @@ func collectObligations(rows pgx.Rows, asOf string) ([]Obligation, error) {
 			}
 			payment.RemainingMinor = payment.AmountMinor - payment.PaidMinor
 			payment.IsOverdue = payment.RemainingMinor > 0 && payment.DueOn < asOf
+			payment.DaysUntilDue = DueIn(asOf, payment.DueOn)
+			payment.DueSoon = DueSoon(payment.DaysUntilDue, payment.RemainingMinor)
 			switch {
 			case payment.RemainingMinor == 0:
 				payment.Status = "paid"

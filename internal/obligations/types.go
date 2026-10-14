@@ -19,6 +19,8 @@ type ScheduledPayment struct {
 	RemainingMinor int64        `json:"remainingMinor"`
 	Status         string       `json:"status"`
 	IsOverdue      bool         `json:"isOverdue"`
+	DueSoon        bool         `json:"dueSoon"`
+	DaysUntilDue   int          `json:"daysUntilDue"`
 	Settlements    []Settlement `json:"settlements"`
 }
 

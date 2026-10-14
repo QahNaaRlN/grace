@@ -68,3 +68,9 @@ export function fromLocalDateTimeInput(value: string) {
 export function momentText(iso: string) {
   return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Yekaterinburg', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
 }
+// SPEC-0046: Go decides a payment is «скоро» (0–3 days); this only words it.
+export function dueSoonText(days: number) {
+  if (days <= 0) return 'Сегодня'
+  if (days === 1) return 'Завтра'
+  return `Через ${days} дня`
+}

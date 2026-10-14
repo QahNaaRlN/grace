@@ -20,7 +20,7 @@ import { Operations } from './Operations'
 import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { today, formatMoney } from '@/shared/lib/finance-display'
+import { today, formatMoney, dueSoonText } from '@/shared/lib/finance-display'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge, type Tone } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
@@ -139,7 +139,8 @@ const paymentStatusLabels: Record<ScheduledPayment['status'], string> = {
 const paymentStatusTones: Record<ScheduledPayment['status'], Tone> = {
   planned: 'info',
   overdue: 'danger',
-  partially_paid: 'warning',
+  // Yellow means «скоро» only (SPEC-0046).
+  partially_paid: 'info',
   paid: 'success',
 }
 
@@ -317,6 +318,7 @@ function Obligations({
                           {formatMoney(payment.remainingMinor, item.currency)}
                         </span>
                       </div>
+                      {payment.dueSoon && <StatusBadge tone="warning">{dueSoonText(payment.daysUntilDue)}</StatusBadge>}
                       <StatusBadge tone={payment.isOverdue ? 'danger' : paymentStatusTones[payment.status] ?? 'unknown'}>
                         {paymentStatusLabels[payment.status] ?? 'Статус неизвестен'}
                         {payment.isOverdue &&
@@ -577,7 +579,7 @@ function Analytics() {
                     >
                       <span className="text-muted-foreground">
                         {payment.obligationName} · {payment.dueOn}
-                        {payment.timing === 'overdue' ? ' · просрочен' : ''}
+                        {payment.timing === 'overdue' ? ' · просрочен' : payment.timing === 'due_soon' ? ` · ${dueSoonText(payment.daysUntilDue).toLowerCase()}` : ''}
                       </span>
                       <span className="shrink-0">
                         {formatMoney(payment.remainingMinor, item.currency)}
