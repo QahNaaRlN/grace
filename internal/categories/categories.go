@@ -144,10 +144,10 @@ func (repo *Repository) Delete(ctx context.Context, id, target string, expected 
 	if count != expected {
 		return 0, ErrCountChanged
 	}
-	if count > 0 {
-		if target == "" {
-			return 0, ErrNeedsTarget
-		}
+	if count > 0 && target == "" {
+		return 0, ErrNeedsTarget
+	}
+	if target != "" {
 		var targetKind string
 		err = tx.QueryRow(ctx, `SELECT kind::text FROM categories WHERE id=$1`, target).Scan(&targetKind)
 		if isMissing(err) || (err == nil && (targetKind != kind || target == id)) {
@@ -156,12 +156,21 @@ func (repo *Repository) Delete(ctx context.Context, id, target string, expected 
 		if err != nil {
 			return 0, err
 		}
+	}
+	if count > 0 {
 		tag, err := tx.Exec(ctx, `UPDATE financial_events SET category_id=$2 WHERE category_id=$1`, id, target)
 		if err != nil {
 			return 0, mapError(err)
 		}
 		if int(tag.RowsAffected()) != count {
 			return 0, ErrCountChanged
+		}
+	}
+	// SPEC-0047: subscriptions follow their operations to the target; without
+	// a target the foreign key clears their category.
+	if target != "" {
+		if _, err := tx.Exec(ctx, `UPDATE subscriptions SET category_id=$2, revision=revision+1 WHERE category_id=$1`, id, target); err != nil {
+			return 0, mapError(err)
 		}
 	}
 	if _, err := tx.Exec(ctx, `DELETE FROM categories WHERE id=$1 AND owner_id=grace_owner_id()`, id); err != nil {

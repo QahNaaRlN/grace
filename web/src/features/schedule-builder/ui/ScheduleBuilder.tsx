@@ -147,8 +147,8 @@ export function ScheduleBuilder({
           <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] items-center gap-x-2 gap-y-2">
             <span className="text-sm font-medium text-muted-foreground">Дата</span>
             <span className="text-sm font-medium text-muted-foreground">Сумма</span>
-            <span className="sr-only">Действия</span>
-            <span />
+            {/* sr-only alone is absolutely positioned and takes no grid cell (SPEC-0047). */}
+            <span className="col-span-2"><span className="sr-only">Действия</span></span>
             {visible.map(item => {
               if (item === null)
                 return (
@@ -323,8 +323,8 @@ function EqualForm({ idPrefix, currency, busy, onBuild }: {
           <MoneyInput id={`${idPrefix}-amount`} currency={currency} value={amount} onChange={e => setAmount(e.target.value)} />
         </div>
       </div>
-      <Disclosure title="Первый или последний платёж отличается">
-        <div className="grid gap-4 px-3 sm:grid-cols-2">
+      <Disclosure title="Первый или последний платёж отличается" className="rounded-xl bg-muted/40">
+        <div className="grid gap-4 px-3 pb-3 sm:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor={`${idPrefix}-first-amount`}>Сумма первого платежа</Label>
             <MoneyInput id={`${idPrefix}-first-amount`} currency={currency} value={firstAmount} onChange={e => setFirstAmount(e.target.value)} />

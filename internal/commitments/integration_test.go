@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/QahNaaRlN/grace/internal/auth"
+	"github.com/QahNaaRlN/grace/internal/categories"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/access"
@@ -95,14 +96,29 @@ func TestCommitmentsIsolationScheduleAndReminderDurability(t *testing.T) {
 			t.Fatalf("status %d want %d: %s", rec.Code, status, rec.Body.String())
 		}
 	}
-	sub := Subscription{Name: "Synthetic subscription", AmountMinor: 1200, Currency: "RUB", Period: "monthly", StartsOn: "2026-01-31", AccountID: &account, Reminders: true}
+	var category, incomeCategory string
+	if err = tenant.QueryRow(ctx, `SELECT id::text FROM categories WHERE kind='expense' LIMIT 1`).Scan(&category); err != nil {
+		t.Fatal(err)
+	}
+	if err = tenant.QueryRow(ctx, `SELECT id::text FROM categories WHERE kind='income' LIMIT 1`).Scan(&incomeCategory); err != nil {
+		t.Fatal(err)
+	}
+	// SPEC-0047: like a purchase, a subscription needs an expense category.
+	uncategorized := Subscription{Name: "No category", AmountMinor: 100, Currency: "RUB", Period: "monthly", StartsOn: "2026-01-31"}
+	require(call(ctx, "POST", "/subscriptions", uncategorized), 422)
+	uncategorized.CategoryID = &incomeCategory
+	require(call(ctx, "POST", "/subscriptions", uncategorized), 422)
+	sub := Subscription{Name: "Synthetic subscription", AmountMinor: 1200, Currency: "RUB", Period: "monthly", StartsOn: "2026-01-31", AccountID: &account, Reminders: true, CategoryID: &category}
 	rec := call(ctx, "POST", "/subscriptions", sub)
 	require(rec, 201)
 	if err = json.Unmarshal(rec.Body.Bytes(), &sub); err != nil {
 		t.Fatal(err)
 	}
+	if sub.CategoryID == nil || *sub.CategoryID != category {
+		t.Fatalf("category not stored: %v", sub.CategoryID)
+	}
 	// Identical create retries do not make another recurring charge.
-	original := Subscription{Name: "Synthetic subscription", AmountMinor: 1200, Currency: "RUB", Period: "monthly", StartsOn: "2026-01-31", AccountID: &account, Reminders: true}
+	original := Subscription{Name: "Synthetic subscription", AmountMinor: 1200, Currency: "RUB", Period: "monthly", StartsOn: "2026-01-31", AccountID: &account, Reminders: true, CategoryID: &category}
 	retry := call(ctx, "POST", "/subscriptions", original)
 	require(retry, 200)
 	var repeated Subscription
@@ -113,10 +129,6 @@ func TestCommitmentsIsolationScheduleAndReminderDurability(t *testing.T) {
 	original.Name = "Conflicting create"
 	require(call(ctx, "POST", "/subscriptions", original), 409)
 	// Linking an old purchase returns its real history without another posting.
-	var category string
-	if err = tenant.QueryRow(ctx, `SELECT id::text FROM categories WHERE kind='expense' LIMIT 1`).Scan(&category); err != nil {
-		t.Fatal(err)
-	}
 	purchase, _, err := financialevents.NewRepository(pool).Create(ctx, financialevents.Command{Kind: "purchase", AccountID: account, AmountMinor: 1200, OccurredAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), IdempotencyKey: owner + "-purchase", RequestHash: strings.Repeat("d", 64), CategoryID: &category})
 	if err != nil {
 		t.Fatal(err)
@@ -138,7 +150,32 @@ func TestCommitmentsIsolationScheduleAndReminderDurability(t *testing.T) {
 	sub.Name = "Edited"
 	require(call(ctx, "PATCH", "/subscriptions/"+sub.ID, sub), 200)
 	require(call(ctx, "PATCH", "/subscriptions/"+sub.ID, sub), 409)
+	// SPEC-0047: on update null keeps the category (older subscriptions still
+	// pause); deleting a category moves its subscriptions to the target.
+	var personal string
+	if err = tenant.QueryRow(ctx, `INSERT INTO categories(name,kind,owner_id) VALUES('Сервисы','expense',grace_owner_id()) RETURNING id::text`).Scan(&personal); err != nil {
+		t.Fatal(err)
+	}
+	sub.Revision++
+	sub.CategoryID = &personal
+	require(call(ctx, "PATCH", "/subscriptions/"+sub.ID, sub), 200)
+	sub.Revision++
+	sub.CategoryID = nil
+	rec = call(ctx, "PATCH", "/subscriptions/"+sub.ID, sub)
+	require(rec, 200)
+	json.Unmarshal(rec.Body.Bytes(), &sub)
+	if sub.CategoryID == nil || *sub.CategoryID != personal {
+		t.Fatalf("null replaced the category: %v", sub.CategoryID)
+	}
+	if _, err = categories.NewRepository(pool).Delete(ctx, personal, category, 0); err != nil {
+		t.Fatal(err)
+	}
+	var moved string
+	if err = tenant.QueryRow(ctx, `SELECT category_id::text FROM subscriptions WHERE id::text=$1`, sub.ID).Scan(&moved); err != nil || moved != category {
+		t.Fatalf("subscription not moved with its category: %q %v", moved, err)
+	}
 	// A foreign account cannot be bound to a new subscription.
+	sub.CategoryID = &category
 	sub.ID = ""
 	require(call(otherCtx, "POST", "/subscriptions", sub), 422)
 	var d ScheduleDraft

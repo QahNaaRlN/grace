@@ -24,6 +24,8 @@ import {
   CardTitle,
 } from '@/shared/ui/card'
 import { Field } from '@/shared/ui/field'
+import { CurrencySelect } from '@/shared/ui/currency-select'
+import { DEFAULT_CURRENCY } from '@/shared/lib/currencies'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
@@ -53,7 +55,7 @@ export function CreateObligationForm() {
     formState: { errors, isSubmitting },
   } = useForm<CreateObligationValues>({
     resolver: zodResolver(CreateObligationSchema),
-    defaultValues: { name: '', kind: 'installment', currency: 'RUB' },
+    defaultValues: { name: '', kind: 'installment', currency: DEFAULT_CURRENCY },
   })
   const kind = useWatch({ control, name: 'kind' })
   const currency = useWatch({ control, name: 'currency' })
@@ -139,7 +141,7 @@ export function CreateObligationForm() {
               </Select>
             </div>
             <Field label="Валюта" error={errors.currency?.message}>
-              <Input id="obligation-currency" maxLength={3} {...register('currency')} />
+              <CurrencySelect id="obligation-currency" value={currency} onValueChange={value => setValue('currency', value, { shouldValidate: true })} />
             </Field>
           </div>
 

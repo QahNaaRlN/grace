@@ -1379,6 +1379,11 @@ export interface components {
             accountId: string | null;
             /** Format: uuid */
             paymentInstrumentId: string | null;
+            /**
+             * Format: uuid
+             * @description SPEC-0047: expense category; required to create; on update null keeps the stored one.
+             */
+            categoryId: string | null;
             paused: boolean;
             reminders: boolean;
             revision: number;

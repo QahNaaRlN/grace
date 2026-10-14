@@ -101,3 +101,23 @@ describe('SPEC-0045 schedule by contract term', () => {
     expect(post).not.toHaveBeenCalled()
   })
 })
+
+describe('SPEC-0047 schedule layout', () => {
+  it('keeps every row in its grid columns: date, amount, fill down, delete', () => {
+    const initial: ScheduleRow[] = [
+      { key: 'a', dueOn: '2025-05-14', amount: '5 586,00', locked: false },
+      { key: 'b', dueOn: '2025-06-14', amount: '5 627,16', locked: false },
+    ]
+    render(<Harness initial={initial} mode="manual" />)
+    const grid = screen.getByText('Дата').parentElement!
+    const cells = Array.from(grid.children)
+    // No absolutely positioned (sr-only) direct child may sit in the grid.
+    expect(cells.some(cell => cell.classList.contains('sr-only'))).toBe(false)
+    // Header: Дата, Сумма, one cell spanning both action columns.
+    expect(cells[2]).toHaveClass('col-span-2')
+    expect(cells[3]).toBe(screen.getByLabelText('Дата платежа 1'))
+    expect(cells[4]).toContainElement(screen.getByLabelText('Сумма платежа 1'))
+    expect(cells[7]).toBe(screen.getByLabelText('Дата платежа 2'))
+    expect(cells[8]).toContainElement(screen.getByLabelText('Сумма платежа 2'))
+  })
+})
