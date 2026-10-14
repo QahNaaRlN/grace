@@ -1,5 +1,6 @@
 import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
 import { LoanPanel } from '@/features/loan-details/LoanPanel'
+import { ObligationSchedule } from '@/features/obligation-schedule/ui/ObligationSchedule'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { PageHeader } from '@/shared/ui/page-header'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
@@ -9,7 +10,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BarChart3,
   CalendarClock,
-  Link2,
   WalletCards,
   Plus,
   RefreshCw,
@@ -22,7 +22,7 @@ import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
 import { today, formatMoney, dueSoonText } from '@/shared/lib/finance-display'
 import { Money } from '@/shared/ui/money'
-import { StatusBadge, type Tone } from '@/shared/ui/status'
+import { StatusBadge } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
 import {
   Dialog,
@@ -33,20 +33,16 @@ import {
   DialogTrigger,
 } from '@/shared/ui/dialog'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { CreateObligationForm } from '@/features/create-obligation'
 import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
 import type {
   CashPosition,
   FinancialEvent,
   Obligation,
   PeriodSummary,
-  ScheduledPayment,
 } from '@/shared/api/types'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import {
@@ -59,13 +55,6 @@ import {
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select'
 
 
 
@@ -127,117 +116,6 @@ const obligationKindLabels: Record<Obligation['kind'], string> = {
   loan: 'Кредит',
   installment: 'Рассрочка',
   other_fixed: 'Другое',
-}
-
-const paymentStatusLabels: Record<ScheduledPayment['status'], string> = {
-  planned: 'Запланирован',
-  overdue: 'Просрочен',
-  partially_paid: 'Частично оплачен',
-  paid: 'Оплачен',
-}
-// SPEC-0035: a payment state is a word, an icon and a tone.
-const paymentStatusTones: Record<ScheduledPayment['status'], Tone> = {
-  planned: 'info',
-  overdue: 'danger',
-  // Yellow means «скоро» only (SPEC-0046).
-  partially_paid: 'info',
-  paid: 'success',
-}
-
-function SettlementControl({
-  obligation,
-  payment,
-  events,
-  usedEventIDs,
-}: {
-  obligation: Obligation
-  payment: ScheduledPayment
-  events: FinancialEvent[]
-  usedEventIDs: Set<string>
-}) {
-  const queryClient = useQueryClient()
-  const [eventID, setEventID] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const candidates = events.filter((event) => {
-    const posting = event.postings[0]
-    return (
-      event.kind === 'debt_payment' &&
-      event.postings.length === 1 &&
-      !usedEventIDs.has(event.id) &&
-      posting?.currency === obligation.currency &&
-      posting.direction === 'debit' &&
-      posting.amountMinor <= payment.remainingMinor
-    )
-  })
-
-  if (payment.remainingMinor === 0) return null
-  if (candidates.length === 0) {
-    return (
-      <p className="mt-2 text-xs text-muted-foreground">
-        Сначала создайте подходящий платёж по обязательству.
-      </p>
-    )
-  }
-
-  async function settle() {
-    if (!eventID) return
-    setIsSubmitting(true)
-    const result = await apiClient.POST(
-      '/api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements',
-      {
-        params: {
-          path: { obligationId: obligation.id, paymentId: payment.id },
-          header: {
-            'Idempotency-Key': createIdempotencyKey(),
-            'X-CSRF-Token': csrfToken,
-          },
-        },
-        body: { financialEventId: eventID },
-      },
-    )
-    setIsSubmitting(false)
-    if (result.error) {
-      toast.error(result.error.message)
-      return
-    }
-    setEventID('')
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['obligations'] }),
-      queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
-    ])
-    toast.success('Фактический платёж связан с графиком')
-  }
-
-  return (
-    <div className="mt-2 flex flex-wrap gap-2">
-      <Select value={eventID} onValueChange={setEventID}>
-        <SelectTrigger className="min-w-0 flex-1">
-          <SelectValue placeholder="Выберите фактический платёж" />
-        </SelectTrigger>
-        <SelectContent>
-          {candidates.map((event) => (
-            <SelectItem key={event.id} value={event.id}>
-              {event.merchant || event.description || 'Платёж'} ·{' '}
-              {formatMoney(
-                event.postings[0].amountMinor,
-                event.postings[0].currency,
-              )}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Button
-        className="w-full sm:w-auto"
-        type="button"
-        variant="outline"
-        disabled={!eventID || isSubmitting}
-        onClick={settle}
-      >
-        <Link2 aria-hidden="true" className="mr-1 size-4" />
-        {isSubmitting ? 'Связываю…' : 'Связать'}
-      </Button>
-    </div>
-  )
 }
 
 function Obligations({
@@ -302,40 +180,7 @@ function Obligations({
                 )}
               </div>
               {item.kind === 'loan' && <LoanPanel obligationId={item.id} />}
-              <div className="space-y-3">
-                {item.payments.map((payment) => (
-                  <div key={payment.id} className="rounded-md bg-muted/50 p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                      <div>
-                        <span className="font-medium">
-                          {new Date(
-                            `${payment.dueOn}T00:00:00Z`,
-                          ).toLocaleDateString('ru-RU', { timeZone: 'UTC' })}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {' '}
-                          · осталось{' '}
-                          {formatMoney(payment.remainingMinor, item.currency)}
-                        </span>
-                      </div>
-                      {payment.dueSoon && <StatusBadge tone="warning">{dueSoonText(payment.daysUntilDue)}</StatusBadge>}
-                      <StatusBadge tone={payment.isOverdue ? 'danger' : paymentStatusTones[payment.status] ?? 'unknown'}>
-                        {paymentStatusLabels[payment.status] ?? 'Статус неизвестен'}
-                        {payment.isOverdue &&
-                        payment.status === 'partially_paid'
-                          ? ' · просрочен'
-                          : ''}
-                      </StatusBadge>
-                    </div>
-                    <SettlementControl
-                      obligation={item}
-                      payment={payment}
-                      events={events}
-                      usedEventIDs={usedEventIDs}
-                    />
-                  </div>
-                ))}
-              </div>
+              <ObligationSchedule obligation={item} events={events} usedEventIDs={usedEventIDs} />
             </article>
           ))
         )}
