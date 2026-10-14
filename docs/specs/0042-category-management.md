@@ -1,6 +1,6 @@
 # SPEC-0042: категории — редактирование, удаление, иконки
 
-- Статус: verified
+- Статус: integrated (PR #30, squash `720e1e3`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace

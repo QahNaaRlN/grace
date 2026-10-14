@@ -1,6 +1,6 @@
 # SPEC-0043: список операций и карточка операции
 
-- Статус: verified
+- Статус: integrated (PR #31, squash `0377f4c`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace

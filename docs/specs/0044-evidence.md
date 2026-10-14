@@ -3,7 +3,7 @@
 Дата: 2026-10-14. Спецификация: [accepted SPEC-0044](0044-import-review-at-scale.md).
 Ветка: `codex/import-review-at-scale`, база — `codex/account-reconciliation` (PR #33,
 миграция 21), implementation commit `918d1e4`. Вливать после PR #33.
-Статус: `verified` локально (Windows + Docker PostgreSQL).
+Статус: `integrated` — PR #34, merge `1339eea`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
