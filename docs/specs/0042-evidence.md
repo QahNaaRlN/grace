@@ -2,7 +2,7 @@
 
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0042](0042-category-management.md).
 Ветка: `codex/category-management`, база `01eb67e`, implementation commit `6e8b6c7`.
-Статус: `integrated` — PR #30, squash `720e1e3`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
+Статус: `integrated` — PR #30, squash `720e1e3`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

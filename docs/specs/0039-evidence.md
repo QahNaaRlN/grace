@@ -2,7 +2,7 @@
 
 Дата: 2026-10-14. Спецификация: [accepted SPEC-0039](0039-compact-payment-schedules.md).
 Ветка: `codex/obligation-schedule` от `main` (`82f9095`), implementation commit `e677593`.
-Статус: `verified` локально (Windows).
+Статус: `integrated` — PR #37, merge `090ebad`; CI `main` пройден. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

@@ -1,6 +1,6 @@
 # SPEC-0046: статус «скоро платёж» за 3 дня и за 1 день
 
-- Статус: verified
+- Статус: integrated (PR #36, merge `82f9095`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-14
 - Acceptance owner: владелец Grace
