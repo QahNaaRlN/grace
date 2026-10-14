@@ -1620,6 +1620,142 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Account' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/accounts/{accountId}:
+    patch:
+      operationId: updateAccount
+      description: SPEC-0040. Type is fixed once the account has operations.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountUpdate' }
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/AccountConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/accounts/{accountId}/payment-instruments:
+    post:
+      operationId: addPaymentInstrument
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCard' }
+      responses:
+        '201':
+          description: Account with the new card
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/AccountConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/accounts/{accountId}/payment-instruments/{cardId}:
+    patch:
+      operationId: updatePaymentInstrument
+      description: Edit a card or retire it (disabled); its past operations keep pointing at it.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: cardId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentInstrumentUpdate' }
+      responses:
+        '200':
+          description: Account with the changed card
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/AccountConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/accounts/{accountId}/reconciliations/preview:
+    post:
+      operationId: previewReconciliation
+      description: Computes the Grace balance at a moment and the difference; writes nothing.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReconciliationInput' }
+      responses:
+        '200':
+          description: Preview with a hash to confirm
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReconciliationPreview' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/AccountConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/accounts/{accountId}/reconciliations:
+    get:
+      operationId: listReconciliations
+      parameters:
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Append-only reconciliation history, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Reconciliation' } }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+    post:
+      operationId: reconcileAccount
+      description: Confirms a preview. opening_set derives the opening of an unreconciled account; adjusted books the difference as a balance_adjustment operation.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReconciliationInput' }
+      responses:
+        '201':
+          description: Recorded reconciliation and the updated account
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [reconciliation, account]
+                properties:
+                  reconciliation: { $ref: '#/components/schemas/Reconciliation' }
+                  account: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/AuthenticationError' }
+        '403': { $ref: '#/components/responses/AuthenticationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/AccountConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/categories:
     post:
       operationId: createExpenseCategory
@@ -1766,7 +1902,7 @@ paths:
         - { name: from, in: query, description: Inclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
         - { name: to, in: query, description: Exclusive local calendar date Asia/Yekaterinburg, schema: { type: string, format: date } }
         - { name: accountId, in: query, description: SPEC-0043. Events with a posting on this account, schema: { type: string, format: uuid } }
-        - { name: kind, in: query, schema: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] } }
+        - { name: kind, in: query, schema: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment, balance_adjustment] } }
         - { name: q, in: query, description: Case-insensitive substring of merchant or description, schema: { type: string, maxLength: 100 } }
         - { name: cursor, in: query, description: nextCursor of the previous page, schema: { type: string } }
         - { name: limit, in: query, description: Page size; default 100, schema: { type: integer, minimum: 1, maximum: 100 } }
@@ -2281,6 +2417,11 @@ components:
       required: true
       schema: { type: string, format: uuid }
   responses:
+    AccountConflict:
+      description: Account changed meanwhile, type fixed by operations, or the reconciliation preview is stale
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     FinancialEventConflict:
       description: Changed meanwhile, voided, or linked (links lists what blocks the change)
       content:
@@ -3497,7 +3638,7 @@ components:
         version: { type: string }
     Account:
       type: object
-      required: [id, name, type, currency, balanceMinor, balanceReconciled, createdAt]
+      required: [id, name, type, currency, balanceMinor, balanceReconciled, createdAt, revision, hasOperations, lastReconciliation, lastImportConfirmedAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
@@ -3508,7 +3649,77 @@ components:
         createdAt: { type: string, format: date-time }
         paymentInstruments:
           type: array
+          description: Active cards first, then disabled ones.
           items: { $ref: '#/components/schemas/PaymentInstrument' }
+        revision: { type: integer, minimum: 1 }
+        hasOperations: { type: boolean }
+        lastReconciliation:
+          oneOf:
+            - { $ref: '#/components/schemas/LastReconciliation' }
+            - { type: 'null' }
+        lastImportConfirmedAt: { type: [string, 'null'], format: date-time }
+    LastReconciliation:
+      type: object
+      required: [asOf, outcome, statedMinor, differenceMinor, createdAt, stale]
+      properties:
+        asOf: { type: string, format: date-time }
+        outcome: { $ref: '#/components/schemas/ReconciliationOutcome' }
+        statedMinor: { type: integer, format: int64 }
+        differenceMinor: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+        stale: { type: boolean, description: Operations up to asOf changed since; the account needs a new reconciliation. }
+    ReconciliationOutcome:
+      type: string
+      enum: [matched, opening_set, adjusted]
+    AccountUpdate:
+      type: object
+      additionalProperties: false
+      required: [revision]
+      properties:
+        revision: { type: integer, minimum: 1 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        type: { type: string, enum: [debit, credit, installment, cash] }
+    PaymentInstrumentUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        bank: { type: string, minLength: 1, maxLength: 160 }
+        last4: { type: string, pattern: '^[0-9]{4}$' }
+        disabled: { type: boolean }
+    ReconciliationInput:
+      type: object
+      additionalProperties: false
+      required: [asOf, statedMinor]
+      properties:
+        asOf: { type: string, format: date-time, description: Not in the future. }
+        statedMinor: { type: integer, format: int64, description: Balance from the bank in minor units of the account currency. }
+        previewHash: { type: string, description: Required to confirm; from the preview. }
+    ReconciliationPreview:
+      type: object
+      required: [asOf, statedMinor, currency, computedMinor, differenceMinor, outcome, proposedOpeningMinor, previewHash]
+      properties:
+        asOf: { type: string, format: date-time }
+        statedMinor: { type: integer, format: int64 }
+        currency: { type: string }
+        computedMinor: { type: integer, format: int64, description: Grace balance at asOf; for an unreconciled account only the net of its operations. }
+        differenceMinor: { type: integer, format: int64 }
+        outcome: { $ref: '#/components/schemas/ReconciliationOutcome' }
+        proposedOpeningMinor: { type: [integer, 'null'], format: int64 }
+        previewHash: { type: string }
+    Reconciliation:
+      type: object
+      required: [id, accountId, asOf, statedMinor, computedMinor, differenceMinor, outcome, adjustmentEventId, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        asOf: { type: string, format: date-time }
+        statedMinor: { type: integer, format: int64 }
+        computedMinor: { type: integer, format: int64 }
+        differenceMinor: { type: integer, format: int64 }
+        outcome: { $ref: '#/components/schemas/ReconciliationOutcome' }
+        adjustmentEventId: { type: [string, 'null'], format: uuid }
+        createdAt: { type: string, format: date-time }
     CreateAccount:
       type: object
       additionalProperties: false
@@ -3536,6 +3747,7 @@ components:
         name: { type: string }
         bank: { type: string }
         last4: { type: string, pattern: '^[0-9]{4}$' }
+        disabledAt: { type: string, format: date-time }
     CategoryIcon:
       type: string
       description: SPEC-0042 fixed icon set (Lucide names); mirrors migration 000019.
@@ -3603,7 +3815,10 @@ components:
       required: [id, kind, source, merchant, description, occurredAt, createdAt, postings, revision, editedByUser, voidedAt, voidReason]
       properties:
         id: { type: string, format: uuid }
-        kind: { type: string, enum: [purchase, income_received, internal_transfer, refund, debt_payment] }
+        kind:
+          type: string
+          description: balance_adjustment books a reconciliation difference (SPEC-0040); it is neither expense nor income.
+          enum: [purchase, income_received, internal_transfer, refund, debt_payment, balance_adjustment]
         source: { type: string, enum: [manual, bank_import, receipt, import] }
         categoryId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         categoryName: { oneOf: [{ type: string }, { type: 'null' }] }

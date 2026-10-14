@@ -206,7 +206,7 @@ func (repo *Repository) dayTotals(ctx context.Context, filter ListFilter, items 
 			COALESCE(sum(p.amount_minor) FILTER (WHERE p.direction='credit'),0)::bigint,
 			COALESCE(sum(p.amount_minor) FILTER (WHERE p.direction='debit'),0)::bigint
 		FROM financial_events e JOIN postings p ON p.financial_event_id=e.id
-		WHERE `+where+` AND e.kind<>'internal_transfer' AND `+localDate+`::text = ANY(`+daysParam+`)`+postingFilter+`
+		WHERE `+where+` AND e.kind NOT IN ('internal_transfer', 'balance_adjustment') AND `+localDate+`::text = ANY(`+daysParam+`)`+postingFilter+`
 		GROUP BY day, p.currency
 		ORDER BY day DESC, p.currency`, args...)
 	if err != nil {

@@ -129,6 +129,7 @@ func links(ctx context.Context, tx pgx.Tx, id, kind string) ([]string, error) {
 		{"чек", `SELECT EXISTS (SELECT 1 FROM receipts WHERE purchase_event_id=$1)`},
 		{"оплата графика обязательства", `SELECT EXISTS (SELECT 1 FROM scheduled_payment_settlements WHERE financial_event_id=$1)`},
 		{"подписка", `SELECT EXISTS (SELECT 1 FROM subscription_expenses WHERE financial_event_id=$1)`},
+		{"сверка остатка", `SELECT EXISTS (SELECT 1 FROM account_reconciliations WHERE adjustment_event_id=$1)`},
 		{"возврат по этой покупке", `SELECT EXISTS (SELECT 1 FROM financial_events WHERE original_event_id=$1 AND voided_at IS NULL)`},
 	}
 	for _, check := range checks {

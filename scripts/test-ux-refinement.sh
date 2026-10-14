@@ -13,7 +13,7 @@ until docker compose exec -T postgres pg_isready -U grace -d grace >/dev/null 2>
 docker compose run --rm migrate -path=/migrations -database='postgres://grace:grace@postgres:5432/grace?sslmode=disable' up
 postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 export TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable"
-go test -p 1 -tags=integration ./internal/categories ./internal/financialevents ./internal/auth ./internal/assistant ./internal/receiptdrafts -count=1
+go test -p 1 -tags=integration ./internal/accounts ./internal/categories ./internal/financialevents ./internal/auth ./internal/assistant ./internal/receiptdrafts -count=1
 # Test the credential rollback guard itself despite later consolidated migrations.
 if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000012_password_credentials.down.sql; then
  echo 'Unsafe password credential deletion was accepted' >&2; exit 1

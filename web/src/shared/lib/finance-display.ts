@@ -1,6 +1,6 @@
 import type { Account, FinancialEvent } from '@/shared/api/types'
 export function accountLabel(account: Account) {
-  const card = account.paymentInstruments?.[0]
+  const card = account.paymentInstruments?.find(item => !item.disabledAt)
   return card ? `${card.bank} *${card.last4}` : account.name
 }
 export function formatMoney(valueMinor: number | null, currency: string) {
@@ -57,4 +57,14 @@ export function minorToInput(valueMinor: number | null) {
   const negative = valueMinor < 0
   const digits = String(Math.abs(valueMinor)).padStart(3, '0')
   return `${negative ? '-' : ''}${digits.slice(0, -2)},${digits.slice(-2)}`
+}
+// Grace moments are Asia/Yekaterinburg (+05:00, no DST). datetime-local text ↔ RFC 3339.
+export function localDateTimeInput(iso: string) {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)).replace(' ', 'T')
+}
+export function fromLocalDateTimeInput(value: string) {
+  return `${value}:00+05:00`
+}
+export function momentText(iso: string) {
+  return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Yekaterinburg', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
 }

@@ -869,6 +869,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description SPEC-0040. Type is fixed once the account has operations. */
+        patch: operations["updateAccount"];
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/payment-instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addPaymentInstrument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/payment-instruments/{cardId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Edit a card or retire it (disabled); its past operations keep pointing at it. */
+        patch: operations["updatePaymentInstrument"];
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/reconciliations/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Computes the Grace balance at a moment and the difference; writes nothing. */
+        post: operations["previewReconciliation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listReconciliations"];
+        put?: never;
+        /** @description Confirms a preview. opening_set derives the opening of an unreconciled account; adjusted books the difference as a balance_adjustment operation. */
+        post: operations["reconcileAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/categories": {
         parameters: {
             query?: never;
@@ -2055,7 +2139,91 @@ export interface components {
             balanceReconciled: boolean;
             /** Format: date-time */
             createdAt: string;
+            /** @description Active cards first, then disabled ones. */
             paymentInstruments?: components["schemas"]["PaymentInstrument"][];
+            revision: number;
+            hasOperations: boolean;
+            lastReconciliation: components["schemas"]["LastReconciliation"] | null;
+            /** Format: date-time */
+            lastImportConfirmedAt: string | null;
+        };
+        LastReconciliation: {
+            /** Format: date-time */
+            asOf: string;
+            outcome: components["schemas"]["ReconciliationOutcome"];
+            /** Format: int64 */
+            statedMinor: number;
+            /** Format: int64 */
+            differenceMinor: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Operations up to asOf changed since; the account needs a new reconciliation. */
+            stale: boolean;
+        };
+        /** @enum {string} */
+        ReconciliationOutcome: "matched" | "opening_set" | "adjusted";
+        AccountUpdate: {
+            revision: number;
+            name?: string;
+            /** @enum {string} */
+            type?: "debit" | "credit" | "installment" | "cash";
+        };
+        PaymentInstrumentUpdate: {
+            name?: string;
+            bank?: string;
+            last4?: string;
+            disabled?: boolean;
+        };
+        ReconciliationInput: {
+            /**
+             * Format: date-time
+             * @description Not in the future.
+             */
+            asOf: string;
+            /**
+             * Format: int64
+             * @description Balance from the bank in minor units of the account currency.
+             */
+            statedMinor: number;
+            /** @description Required to confirm; from the preview. */
+            previewHash?: string;
+        };
+        ReconciliationPreview: {
+            /** Format: date-time */
+            asOf: string;
+            /** Format: int64 */
+            statedMinor: number;
+            currency: string;
+            /**
+             * Format: int64
+             * @description Grace balance at asOf; for an unreconciled account only the net of its operations.
+             */
+            computedMinor: number;
+            /** Format: int64 */
+            differenceMinor: number;
+            outcome: components["schemas"]["ReconciliationOutcome"];
+            /** Format: int64 */
+            proposedOpeningMinor: number | null;
+            previewHash: string;
+        };
+        Reconciliation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            accountId: string;
+            /** Format: date-time */
+            asOf: string;
+            /** Format: int64 */
+            statedMinor: number;
+            /** Format: int64 */
+            computedMinor: number;
+            /** Format: int64 */
+            differenceMinor: number;
+            outcome: components["schemas"]["ReconciliationOutcome"];
+            /** Format: uuid */
+            adjustmentEventId: string | null;
+            /** Format: date-time */
+            createdAt: string;
         };
         CreateAccount: {
             name: string;
@@ -2079,6 +2247,8 @@ export interface components {
             name: string;
             bank: string;
             last4: string;
+            /** Format: date-time */
+            disabledAt?: string;
         };
         /**
          * @description SPEC-0042 fixed icon set (Lucide names); mirrors migration 000019.
@@ -2153,8 +2323,11 @@ export interface components {
         FinancialEvent: {
             /** Format: uuid */
             id: string;
-            /** @enum {string} */
-            kind: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment";
+            /**
+             * @description balance_adjustment books a reconciliation difference (SPEC-0040); it is neither expense nor income.
+             * @enum {string}
+             */
+            kind: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment" | "balance_adjustment";
             /** @enum {string} */
             source: "manual" | "bank_import" | "receipt" | "import";
             categoryId?: string | null;
@@ -2502,6 +2675,15 @@ export interface components {
         };
     };
     responses: {
+        /** @description Account changed meanwhile, type fixed by operations, or the reconciliation preview is stale */
+        AccountConflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Changed meanwhile, voided, or linked (links lists what blocks the change) */
         FinancialEventConflict: {
             headers: {
@@ -5254,6 +5436,206 @@ export interface operations {
             503: components["responses"]["AuthenticationError"];
         };
     };
+    updateAccount: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Account"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["AccountConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    addPaymentInstrument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCard"];
+            };
+        };
+        responses: {
+            /** @description Account with the new card */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Account"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["AccountConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    updatePaymentInstrument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+                cardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentInstrumentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Account with the changed card */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Account"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["AccountConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    previewReconciliation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationInput"];
+            };
+        };
+        responses: {
+            /** @description Preview with a hash to confirm */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationPreview"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["AccountConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listReconciliations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Append-only reconciliation history, newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["Reconciliation"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+        };
+    };
+    reconcileAccount: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationInput"];
+            };
+        };
+        responses: {
+            /** @description Recorded reconciliation and the updated account */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reconciliation: components["schemas"]["Reconciliation"];
+                        account: components["schemas"]["Account"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            403: components["responses"]["AuthenticationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["AccountConflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
     listCategories: {
         parameters: {
             query?: never;
@@ -5476,7 +5858,7 @@ export interface operations {
                 to?: string;
                 /** @description SPEC-0043. Events with a posting on this account */
                 accountId?: string;
-                kind?: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment";
+                kind?: "purchase" | "income_received" | "internal_transfer" | "refund" | "debt_payment" | "balance_adjustment";
                 /** @description Case-insensitive substring of merchant or description */
                 q?: string;
                 /** @description nextCursor of the previous page */

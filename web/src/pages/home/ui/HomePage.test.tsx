@@ -14,7 +14,7 @@ const account = {
   name: 'Счёт',
   type: 'debit' as const,
   currency: 'RUB',
-  balanceReconciled: true,
+  balanceReconciled: true, revision: 1, hasOperations: false, lastReconciliation: null, lastImportConfirmedAt: null,
   balanceMinor: 100000,
   createdAt: '2026-10-06T00:00:00Z',
   paymentInstruments: [{ id: 'c', name: 'Карта', bank: 'Банк', last4: '0012' }],

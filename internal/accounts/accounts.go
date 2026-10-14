@@ -22,10 +22,11 @@ import (
 var validTypes = map[string]bool{"debit": true, "credit": true, "installment": true, "cash": true}
 
 type PaymentInstrument struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Bank  string `json:"bank"`
-	Last4 string `json:"last4"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	Bank       string     `json:"bank"`
+	Last4      string     `json:"last4"`
+	DisabledAt *time.Time `json:"disabledAt,omitempty"`
 }
 
 type CardRequest struct {
@@ -43,6 +44,12 @@ type Account struct {
 	BalanceMinor       *int64              `json:"balanceMinor"`
 	BalanceReconciled  bool                `json:"balanceReconciled"`
 	CreatedAt          time.Time           `json:"createdAt"`
+	// SPEC-0040: revision guards concurrent edits; the rest is what the account
+	// view shows as «последняя синхронизация».
+	Revision              int                 `json:"revision"`
+	HasOperations         bool                `json:"hasOperations"`
+	LastReconciliation    *LastReconciliation `json:"lastReconciliation"`
+	LastImportConfirmedAt *time.Time          `json:"lastImportConfirmedAt"`
 }
 
 type CreateRequest struct {
@@ -82,33 +89,16 @@ type Repository struct{ pool *database.TenantPool }
 func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: database.ForUsers(pool)} }
 
 func (repo *Repository) List(ctx context.Context) ([]Account, error) {
-	rows, err := repo.pool.Query(ctx, `
-		SELECT
-			a.id::text,
-			a.name,
-			a.type::text,
-			a.currency,
-			CASE WHEN a.balance_reconciled THEN a.opening_balance_minor + COALESCE(SUM(
-				CASE p.direction
-					WHEN 'credit' THEN p.amount_minor
-					ELSE -p.amount_minor
-				END
-			), 0) ELSE NULL END AS balance_minor,
-			a.balance_reconciled, a.created_at, COALESCE((SELECT jsonb_agg(jsonb_build_object('id', i.id, 'name', i.name, 'bank', i.bank, 'last4', i.last4) ORDER BY i.created_at, i.id) FROM payment_instruments i WHERE i.account_id = a.id), '[]'::jsonb)
-		FROM accounts a
-		LEFT JOIN postings p ON p.account_id = a.id
-		GROUP BY a.id
-		ORDER BY a.created_at, a.name`)
+	rows, err := repo.pool.Query(ctx, accountQuery+` ORDER BY a.created_at, a.name`)
 	if err != nil {
 		return nil, fmt.Errorf("list accounts: %w", err)
 	}
 	defer rows.Close()
-
 	items := make([]Account, 0)
 	for rows.Next() {
-		var item Account
-		if err := rows.Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.BalanceReconciled, &item.CreatedAt, &item.PaymentInstruments); err != nil {
-			return nil, fmt.Errorf("scan account: %w", err)
+		item, err := scanAccount(rows)
+		if err != nil {
+			return nil, err
 		}
 		items = append(items, item)
 	}
@@ -126,8 +116,8 @@ func (repo *Repository) Create(ctx context.Context, request CreateRequest) (Acco
 	}
 	var item Account
 	err = tx.QueryRow(ctx, `INSERT INTO accounts (name, type, currency, opening_balance_minor, balance_reconciled)
- VALUES ($1, $2, $3, $4, $5) RETURNING id::text, name, type::text, currency, CASE WHEN balance_reconciled THEN opening_balance_minor ELSE NULL END, balance_reconciled, created_at`,
-		request.Name, request.Type, request.Currency, request.OpeningBalanceMinor, request.reconciled()).Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.BalanceReconciled, &item.CreatedAt)
+ VALUES ($1, $2, $3, $4, $5) RETURNING id::text, name, type::text, currency, CASE WHEN balance_reconciled THEN opening_balance_minor ELSE NULL END, balance_reconciled, created_at, revision`,
+		request.Name, request.Type, request.Currency, request.OpeningBalanceMinor, request.reconciled()).Scan(&item.ID, &item.Name, &item.Type, &item.Currency, &item.BalanceMinor, &item.BalanceReconciled, &item.CreatedAt, &item.Revision)
 	if err != nil {
 		return Account{}, fmt.Errorf("create account: %w", err)
 	}
