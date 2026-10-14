@@ -1,6 +1,6 @@
 # SPEC-0045: график обязательства по числу месяца и сроку
 
-- Статус: verified
+- Статус: integrated (PR #29, squash `64a096b`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace

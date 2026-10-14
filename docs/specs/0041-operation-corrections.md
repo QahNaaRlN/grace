@@ -1,6 +1,6 @@
 # SPEC-0041: исправление и отмена операций
 
-- Статус: verified
+- Статус: integrated (PR #32, squash `4af4d7c`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace

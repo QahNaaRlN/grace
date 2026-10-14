@@ -1,6 +1,6 @@
 # SPEC-0044: история импортов и проверка сотен строк
 
-- Статус: verified
+- Статус: integrated (PR #34, merge `1339eea`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-13
 - Acceptance owner: владелец Grace

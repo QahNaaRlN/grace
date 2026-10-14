@@ -2,7 +2,7 @@
 
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0045](0045-schedule-by-period.md).
 Ветка: `codex/schedule-by-period`, база `01eb67e`, implementation commit `8a96d60`.
-Статус: `verified` локально (Windows).
+Статус: `integrated` — PR #29, squash `64a096b`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
