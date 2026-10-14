@@ -2,7 +2,7 @@
 
 Дата: 2026-10-14. Спецификация: [accepted SPEC-0046](0046-payment-due-soon.md).
 Ветка: `codex/payment-due-soon`, implementation commit `20a9d31`.
-Статус: `verified` локально (Windows + Docker PostgreSQL).
+Статус: `integrated` — PR #36, merge `82f9095`; CI `main` пройден. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

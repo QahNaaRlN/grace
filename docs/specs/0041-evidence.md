@@ -2,7 +2,7 @@
 
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0041](0041-operation-corrections.md).
 Ветка: `codex/operation-corrections` поверх main с SPEC-0042/0043, implementation commit `a8070f8`.
-Статус: `integrated` — PR #32, squash `4af4d7c`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
+Статус: `integrated` — PR #32, squash `4af4d7c`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

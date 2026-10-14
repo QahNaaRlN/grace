@@ -2,7 +2,7 @@
 
 Дата: 2026-10-14. Спецификация: [accepted SPEC-0040](0040-account-reconciliation.md).
 Ветка: `codex/account-reconciliation` поверх main с SPEC-0041, implementation commit `acf2e41`.
-Статус: `integrated` — PR #33, merge `0811ef6`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
+Статус: `integrated` — PR #33, merge `0811ef6`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|

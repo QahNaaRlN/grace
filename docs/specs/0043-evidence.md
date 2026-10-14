@@ -3,7 +3,7 @@
 Дата: 2026-10-13. Спецификация: [accepted SPEC-0043](0043-operations-list.md).
 Ветка: `codex/operations-list`, база — `codex/category-management` (SPEC-0042: иконки
 категорий), implementation commit `4c5e2d3`.
-Статус: `integrated` — PR #31, squash `0377f4c`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production не развёрнут (деплой вручную).
+Статус: `integrated` — PR #31, squash `0377f4c`; post-merge `make test` в основной копии и CI `main` на `1339eea` пройдены. Production развёрнут 2026-10-14 (release `8ad9705`, workflow run 38560119989).
 
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
