@@ -3,6 +3,7 @@ import { ArrowRight, CircleAlert } from 'lucide-react'
 import type { Account, CashPosition, FinancialEvent } from '@/shared/api/types'
 import {
   dateText,
+  dueSoonText,
   eventDateText,
   accountLabel,
 } from '@/shared/lib/finance-display'
@@ -133,7 +134,8 @@ export function Overview({
                 <strong className="block break-words">
                   {p.obligationName}
                 </strong>
-                <small className="mt-1 block text-muted-foreground">
+                <small className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
+                  {p.timing === 'due_soon' && <StatusBadge tone="warning">{dueSoonText(p.daysUntilDue)}</StatusBadge>}
                   {dateText(p.dueOn)}
                 </small>
               </span>

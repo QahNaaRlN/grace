@@ -73,5 +73,7 @@ type CashScheduledPayment struct {
 	AmountMinor        int64  `json:"amountMinor"`
 	PaidMinor          int64  `json:"paidMinor"`
 	RemainingMinor     int64  `json:"remainingMinor"`
-	Timing             string `json:"timing"`
+	// Timing: overdue, due_soon (0–3 days, SPEC-0046) or upcoming.
+	Timing       string `json:"timing"`
+	DaysUntilDue int    `json:"daysUntilDue"`
 }

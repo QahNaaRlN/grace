@@ -2490,8 +2490,13 @@ export interface components {
             paidMinor: number;
             /** Format: int64 */
             remainingMinor: number;
-            /** @enum {string} */
-            timing: "overdue" | "upcoming";
+            /**
+             * @description SPEC-0046: due_soon — unpaid and due today or within 3 days (the 3/1-day reminder windows); counted in upcoming totals.
+             * @enum {string}
+             */
+            timing: "overdue" | "due_soon" | "upcoming";
+            /** @description Calendar days from asOf to dueOn; negative when overdue. */
+            daysUntilDue: number;
         };
         CurrencyCashPosition: {
             currency: string;
@@ -2629,6 +2634,10 @@ export interface components {
             /** @enum {string} */
             status: "planned" | "overdue" | "partially_paid" | "paid";
             isOverdue: boolean;
+            /** @description SPEC-0046 — unpaid and due today or within 3 days. */
+            dueSoon: boolean;
+            /** @description Calendar days from asOf to dueOn; negative when overdue. */
+            daysUntilDue: number;
             settlements: components["schemas"]["ScheduledPaymentSettlement"][];
         };
         Obligation: {

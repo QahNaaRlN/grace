@@ -55,6 +55,8 @@ const obligationsResult = {
           remainingMinor: 25_000,
           status: 'planned',
           isOverdue: false,
+          dueSoon: false,
+          daysUntilDue: 6,
           settlements: [],
         }],
       }],

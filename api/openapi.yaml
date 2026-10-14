@@ -3987,7 +3987,7 @@ components:
         outflowsMinor: { type: integer, format: int64, minimum: 0 }
     CashScheduledPayment:
       type: object
-      required: [scheduledPaymentId, obligationId, obligationName, dueOn, amountMinor, paidMinor, remainingMinor, timing]
+      required: [scheduledPaymentId, obligationId, obligationName, dueOn, amountMinor, paidMinor, remainingMinor, timing, daysUntilDue]
       properties:
         scheduledPaymentId: { type: string, format: uuid }
         obligationId: { type: string, format: uuid }
@@ -3996,7 +3996,8 @@ components:
         amountMinor: { type: integer, format: int64, minimum: 1 }
         paidMinor: { type: integer, format: int64, minimum: 0 }
         remainingMinor: { type: integer, format: int64, minimum: 1 }
-        timing: { type: string, enum: [overdue, upcoming] }
+        timing: { type: string, enum: [overdue, due_soon, upcoming], description: 'SPEC-0046: due_soon — unpaid and due today or within 3 days (the 3/1-day reminder windows); counted in upcoming totals.' }
+        daysUntilDue: { type: integer, description: Calendar days from asOf to dueOn; negative when overdue. }
     CurrencyCashPosition:
       type: object
       required: [currency, liquidBalanceMinor, overdueObligationsMinor, upcomingObligationsMinor, obligationsThroughMinor, availableAfterObligationsMinor, scheduledPayments]
@@ -4120,7 +4121,7 @@ components:
         createdAt: { type: string, format: date-time }
     ScheduledPayment:
       type: object
-      required: [id, position, dueOn, amountMinor, paidMinor, remainingMinor, status, isOverdue, settlements]
+      required: [id, position, dueOn, amountMinor, paidMinor, remainingMinor, status, isOverdue, dueSoon, daysUntilDue, settlements]
       properties:
         id: { type: string, format: uuid }
         position: { type: integer, minimum: 1 }
@@ -4130,6 +4131,8 @@ components:
         remainingMinor: { type: integer, format: int64, minimum: 0 }
         status: { type: string, enum: [planned, overdue, partially_paid, paid] }
         isOverdue: { type: boolean }
+        dueSoon: { type: boolean, description: SPEC-0046 — unpaid and due today or within 3 days. }
+        daysUntilDue: { type: integer, description: Calendar days from asOf to dueOn; negative when overdue. }
         settlements:
           type: array
           items: { $ref: '#/components/schemas/ScheduledPaymentSettlement' }

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -316,11 +317,16 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 			item = &CurrencyCashPosition{Currency: currency, LiquidBalanceMinor: &zero, ScheduledPayments: make([]CashScheduledPayment, 0)}
 			byCurrency[currency] = item
 		}
+		payment.DaysUntilDue = obligations.DueIn(asOf, payment.DueOn)
 		if payment.DueOn < asOf {
 			payment.Timing = "overdue"
 			item.OverdueObligationsMinor += payment.RemainingMinor
 		} else {
+			// «Скоро» is still upcoming money; only the label changes.
 			payment.Timing = "upcoming"
+			if obligations.DueSoon(payment.DaysUntilDue, payment.RemainingMinor) {
+				payment.Timing = "due_soon"
+			}
 			item.UpcomingObligationsMinor += payment.RemainingMinor
 		}
 		item.ScheduledPayments = append(item.ScheduledPayments, payment)
