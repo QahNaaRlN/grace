@@ -193,6 +193,23 @@ compose_release exec -T postgres pg_restore --list < "$backup" >/dev/null
 chmod 0600 "$backup"
 echo "verified pre-deploy backup: $backup"
 
+# Release 090ebad (2026-10-14): migration 22 failed on published import rows.
+# Its single transaction rolled back, but migrate left version 22 marked dirty.
+# Clear that mark only in exactly this state and only if nothing of 22 exists.
+migration_state="$(compose_release exec -T postgres psql -U grace -d grace -Atc \
+  "SELECT version || ':' || dirty::text FROM schema_migrations")"
+if [ "$migration_state" = "22:true" ]; then
+  applied_columns="$(compose_release exec -T postgres psql -U grace -d grace -Atc \
+    "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND ((table_name = 'import_records' AND column_name = 'questions') OR (table_name = 'import_batches' AND column_name IN ('file_name', 'format')))")"
+  if [ "$applied_columns" != "0" ]; then
+    echo "migration 22 is dirty and partly applied; operator review required" >&2
+    exit 1
+  fi
+  echo "migration 22 rolled back in an earlier release; clearing its dirty mark"
+  compose_release run --rm migrate \
+    'exec migrate -path=/migrations -database="postgres://grace:$(cat /run/secrets/postgres_password)@postgres:5432/grace?sslmode=disable" force 21'
+fi
+
 compose_release run --rm migrate
 compose_release up -d api web caddy
 if [ "$ai_configured" = "true" ] && [ "${GRACE_AI_ENABLED:-false}" = "true" ]; then
