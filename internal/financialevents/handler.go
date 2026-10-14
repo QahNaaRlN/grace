@@ -36,7 +36,7 @@ func (handler *Handler) List(w http.ResponseWriter, r *http.Request) {
 		}
 		filter.Limit = limit
 	}
-	if filter.Kind != "" && !slices.Contains([]string{"purchase", "income_received", "debt_payment", "internal_transfer", "refund"}, filter.Kind) {
+	if filter.Kind != "" && !slices.Contains([]string{"purchase", "income_received", "debt_payment", "internal_transfer", "refund", "balance_adjustment"}, filter.Kind) {
 		web.WriteError(w, 422, "validation_error", "Неизвестный вид операции.")
 		return
 	}

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowDownLeft, ArrowRightLeft, Landmark, Search, Undo2 } from 'lucide-react'
+import { ArrowDownLeft, ArrowRightLeft, Landmark, Scale, Search, Undo2 } from 'lucide-react'
 
 import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
@@ -26,8 +26,9 @@ const kindLabels: Record<FinancialEvent['kind'], string> = {
   internal_transfer: 'Перевод',
   refund: 'Возврат',
   debt_payment: 'Платёж по обязательству',
+  balance_adjustment: 'Корректировка остатка',
 }
-const kindIcons = { income_received: ArrowDownLeft, internal_transfer: ArrowRightLeft, refund: Undo2, debt_payment: Landmark }
+const kindIcons = { income_received: ArrowDownLeft, internal_transfer: ArrowRightLeft, refund: Undo2, debt_payment: Landmark, balance_adjustment: Scale }
 const sourceLabels: Record<string, string> = { manual: 'Ручной ввод', import: 'Импорт таблицы', bank_import: 'Импорт выписки', receipt: 'Фото чека' }
 const filterKeys = ['q', 'category', 'account', 'kind', 'from', 'to', 'voided'] as const
 type DayTotal = { date: string; currency: string; inflowMinor: number; outflowMinor: number }

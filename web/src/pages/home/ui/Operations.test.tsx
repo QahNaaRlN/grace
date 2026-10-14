@@ -9,7 +9,7 @@ import { Operations } from './Operations'
 const { get, patch, post } = vi.hoisted(() => ({ get: vi.fn(), patch: vi.fn(), post: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: { GET: get, PATCH: patch, POST: post } }))
 
-const account: Account = { id: 'card', name: 'Карта', type: 'debit', currency: 'RUB', balanceReconciled: true, balanceMinor: 0, createdAt: '2026-10-01T00:00:00Z', paymentInstruments: [{ id: 'c', name: 'Карта', bank: 'Т-Банк', last4: '4821' }] }
+const account: Account = { id: 'card', name: 'Карта', type: 'debit', currency: 'RUB', balanceReconciled: true, revision: 1, hasOperations: false, lastReconciliation: null, lastImportConfirmedAt: null, balanceMinor: 0, createdAt: '2026-10-01T00:00:00Z', paymentInstruments: [{ id: 'c', name: 'Карта', bank: 'Т-Банк', last4: '4821' }] }
 const categories: Category[] = [{ id: 'food', name: 'Продукты', kind: 'expense', createdAt: '', icon: 'shopping-cart', hidden: false, operationCount: 1 }]
 function event(id: string, patch: Partial<FinancialEvent>): FinancialEvent {
   return { id, kind: 'purchase', source: 'manual', merchant: '', description: '', occurredAt: '2026-10-13T09:15:00Z', occurredDate: null, datePrecision: 'instant', createdAt: '2026-10-13T09:15:00Z', categoryId: 'food', categoryName: 'Продукты', categoryIcon: 'shopping-cart', originalEventId: null, revision: 1, editedByUser: false, voidedAt: null, voidReason: null,

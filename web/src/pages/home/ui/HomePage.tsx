@@ -2,9 +2,9 @@ import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
 import { LoanPanel } from '@/features/loan-details/LoanPanel'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { PageHeader } from '@/shared/ui/page-header'
-import { AccountIcon } from '@/shared/ui/account-icon'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Categories } from './Categories'
+import { Accounts } from './Accounts'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BarChart3,
@@ -20,7 +20,7 @@ import { Operations } from './Operations'
 import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { accountLabel, today, formatMoney } from '@/shared/lib/finance-display'
+import { today, formatMoney } from '@/shared/lib/finance-display'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge, type Tone } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
@@ -30,11 +30,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
   DialogTrigger,
-  DialogClose,
 } from '@/shared/ui/dialog'
-import { Fragment, useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
@@ -42,7 +40,6 @@ import { CreateObligationForm } from '@/features/create-obligation'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
 import type {
-  Account,
   CashPosition,
   FinancialEvent,
   Obligation,
@@ -124,139 +121,6 @@ async function loadObligations(asOf: string) {
   })
   if (!data) throw new Error('Не удалось загрузить обязательства')
   return data.items
-}
-
-function Accounts({ items }: { items: Account[] }) {
-  const [selected, setSelected] = useState<Account | null>(null)
-  const opener = useRef<HTMLButtonElement | null>(null)
-  return (
-    <>
-      <div className="rounded-2xl border bg-card p-5">
-        {items.map((account) => (
-          <Button
-            variant="ghost"
-            key={account.id}
-            className="grace-row mt-1 h-auto justify-start whitespace-normal font-normal"
-            onClick={(event) => {
-              opener.current = event.currentTarget
-              setSelected(account)
-            }}
-          >
-            <AccountIcon type={account.type} />
-            <span className="min-w-0 flex-1">
-              <strong className="block break-words">
-                {accountLabel(account)}
-              </strong>
-              <small className="mt-1 block text-muted-foreground">
-                {account.type === 'cash'
-                  ? 'Наличные'
-                  : account.type === 'credit'
-                    ? 'Кредитный счёт'
-                    : account.type === 'debit'
-                      ? 'Дебетовый счёт'
-                      : 'Рассрочка'}
-              </small>
-            </span>
-            <Money valueMinor={account.balanceMinor} currency={account.currency} className="max-w-[48%] text-right" />
-          </Button>
-        ))}
-      </div>
-      <Dialog
-        open={!!selected}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null)
-        }}
-      >
-        <DialogContent
-          onCloseAutoFocus={(event) => {
-            event.preventDefault()
-            opener.current?.focus()
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>{selected?.name}</DialogTitle>
-            <DialogDescription>
-              Сведения о счёте и его платёжных инструментах
-            </DialogDescription>
-          </DialogHeader>
-          {selected && (
-            <>
-              <dl className="grace-fields">
-                <div>
-                  <dt>Счёт / карта</dt>
-                  <dd>{accountLabel(selected)}</dd>
-                </div>
-                <div>
-                  <dt>Текущий баланс</dt>
-                  <dd>
-                    <Money valueMinor={selected.balanceMinor} currency={selected.currency} size="sm" />
-                  </dd>
-                </div>
-                {selected.paymentInstruments?.map((card) => (
-                  <Fragment key={card.id}>
-                    <div>
-                      <dt>Банк</dt>
-                      <dd>{card.bank}</dd>
-                    </div>
-                    <div>
-                      <dt>Последние четыре цифры</dt>
-                      <dd>{card.last4}</dd>
-                    </div>
-                  </Fragment>
-                ))}
-                {!selected.paymentInstruments?.length && (
-                  <div>
-                    <dt>Карта / банк / номер</dt>
-                    <dd>
-                      {selected.type === 'cash'
-                        ? 'Не применяется'
-                        : 'Не указано'}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-              {selected.type === 'credit' && (
-                <Disclosure triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent" title={<>
-                    Кредитные условия и выписка
-                  </>}>
-                  <dl className="grace-fields">
-                    {[
-                      'Лимит',
-                      'Доступно',
-                      'Начало текущего периода',
-                      'Конец текущего периода',
-                      'Дата платежа',
-                      'Нужно внести',
-                      'Минимальный платёж',
-                      'Покупки периода',
-                      'Для сохранения grace',
-                      'Оплачено',
-                      'Осталось внести',
-                      'Статус',
-                      'Комментарий',
-                    ].map((label) => (
-                      <div key={label}>
-                        <dt>{label}</dt>
-                        <dd>Не указано</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </Disclosure>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Баланс хранится на счёте. Карта не создаёт отдельный остаток.
-              </p>
-            </>
-          )}
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Закрыть</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
 }
 
 const obligationKindLabels: Record<Obligation['kind'], string> = {

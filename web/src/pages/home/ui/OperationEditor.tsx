@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
 import type { Account, Category, FinancialEvent } from '@/shared/api/types'
-import { minorToInput, parseMinor, accountLabel, formatMoney } from '@/shared/lib/finance-display'
+import { minorToInput, parseMinor, accountLabel, formatMoney, localDateTimeInput as toLocalInput, fromLocalDateTimeInput } from '@/shared/lib/finance-display'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { csrfToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
@@ -22,11 +22,6 @@ const kindLabels: Record<string, string> = { purchase: 'Покупка', income_
 const convertible = ['purchase', 'income_received', 'debt_payment']
 const fieldLabels: Record<string, string> = { merchant: 'Продавец', description: 'Описание', occurred: 'Дата', kind: 'Вид', category: 'Категория', amountMinor: 'Сумма', account: 'Счёт', destinationAccount: 'Счёт зачисления', voided: 'Отменена' }
 
-// datetime-local works in the browser's zone; Grace dates are Asia/Yekaterinburg.
-function toLocalInput(iso: string) {
-  const parts = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
-  return parts.replace(' ', 'T')
-}
 
 const refreshKeys = [['financial-events'], ['accounts'], ['cash-position'], ['statistics'], ['period-summary'], ['categories']]
 
@@ -84,7 +79,7 @@ function EditDialog({ event, accounts, categories, onClose, onSaved }: {
     if (amount !== sourcePosting?.amountMinor) body.amountMinor = amount
     if (form.accountId !== sourcePosting?.accountId) body.accountId = form.accountId
     if (isTransfer && form.destinationAccountId !== credit?.accountId) body.destinationAccountId = form.destinationAccountId
-    if (event.occurredAt && form.occurredAt && form.occurredAt !== toLocalInput(event.occurredAt)) body.occurredAt = `${form.occurredAt}:00+05:00`
+    if (event.occurredAt && form.occurredAt && form.occurredAt !== toLocalInput(event.occurredAt)) body.occurredAt = fromLocalDateTimeInput(form.occurredAt)
     if (!event.occurredAt && form.occurredDate && form.occurredDate !== event.occurredDate) body.occurredDate = form.occurredDate
     if (Object.keys(body).length === 1) return setError('Ничего не изменилось.')
     setPending(true); setError('')
