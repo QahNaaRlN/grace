@@ -43,7 +43,7 @@ func TestDateOnlyHistoryPublicationAndCalendarAnalytics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	preview, err := r.Preview(ctx, b.ID, "date-only-preview", Selection{b.Revision, []string{rows[0].ID}})
+	preview, err := r.Preview(ctx, b.ID, "date-only-preview", Selection{ExpectedRevision: b.Revision, RecordIDs: []string{rows[0].ID}})
 	if err != nil || len(preview.Blockers) > 0 {
 		t.Fatal(err, preview.Blockers)
 	}

@@ -63,6 +63,11 @@ func remember(ctx context.Context, tx pgx.Tx, scope, key string, payload, out an
 }
 
 func (r *Repository) Upload(ctx context.Context, raw []byte, key string) (Batch, error) {
+	return r.UploadNamed(ctx, raw, key, "")
+}
+
+// UploadNamed keeps the uploaded file name for the history (SPEC-0044).
+func (r *Repository) UploadNamed(ctx context.Context, raw []byte, key, fileName string) (Batch, error) {
 	s, err := importreview.Load(bytes.NewReader(raw))
 	if err != nil {
 		return Batch{}, fault("invalid_snapshot", 400)
@@ -71,10 +76,12 @@ func (r *Repository) Upload(ctx context.Context, raw []byte, key string) (Batch,
 	if err != nil {
 		return Batch{}, fault("review_limit", 422)
 	}
-	return r.uploadReport(ctx, raw, key, report)
+	return r.uploadReport(ctx, raw, key, report, upload{"json", fileName})
 }
 
-func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, report importreview.Report) (Batch, error) {
+type upload struct{ format, fileName string }
+
+func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, report importreview.Report, file upload) (Batch, error) {
 	tx, err := r.begin(ctx, true)
 	if err != nil {
 		return Batch{}, err
@@ -92,13 +99,20 @@ func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, r
 	if errors.Is(err, pgx.ErrNoRows) {
 		created = true
 		data, _ := json.Marshal(report)
-		err = tx.QueryRow(ctx, "INSERT INTO import_batches(source_id,payload_hash,snapshot,report) VALUES($1,$2,$3,$4) RETURNING id::text", report.Source.SourceID, payload.Hash, raw, data).Scan(&id)
+		err = tx.QueryRow(ctx, "INSERT INTO import_batches(source_id,payload_hash,snapshot,report,format,file_name) VALUES($1,$2,$3,$4,$5,NULLIF($6,'')) RETURNING id::text", report.Source.SourceID, payload.Hash, raw, data, file.format, cleanFileName(file.fileName)).Scan(&id)
 		if err != nil {
 			return b, err
 		}
+		involved := map[string]int{}
+		for _, c := range report.Candidates {
+			involved[c.RecordID]++
+			if c.OtherRecordID != c.RecordID {
+				involved[c.OtherRecordID]++
+			}
+		}
 		for _, rec := range report.Records {
 			source, _ := json.Marshal(rec)
-			_, err = tx.Exec(ctx, "INSERT INTO import_records(batch_id,snapshot_record_id,domain,source,raw_hash) VALUES($1,$2,$3,$4,$5)", id, rec.ID, rec.Domain, source, digest(rec.Raw))
+			_, err = tx.Exec(ctx, "INSERT INTO import_records(batch_id,snapshot_record_id,domain,source,raw_hash,questions) VALUES($1,$2,$3,$4,$5,$6)", id, rec.ID, rec.Domain, source, digest(rec.Raw), len(rec.Issues)+involved[rec.ID])
 			if err != nil {
 				return b, err
 			}
@@ -106,7 +120,7 @@ func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, r
 	} else if err != nil {
 		return b, err
 	}
-	b, _, err = loadBatch(ctx, tx, id, false)
+	b, err = loadBatchHeader(ctx, tx, id, false)
 	if err != nil {
 		return b, err
 	}
@@ -120,40 +134,59 @@ func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, r
 	return b, tx.Commit(ctx)
 }
 func loadBatch(ctx context.Context, tx pgx.Tx, id string, lock bool) (Batch, importreview.Report, error) {
-	var b Batch
 	var report importreview.Report
+	b, err := loadBatchHeader(ctx, tx, id, lock)
+	if err != nil {
+		return b, report, err
+	}
 	var raw []byte
-	query := "SELECT id::text,payload_hash,revision,status,created_at,report FROM import_batches WHERE id=$1"
+	if err = tx.QueryRow(ctx, "SELECT report FROM import_batches WHERE id=$1", id).Scan(&raw); err != nil {
+		return b, report, err
+	}
+	return b, report, json.Unmarshal(raw, &report)
+}
+
+// loadBatchHeader reads a batch without parsing its report, which holds every
+// source row; history and record pages stay fast on thousands of rows.
+func loadBatchHeader(ctx context.Context, tx pgx.Tx, id string, lock bool) (Batch, error) {
+	var b Batch
+	var source, domains []byte
+	query := "SELECT id::text,payload_hash,revision,status,created_at,report->'source',COALESCE(report->'domainCounts','{}'),file_name,format FROM import_batches WHERE id=$1"
 	if lock {
 		query += " FOR UPDATE"
 	}
-	err := tx.QueryRow(ctx, query, id).Scan(&b.ID, &b.PayloadHash, &b.Revision, &b.Status, &b.CreatedAt, &raw)
+	err := tx.QueryRow(ctx, query, id).Scan(&b.ID, &b.PayloadHash, &b.Revision, &b.Status, &b.CreatedAt, &source, &domains, &b.FileName, &b.Format)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return b, report, ErrNotFound
+		return b, ErrNotFound
 	}
 	if err != nil {
-		return b, report, err
+		return b, err
 	}
-	if err = json.Unmarshal(raw, &report); err != nil {
-		return b, report, err
+	if err = json.Unmarshal(source, &b.Source); err != nil {
+		return b, err
 	}
-	b.Source = report.Source
-	b.DomainCounts = report.DomainCounts
+	if err = json.Unmarshal(domains, &b.DomainCounts); err != nil {
+		return b, err
+	}
 	b.Counts = map[string]int{}
 	rows, err := tx.Query(ctx, "SELECT CASE WHEN published THEN 'published' ELSE decision->>'action' END,count(*) FROM import_records WHERE batch_id=$1 AND domain='transaction' GROUP BY 1", id)
 	if err != nil {
-		return b, report, err
+		return b, err
 	}
-	defer rows.Close()
 	for rows.Next() {
 		var k string
 		var n int
 		if err = rows.Scan(&k, &n); err != nil {
-			return b, report, err
+			rows.Close()
+			return b, err
 		}
 		b.Counts[k] = n
 	}
-	return b, report, rows.Err()
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return b, err
+	}
+	return b, summarize(ctx, tx, &b)
 }
 func (r *Repository) Batch(ctx context.Context, id string) (Batch, error) {
 	tx, err := r.begin(ctx, false)
@@ -161,8 +194,7 @@ func (r *Repository) Batch(ctx context.Context, id string) (Batch, error) {
 		return Batch{}, err
 	}
 	defer tx.Rollback(ctx)
-	b, _, err := loadBatch(ctx, tx, id, false)
-	return b, err
+	return loadBatchHeader(ctx, tx, id, false)
 }
 func (r *Repository) Batches(ctx context.Context, cursor string, limit int) (Page[Batch], error) {
 	page := Page[Batch]{Items: []Batch{}}
@@ -171,7 +203,12 @@ func (r *Repository) Batches(ctx context.Context, cursor string, limit int) (Pag
 		return page, err
 	}
 	defer tx.Rollback(ctx)
-	rows, err := tx.Query(ctx, "SELECT id::text FROM import_batches WHERE ($1='' OR id::text>$1) ORDER BY id LIMIT $2", cursor, limit+1)
+	offset, ok := parseOffset(cursor)
+	if !ok {
+		return page, fault("invalid_pagination", 400)
+	}
+	// Newest first: the history answers «what was loaded when».
+	rows, err := tx.Query(ctx, "SELECT id::text FROM import_batches ORDER BY created_at DESC, id DESC OFFSET $1 LIMIT $2", offset, limit+1)
 	if err != nil {
 		return page, err
 	}
@@ -190,11 +227,11 @@ func (r *Repository) Batches(ctx context.Context, cursor string, limit int) (Pag
 		return page, err
 	}
 	if len(ids) > limit {
-		page.NextCursor = ids[limit-1]
+		page.NextCursor = strconv.Itoa(offset + limit)
 		ids = ids[:limit]
 	}
 	for _, id := range ids {
-		b, _, err := loadBatch(ctx, tx, id, false)
+		b, err := loadBatchHeader(ctx, tx, id, false)
 		if err != nil {
 			return page, err
 		}
@@ -205,7 +242,7 @@ func (r *Repository) Batches(ctx context.Context, cursor string, limit int) (Pag
 func readRecord(row pgx.Row) (Record, error) {
 	rec := Record{Candidates: []Candidate{}, History: []Audit{}}
 	var source, decision []byte
-	err := row.Scan(&rec.ID, &source, &decision, &rec.Published, &rec.EventID)
+	err := row.Scan(&rec.ID, &source, &decision, &rec.Published, &rec.EventID, &rec.Questions)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return rec, ErrNotFound
 	}
@@ -218,57 +255,13 @@ func readRecord(row pgx.Row) (Record, error) {
 	return rec, json.Unmarshal(decision, &rec.Decision)
 }
 
-const recordSQL = "SELECT r.id::text,r.source,r.decision,r.published,p.event_id::text FROM import_records r LEFT JOIN import_provenance p ON p.record_id=r.id AND p.owner_id=r.owner_id "
+const recordSQL = "SELECT r.id::text,r.source,r.decision,r.published,p.event_id::text,r.questions FROM import_records r LEFT JOIN import_provenance p ON p.record_id=r.id AND p.owner_id=r.owner_id "
 
 func loadRecord(ctx context.Context, tx pgx.Tx, batch, id string) (Record, error) {
 	return readRecord(tx.QueryRow(ctx, recordSQL+"WHERE r.batch_id=$1 AND r.id=$2", batch, id))
 }
 func (r *Repository) Records(ctx context.Context, batch, cursor, domain, status string, limit int) (Page[Record], error) {
-	page := Page[Record]{Items: []Record{}}
-	tx, err := r.begin(ctx, false)
-	if err != nil {
-		return page, err
-	}
-	defer tx.Rollback(ctx)
-	if _, _, err = loadBatch(ctx, tx, batch, false); err != nil {
-		return page, err
-	}
-	rows, err := tx.Query(ctx, `SELECT id::text FROM import_records r WHERE batch_id=$1 AND ($2='' OR id::text>$2)
-	AND ($3='' OR domain=$3 OR $3='unsupported' AND domain<>'transaction')
-	AND ($4='' OR CASE WHEN published THEN 'published' ELSE decision->>'action' END=$4
-	OR $4='needs_review' AND NOT published AND (jsonb_array_length(source->'issues')>0 OR EXISTS (
-	SELECT 1 FROM import_batches b, jsonb_array_elements(b.report->'candidates') c
-	WHERE b.id=r.batch_id AND (c->>'recordId'=r.snapshot_record_id OR c->>'otherRecordId'=r.snapshot_record_id))))
-	ORDER BY id LIMIT $5`, batch, cursor, domain, status, limit+1)
-	if err != nil {
-		return page, err
-	}
-	ids := []string{}
-	for rows.Next() {
-		var id string
-		if err = rows.Scan(&id); err != nil {
-			rows.Close()
-			return page, err
-		}
-		ids = append(ids, id)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return page, err
-	}
-	if len(ids) > limit {
-		page.NextCursor = ids[limit-1]
-		ids = ids[:limit]
-	}
-	for _, id := range ids {
-		rec, err := loadRecord(ctx, tx, batch, id)
-		if err != nil {
-			return page, err
-		}
-		page.Items = append(page.Items, rec)
-	}
-	return page, nil
+	return r.RecordsQuery(ctx, batch, RecordQuery{Cursor: cursor, Limit: limit, RecordFilter: RecordFilter{Domain: domain, Status: status}})
 }
 func (r *Repository) Record(ctx context.Context, batch, id string) (Record, error) {
 	tx, err := r.begin(ctx, false)

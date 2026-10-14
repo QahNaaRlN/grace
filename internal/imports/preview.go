@@ -295,7 +295,9 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 	return p, nil
 }
 func (r *Repository) Preview(ctx context.Context, batch, key string, input Selection) (Preview, error) {
-	if !selectionValid(input.RecordIDs) {
+	// Either explicit ids (a page selection) or a filter (SPEC-0044), never both.
+	byFilter := input.Filter != nil && len(input.RecordIDs) == 0
+	if !byFilter && (input.Filter != nil || !selectionValid(input.RecordIDs)) {
 		return Preview{}, fault("invalid_selection", 400)
 	}
 	tx, err := r.begin(ctx, true)
@@ -316,7 +318,14 @@ func (r *Repository) Preview(ctx context.Context, batch, key string, input Selec
 	if b.Revision != input.ExpectedRevision {
 		return p, fault("revision_conflict", 409)
 	}
-	p, err = r.plan(ctx, tx, b, report, input.RecordIDs)
+	ids := input.RecordIDs
+	if byFilter {
+		// The revision lock makes the filter resolve to the rows the person saw.
+		if ids, err = filteredIDs(ctx, tx, batch, *input.Filter); err != nil {
+			return p, err
+		}
+	}
+	p, err = r.plan(ctx, tx, b, report, ids)
 	if err != nil {
 		return p, err
 	}
