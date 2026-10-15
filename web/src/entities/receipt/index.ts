@@ -1,0 +1,1 @@
+export { receiptQueries } from './api'
