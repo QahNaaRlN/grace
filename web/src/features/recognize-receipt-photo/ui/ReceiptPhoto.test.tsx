@@ -1,7 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as renderElement, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { queryHarness } from '@/test/query-harness'
 import { ReceiptPhoto } from './ReceiptPhoto'
+
+const render = (element: React.ReactElement) =>
+  renderElement(element, { wrapper: queryHarness().wrapper })
 
 const mocked = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: mocked }))
