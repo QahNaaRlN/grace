@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/shared/api'
+import { paymentReminderQueries } from '@/entities/obligation'
 import { Button } from '@/shared/ui/button'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
@@ -13,15 +13,7 @@ const labels = {
   uncertain: 'Доставка не подтверждена',
 }
 export function ReminderHistory() {
-  const history = useQuery({
-    queryKey: ['payment-reminders'],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/payment-reminders')
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
-    refetchInterval: 60000,
-  })
+  const history = useQuery({ ...paymentReminderQueries.list(), refetchInterval: 60000 })
   return (
     <Disclosure
       className="rounded-2xl border bg-card p-5"

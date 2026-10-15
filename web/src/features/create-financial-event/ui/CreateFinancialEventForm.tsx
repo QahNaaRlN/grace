@@ -2,6 +2,10 @@ import { Disclosure } from '@/shared/ui/disclosure'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { accountQueries } from '@/entities/account'
+import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
+import { financialEventQueries } from '@/entities/financial-event'
+import { obligationQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import type { Account, Category, FinancialEvent } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
@@ -138,9 +142,13 @@ export function CreateFinancialEventForm({
         return
       }
       await Promise.all(
-        ['accounts', 'financial-events', 'cash-position', 'period-summary', 'obligations'].map(
-          (key) => query.invalidateQueries({ queryKey: [key] }),
-        ),
+        [
+          accountQueries.all(),
+          financialEventQueries.all(),
+          cashPositionQueries.all(),
+          periodSummaryQueries.all(),
+          obligationQueries.all(),
+        ].map((queryKey) => query.invalidateQueries({ queryKey })),
       )
       toast.success('Операция сохранена')
       onSaved?.()

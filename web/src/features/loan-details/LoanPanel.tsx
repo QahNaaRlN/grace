@@ -4,6 +4,8 @@ import { Copy, Download, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { rowKey, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
 import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
+import { cashPositionQueries } from '@/entities/analytics-report'
+import { loanQueries, obligationQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { minorToInput, parseMinor } from '@/shared/lib/money'
@@ -26,20 +28,11 @@ type Draft = components['schemas']['PaymentScheduleDraft']
 type Loan = components['schemas']['LoanDetails']
 export function LoanPanel({ obligationId }: { obligationId: string }) {
   const query = useQueryClient()
-  const key = ['loan-details', obligationId]
   const [draft, setDraft] = useState<Draft | null>(null)
   const [confirm, setConfirm] = useState(false)
-  const details = useQuery({
-    queryKey: key,
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/loans/{obligationId}', {
-        params: { path: { obligationId } },
-      })
-      if (error) throw new Error(error.message)
-      return data!
-    },
-  })
-  const refresh = () => query.invalidateQueries({ queryKey: key })
+  const details = useQuery(loanQueries.details(obligationId))
+  const refresh = () =>
+    query.invalidateQueries({ queryKey: loanQueries.details(obligationId).queryKey })
   const copy = useMutation({
     mutationFn: async () => {
       const { data, error } = await apiClient.POST('/api/v1/loans/{obligationId}/schedule-drafts', {
@@ -92,8 +85,8 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
       setConfirm(false)
       setDraft(null)
       void refresh()
-      void query.invalidateQueries({ queryKey: ['obligations'] })
-      void query.invalidateQueries({ queryKey: ['cash-position'] })
+      void query.invalidateQueries({ queryKey: obligationQueries.all() })
+      void query.invalidateQueries({ queryKey: cashPositionQueries.all() })
       toast.success('Новый график применён')
     },
     onError: (e) => toast.error(e.message),

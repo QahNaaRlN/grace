@@ -3,6 +3,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { cashPositionQueries } from '@/entities/analytics-report'
+import { obligationQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import type { FinancialEvent, Obligation, ScheduledPayment } from '@/shared/api'
 import { dueSoonText } from '@/shared/lib/finance-display'
@@ -308,8 +310,8 @@ function SettlementForm({
       return
     }
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['obligations'] }),
-      queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
+      queryClient.invalidateQueries({ queryKey: obligationQueries.all() }),
+      queryClient.invalidateQueries({ queryKey: cashPositionQueries.all() }),
     ])
     toast.success('Фактический платёж связан с графиком')
     onLinked()

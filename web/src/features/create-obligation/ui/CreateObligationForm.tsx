@@ -11,6 +11,8 @@ import {
 import { previewSchedule } from '@/features/schedule-builder/api/preview-schedule'
 import { rowsForPreview, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
 import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
+import { cashPositionQueries } from '@/entities/analytics-report'
+import { obligationQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
@@ -91,8 +93,8 @@ export function CreateObligationForm() {
       return
     }
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['obligations'] }),
-      queryClient.invalidateQueries({ queryKey: ['cash-position'] }),
+      queryClient.invalidateQueries({ queryKey: obligationQueries.all() }),
+      queryClient.invalidateQueries({ queryKey: cashPositionQueries.all() }),
     ])
     reset({ name: '', kind: values.kind, currency: values.currency })
     setRows([])
