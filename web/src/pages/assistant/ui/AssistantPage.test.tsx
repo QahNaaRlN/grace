@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { AssistantRequestError, type SubmitAssistant } from '@/features/ask-assistant'
 import type { AssistantResult } from '@/shared/api'
+import { AppLayout } from '@/widgets/app-shell'
 
 import { AssistantPage } from './AssistantPage'
 
@@ -155,7 +156,9 @@ const incomePeriodResult = {
 function renderPage(submitAssistant: SubmitAssistant) {
   const view = render(
     <MemoryRouter initialEntries={['/assistant']}>
-      <AssistantPage submitAssistant={submitAssistant} />
+      <AppLayout>
+        <AssistantPage submitAssistant={submitAssistant} />
+      </AppLayout>
     </MemoryRouter>,
   )
   fireEvent.click(screen.getByRole('button', { name: 'Быстрые запросы к данным Grace' }))

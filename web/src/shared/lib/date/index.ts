@@ -1,4 +1,6 @@
 export {
+  browserMonthEnd,
+  browserMonthPeriod,
   calendarDay,
   clockText,
   currentMonth,
