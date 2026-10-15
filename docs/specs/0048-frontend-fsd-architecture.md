@@ -1,6 +1,6 @@
 # SPEC-0048: архитектура Web по Feature-Sliced Design
 
-- Статус: verified
+- Статус: integrated (PR #42–#48, последний merge `d486582`)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-15
 - Acceptance owner: владелец Grace
