@@ -21,4 +21,5 @@ export type AssistantCompleted = components['schemas']['AssistantCompleted']
 export type AssistantClarify = components['schemas']['AssistantClarify']
 export type AssistantUnsupported = components['schemas']['AssistantUnsupported']
 export type AssistantUnavailable = components['schemas']['AssistantUnavailable']
-export type AssistantResult = AssistantCompleted | AssistantClarify | AssistantUnsupported | AssistantUnavailable
+export type AssistantResult =
+  AssistantCompleted | AssistantClarify | AssistantUnsupported | AssistantUnavailable

@@ -8,11 +8,61 @@ import { StatisticsCharts, StatisticsPage } from './StatisticsPage'
 const { get } = vi.hoisted(() => ({ get: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: { GET: get } }))
 const item: StatisticsCurrency = {
-  currency: 'RUB', summary: { currency: 'RUB', openingBalanceMinor: null, closingBalanceMinor: null, incomeMinor: 50000, purchasesMinor: 10000, refundsMinor: 2000, debtPaymentsMinor: 3000, netExternalCashFlowMinor: 39000, internalTransferVolumeMinor: 999000, expenseCategories: [] },
-  categories: [{ categoryId: null, categoryName: 'Без категории', purchasesMinor: 10000, refundsMinor: 2000, netExpenseMinor: 8000, shareBasisPoints: 10000 }],
-  series: [{ from: '2026-09-01', to: '2026-10-01', incomeMinor: 50000, purchasesMinor: 10000, refundsMinor: 2000, debtPaymentsMinor: 3000, outflowsMinor: 13000 }, { from: '2026-10-01', to: '2026-10-10', incomeMinor: 0, purchasesMinor: 0, refundsMinor: 0, debtPaymentsMinor: 0, outflowsMinor: 0 }],
+  currency: 'RUB',
+  summary: {
+    currency: 'RUB',
+    openingBalanceMinor: null,
+    closingBalanceMinor: null,
+    incomeMinor: 50000,
+    purchasesMinor: 10000,
+    refundsMinor: 2000,
+    debtPaymentsMinor: 3000,
+    netExternalCashFlowMinor: 39000,
+    internalTransferVolumeMinor: 999000,
+    expenseCategories: [],
+  },
+  categories: [
+    {
+      categoryId: null,
+      categoryName: 'Без категории',
+      purchasesMinor: 10000,
+      refundsMinor: 2000,
+      netExpenseMinor: 8000,
+      shareBasisPoints: 10000,
+    },
+  ],
+  series: [
+    {
+      from: '2026-09-01',
+      to: '2026-10-01',
+      incomeMinor: 50000,
+      purchasesMinor: 10000,
+      refundsMinor: 2000,
+      debtPaymentsMinor: 3000,
+      outflowsMinor: 13000,
+    },
+    {
+      from: '2026-10-01',
+      to: '2026-10-10',
+      incomeMinor: 0,
+      purchasesMinor: 0,
+      refundsMinor: 0,
+      debtPaymentsMinor: 0,
+      outflowsMinor: 0,
+    },
+  ],
 }
-function wrap(element: React.ReactNode) { return render(<MemoryRouter><QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>{element}</QueryClientProvider></MemoryRouter>) }
+function wrap(element: React.ReactNode) {
+  return render(
+    <MemoryRouter>
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        {element}
+      </QueryClientProvider>
+    </MemoryRouter>,
+  )
+}
 beforeEach(() => get.mockReset())
 describe('SPEC-0030 charts', () => {
   it('shows separate gross purchases/refunds and a readable table with keyboard selection', async () => {
@@ -30,20 +80,34 @@ describe('SPEC-0030 charts', () => {
     expect(screen.queryByText(/9.990/)).not.toBeInTheDocument()
   })
   it('uses the authoritative API for grouping and currency, without mixing currencies', async () => {
-    get.mockResolvedValue({ data: { from: '2026-09-01', to: '2026-10-10', granularity: 'month', coverage: 'recorded_only', currencies: [item, { ...item, currency: 'USD' }] } })
+    get.mockResolvedValue({
+      data: {
+        from: '2026-09-01',
+        to: '2026-10-10',
+        granularity: 'month',
+        coverage: 'recorded_only',
+        currencies: [item, { ...item, currency: 'USD' }],
+      },
+    })
     wrap(<StatisticsPage />)
     await screen.findByText('Без категории')
     expect(screen.getByText(/Полнота истории не подтверждена/)).toBeVisible()
     await userEvent.click(screen.getByLabelText('Группировка'))
     await userEvent.click(screen.getByRole('option', { name: 'По неделям' }))
-    await waitFor(() => expect(get).toHaveBeenLastCalledWith('/api/v1/analytics/statistics', { params: { query: expect.objectContaining({ granularity: 'week' }) } }))
+    await waitFor(() =>
+      expect(get).toHaveBeenLastCalledWith('/api/v1/analytics/statistics', {
+        params: { query: expect.objectContaining({ granularity: 'week' }) },
+      }),
+    )
     await userEvent.click(screen.getByLabelText('Валюта'))
     await userEvent.click(screen.getByRole('option', { name: 'USD' }))
     expect(screen.getByLabelText('Валюта')).toHaveTextContent('USD')
     expect(screen.getAllByRole('group')[0]).toHaveAccessibleName(/USD/)
   })
   it('handles failure and empty data without inventing a chart', async () => {
-    get.mockResolvedValueOnce({ error: { message: 'Нет соединения' } }).mockResolvedValue({ data: { currencies: [] } })
+    get
+      .mockResolvedValueOnce({ error: { message: 'Нет соединения' } })
+      .mockResolvedValue({ data: { currencies: [] } })
     wrap(<StatisticsPage />)
     expect(await screen.findByRole('alert')).toHaveTextContent('Нет соединения')
     await userEvent.click(screen.getByRole('button', { name: 'Повторить загрузку' }))
@@ -51,16 +115,31 @@ describe('SPEC-0030 charts', () => {
     expect(screen.queryByRole('group')).not.toBeInTheDocument()
   })
   it('rejects unsafe amounts instead of rounding financial values', () => {
-    wrap(<StatisticsCharts item={{ ...item, series: [{ ...item.series[0], purchasesMinor: Number.MAX_SAFE_INTEGER + 1 }] }} />)
+    wrap(
+      <StatisticsCharts
+        item={{
+          ...item,
+          series: [{ ...item.series[0], purchasesMinor: Number.MAX_SAFE_INTEGER + 1 }],
+        }}
+      />,
+    )
     expect(screen.getByRole('alert')).toHaveTextContent('точного отображения')
     expect(screen.queryByRole('group')).not.toBeInTheDocument()
   })
   it('keeps a zero-only recorded period textual and exposes compact statistics navigation', async () => {
-    const zero = { ...item, categories: [], summary: { ...item.summary, purchasesMinor: 0 }, series: [item.series[1]] }
+    const zero = {
+      ...item,
+      categories: [],
+      summary: { ...item.summary, purchasesMinor: 0 },
+      series: [item.series[1]],
+    }
     get.mockResolvedValue({ data: { currencies: [zero] } })
     wrap(<StatisticsPage compact />)
     expect(await screen.findByText('Нет записанных покупок за этот период.')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Открыть статистику' })).toHaveAttribute('href', '/analytics')
+    expect(screen.getByRole('link', { name: 'Открыть статистику' })).toHaveAttribute(
+      'href',
+      '/analytics',
+    )
     expect(screen.queryByRole('group')).not.toBeInTheDocument()
   })
 })

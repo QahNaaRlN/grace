@@ -24,4 +24,3 @@ apiClient.use({
     return response
   },
 })
-

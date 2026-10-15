@@ -18,13 +18,25 @@ export const CreateFinancialEventSchema = z
       context.addIssue({ code: 'custom', path: ['categoryId'], message: 'Выберите категорию' })
     }
     if (value.kind === 'purchase' && !value.merchant && !value.description) {
-      context.addIssue({ code: 'custom', path: ['merchant'], message: 'Укажите получателя или комментарий' })
+      context.addIssue({
+        code: 'custom',
+        path: ['merchant'],
+        message: 'Укажите получателя или комментарий',
+      })
     }
     if (value.kind === 'transfer' && !value.destinationAccountId) {
-      context.addIssue({ code: 'custom', path: ['destinationAccountId'], message: 'Выберите счёт назначения' })
+      context.addIssue({
+        code: 'custom',
+        path: ['destinationAccountId'],
+        message: 'Выберите счёт назначения',
+      })
     }
     if (value.kind === 'transfer' && value.accountId === value.destinationAccountId) {
-      context.addIssue({ code: 'custom', path: ['destinationAccountId'], message: 'Счета должны различаться' })
+      context.addIssue({
+        code: 'custom',
+        path: ['destinationAccountId'],
+        message: 'Счета должны различаться',
+      })
     }
   })
 

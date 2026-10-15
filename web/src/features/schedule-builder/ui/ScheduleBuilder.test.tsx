@@ -10,14 +10,31 @@ import { ScheduleBuilder } from './ScheduleBuilder'
 const { post } = vi.hoisted(() => ({ post: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: { POST: post } }))
 
-function Harness({ initial = [] as ScheduleRow[], mode }: { initial?: ScheduleRow[]; mode?: 'equal' | 'paste' | 'manual' }) {
+function Harness({
+  initial = [] as ScheduleRow[],
+  mode,
+}: {
+  initial?: ScheduleRow[]
+  mode?: 'equal' | 'paste' | 'manual'
+}) {
   const [rows, setRows] = useState(initial)
-  return <ScheduleBuilder rows={rows} onChange={setRows} currency="RUB" idPrefix="t" initialMode={mode} />
+  return (
+    <ScheduleBuilder
+      rows={rows}
+      onChange={setRows}
+      currency="RUB"
+      idPrefix="t"
+      initialMode={mode}
+    />
+  )
 }
 
 beforeEach(() => {
   post.mockReset()
-  post.mockImplementation(async (_path: string, init: { body: Parameters<typeof fakeSchedulePreview>[0] }) => fakeSchedulePreview(init.body))
+  post.mockImplementation(
+    async (_path: string, init: { body: Parameters<typeof fakeSchedulePreview>[0] }) =>
+      fakeSchedulePreview(init.body),
+  )
 })
 
 describe('SPEC-0037 schedule builder', () => {
@@ -28,7 +45,13 @@ describe('SPEC-0037 schedule builder', () => {
     await user.type(screen.getByLabelText('Количество, ежемесячно'), '120')
     await user.type(screen.getByLabelText('Сумма платежа'), '25000')
     await user.click(screen.getByRole('button', { name: 'Построить график' }))
-    expect(post.mock.calls[0][1].body).toEqual({ mode: 'equal', firstDueOn: '2027-01-15', count: 120, interval: 'monthly', amountMinor: 2_500_000 })
+    expect(post.mock.calls[0][1].body).toEqual({
+      mode: 'equal',
+      firstDueOn: '2027-01-15',
+      count: 120,
+      interval: 'monthly',
+      amountMinor: 2_500_000,
+    })
     expect(await screen.findByRole('button', { name: 'Показать все 120' })).toBeVisible()
     expect(screen.getAllByLabelText(/^Дата платежа/)).toHaveLength(6)
     expect(screen.getByLabelText('Дата платежа 120')).toHaveValue('2036-12-15')
@@ -51,10 +74,15 @@ describe('SPEC-0037 schedule builder', () => {
 
   it('adds the next month on Enter in the last amount and fills amounts down', async () => {
     const user = userEvent.setup()
-    render(<Harness mode="manual" initial={[
-      { key: 'a', dueOn: '2027-01-31', amount: '100,00' },
-      { key: 'b', dueOn: '2027-02-28', amount: '' },
-    ]} />)
+    render(
+      <Harness
+        mode="manual"
+        initial={[
+          { key: 'a', dueOn: '2027-01-31', amount: '100,00' },
+          { key: 'b', dueOn: '2027-02-28', amount: '' },
+        ]}
+      />,
+    )
     await user.click(screen.getByRole('button', { name: 'Сумму платежа 1 — во все следующие' }))
     expect(screen.getByLabelText('Сумма платежа 2')).toHaveValue('100,00')
     await user.type(screen.getByLabelText('Сумма платежа 2'), '{Enter}')
@@ -64,7 +92,20 @@ describe('SPEC-0037 schedule builder', () => {
 
   it('keeps paid rows locked when a generator replaces the schedule', async () => {
     const user = userEvent.setup()
-    render(<Harness initial={[{ key: 'paid', dueOn: '2026-12-15', amount: '250,00', locked: true, sourceId: 'p', paidMinor: 100 }]} />)
+    render(
+      <Harness
+        initial={[
+          {
+            key: 'paid',
+            dueOn: '2026-12-15',
+            amount: '250,00',
+            locked: true,
+            sourceId: 'p',
+            paidMinor: 100,
+          },
+        ]}
+      />,
+    )
     expect(screen.getByLabelText('Дата платежа 1 · есть оплата')).toBeDisabled()
     await user.type(screen.getByLabelText('Первый платёж'), '2027-01-15')
     await user.type(screen.getByLabelText('Количество, ежемесячно'), '2')
@@ -86,7 +127,13 @@ describe('SPEC-0045 schedule by contract term', () => {
     await user.type(screen.getByLabelText('По (включительно)'), '2036-12')
     await user.type(screen.getByLabelText('Сумма платежа'), '25000')
     await user.click(screen.getByRole('button', { name: 'Построить график' }))
-    expect(post.mock.calls[0][1].body).toEqual({ mode: 'period', dayOfMonth: 15, fromMonth: '2027-01', toMonth: '2036-12', amountMinor: 2_500_000 })
+    expect(post.mock.calls[0][1].body).toEqual({
+      mode: 'period',
+      dayOfMonth: 15,
+      fromMonth: '2027-01',
+      toMonth: '2036-12',
+      amountMinor: 2_500_000,
+    })
     expect(await screen.findByRole('button', { name: 'Показать все 120' })).toBeVisible()
     expect(screen.getByLabelText('Дата платежа 120')).toHaveValue('2036-12-15')
   })
@@ -112,7 +159,7 @@ describe('SPEC-0047 schedule layout', () => {
     const grid = screen.getByText('Дата').parentElement!
     const cells = Array.from(grid.children)
     // No absolutely positioned (sr-only) direct child may sit in the grid.
-    expect(cells.some(cell => cell.classList.contains('sr-only'))).toBe(false)
+    expect(cells.some((cell) => cell.classList.contains('sr-only'))).toBe(false)
     // Header: Дата, Сумма, one cell spanning both action columns.
     expect(cells[2]).toHaveClass('col-span-2')
     expect(cells[3]).toBe(screen.getByLabelText('Дата платежа 1'))

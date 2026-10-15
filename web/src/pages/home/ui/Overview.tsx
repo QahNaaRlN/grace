@@ -1,12 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, CircleAlert } from 'lucide-react'
 import type { Account, CashPosition, FinancialEvent } from '@/shared/api/types'
-import {
-  dateText,
-  dueSoonText,
-  eventDateText,
-  accountLabel,
-} from '@/shared/lib/finance-display'
+import { dateText, dueSoonText, eventDateText, accountLabel } from '@/shared/lib/finance-display'
 import { Button } from '@/shared/ui/button'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { Money } from '@/shared/ui/money'
@@ -59,7 +54,11 @@ export function Overview({
           cash.currencies.map((c) => (
             <div key={c.currency}>
               <p className="mt-3">
-                <Money valueMinor={c.availableAfterObligationsMinor} currency={c.currency} size="display" />
+                <Money
+                  valueMinor={c.availableAfterObligationsMinor}
+                  currency={c.currency}
+                  size="display"
+                />
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 Расчёт по {dateText(cash.through)} включительно
@@ -67,11 +66,15 @@ export function Overview({
               <dl className="grace-fields mt-5 text-sm">
                 <div>
                   <dt>Деньги на дебетовых счетах и наличные</dt>
-                  <dd><Money valueMinor={c.liquidBalanceMinor} currency={c.currency} size="sm" /></dd>
+                  <dd>
+                    <Money valueMinor={c.liquidBalanceMinor} currency={c.currency} size="sm" />
+                  </dd>
                 </div>
                 <div>
                   <dt>Известные платежи до этой даты</dt>
-                  <dd><Money valueMinor={c.obligationsThroughMinor} currency={c.currency} size="sm" /></dd>
+                  <dd>
+                    <Money valueMinor={c.obligationsThroughMinor} currency={c.currency} size="sm" />
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -88,10 +91,7 @@ export function Overview({
       {late.length > 0 && (
         <section className="min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 lg:row-start-1">
           <h2 className="flex items-center gap-2">
-            <CircleAlert
-              aria-hidden="true"
-              className="size-5 text-destructive"
-            />
+            <CircleAlert aria-hidden="true" className="size-5 text-destructive" />
             Требует внимания
           </h2>
           {late.slice(0, 3).map((p) => (
@@ -116,30 +116,31 @@ export function Overview({
           </div>
         </section>
       )}
-      <section className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-2' : 'lg:row-start-1'}`}>
+      <section
+        className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-2' : 'lg:row-start-1'}`}
+      >
         <h2>Ближайшие платежи</h2>
         {failed ? (
           <p className="mt-4 text-muted-foreground">
-            График обзора недоступен. Полный список обязательств можно открыть
-            отдельно.
+            График обзора недоступен. Полный список обязательств можно открыть отдельно.
           </p>
         ) : upcoming.length ? (
           upcoming.map((p) => (
-            <Link
-              key={p.scheduledPaymentId}
-              to="/payments"
-              className="grace-row mt-2"
-            >
+            <Link key={p.scheduledPaymentId} to="/payments" className="grace-row mt-2">
               <span className="min-w-0 flex-1">
-                <strong className="block break-words">
-                  {p.obligationName}
-                </strong>
+                <strong className="block break-words">{p.obligationName}</strong>
                 <small className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
-                  {p.timing === 'due_soon' && <StatusBadge tone="warning">{dueSoonText(p.daysUntilDue)}</StatusBadge>}
+                  {p.timing === 'due_soon' && (
+                    <StatusBadge tone="warning">{dueSoonText(p.daysUntilDue)}</StatusBadge>
+                  )}
                   {dateText(p.dueOn)}
                 </small>
               </span>
-              <Money valueMinor={p.remainingMinor} currency={p.currency} className="max-w-[50%] text-right" />
+              <Money
+                valueMinor={p.remainingMinor}
+                currency={p.currency}
+                className="max-w-[50%] text-right"
+              />
             </Link>
           ))
         ) : (
@@ -176,8 +177,7 @@ export function Overview({
                   {e.merchant || e.description || 'Операция'}
                 </strong>
                 <small className="mt-1 block text-muted-foreground">
-                  {eventDateText(e)} ·{' '}
-                  {a ? accountLabel(a) : (p?.accountName ?? 'Не указан счёт')}
+                  {eventDateText(e)} · {a ? accountLabel(a) : (p?.accountName ?? 'Не указан счёт')}
                 </small>
               </span>
               {p && (
@@ -185,23 +185,27 @@ export function Overview({
                   <Money
                     valueMinor={p.amountMinor}
                     currency={p.currency}
-                    direction={e.kind === 'internal_transfer' ? undefined : p.direction === 'credit' ? 'credit' : 'debit'}
+                    direction={
+                      e.kind === 'internal_transfer'
+                        ? undefined
+                        : p.direction === 'credit'
+                          ? 'credit'
+                          : 'debit'
+                    }
                   />
                   {e.kind === 'internal_transfer' && (
-                    <small className="block text-muted-foreground">
-                      Перевод
-                    </small>
+                    <small className="block text-muted-foreground">Перевод</small>
                   )}
                 </span>
               )}
             </Link>
           )
         })}
-        {!events.length && (
-          <p className="mt-4 text-muted-foreground">Операций пока нет.</p>
-        )}
+        {!events.length && <p className="mt-4 text-muted-foreground">Операций пока нет.</p>}
       </section>
-      <section className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-3' : 'lg:row-start-2'}`}>
+      <section
+        className={`min-w-0 rounded-2xl border border-border bg-card p-6 lg:col-start-2 ${late.length ? 'lg:row-start-3' : 'lg:row-start-2'}`}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2>Счета и карты</h2>
           <Button variant="ghost" asChild>
@@ -224,7 +228,11 @@ export function Overview({
                     : 'Баланс счёта'}
               </small>
             </span>
-            <Money valueMinor={a.balanceMinor} currency={a.currency} className="max-w-[48%] text-right" />
+            <Money
+              valueMinor={a.balanceMinor}
+              currency={a.currency}
+              className="max-w-[48%] text-right"
+            />
           </Link>
         ))}
       </section>

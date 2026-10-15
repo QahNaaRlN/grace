@@ -89,81 +89,129 @@ export function AppLayout({ children }: { children: ReactNode }) {
     )
   return (
     <div className="min-h-dvh lg:pl-60">
-      <a href="#main-content" className="sr-only fixed top-3 left-3 z-[100] rounded-xl bg-primary px-4 py-3 text-primary-foreground focus:not-sr-only">Перейти к содержимому</a>
+      <a
+        href="#main-content"
+        className="sr-only fixed top-3 left-3 z-[100] rounded-xl bg-primary px-4 py-3 text-primary-foreground focus:not-sr-only"
+      >
+        Перейти к содержимому
+      </a>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-border bg-card p-5 lg:flex">
-        <Link to="/" aria-label="Grace — обзор" className="mb-8 flex min-h-11 items-center gap-3 px-2 text-xl font-semibold tracking-tight"><GraceMark className="size-9 text-primary" aria-hidden="true"/>Grace</Link>
-        <p className="mb-3 px-3 text-xs font-medium tracking-wide text-muted-foreground">Личное пространство</p>
-        <nav aria-label="Навигация" className="grid gap-1">{allLinks.map(({icon:Icon,...link})=><NavLink key={link.to} to={link.to} end={link.to==='/'} className={navClass}><Icon className="size-[18px]" aria-hidden="true"/>{link.label}</NavLink>)}</nav>
-        <div className="mt-auto border-t pt-4"><Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>{resolvedTheme==='dark'?<Sun className="size-[18px]"/>:<Moon className="size-[18px]"/>}{resolvedTheme==='dark'?'Светлая тема':'Тёмная тема'}</Button>{auth && <ProfileLink user={auth.session.user} />}</div>
+        <Link
+          to="/"
+          aria-label="Grace — обзор"
+          className="mb-8 flex min-h-11 items-center gap-3 px-2 text-xl font-semibold tracking-tight"
+        >
+          <GraceMark className="size-9 text-primary" aria-hidden="true" />
+          Grace
+        </Link>
+        <p className="mb-3 px-3 text-xs font-medium tracking-wide text-muted-foreground">
+          Личное пространство
+        </p>
+        <nav aria-label="Навигация" className="grid gap-1">
+          {allLinks.map(({ icon: Icon, ...link }) => (
+            <NavLink key={link.to} to={link.to} end={link.to === '/'} className={navClass}>
+              <Icon className="size-[18px]" aria-hidden="true" />
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="mt-auto border-t pt-4">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun className="size-[18px]" />
+            ) : (
+              <Moon className="size-[18px]" />
+            )}
+            {resolvedTheme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+          </Button>
+          {auth && <ProfileLink user={auth.session.user} />}
+        </div>
       </aside>
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
-          <Link to="/" aria-label="Grace — обзор" className="flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight lg:hidden"><GraceMark aria-hidden="true" className="size-8 text-primary"/>Grace</Link>
+          <Link
+            to="/"
+            aria-label="Grace — обзор"
+            className="flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight lg:hidden"
+          >
+            <GraceMark aria-hidden="true" className="size-8 text-primary" />
+            Grace
+          </Link>
           <span className="hidden text-sm text-muted-foreground lg:block">Мои финансы</span>
-          {!desktop && <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" aria-label="Меню" className="lg:hidden">
-                {auth?.session.user.avatarUrl ? (
-                  <img
-                    src={env.VITE_API_BASE_URL + auth.session.user.avatarUrl}
-                    alt=""
-                    className="size-7 rounded-full object-cover"
-                  />
-                ) : (
-                  <Menu aria-hidden="true" className="size-4" />
-                )}
-                <span>Меню</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent data-motion="menu" onCloseAutoFocus={event => {
-              if (window.matchMedia?.(desktopQuery).matches) {
-                event.preventDefault()
-                mainRef.current?.focus({ preventScroll: true })
-              }
-            }} className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]">
-              <div>
-                <DialogHeader>
-                  <DialogTitle>Меню</DialogTitle>
-                  <DialogDescription>Личное пространство</DialogDescription>
-                </DialogHeader>
-                <nav
-                  aria-label="Дополнительные разделы"
-                  className="mt-6 grid gap-1"
-                >
-                  {allLinks.map(({ icon: Icon, ...link }) => (
-                    <NavLink
-                      key={link.to}
-                      to={link.to}
-                      end={link.to === '/'}
-                      onClick={() => setOpen(false)}
-                      className={navClass}
+          {!desktop && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" aria-label="Меню" className="lg:hidden">
+                  {auth?.session.user.avatarUrl ? (
+                    <img
+                      src={env.VITE_API_BASE_URL + auth.session.user.avatarUrl}
+                      alt=""
+                      className="size-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <Menu aria-hidden="true" className="size-4" />
+                  )}
+                  <span>Меню</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                data-motion="menu"
+                onCloseAutoFocus={(event) => {
+                  if (window.matchMedia?.(desktopQuery).matches) {
+                    event.preventDefault()
+                    mainRef.current?.focus({ preventScroll: true })
+                  }
+                }}
+                className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(350px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[350px]"
+              >
+                <div>
+                  <DialogHeader>
+                    <DialogTitle>Меню</DialogTitle>
+                    <DialogDescription>Личное пространство</DialogDescription>
+                  </DialogHeader>
+                  <nav aria-label="Дополнительные разделы" className="mt-6 grid gap-1">
+                    {allLinks.map(({ icon: Icon, ...link }) => (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        end={link.to === '/'}
+                        onClick={() => setOpen(false)}
+                        className={navClass}
+                      >
+                        <Icon aria-hidden="true" className="size-5" />
+                        {link.label}
+                      </NavLink>
+                    ))}
+                  </nav>
+                  <div className="grace-actions">
+                    <Button
+                      variant="outline"
+                      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
                     >
-                      <Icon aria-hidden="true" className="size-5" />
-                      {link.label}
-                    </NavLink>
-                  ))}
-                </nav>
-                <div className="grace-actions">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-                    }
-                  >
-                    {resolvedTheme === 'dark' ? (
-                      <Sun className="size-4" />
-                    ) : (
-                      <Moon className="size-4" />
-                    )}
-                    {resolvedTheme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
-                  </Button>
+                      {resolvedTheme === 'dark' ? (
+                        <Sun className="size-4" />
+                      ) : (
+                        <Moon className="size-4" />
+                      )}
+                      {resolvedTheme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>}
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </header>
-      <main ref={mainRef} tabIndex={-1} id="main-content" className="grace-page mx-auto w-full max-w-6xl px-4 pt-7 pb-[calc(6rem+env(safe-area-inset-bottom))] outline-none sm:px-6 sm:pt-8 lg:pb-12">
+      <main
+        ref={mainRef}
+        tabIndex={-1}
+        id="main-content"
+        className="grace-page mx-auto w-full max-w-6xl px-4 pt-7 pb-[calc(6rem+env(safe-area-inset-bottom))] outline-none sm:px-6 sm:pt-8 lg:pb-12"
+      >
         {children}
       </main>
       {!keyboard && (
@@ -195,12 +243,33 @@ export function AppLayout({ children }: { children: ReactNode }) {
 // SPEC-0043: who is signed in, at the foot of the sidebar, one tap to the profile.
 function ProfileLink({ user }: { user: { name: string; avatarUrl?: string | null } }) {
   return (
-    <NavLink to="/profile" className={({ isActive }) => cn('mt-2 flex min-h-11 items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium transition-colors hover:bg-accent', isActive ? 'text-selected-foreground' : 'text-foreground')}>
-      <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
-        {user.avatarUrl ? <img src={env.VITE_API_BASE_URL + user.avatarUrl} alt="" className="size-full object-cover" /> : Array.from(user.name)[0]?.toUpperCase()}
+    <NavLink
+      to="/profile"
+      className={({ isActive }) =>
+        cn(
+          'mt-2 flex min-h-11 items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium transition-colors hover:bg-accent',
+          isActive ? 'text-selected-foreground' : 'text-foreground',
+        )
+      }
+    >
+      <span
+        aria-hidden="true"
+        className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-secondary-foreground"
+      >
+        {user.avatarUrl ? (
+          <img
+            src={env.VITE_API_BASE_URL + user.avatarUrl}
+            alt=""
+            className="size-full object-cover"
+          />
+        ) : (
+          Array.from(user.name)[0]?.toUpperCase()
+        )}
       </span>
       <span className="min-w-0">
-        <span className="block truncate" title={user.name}>{user.name}</span>
+        <span className="block truncate" title={user.name}>
+          {user.name}
+        </span>
         <span className="block text-xs font-normal text-muted-foreground">Профиль и доступ</span>
       </span>
     </NavLink>

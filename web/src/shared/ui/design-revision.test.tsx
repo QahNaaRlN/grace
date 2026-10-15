@@ -10,12 +10,14 @@ import { Notice, StatusBadge } from './status'
 
 describe('SPEC-0035 Money', () => {
   it('formats minor units, carries direction in the sign and shows unknown in words', () => {
-    render(<>
-      <Money valueMinor={12_845_000} currency="RUB" size="display" />
-      <Money valueMinor={6_400_000} currency="RUB" direction="credit" />
-      <Money valueMinor={189_700} currency="RUB" direction="debit" />
-      <Money valueMinor={null} currency="RUB" />
-    </>)
+    render(
+      <>
+        <Money valueMinor={12_845_000} currency="RUB" size="display" />
+        <Money valueMinor={6_400_000} currency="RUB" direction="credit" />
+        <Money valueMinor={189_700} currency="RUB" direction="debit" />
+        <Money valueMinor={null} currency="RUB" />
+      </>,
+    )
     const [display, credit, debit, unknown] = document.querySelectorAll('[data-slot="money"]')
     expect(display.textContent).toMatch(/^128\s450,00\s₽$/)
     expect(display).toHaveClass('text-amount-sm', 'sm:text-amount', 'grace-money')
@@ -30,13 +32,24 @@ describe('SPEC-0035 Money', () => {
 
 describe('SPEC-0035 Field', () => {
   it('labels the control and describes it with the hint and the error', () => {
-    render(<Field label="Сумма" hint="В рублях" error="Такой суммы нет"><Input /></Field>)
+    render(
+      <Field label="Сумма" hint="В рублях" error="Такой суммы нет">
+        <Input />
+      </Field>,
+    )
     const input = screen.getByLabelText('Сумма')
     expect(input).toHaveAccessibleDescription('В рублях Такой суммы нет')
     expect(input).toHaveAttribute('aria-invalid', 'true')
   })
   it('keeps an existing id and description', () => {
-    render(<><p id="extra">Пояснение</p><Field label="Имя"><Input id="name" aria-describedby="extra" /></Field></>)
+    render(
+      <>
+        <p id="extra">Пояснение</p>
+        <Field label="Имя">
+          <Input id="name" aria-describedby="extra" />
+        </Field>
+      </>,
+    )
     expect(screen.getByLabelText('Имя')).toHaveAttribute('id', 'name')
     expect(screen.getByLabelText('Имя')).toHaveAccessibleDescription('Пояснение')
   })
@@ -44,11 +57,15 @@ describe('SPEC-0035 Field', () => {
 
 describe('SPEC-0035 status', () => {
   it('always shows a word and an icon; danger is an alert', () => {
-    render(<>
-      <Notice tone="unknown" title="Покрытие неполное">Кредитные карты не учтены.</Notice>
-      <Notice tone="danger" title="Ассистент не ответил" />
-      <StatusBadge tone="warning">Скоро платёж</StatusBadge>
-    </>)
+    render(
+      <>
+        <Notice tone="unknown" title="Покрытие неполное">
+          Кредитные карты не учтены.
+        </Notice>
+        <Notice tone="danger" title="Ассистент не ответил" />
+        <StatusBadge tone="warning">Скоро платёж</StatusBadge>
+      </>,
+    )
     expect(screen.getByRole('status')).toHaveTextContent('Покрытие неполное')
     expect(screen.getByRole('alert')).toHaveTextContent('Ассистент не ответил')
     const badge = screen.getByText('Скоро платёж')

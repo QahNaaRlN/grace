@@ -9,24 +9,86 @@ const { get, post, patch } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), pa
 vi.mock('@/shared/api/client', () => ({ apiClient: { GET: get, POST: post, PATCH: patch } }))
 
 const base: Account = {
-  id: 'sber', name: 'Сбербанк — счёт 3021', type: 'debit', currency: 'RUB', balanceMinor: null, balanceReconciled: false,
-  createdAt: '2026-10-01T00:00:00Z', revision: 1, hasOperations: true, lastReconciliation: null, lastImportConfirmedAt: '2026-10-09T06:00:00Z',
+  id: 'sber',
+  name: 'Сбербанк — счёт 3021',
+  type: 'debit',
+  currency: 'RUB',
+  balanceMinor: null,
+  balanceReconciled: false,
+  createdAt: '2026-10-01T00:00:00Z',
+  revision: 1,
+  hasOperations: true,
+  lastReconciliation: null,
+  lastImportConfirmedAt: '2026-10-09T06:00:00Z',
   paymentInstruments: [{ id: 'c1', name: 'Карта', bank: 'Сбербанк', last4: '3021' }],
 }
 const reconciled: Account = {
-  ...base, id: 'tinkoff', name: 'Т-Банк', balanceMinor: 975000, balanceReconciled: true, revision: 3,
-  lastReconciliation: { asOf: '2026-10-13T09:20:00Z', outcome: 'adjusted', statedMinor: 975000, differenceMinor: -10000, createdAt: '2026-10-13T09:21:00Z', stale: false },
-  paymentInstruments: [{ id: 'old', name: 'Старая', bank: 'Т-Банк', last4: '1111', disabledAt: '2026-10-10T00:00:00Z' }, { id: 'new', name: 'Новая', bank: 'Т-Банк', last4: '2222' }].reverse(),
+  ...base,
+  id: 'tinkoff',
+  name: 'Т-Банк',
+  balanceMinor: 975000,
+  balanceReconciled: true,
+  revision: 3,
+  lastReconciliation: {
+    asOf: '2026-10-13T09:20:00Z',
+    outcome: 'adjusted',
+    statedMinor: 975000,
+    differenceMinor: -10000,
+    createdAt: '2026-10-13T09:21:00Z',
+    stale: false,
+  },
+  paymentInstruments: [
+    {
+      id: 'old',
+      name: 'Старая',
+      bank: 'Т-Банк',
+      last4: '1111',
+      disabledAt: '2026-10-10T00:00:00Z',
+    },
+    { id: 'new', name: 'Новая', bank: 'Т-Банк', last4: '2222' },
+  ].reverse(),
 }
-const stale: Account = { ...reconciled, id: 'stale', name: 'Наличные', type: 'cash', paymentInstruments: [], lastImportConfirmedAt: null, lastReconciliation: { ...reconciled.lastReconciliation!, stale: true } }
+const stale: Account = {
+  ...reconciled,
+  id: 'stale',
+  name: 'Наличные',
+  type: 'cash',
+  paymentInstruments: [],
+  lastImportConfirmedAt: null,
+  lastReconciliation: { ...reconciled.lastReconciliation!, stale: true },
+}
 
 function show(items: Account[]) {
-  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><Accounts items={items} /></QueryClientProvider>)
+  render(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
+      <Accounts items={items} />
+    </QueryClientProvider>,
+  )
 }
 
 beforeEach(() => {
-  get.mockReset(); post.mockReset(); patch.mockReset()
-  get.mockResolvedValue({ data: { items: [{ id: 'r1', accountId: 'tinkoff', asOf: '2026-10-13T09:20:00Z', statedMinor: 975000, computedMinor: 985000, differenceMinor: -10000, outcome: 'adjusted', adjustmentEventId: 'e1', createdAt: '2026-10-13T09:21:00Z' }] } })
+  get.mockReset()
+  post.mockReset()
+  patch.mockReset()
+  get.mockResolvedValue({
+    data: {
+      items: [
+        {
+          id: 'r1',
+          accountId: 'tinkoff',
+          asOf: '2026-10-13T09:20:00Z',
+          statedMinor: 975000,
+          computedMinor: 985000,
+          differenceMinor: -10000,
+          outcome: 'adjusted',
+          adjustmentEventId: 'e1',
+          createdAt: '2026-10-13T09:21:00Z',
+        },
+      ],
+    },
+  })
 })
 
 describe('SPEC-0040 accounts', () => {
@@ -41,9 +103,37 @@ describe('SPEC-0040 accounts', () => {
   })
 
   it('reconciles an unreconciled account: preview, then confirm with the hash and a key', async () => {
-    post.mockImplementation(async (path: string) => path.endsWith('/preview')
-      ? { data: { asOf: '2026-10-05T20:00:00+05:00', statedMinor: 1000000, currency: 'RUB', computedMinor: 350000, differenceMinor: 650000, outcome: 'opening_set', proposedOpeningMinor: 650000, previewHash: 'h1' } }
-      : { data: { reconciliation: { id: 'r', accountId: 'sber', asOf: '2026-10-05T15:00:00Z', statedMinor: 1000000, computedMinor: 350000, differenceMinor: 650000, outcome: 'opening_set', adjustmentEventId: null, createdAt: '' }, account: base } })
+    post.mockImplementation(async (path: string) =>
+      path.endsWith('/preview')
+        ? {
+            data: {
+              asOf: '2026-10-05T20:00:00+05:00',
+              statedMinor: 1000000,
+              currency: 'RUB',
+              computedMinor: 350000,
+              differenceMinor: 650000,
+              outcome: 'opening_set',
+              proposedOpeningMinor: 650000,
+              previewHash: 'h1',
+            },
+          }
+        : {
+            data: {
+              reconciliation: {
+                id: 'r',
+                accountId: 'sber',
+                asOf: '2026-10-05T15:00:00Z',
+                statedMinor: 1000000,
+                computedMinor: 350000,
+                differenceMinor: 650000,
+                outcome: 'opening_set',
+                adjustmentEventId: null,
+                createdAt: '',
+              },
+              account: base,
+            },
+          },
+    )
     show([base])
     await userEvent.click(screen.getByRole('button', { name: /Сбербанк \*3021/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Сверить остаток' }))
@@ -53,7 +143,10 @@ describe('SPEC-0040 accounts', () => {
     await userEvent.clear(when)
     await userEvent.type(when, '2026-10-05T20:00')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Проверить' }))
-    expect(post.mock.calls[0][1].body).toEqual({ asOf: '2026-10-05T20:00:00+05:00', statedMinor: 1000000 })
+    expect(post.mock.calls[0][1].body).toEqual({
+      asOf: '2026-10-05T20:00:00+05:00',
+      statedMinor: 1000000,
+    })
     expect(await within(dialog).findByText('Начальный остаток')).toBeVisible()
     expect(within(dialog).getByText(/6\s500,00\s₽/)).toBeVisible()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Подтвердить сверку' }))
@@ -66,9 +159,27 @@ describe('SPEC-0040 accounts', () => {
   })
 
   it('explains a stale preview and asks to check again', async () => {
-    post.mockImplementation(async (path: string) => path.endsWith('/preview')
-      ? { data: { asOf: '2026-10-13T12:00:00+05:00', statedMinor: 970000, currency: 'RUB', computedMinor: 975000, differenceMinor: -5000, outcome: 'adjusted', proposedOpeningMinor: null, previewHash: 'h2' } }
-      : { error: { code: 'stale_preview', message: 'Операции по счёту изменились. Проверьте сверку ещё раз.' } })
+    post.mockImplementation(async (path: string) =>
+      path.endsWith('/preview')
+        ? {
+            data: {
+              asOf: '2026-10-13T12:00:00+05:00',
+              statedMinor: 970000,
+              currency: 'RUB',
+              computedMinor: 975000,
+              differenceMinor: -5000,
+              outcome: 'adjusted',
+              proposedOpeningMinor: null,
+              previewHash: 'h2',
+            },
+          }
+        : {
+            error: {
+              code: 'stale_preview',
+              message: 'Операции по счёту изменились. Проверьте сверку ещё раз.',
+            },
+          },
+    )
     show([reconciled])
     await userEvent.click(screen.getByRole('button', { name: /Т-Банк \*2222/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Сверить остаток' }))
@@ -77,7 +188,9 @@ describe('SPEC-0040 accounts', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Проверить' }))
     expect(await within(dialog).findByText(/«Корректировка остатка»/)).toBeVisible()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Подтвердить сверку' }))
-    expect(await within(dialog).findByText('Операции по счёту изменились. Проверьте сверку ещё раз.')).toBeVisible()
+    expect(
+      await within(dialog).findByText('Операции по счёту изменились. Проверьте сверку ещё раз.'),
+    ).toBeVisible()
     expect(within(dialog).getByRole('button', { name: 'Проверить' })).toBeVisible()
   })
 
@@ -102,7 +215,10 @@ describe('SPEC-0040 accounts', () => {
     const sheet = screen.getByRole('dialog')
     await userEvent.click(within(sheet).getAllByRole('button', { name: 'Отключить' })[0])
     await waitFor(() => expect(patch).toHaveBeenCalledOnce())
-    expect(patch.mock.calls[0][1]).toMatchObject({ params: { path: { accountId: 'tinkoff', cardId: 'new' } }, body: { disabled: true } })
+    expect(patch.mock.calls[0][1]).toMatchObject({
+      params: { path: { accountId: 'tinkoff', cardId: 'new' } },
+      body: { disabled: true },
+    })
     await userEvent.click(within(sheet).getByRole('button', { name: 'Изменить сведения' }))
     const edit = screen.getByRole('dialog', { name: 'Сведения счёта' })
     const name = within(edit).getByLabelText('Название')

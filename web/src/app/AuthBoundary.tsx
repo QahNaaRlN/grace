@@ -19,11 +19,17 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
   const cache = useQueryClient()
   const navigate = useNavigate()
   const [knownUser, setKnownUser] = useState<string | undefined>(undefined)
-  const session = useQuery({ queryKey: ['auth-session'], queryFn: async () => {
-    const result = await loadSession()
-    if (result) setKnownUser(previous => previous ?? result.user.id)
-    return result
-  }, retry: false, staleTime: 0, refetchOnWindowFocus: true })
+  const session = useQuery({
+    queryKey: ['auth-session'],
+    queryFn: async () => {
+      const result = await loadSession()
+      if (result) setKnownUser((previous) => previous ?? result.user.id)
+      return result
+    },
+    retry: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  })
   const clear = useCallback(() => {
     setCSRFToken('')
     void cache.cancelQueries()
@@ -44,20 +50,39 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
   }, [session.data, clear, knownUser])
 
   async function logout() {
-    const { response } = await apiClient.POST('/api/auth/logout', { params: { header: { 'X-CSRF-Token': csrfToken } } })
+    const { response } = await apiClient.POST('/api/auth/logout', {
+      params: { header: { 'X-CSRF-Token': csrfToken } },
+    })
     if (!response.ok) throw new Error('Не удалось выйти. Повторите действие.')
     clear()
   }
   async function revokeSessions() {
-    const { response } = await apiClient.POST('/api/auth/revoke-sessions', { params: { header: { 'X-CSRF-Token': csrfToken } } })
+    const { response } = await apiClient.POST('/api/auth/revoke-sessions', {
+      params: { header: { 'X-CSRF-Token': csrfToken } },
+    })
     if (!response.ok) throw new Error('Не удалось завершить сеансы.')
     clear()
   }
 
-  if (session.isPending) return <main className="p-6" aria-live="polite">Проверяем доступ…</main>
-  if (session.isError) return <main className="space-y-4 p-6"><p role="alert">Проверка доступа временно недоступна.</p><Button onClick={() => void session.refetch()}>Повторить</Button></main>
+  if (session.isPending)
+    return (
+      <main className="p-6" aria-live="polite">
+        Проверяем доступ…
+      </main>
+    )
+  if (session.isError)
+    return (
+      <main className="space-y-4 p-6">
+        <p role="alert">Проверка доступа временно недоступна.</p>
+        <Button onClick={() => void session.refetch()}>Повторить</Button>
+      </main>
+    )
   if (!session.data) return <Navigate to="/login" replace />
   if (knownUser && knownUser !== session.data.user.id) return <Navigate to="/login" replace />
 
-  return <AuthContext.Provider value={{ session: session.data, logout, revokeSessions }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ session: session.data, logout, revokeSessions }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }

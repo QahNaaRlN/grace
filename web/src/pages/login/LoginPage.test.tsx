@@ -9,9 +9,7 @@ vi.mock('@/shared/api/client', () => ({ apiClient: mocks }))
 function mount() {
   return render(
     <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
       <MemoryRouter initialEntries={['/login']}>
         <Routes>
@@ -50,17 +48,9 @@ describe('email login', () => {
     })
     const user = userEvent.setup()
     mount()
-    await user.type(
-      await screen.findByLabelText('Почта'),
-      'person@example.test',
-    )
-    await user.type(
-      screen.getByLabelText('Код приглашения (при первом входе)'),
-      'invite',
-    )
-    expect(
-      screen.queryByRole('button', { name: 'Войти через Telegram' }),
-    ).not.toBeInTheDocument()
+    await user.type(await screen.findByLabelText('Почта'), 'person@example.test')
+    await user.type(screen.getByLabelText('Код приглашения (при первом входе)'), 'invite')
+    expect(screen.queryByRole('button', { name: 'Войти через Telegram' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Получить код' }))
     await user.type(await screen.findByLabelText('Код из письма'), '001234')
     await user.click(screen.getByRole('button', { name: 'Войти' }))
@@ -74,10 +64,7 @@ describe('email login', () => {
     }).mockResolvedValueOnce({ error: { message: 'Код истёк' } })
     const user = userEvent.setup()
     mount()
-    await user.type(
-      await screen.findByLabelText('Почта'),
-      'person@example.test',
-    )
+    await user.type(await screen.findByLabelText('Почта'), 'person@example.test')
     await user.click(screen.getByRole('button', { name: 'Получить код' }))
     await user.type(await screen.findByLabelText('Код из письма'), '001234')
     await user.click(screen.getByRole('button', { name: 'Войти' }))

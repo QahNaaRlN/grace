@@ -9,15 +9,25 @@ afterEach(() => vi.unstubAllGlobals())
 function viewport(initialDesktop: boolean) {
   const query = new EventTarget() as EventTarget & { matches: boolean }
   query.matches = initialDesktop
-  vi.stubGlobal('matchMedia', vi.fn(() => query))
-  return (desktop: boolean) => act(() => {
-    query.matches = desktop
-    query.dispatchEvent(new Event('change'))
-  })
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => query),
+  )
+  return (desktop: boolean) =>
+    act(() => {
+      query.matches = desktop
+      query.dispatchEvent(new Event('change'))
+    })
 }
 
 function layout() {
-  render(<MemoryRouter><AppLayout><p>Содержимое страницы</p></AppLayout></MemoryRouter>)
+  render(
+    <MemoryRouter>
+      <AppLayout>
+        <p>Содержимое страницы</p>
+      </AppLayout>
+    </MemoryRouter>,
+  )
 }
 
 describe('SPEC-0032 responsive navigation', () => {
@@ -46,7 +56,9 @@ describe('SPEC-0032 responsive navigation', () => {
     const menu = screen.getByRole('dialog')
     await userEvent.click(within(menu).getByRole('link', { name: 'Счета и карты' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-    expect(screen.getByRole('navigation', { name: 'Навигация' }).querySelector('a[aria-current="page"]')).toHaveAttribute('href', '/accounts')
+    expect(
+      screen.getByRole('navigation', { name: 'Навигация' }).querySelector('a[aria-current="page"]'),
+    ).toHaveAttribute('href', '/accounts')
   })
 })
 
@@ -54,7 +66,25 @@ describe('SPEC-0043 profile in the sidebar', () => {
   it('shows the avatar initial and name and links to the profile', async () => {
     viewport(true)
     const { AuthContext } = await import('@/shared/model/auth-context')
-    render(<MemoryRouter><AuthContext.Provider value={{ session: { user: { id: 'u', name: 'Number One', role: 'member', avatarUrl: null }, csrfToken: 't', mode: 'password' }, logout: async () => {}, revokeSessions: async () => {} }}><AppLayout><p>Содержимое</p></AppLayout></AuthContext.Provider></MemoryRouter>)
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider
+          value={{
+            session: {
+              user: { id: 'u', name: 'Number One', role: 'member', avatarUrl: null },
+              csrfToken: 't',
+              mode: 'password',
+            },
+            logout: async () => {},
+            revokeSessions: async () => {},
+          }}
+        >
+          <AppLayout>
+            <p>Содержимое</p>
+          </AppLayout>
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
     const link = screen.getByRole('link', { name: /Number One/ })
     expect(link).toHaveAttribute('href', '/profile')
     expect(link).toHaveTextContent('NNumber OneПрофиль и доступ')

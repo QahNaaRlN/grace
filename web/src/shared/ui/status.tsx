@@ -7,11 +7,36 @@ export type Tone = 'success' | 'warning' | 'info' | 'danger' | 'unknown'
 
 // SPEC-0035: a state is always a word plus an icon; the tone only reinforces it.
 const tones: Record<Tone, { icon: typeof Info; box: string; mark: string; badge: string }> = {
-  success: { icon: CircleCheck, box: 'border-success/25 bg-success-subtle', mark: 'text-success', badge: 'bg-success-subtle text-success' },
-  warning: { icon: TriangleAlert, box: 'border-warning/25 bg-warning-subtle', mark: 'text-warning', badge: 'bg-warning-subtle text-warning' },
-  info: { icon: Info, box: 'border-info/25 bg-info-subtle', mark: 'text-info', badge: 'bg-info-subtle text-info' },
-  danger: { icon: CircleAlert, box: 'border-destructive/25 bg-destructive-subtle', mark: 'text-destructive', badge: 'bg-destructive-subtle text-destructive' },
-  unknown: { icon: CircleDashed, box: 'border-dashed border-input bg-unknown-subtle', mark: 'text-unknown', badge: 'border border-dashed border-input bg-unknown-subtle text-unknown' },
+  success: {
+    icon: CircleCheck,
+    box: 'border-success/25 bg-success-subtle',
+    mark: 'text-success',
+    badge: 'bg-success-subtle text-success',
+  },
+  warning: {
+    icon: TriangleAlert,
+    box: 'border-warning/25 bg-warning-subtle',
+    mark: 'text-warning',
+    badge: 'bg-warning-subtle text-warning',
+  },
+  info: {
+    icon: Info,
+    box: 'border-info/25 bg-info-subtle',
+    mark: 'text-info',
+    badge: 'bg-info-subtle text-info',
+  },
+  danger: {
+    icon: CircleAlert,
+    box: 'border-destructive/25 bg-destructive-subtle',
+    mark: 'text-destructive',
+    badge: 'bg-destructive-subtle text-destructive',
+  },
+  unknown: {
+    icon: CircleDashed,
+    box: 'border-dashed border-input bg-unknown-subtle',
+    mark: 'text-unknown',
+    badge: 'border border-dashed border-input bg-unknown-subtle text-unknown',
+  },
 }
 
 // Inline message for coverage, consent, model errors and other states the
@@ -49,14 +74,26 @@ export function Notice({
 }
 
 // A 24px state pill with a mandatory icon. Use plain Badge for kinds.
-export function StatusBadge({ tone, children, className }: { tone: Tone; children: ReactNode; className?: string }) {
+export function StatusBadge({
+  tone,
+  children,
+  className,
+}: {
+  tone: Tone
+  children: ReactNode
+  className?: string
+}) {
   // An unexpected tone renders as unknown rather than breaking the page.
   const { icon: Icon, badge } = tones[tone] ?? tones.unknown
   return (
     <span
       data-slot="status-badge"
       data-tone={tone}
-      className={cn('inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap', badge, className)}
+      className={cn(
+        'inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap',
+        badge,
+        className,
+      )}
     >
       <Icon aria-hidden="true" className="size-3.5" />
       {children}

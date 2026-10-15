@@ -17,12 +17,16 @@ function renderForm() {
     </QueryClientProvider>,
   )
 }
-const createCalls = () => post.mock.calls.filter(call => call[0] === '/api/v1/obligations')
+const createCalls = () => post.mock.calls.filter((call) => call[0] === '/api/v1/obligations')
 
 beforeEach(() => {
   post.mockReset()
-  post.mockImplementation(async (path: string, init: { body: Parameters<typeof fakeSchedulePreview>[0] }) =>
-    path === '/api/v1/obligations/schedule-preview' ? fakeSchedulePreview(init.body) : { data: { id: 'o' } })
+  post.mockImplementation(
+    async (path: string, init: { body: Parameters<typeof fakeSchedulePreview>[0] }) =>
+      path === '/api/v1/obligations/schedule-preview'
+        ? fakeSchedulePreview(init.body)
+        : { data: { id: 'o' } },
+  )
 })
 
 describe('SPEC-0037 obligation with a long schedule', () => {

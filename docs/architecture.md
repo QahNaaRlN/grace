@@ -80,6 +80,26 @@ Web следует mobile-first подходу: базовые стили и и�
 вводится. Интерактивные элементы должны иметь видимое focus-состояние,
 корректный cursor и touch target не меньше 44 CSS px для основных действий.
 
+### Структура Web-кода
+
+`web/src` следует Feature-Sliced Design ([решение 0003](decisions/0003-web-feature-sliced-design.md),
+[SPEC-0048](specs/0048-frontend-fsd-architecture.md)). Слои зависят только сверху вниз:
+`app → pages → widgets → features → entities → shared`.
+
+- `pages` — один срез на маршрут, только компоновка; `widgets` — самостоятельные
+  блоки экрана; `features` — пользовательские действия с мутациями;
+  `entities` — доменные объекты из OpenAPI и их `queryOptions`; `shared` —
+  транспорт API, UI kit, утилиты и конфиг без знания о домене.
+- Срез открыт наружу только через `index.ts`; срезы одного слоя не импортируют
+  друг друга, связь сущностей — через `@x`.
+- Ключи React Query объявляются в `entities/*/api`; инвалидация — в хуках
+  мутаций `features/*/api`. CSRF-заголовок ставит только `apiClient`.
+  Часовой пояс отображения — константа в `shared/config`.
+- `npm run lint:fsd` (Steiger), ESLint-правила `eslint-rules/grace.js` и
+  `npm run format:check` (Prettier) входят в `make test`. Существующие нарушения
+  перечислены в `steiger.baseline.json` и `eslint.baseline.js`; эти списки только
+  сокращаются.
+
 ## ИИ
 
 ИИ не хранит финансовое состояние и не выполняет арифметику вместо Grace.

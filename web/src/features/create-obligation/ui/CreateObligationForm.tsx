@@ -28,13 +28,7 @@ import { CurrencySelect } from '@/shared/ui/currency-select'
 import { DEFAULT_CURRENCY } from '@/shared/lib/currencies'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
 const kindLabels = {
   loan: 'Кредит',
@@ -72,8 +66,10 @@ export function CreateObligationForm() {
       const lines = checked.ok ? checked.preview.rejectedLines : checked.rejectedLines
       setScheduleError(
         lines.length
-          ? `Исправьте график: ${lines.map(line => `строка ${line.line} — ${line.reason}`).join('; ')}.`
-          : checked.ok ? '' : checked.message,
+          ? `Исправьте график: ${lines.map((line) => `строка ${line.line} — ${line.reason}`).join('; ')}.`
+          : checked.ok
+            ? ''
+            : checked.message,
       )
       return
     }
@@ -110,23 +106,25 @@ export function CreateObligationForm() {
       <CardHeader>
         <CardTitle>Новое обязательство</CardTitle>
         <CardDescription>
-          График планирует будущие платежи и сам по себе не меняет остатки.
-          Итог считается по графику.
+          График планирует будущие платежи и сам по себе не меняет остатки. Итог считается по
+          графику.
         </CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
             <Field label="Название" error={errors.name?.message}>
-              <Input id="obligation-name" placeholder="Рассрочка на ноутбук" {...register('name')} />
+              <Input
+                id="obligation-name"
+                placeholder="Рассрочка на ноутбук"
+                {...register('name')}
+              />
             </Field>
             <div className="grid gap-2">
               <Label htmlFor="obligation-kind">Тип</Label>
               <Select
                 value={kind}
-                onValueChange={(value) =>
-                  setValue('kind', value as CreateObligationValues['kind'])
-                }
+                onValueChange={(value) => setValue('kind', value as CreateObligationValues['kind'])}
               >
                 <SelectTrigger id="obligation-kind" className="w-full">
                   <SelectValue />
@@ -141,7 +139,11 @@ export function CreateObligationForm() {
               </Select>
             </div>
             <Field label="Валюта" error={errors.currency?.message}>
-              <CurrencySelect id="obligation-currency" value={currency} onValueChange={value => setValue('currency', value, { shouldValidate: true })} />
+              <CurrencySelect
+                id="obligation-currency"
+                value={currency}
+                onValueChange={(value) => setValue('currency', value, { shouldValidate: true })}
+              />
             </Field>
           </div>
 
@@ -149,7 +151,7 @@ export function CreateObligationForm() {
             <legend className="text-sm font-medium">График</legend>
             <ScheduleBuilder
               rows={rows}
-              onChange={next => {
+              onChange={(next) => {
                 setRows(next)
                 setScheduleError('')
               }}
@@ -157,16 +159,14 @@ export function CreateObligationForm() {
               idPrefix="obligation-schedule"
             />
             {scheduleError && (
-              <p role="alert" className="text-sm text-destructive">{scheduleError}</p>
+              <p role="alert" className="text-sm text-destructive">
+                {scheduleError}
+              </p>
             )}
           </fieldset>
         </CardContent>
         <CardFooter>
-          <Button
-            className="w-full sm:w-auto"
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Сохранение…' : 'Сохранить обязательство'}
           </Button>
         </CardFooter>

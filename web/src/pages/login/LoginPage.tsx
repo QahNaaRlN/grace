@@ -48,10 +48,7 @@ export function LoginPage() {
   }, [session.data, navigate])
   useEffect(() => {
     if (cooldown <= 0) return
-    const id = window.setTimeout(
-      () => setCooldown((v) => Math.max(v - 1, 0)),
-      1000,
-    )
+    const id = window.setTimeout(() => setCooldown((v) => Math.max(v - 1, 0)), 1000)
     return () => clearTimeout(id)
   }, [cooldown])
   async function requestCode() {
@@ -60,24 +57,18 @@ export function LoginPage() {
     setPending(true)
     setError('')
     try {
-      const { data, error: failure } = await apiClient.POST(
-        '/api/auth/email/request',
-        {
-          body: {
-            email: email.trim(),
-            ...(invitation.trim() ? { invitation: invitation.trim() } : {}),
-          },
+      const { data, error: failure } = await apiClient.POST('/api/auth/email/request', {
+        body: {
+          email: email.trim(),
+          ...(invitation.trim() ? { invitation: invitation.trim() } : {}),
         },
-      )
-      if (!data)
-        throw new Error(failure?.message ?? 'Не удалось отправить код.')
+      })
+      if (!data) throw new Error(failure?.message ?? 'Не удалось отправить код.')
       setStep('code')
       setCode('')
       setCooldown(data.resendAfterSeconds)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Отправка временно недоступна.',
-      )
+      setError(err instanceof Error ? err.message : 'Отправка временно недоступна.')
     } finally {
       sending.current = false
       setPending(false)
@@ -89,12 +80,10 @@ export function LoginPage() {
     setPending(true)
     setError('')
     try {
-      const { data, error: failure } = await apiClient.POST(
-        '/api/auth/email/verify',
-        { body: { code } },
-      )
-      if (!data)
-        throw new Error(failure?.message ?? 'Не удалось подтвердить код.')
+      const { data, error: failure } = await apiClient.POST('/api/auth/email/verify', {
+        body: { code },
+      })
+      if (!data) throw new Error(failure?.message ?? 'Не удалось подтвердить код.')
       cache.clear()
       setCSRFToken(data.csrfToken)
       cache.setQueryData(['auth-session'], data)
@@ -122,158 +111,146 @@ export function LoginPage() {
   }
   return (
     <AuthShell title="Вход в Grace">
-          {methods.isPending ? (
-            <p className="text-muted-foreground">Проверяем способы входа…</p>
-          ) : methods.error ? (
-            <>
-              <p role="alert">{methods.error.message}</p>
-              <div className="grace-actions">
-                <Button onClick={() => void methods.refetch()}>
-                  Повторить
-                </Button>
-              </div>
-            </>
-          ) : methods.data?.password ? <PasswordForm view="login" /> : methods.data?.email ? (
-            <>
-              {step === 'email' ? (
-                <form
-                  className="space-y-5"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    void requestCode()
-                  }}
-                >
-                  <p className="text-muted-foreground">
-                    Введите почту — пришлём одноразовый код. Пароль не нужен.
-                  </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Почта</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      maxLength={254}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invitation">
-                      Код приглашения (при первом входе)
-                    </Label>
-                    <Input
-                      id="invitation"
-                      autoComplete="off"
-                      maxLength={43}
-                      value={invitation}
-                      onChange={(e) => setInvitation(e.target.value)}
-                    />
-                  </div>
-                  <div className="grace-actions">
-                    <Button className="w-full" type="submit" disabled={pending}>
-                      {pending ? 'Отправляем…' : 'Получить код'}
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <form
-                  className="space-y-5"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    void verify()
-                  }}
-                >
-                  <p className="break-words text-muted-foreground">
-                    Код отправлен на {email}. Введите его здесь; он действует 10
-                    минут.
-                  </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-code">Код из письма</Label>
-                    <Input
-                      id="login-code"
-                      autoComplete="one-time-code"
-                      inputMode="numeric"
-                      pattern="[0-9]{6}"
-                      maxLength={6}
-                      required
-                      value={code}
-                      onChange={(e) =>
-                        setCode(e.target.value.replace(/\D/g, ''))
-                      }
-                    />
-                  </div>
-                  <div className="grace-actions">
-                    <Button
-                      type="submit"
-                      disabled={pending || code.length !== 6}
-                    >
-                      {pending ? 'Проверяем…' : 'Войти'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={pending}
-                      onClick={() => {
-                        setStep('email')
-                        setError('')
-                      }}
-                    >
-                      Изменить почту
-                    </Button>
-                  </div>
-                  <Button
-                    className="mt-4 w-full"
-                    type="button"
-                    variant="ghost"
-                    disabled={pending || cooldown > 0}
-                    onClick={() => void requestCode()}
-                  >
-                    {cooldown > 0
-                      ? `Повторная отправка через ${cooldown} с`
-                      : 'Отправить код ещё раз'}
-                  </Button>
-                </form>
-              )}
-            </>
-          ) : methods.data?.telegram ? (
+      {methods.isPending ? (
+        <p className="text-muted-foreground">Проверяем способы входа…</p>
+      ) : methods.error ? (
+        <>
+          <p role="alert">{methods.error.message}</p>
+          <div className="grace-actions">
+            <Button onClick={() => void methods.refetch()}>Повторить</Button>
+          </div>
+        </>
+      ) : methods.data?.password ? (
+        <PasswordForm view="login" />
+      ) : methods.data?.email ? (
+        <>
+          {step === 'email' ? (
             <form
               className="space-y-5"
               onSubmit={(e) => {
                 e.preventDefault()
-                void telegram()
+                void requestCode()
               }}
             >
               <p className="text-muted-foreground">
-                Войдите через Telegram. При первом входе нужен код приглашения.
+                Введите почту — пришлём одноразовый код. Пароль не нужен.
               </p>
               <div className="space-y-2">
-                <Label htmlFor="invitation">
-                  Код приглашения (при первом входе)
-                </Label>
+                <Label htmlFor="login-email">Почта</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  maxLength={254}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invitation">Код приглашения (при первом входе)</Label>
                 <Input
                   id="invitation"
+                  autoComplete="off"
+                  maxLength={43}
                   value={invitation}
                   onChange={(e) => setInvitation(e.target.value)}
-                  maxLength={43}
                 />
               </div>
               <div className="grace-actions">
-                <Button disabled={pending} type="submit">
-                  Войти через Telegram
+                <Button className="w-full" type="submit" disabled={pending}>
+                  {pending ? 'Отправляем…' : 'Получить код'}
                 </Button>
               </div>
             </form>
           ) : (
-            <p role="status" className="text-muted-foreground">
-              Вход пока не настроен. Обратитесь к владельцу Grace.
-            </p>
+            <form
+              className="space-y-5"
+              onSubmit={(e) => {
+                e.preventDefault()
+                void verify()
+              }}
+            >
+              <p className="break-words text-muted-foreground">
+                Код отправлен на {email}. Введите его здесь; он действует 10 минут.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="login-code">Код из письма</Label>
+                <Input
+                  id="login-code"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  required
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                />
+              </div>
+              <div className="grace-actions">
+                <Button type="submit" disabled={pending || code.length !== 6}>
+                  {pending ? 'Проверяем…' : 'Войти'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => {
+                    setStep('email')
+                    setError('')
+                  }}
+                >
+                  Изменить почту
+                </Button>
+              </div>
+              <Button
+                className="mt-4 w-full"
+                type="button"
+                variant="ghost"
+                disabled={pending || cooldown > 0}
+                onClick={() => void requestCode()}
+              >
+                {cooldown > 0 ? `Повторная отправка через ${cooldown} с` : 'Отправить код ещё раз'}
+              </Button>
+            </form>
           )}
-          {error && (
-            <p role="alert" className="mt-5 text-destructive">
-              {error}
-            </p>
-          )}
+        </>
+      ) : methods.data?.telegram ? (
+        <form
+          className="space-y-5"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void telegram()
+          }}
+        >
+          <p className="text-muted-foreground">
+            Войдите через Telegram. При первом входе нужен код приглашения.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="invitation">Код приглашения (при первом входе)</Label>
+            <Input
+              id="invitation"
+              value={invitation}
+              onChange={(e) => setInvitation(e.target.value)}
+              maxLength={43}
+            />
+          </div>
+          <div className="grace-actions">
+            <Button disabled={pending} type="submit">
+              Войти через Telegram
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <p role="status" className="text-muted-foreground">
+          Вход пока не настроен. Обратитесь к владельцу Grace.
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="mt-5 text-destructive">
+          {error}
+        </p>
+      )}
     </AuthShell>
   )
 }

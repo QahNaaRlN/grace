@@ -3,7 +3,19 @@ import { expect, it, vi } from 'vitest'
 import type { components } from '@/shared/api/generated/schema'
 import { PreviewPanel } from './PreviewPanel'
 
-const preview: components['schemas']['ImportPreview'] = { id: 'p', batchId: 'b', revision: 1, hash: 'hash', expiresAt: '2099-10-06T12:00:00Z', lines: [], changes: [], blockers: [], newEvents: 2, links: 1, exclusions: 0 }
+const preview: components['schemas']['ImportPreview'] = {
+  id: 'p',
+  batchId: 'b',
+  revision: 1,
+  hash: 'hash',
+  expiresAt: '2099-10-06T12:00:00Z',
+  lines: [],
+  changes: [],
+  blockers: [],
+  newEvents: 2,
+  links: 1,
+  exclusions: 0,
+}
 it('requires a separate confirmation click after showing the preview', () => {
   const confirm = vi.fn()
   render(<PreviewPanel preview={preview} pending={false} onConfirm={confirm} />)
@@ -14,8 +26,16 @@ it('requires a separate confirmation click after showing the preview', () => {
 })
 it('cannot confirm server-blocked rows', () => {
   const confirm = vi.fn()
-  render(<PreviewPanel preview={{ ...preview, blockers: ['time_confirmation_required'] }} pending={false} onConfirm={confirm} />)
-  expect(screen.getByRole('alert')).toHaveTextContent('Уточните время операции и укажите основание.')
+  render(
+    <PreviewPanel
+      preview={{ ...preview, blockers: ['time_confirmation_required'] }}
+      pending={false}
+      onConfirm={confirm}
+    />,
+  )
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Уточните время операции и укажите основание.',
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить импорт 2 операций' }))
   expect(confirm).not.toHaveBeenCalled()
 })
