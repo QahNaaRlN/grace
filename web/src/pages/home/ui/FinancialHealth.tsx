@@ -7,8 +7,10 @@ import type {
   Obligation,
   Receipt,
   CashPosition,
-} from '@/shared/api/types'
-import { accountLabel, formatMoney, dateText } from '@/shared/lib/finance-display'
+} from '@/shared/api'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { dateText } from '@/shared/lib/date'
+import { formatMoney } from '@/shared/lib/money'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { Button } from '@/shared/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/ui/card'

@@ -1,4 +1,4 @@
-import { minorToInput, parseMinor } from '@/shared/lib/finance-display'
+import { minorToInput, parseMinor } from '@/shared/lib/money'
 
 // One editable line of a schedule. `locked` rows (already paid in a loan
 // draft) are shown but never replaced by a generator or edited.

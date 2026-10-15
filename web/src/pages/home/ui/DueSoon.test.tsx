@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import type { CashPosition } from '@/shared/api/types'
+import type { CashPosition } from '@/shared/api'
 import { Overview } from './Overview'
 import { HomePage } from './HomePage'
 

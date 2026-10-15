@@ -1,8 +1,7 @@
 import { useContext, useState } from 'react'
 
-import { apiClient } from '@/shared/api/client'
-import { AuthContext } from '@/shared/model/auth-context'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
+import { AuthContext } from '@/entities/session'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'
@@ -37,7 +36,6 @@ export function AuthActions() {
     if (auth?.session.mode === 'password') {
       const { data, error } = await apiClient.POST('/api/auth/password/invitations', {
         body: { name, email: inviteEmail },
-        params: { header: { 'X-CSRF-Token': csrfToken } },
       })
       if (!data) throw new Error(error?.message ?? 'Не удалось создать приглашение.')
       setInvitation(data.token)
@@ -49,7 +47,6 @@ export function AuthActions() {
     }
     const { data } = await apiClient.POST('/api/auth/invitations', {
       body: { name },
-      params: { header: { 'X-CSRF-Token': csrfToken } },
     })
     if (!data) throw new Error('Не удалось создать приглашение.')
     setInvitation(data.token)

@@ -9,9 +9,8 @@ import {
   CreateReceiptSchema,
   type CreateReceiptValues,
 } from '@/features/create-receipt/model/create-receipt.schema'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
-import type { FinancialEvent } from '@/shared/api/types'
+import { apiClient } from '@/shared/api'
+import type { FinancialEvent } from '@/shared/api'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import {
@@ -26,7 +25,7 @@ import {
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { MoneyInput } from '@/shared/ui/money-input'
-import { parseMilli, parseMinor } from '@/shared/lib/finance-display'
+import { parseMilli, parseMinor } from '@/shared/lib/money'
 
 function emptyItem() {
   return { name: '', quantity: '1', unitPrice: '', lineTotal: '' }
@@ -73,7 +72,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await apiClient.POST('/api/v1/receipts', {
-      params: { header: { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken } },
+      params: { header: { 'Idempotency-Key': createIdempotencyKey() } },
       body: {
         purchaseEventId: purchase.id,
         seller: values.seller,

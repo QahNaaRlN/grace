@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react'
-import type { Category } from '@/shared/api/types'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import type { Category } from '@/shared/api'
+import { apiClient } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import { CategoryIcon } from '@/shared/ui/category-icon'
 import { categoryIcons, type CategoryIconName } from '@/shared/lib/category-icons'
@@ -21,7 +20,6 @@ import {
 import { Notice, StatusBadge } from '@/shared/ui/status'
 import { cn } from '@/shared/lib/utils'
 
-const header = { 'X-CSRF-Token': csrfToken }
 function operationsText(count: number) {
   const tail = count % 100
   const word =
@@ -55,7 +53,7 @@ export function Categories({ items }: { items: Category[] }) {
     if (busy) return
     setBusy(category.id)
     setError('')
-    const params = { path: { categoryId: category.id }, header }
+    const params = { path: { categoryId: category.id } }
     const result = category.hidden
       ? await apiClient.DELETE('/api/v1/categories/{categoryId}/hidden', { params })
       : await apiClient.PUT('/api/v1/categories/{categoryId}/hidden', { params })
@@ -183,11 +181,10 @@ function EditDialog({
       const result =
         category === null
           ? await apiClient.POST('/api/v1/categories', {
-              params: { header },
               body: { name: name.trim(), ...(icon ? { icon } : {}) },
             })
           : await apiClient.PATCH('/api/v1/categories/{categoryId}', {
-              params: { path: { categoryId: category.id }, header },
+              params: { path: { categoryId: category.id } },
               body: { name: name.trim(), icon: icon ?? '' },
             })
       if (!result.data) throw new Error(result.error?.message ?? 'Не удалось сохранить категорию.')
@@ -286,7 +283,7 @@ function DeleteDialog({
     try {
       // The preview count is checked again by Go inside the deletion.
       const preview = await apiClient.POST('/api/v1/categories/{categoryId}/delete-preview', {
-        params: { path: { categoryId: category.id }, header },
+        params: { path: { categoryId: category.id } },
       })
       if (!preview.data) throw new Error(preview.error?.message ?? 'Категория недоступна.')
       if (preview.data.operations !== count)
@@ -294,7 +291,6 @@ function DeleteDialog({
       const result = await apiClient.DELETE('/api/v1/categories/{categoryId}', {
         params: {
           path: { categoryId: category.id },
-          header,
           query: { expectedOperations: count, ...(target ? { moveTo: target } : {}) },
         },
       })

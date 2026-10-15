@@ -1,19 +1,17 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
-import type { Account, Category, FinancialEvent } from '@/shared/api/types'
+import type { Account, Category, FinancialEvent } from '@/shared/api'
+import { accountLabel } from '@/shared/lib/finance-display'
 import {
-  minorToInput,
-  parseMinor,
-  accountLabel,
-  formatMoney,
-  localDateTimeInput as toLocalInput,
+  dateTimeText,
   fromLocalDateTimeInput,
-} from '@/shared/lib/finance-display'
+  localDateTimeInput as toLocalInput,
+} from '@/shared/lib/date'
+import { minorToInput, parseMinor, formatMoney } from '@/shared/lib/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
-import { csrfToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
 import {
@@ -176,7 +174,7 @@ function EditDialog({
     const result = await apiClient.PATCH('/api/v1/financial-events/{eventId}', {
       params: {
         path: { eventId: event.id },
-        header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': key },
+        header: { 'Idempotency-Key': key },
       },
       body,
     })
@@ -337,7 +335,7 @@ function VoidDialog({
     const result = await apiClient.POST('/api/v1/financial-events/{eventId}/void', {
       params: {
         path: { eventId: event.id },
-        header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': key },
+        header: { 'Idempotency-Key': key },
       },
       body: { revision: event.revision, reason: reason.trim() },
     })
@@ -427,8 +425,7 @@ export function OperationHistory({
       const a = accounts.find((item) => item.id === text)
       return a ? accountLabel(a) : 'счёт недоступен'
     }
-    if (field === 'occurred' && text.includes('T'))
-      return new Date(text).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' })
+    if (field === 'occurred' && text.includes('T')) return dateTimeText(text)
     return text
   }
   return (
@@ -442,11 +439,7 @@ export function OperationHistory({
           <ol className="space-y-3 px-3 text-sm">
             {history.data?.map((item) => (
               <li key={item.revision}>
-                <p className="text-muted-foreground">
-                  {new Date(item.createdAt).toLocaleString('ru-RU', {
-                    timeZone: 'Asia/Yekaterinburg',
-                  })}
-                </p>
+                <p className="text-muted-foreground">{dateTimeText(item.createdAt)}</p>
                 <ul>
                   {item.changes.map((change, i) => (
                     <li key={i}>

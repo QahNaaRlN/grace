@@ -1,5 +1,5 @@
-import { AuthContext } from '@/shared/model/auth-context'
-import { env } from '@/shared/config/env'
+import { AuthContext } from '@/entities/session'
+import { env } from '@/shared/config'
 import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Bot,

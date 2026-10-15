@@ -5,7 +5,6 @@ import { ReceiptPhoto } from './ReceiptPhoto'
 
 const mocked = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: mocked }))
-vi.mock('@/shared/model/auth-session', () => ({ csrfToken: 'synthetic-csrf' }))
 const fields = {
   seller: 'Synthetic store',
   issuedAt: null,

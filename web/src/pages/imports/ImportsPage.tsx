@@ -7,22 +7,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { AppLayout } from '@/shared/ui/layout/AppLayout'
-import {
-  formatMoney,
-  eventTimeText,
-  accountLabel,
-  minorToInput,
-  parseMinor,
-} from '@/shared/lib/finance-display'
+import { AppLayout } from '@/widgets/app-shell'
+import { APP_UTC_OFFSET } from '@/shared/config'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { eventTimeText } from '@/shared/lib/date'
+import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { CurrencySelect } from '@/shared/ui/currency-select'
 import { PreviewPanel } from './PreviewPanel'
@@ -172,7 +168,7 @@ export function ImportsPage() {
       {
         params: {
           path: { batchId },
-          header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() },
+          header: { 'Idempotency-Key': crypto.randomUUID() },
         },
         body,
       },
@@ -196,7 +192,7 @@ export function ImportsPage() {
       {
         params: {
           path: { batchId },
-          header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': confirmationKey },
+          header: { 'Idempotency-Key': confirmationKey },
         },
         body: { previewId: preview.id, previewHash: preview.hash },
       },
@@ -495,7 +491,7 @@ function ReviewForm({
         {
           params: {
             path: { batchId, recordId: record.id },
-            header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() },
+            header: { 'Idempotency-Key': crypto.randomUUID() },
           },
           body: { expectedRevision: revision, decision },
         },
@@ -650,11 +646,11 @@ function ReviewForm({
                   <>
                     <div>
                       <Label htmlFor="occurredAt">
-                        Дата и время (с часовым поясом, например +05:00)
+                        Дата и время (с часовым поясом, например {APP_UTC_OFFSET})
                       </Label>
                       <Input
                         id="occurredAt"
-                        placeholder="2026-10-06T12:30:00+05:00"
+                        placeholder={`2026-10-06T12:30:00${APP_UTC_OFFSET}`}
                         value={fields.occurredAt || ''}
                         onChange={(e) => field('occurredAt', e.target.value)}
                       />

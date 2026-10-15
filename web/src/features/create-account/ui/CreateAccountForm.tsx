@@ -1,9 +1,8 @@
 import { Checkbox } from '@/shared/ui/checkbox'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
-import { parseMinor, formatMoney } from '@/shared/lib/finance-display'
+import { apiClient } from '@/shared/api'
+import { parseMinor, formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
@@ -31,7 +30,6 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
     setError('')
     try {
       const { data, error: failure } = await apiClient.POST('/api/v1/accounts', {
-        params: { header: { 'X-CSRF-Token': csrfToken } },
         body: {
           name: review.name,
           type: type as 'debit' | 'credit' | 'cash' | 'installment',

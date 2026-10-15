@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it } from 'vitest'
 import { FinancialHealth } from './FinancialHealth'
-import type { Account, CashPosition } from '@/shared/api/types'
+import type { Account, CashPosition } from '@/shared/api'
 it('keeps unknown balances and incomplete history explicit without inventing salary or a score', () => {
   render(
     <MemoryRouter>

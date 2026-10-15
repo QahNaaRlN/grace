@@ -1,4 +1,4 @@
-import type { ScheduledPayment } from '@/shared/api/types'
+import type { ScheduledPayment } from '@/shared/api'
 
 // SPEC-0039: presentation grouping of a schedule Go already computed. Only
 // status, isOverdue, remainingMinor and position decide the group; React

@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
-import { csrfToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Disclosure } from '@/shared/ui/disclosure'
@@ -68,7 +67,7 @@ export function NewDraftCard({ onSaved }: { onSaved: (batchId: string) => Promis
     working.current = true
     setState({ step: 'saving' })
     try {
-      const header = { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': idempotencyKey }
+      const header = { 'Idempotency-Key': idempotencyKey }
       if (kind === 'csv') {
         const { data, error } = await apiClient.POST('/api/imports/csv', {
           body: '',

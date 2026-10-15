@@ -4,6 +4,7 @@ import { Disclosure } from '@/shared/ui/disclosure'
 import { AIGuide } from './AIGuide'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { accountLabel } from '@/shared/lib/finance-display'
+import { formatMoney } from '@/shared/lib/money'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { AlertCircle, CheckCircle2, Send, ShieldCheck } from 'lucide-react'
 import {
@@ -28,12 +29,12 @@ import type {
   AssistantCompleted,
   AssistantResult,
   CurrencyPeriodSummary,
-} from '@/shared/api/types'
+} from '@/shared/api'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Label } from '@/shared/ui/label'
-import { AppLayout } from '@/shared/ui/layout/AppLayout'
+import { AppLayout } from '@/widgets/app-shell'
 import { Textarea } from '@/shared/ui/textarea'
 import { AIAnalysis } from './AIAnalysis'
 import { ReceiptPhoto } from './ReceiptPhoto'
@@ -61,11 +62,6 @@ const argumentLabels: Record<RequiredArgument, string> = {
   asOf: 'дата состояния',
   limit: 'количество чеков',
   categoryId: 'категория дохода',
-}
-
-function formatMoney(valueMinor: number | null, currency: string) {
-  if (valueMinor === null) return 'Не сверён'
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(valueMinor / 100)
 }
 
 function formatDateTime(value: string) {

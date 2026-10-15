@@ -63,3 +63,59 @@ Steiger не распознаёт срезы без сегментов (`pages/l
 
 Не выполнено в фазе 0: AC1–AC13 закрываются фазами 1–5. CI GitHub (Node 22,
 Steiger требует ≥ 22.18) проверяется после push.
+
+## Фаза 1 — Shared
+
+Дата: 2026-10-15. Ветка: `codex/frontend-fsd-1` от `codex/frontend-fsd` (`57de0c2`).
+Проверено локально на Windows, Node 23.
+
+| Коммит | Содержание |
+| --- | --- |
+| `685b017` | `APP_TIME_ZONE`/`APP_UTC_OFFSET` и `index.ts` в `shared/config`; `shared/lib/date` (функции дат из `finance-display` и замены локальных `Intl`-форматтеров страниц); `shared/lib/money` (`formatMoney`, разбор сумм, BigInt-форматтеры из `AIAnalysis`/`ReceiptPhoto`, дубликат `formatMoney` из `AssistantPage` удалён) |
+| `a60a7f1` | Хранилище токена — `shared/api/csrf.ts`; ручной `X-CSRF-Token` удалён из 19 файлов; `apiClient` типизирован через `ClientPaths` без CSRF-заголовка; тест middleware; `shared/api/index.ts`; правило `no-restricted-imports` охраняет `@/shared/api/csrf` |
+| `2cfdf03` | `AuthContext` → `entities/session`; `AppLayout` → `widgets/app-shell`; `AuthActions` → `features/logout`; `ProfilePanel` получает его через слот `sessionActions` от `HomePage` |
+| следующий | Этот отчёт |
+
+### Решения по ходу фазы
+
+- **CSRF в типе клиента.** OpenAPI объявляет `X-CSRF-Token` обязательным
+  параметром мутаций, поэтому после удаления ручного заголовка TypeScript его
+  требовал. Контракт не меняется (non-goal): `shared/api/client.ts` строит
+  `ClientPaths`, где этот заголовок убран, а middleware ставит его сам.
+  `Categories.tsx` раньше читал токен на уровне модуля, то есть всегда пустым;
+  заголовок туда и так ставил middleware.
+- **`features/logout` и `features/user-profile`.** Профиль показывал
+  `AuthActions` сам, что после переноса стало бы импортом feature → feature.
+  Теперь страница передаёт `<AuthActions />` в слот `sessionActions`. Вёрстка
+  та же. Компонент сохраняет имя `AuthActions` и диалог «Доступ»
+  (приглашения, завершение сеансов, выход), как в спецификации.
+- **Подсказка в `ImportsPage`.** Подпись «например +05:00» и placeholder
+  строятся из `APP_UTC_OFFSET`. Текст на экране тот же; тест
+  `ImportsPage.test.tsx` находит поле по прежней подписи.
+- **Что осталось на фазу 2.** Запрос `/api/auth/me` пока живёт в
+  `AuthBoundary` и `LoginPage` с литералом `['auth-session']`. Перенос в
+  `entities/session/api` — вместе с фабриками `queryOptions`.
+- **Тестовые фикстуры с `+05:00`.** `AssistantPage.test.tsx`,
+  `Accounts.test.tsx`, `ImportsPage.test.tsx` содержат моменты из API и
+  остаются в baseline `grace/no-time-zone-literal`. Проверка AC7 исключает
+  `.test.`; правило для тестов решается в фазе 5, когда удаляется baseline.
+
+### Исполняемые свидетельства
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | exit 0: Go `ok` во всех пакетах; web — 35 файлов и 219 тестов (было 33 и 215 после фазы 0), `lint`, `lint:fsd` (OK, 25 в baseline), `format:check`, `build`; Jev eval `ok` |
+| Baseline только уменьшились | `git diff --stat codex/frontend-fsd -- web/eslint.baseline.js web/steiger.baseline.json` → 0 вставок, 94 удаления. ESLint: −27 записей файлов (`no-time-zone-literal` −7, `no-restricted-imports` −20, весь блок). Steiger: 87 → 25 диагностик |
+| AC6 (в смысле критерия) | `grep -rnE "import .*\bcsrfToken\b\|X-CSRF-Token" web/src \| grep -v "^web/src/shared/api/"` → пусто |
+| AC7 | `grep -rnE "Asia/Yekaterinburg\|\+05:00" web/src --include=*.ts* \| grep -vE "shared/config\|generated\|\.test\."` → пусто |
+| Готовность фазы 1 | `grep -rnE "AuthContext\|'/api/" web/src/shared \| grep -v "^web/src/shared/api/"` → пусто: в `shared` нет `AuthContext` и путей API продукта |
+| Middleware CSRF | `web/src/shared/api/client.test.ts`: POST получает токен, GET — нет, 401 очищает токен и шлёт `grace:unauthenticated` |
+| Деньги | `web/src/shared/lib/money/money.test.ts`: BigInt-формат больших и отрицательных сумм, доллары в micros |
+| ESLint-правило CSRF | Временный `EslintProbe.ts` с `import { csrfToken } from '@/shared/api/csrf'` и литералом пояса → `no-restricted-imports` и `grace/no-time-zone-literal`. Файл удалён |
+| Steiger-проба | Временный `src/pages/assistant/ui/SteigerProbe.ts` с `import { apiClient } from '@/shared/api/client'` → `lint:fsd` exit 1, `fsd/no-public-api-sidestep`. Файл удалён, `lint:fsd` снова OK |
+| `git diff --check` | чисто |
+
+Проверка AC6 из спецификации (`grep -rln "csrfToken" web/src --include=*.tsx`)
+в буквальном виде пустой не станет: она находит поле `csrfToken` ответа
+`/api/auth/me` (`setCSRFToken(data.csrfToken)`) и фикстуры сессии в тестах.
+Предлагаю владельцу уточнить проверку в спецификации до формы выше.

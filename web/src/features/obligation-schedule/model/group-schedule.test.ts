@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ScheduledPayment } from '@/shared/api/types'
+import type { ScheduledPayment } from '@/shared/api'
 import { groupSchedule } from './group-schedule'
 
 function payment(position: number, patch: Partial<ScheduledPayment> = {}): ScheduledPayment {

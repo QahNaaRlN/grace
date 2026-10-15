@@ -65,7 +65,7 @@ describe('SPEC-0032 responsive navigation', () => {
 describe('SPEC-0043 profile in the sidebar', () => {
   it('shows the avatar initial and name and links to the profile', async () => {
     viewport(true)
-    const { AuthContext } = await import('@/shared/model/auth-context')
+    const { AuthContext } = await import('@/entities/session')
     render(
       <MemoryRouter>
         <AuthContext.Provider

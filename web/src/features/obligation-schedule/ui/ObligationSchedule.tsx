@@ -3,11 +3,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { apiClient } from '@/shared/api/client'
-import type { FinancialEvent, Obligation, ScheduledPayment } from '@/shared/api/types'
-import { dueSoonText, formatMoney } from '@/shared/lib/finance-display'
+import { apiClient } from '@/shared/api'
+import type { FinancialEvent, Obligation, ScheduledPayment } from '@/shared/api'
+import { dueSoonText } from '@/shared/lib/finance-display'
+import { formatMoney } from '@/shared/lib/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
-import { csrfToken } from '@/shared/model/auth-session'
 import { Button } from '@/shared/ui/button'
 import { Money } from '@/shared/ui/money'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
@@ -297,7 +297,7 @@ function SettlementForm({
       {
         params: {
           path: { obligationId: obligation.id, paymentId: payment.id },
-          header: { 'Idempotency-Key': createIdempotencyKey(), 'X-CSRF-Token': csrfToken },
+          header: { 'Idempotency-Key': createIdempotencyKey() },
         },
         body: { financialEventId: eventID },
       },

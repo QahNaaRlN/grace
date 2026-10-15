@@ -2,10 +2,10 @@ import { Disclosure } from '@/shared/ui/disclosure'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
-import type { Account, Category, FinancialEvent } from '@/shared/api/types'
-import { accountLabel, formatMoney, parseMinor } from '@/shared/lib/finance-display'
+import { apiClient } from '@/shared/api'
+import type { Account, Category, FinancialEvent } from '@/shared/api'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { formatMoney, parseMinor } from '@/shared/lib/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -71,7 +71,7 @@ export function CreateFinancialEventForm({
     inFlight.current = true
     setPending(true)
     setFailure('')
-    const headers = { 'Idempotency-Key': review.key, 'X-CSRF-Token': csrfToken }
+    const headers = { 'Idempotency-Key': review.key }
     const common = {
       amountMinor: review.amountMinor,
       merchant: review.merchant,
