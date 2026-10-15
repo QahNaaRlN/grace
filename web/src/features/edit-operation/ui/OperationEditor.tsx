@@ -1,16 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
-import { accountQueries } from '@/entities/account'
-import {
-  cashPositionQueries,
-  periodSummaryQueries,
-  statisticsQueries,
-} from '@/entities/analytics-report'
-import { categoryQueries } from '@/entities/category'
 import { financialEventQueries } from '@/entities/financial-event'
-import { apiClient } from '@/shared/api'
-import type { components } from '@/shared/api/generated/schema'
 import type { Account, Category, FinancialEvent } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
 import {
@@ -35,8 +26,8 @@ import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Notice } from '@/shared/ui/status'
 import { Textarea } from '@/shared/ui/textarea'
+import { useCorrectOperation, useVoidOperation, type Correction } from '../api/operation-mutations'
 
-type Correction = components['schemas']['FinancialEventCorrection']
 const kindLabels: Record<string, string> = {
   purchase: 'Покупка',
   income_received: 'Доход',
@@ -56,15 +47,6 @@ const fieldLabels: Record<string, string> = {
   destinationAccount: 'Счёт зачисления',
   voided: 'Отменена',
 }
-
-const refreshKeys = [
-  financialEventQueries.all(),
-  accountQueries.all(),
-  cashPositionQueries.all(),
-  statisticsQueries.all(),
-  periodSummaryQueries.all(),
-  categoryQueries.all(),
-]
 
 // 409 linked carries a ready message naming what to unlink first.
 function failure(error: unknown, fallback: string) {
@@ -133,8 +115,8 @@ function EditDialog({
   onClose: () => void
   onSaved: (next: FinancialEvent) => void
 }) {
-  const cache = useQueryClient()
   const [key] = useState(createIdempotencyKey)
+  const correction = useCorrectOperation(event, key)
   const isTransfer = event.kind === 'internal_transfer'
   const debit = event.postings.find((p) => p.direction === 'debit') ?? event.postings[0]
   const credit = event.postings.find((p) => p.direction === 'credit')
@@ -179,16 +161,9 @@ function EditDialog({
     if (Object.keys(body).length === 1) return setError('Ничего не изменилось.')
     setPending(true)
     setError('')
-    const result = await apiClient.PATCH('/api/v1/financial-events/{eventId}', {
-      params: {
-        path: { eventId: event.id },
-        header: { 'Idempotency-Key': key },
-      },
-      body,
-    })
+    const result = await correction.mutateAsync(body)
     setPending(false)
     if (!result.data) return setError(failure(result.error, 'Не удалось изменить операцию.'))
-    await Promise.all(refreshKeys.map((queryKey) => cache.invalidateQueries({ queryKey })))
     onSaved(result.data)
   }
 
@@ -331,8 +306,8 @@ function VoidDialog({
   onClose: () => void
   onVoided: (next: FinancialEvent) => void
 }) {
-  const cache = useQueryClient()
   const [key] = useState(createIdempotencyKey)
+  const voiding = useVoidOperation(event, key)
   const [reason, setReason] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
@@ -340,16 +315,9 @@ function VoidDialog({
     if (pending || !reason.trim()) return
     setPending(true)
     setError('')
-    const result = await apiClient.POST('/api/v1/financial-events/{eventId}/void', {
-      params: {
-        path: { eventId: event.id },
-        header: { 'Idempotency-Key': key },
-      },
-      body: { revision: event.revision, reason: reason.trim() },
-    })
+    const result = await voiding.mutateAsync(reason.trim())
     setPending(false)
     if (!result.data) return setError(failure(result.error, 'Не удалось отменить операцию.'))
-    await Promise.all(refreshKeys.map((queryKey) => cache.invalidateQueries({ queryKey })))
     onVoided(result.data)
   }
   const posting = event.postings[0]
