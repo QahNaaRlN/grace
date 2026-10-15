@@ -7,6 +7,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
+import { accountQueries } from '@/entities/account'
+import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
+import { importBatchQueries } from '@/entities/import-batch'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
@@ -71,40 +76,15 @@ export function ImportsPage() {
   const [preview, setPreview] = useState<Preview>()
   const [receipt, setReceipt] = useState<Receipt>()
   const [confirmationKey, setConfirmationKey] = useState('')
-  const batch = useQuery({
-    queryKey: ['imports', 'batch', batchId],
-    enabled: !!batchId,
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/imports/batches/{batchId}', {
-        params: { path: { batchId } },
-      })
-      if (!data) throw new Error('Черновик недоступен.')
-      return data
-    },
-  })
+  const batch = useQuery({ ...importBatchQueries.batch(batchId), enabled: !!batchId })
   const detail = useQuery({
-    queryKey: ['imports', 'record', batchId, recordId],
+    ...importBatchQueries.record(batchId, recordId),
     enabled: !!batchId && !!recordId,
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/imports/batches/{batchId}/records/{recordId}', {
-        params: { path: { batchId, recordId } },
-      })
-      if (!data) throw new Error('Строка недоступна.')
-      return data
-    },
   })
   const receiptId = params.get('confirmation') ?? ''
   const savedReceipt = useQuery({
-    queryKey: ['imports', 'receipt', batchId, receiptId],
+    ...importBatchQueries.receipt(batchId, receiptId),
     enabled: !!batchId && !!receiptId,
-    queryFn: async () => {
-      const { data } = await apiClient.GET(
-        '/api/imports/batches/{batchId}/confirmations/{confirmationId}',
-        { params: { path: { batchId, confirmationId: receiptId } } },
-      )
-      if (!data) throw new Error('Подтверждение недоступно.')
-      return data
-    },
   })
   const shownReceipt = receipt || savedReceipt.data
   const selectedCount = selection.mode === 'filter' ? selection.total : selection.ids.length
@@ -139,7 +119,7 @@ export function ImportsPage() {
   }
   // SPEC-0038: the new-draft card owns its own states and messages.
   async function draftSaved(id: string) {
-    await cache.invalidateQueries({ queryKey: ['imports'] })
+    await cache.invalidateQueries({ queryKey: importBatchQueries.all() })
     openBatch(id)
     setNotice('')
   }
@@ -202,7 +182,7 @@ export function ImportsPage() {
         ['preview_expired', 'preview_changed', 'revision_conflict'].includes(failure?.code ?? '')
       ) {
         setPreview(undefined)
-        await cache.invalidateQueries({ queryKey: ['imports'] })
+        await cache.invalidateQueries({ queryKey: importBatchQueries.all() })
         throw new Error('Предварительный просмотр устарел. Проверьте строки и получите новый.')
       }
       throw new Error(
@@ -218,9 +198,13 @@ export function ImportsPage() {
     setSelection({ mode: 'ids', ids: [] })
     setNotice('Решения подтверждены. Оставшиеся строки можно проверить позже.')
     await Promise.all(
-      ['imports', 'accounts', 'financial-events', 'period-summary', 'cash-position'].map((key) =>
-        cache.invalidateQueries({ queryKey: [key] }),
-      ),
+      [
+        importBatchQueries.all(),
+        accountQueries.all(),
+        financialEventQueries.all(),
+        periodSummaryQueries.all(),
+        cashPositionQueries.all(),
+      ].map((queryKey) => cache.invalidateQueries({ queryKey })),
     )
   }
   return (
@@ -244,7 +228,7 @@ export function ImportsPage() {
             Не удалось загрузить данные.{' '}
             <Button
               variant="outline"
-              onClick={() => void cache.invalidateQueries({ queryKey: ['imports'] })}
+              onClick={() => void cache.invalidateQueries({ queryKey: importBatchQueries.all() })}
             >
               Повторить
             </Button>
@@ -372,7 +356,7 @@ export function ImportsPage() {
                         onSaved={async () => {
                           const saved = recordId
                           setPreview(undefined)
-                          await cache.invalidateQueries({ queryKey: ['imports'] })
+                          await cache.invalidateQueries({ queryKey: importBatchQueries.all() })
                           setNotice('Решение сохранено. Финансовый журнал ещё не изменён.')
                           // After a decision, move straight to the next unresolved row.
                           try {
@@ -451,18 +435,9 @@ function ReviewForm({
   )
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
-  const accounts = useQuery({
-    queryKey: ['accounts', 'import-options'],
-    queryFn: async () => (await apiClient.GET('/api/v1/accounts')).data,
-  })
-  const categories = useQuery({
-    queryKey: ['categories', 'import-options'],
-    queryFn: async () => (await apiClient.GET('/api/v1/categories')).data,
-  })
-  const events = useQuery({
-    queryKey: ['financial-events', 'import-options'],
-    queryFn: async () => (await apiClient.GET('/api/v1/financial-events')).data,
-  })
+  const accounts = useQuery(accountQueries.importOptions())
+  const categories = useQuery(categoryQueries.importOptions())
+  const events = useQuery(financialEventQueries.importOptions())
   function field<K extends keyof Fields>(name: K, value: Fields[K]) {
     setFields({ ...fields, [name]: value })
   }

@@ -1,7 +1,7 @@
 import { Disclosure } from '@/shared/ui/disclosure'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import { apiClient } from '@/shared/api'
+import { importBatchQueries } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -42,17 +42,7 @@ export function MonthPanel({
   const cache = useQueryClient()
   const [params, setParams] = useSearchParams()
   const month = params.get('month') ?? ''
-  const report = useQuery({
-    queryKey: ['imports', 'month', batchId, month],
-    enabled: !!month,
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/imports/batches/{batchId}/month', {
-        params: { path: { batchId }, query: { month } },
-      })
-      if (!data) throw new Error('Не удалось получить сверку месяца.')
-      return data
-    },
-  })
+  const report = useQuery({ ...importBatchQueries.month(batchId, month), enabled: !!month })
   const showRow = (row: Row) => (
     <li key={row.recordId} className="space-y-1 rounded-lg border p-3">
       <Button
@@ -110,7 +100,9 @@ export function MonthPanel({
             Не удалось загрузить сверку.{' '}
             <Button
               variant="outline"
-              onClick={() => void cache.invalidateQueries({ queryKey: ['imports', 'month'] })}
+              onClick={() =>
+                void cache.invalidateQueries({ queryKey: importBatchQueries.months() })
+              }
             >
               Повторить сверку
             </Button>

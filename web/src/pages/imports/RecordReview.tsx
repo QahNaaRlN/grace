@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type FormEvent, type KeyboardEvent } from 'react'
 import { Search } from 'lucide-react'
 
-import { apiClient } from '@/shared/api'
+import { importBatchQueries, type ImportRecordsView } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Checkbox } from '@/shared/ui/checkbox'
@@ -15,16 +15,8 @@ import { StatusBadge, type Tone } from '@/shared/ui/status'
 type Batch = components['schemas']['ImportBatch']
 type Record = components['schemas']['ImportRecord']
 type Status = components['schemas']['ImportRecordStatus']
-type Domain = components['schemas']['ImportRecordDomain']
-type Sort = 'row' | 'date' | '-date' | 'amount' | '-amount'
-export type View = {
-  status: Status | ''
-  domain: Domain
-  q: string
-  sort: Sort
-  cursor: string
-  limit: 50 | 100
-}
+type Sort = ImportRecordsView['sort']
+export type View = ImportRecordsView
 export type Selection = { mode: 'ids'; ids: string[] } | { mode: 'filter'; total: number }
 
 const MAX_FILTER_SELECTION = 1000
@@ -76,26 +68,7 @@ export function RecordReview({
   onOpen: (id: string) => void
   disabled: boolean
 }) {
-  const records = useQuery({
-    queryKey: ['imports', 'records', batchId, view],
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/imports/batches/{batchId}/records', {
-        params: {
-          path: { batchId },
-          query: {
-            cursor: view.cursor || undefined,
-            limit: view.limit,
-            status: view.status || undefined,
-            domain: view.domain,
-            q: view.q || undefined,
-            sort: view.sort,
-          },
-        },
-      })
-      if (!data) throw new Error('Не удалось загрузить строки.')
-      return data
-    },
-  })
+  const records = useQuery(importBatchQueries.records(batchId, view))
   const counts = batch.counts ?? {}
   const total = batch.total ?? 0
   const evidence = Object.entries(batch.domainCounts ?? {})
