@@ -15,7 +15,7 @@ export default [
     rules: { 'grace/no-direct-invalidate': 'off' },
   },
   // SPEC-0048 phase 3 moved these files from pages/home, pages/imports and pages/subscriptions.
-  // Their direct invalidations become mutation hooks in phase 4 (owner decision pending).
+  // Their direct invalidations become mutation hooks in phase 4 (owner decision 2026-10-15).
   {
     files: [
       'src/pages/imports/ui/ImportsPage.tsx',
