@@ -1,4 +1,0 @@
-[
-  "fsd/public-api | src/shared/model | This segment is missing a public API.",
-  "fsd/segments-by-purpose | src/app/providers | This segment's name should describe the purpose of its contents, not what the contents are."
-]

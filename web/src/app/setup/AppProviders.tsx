@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { ThemeProvider } from 'next-themes'
 
-import { QueryProvider } from '@/app/providers/QueryProvider'
+import { QueryProvider } from '@/app/setup/QueryProvider'
 import { Toaster } from '@/shared/ui/sonner'
 
 type AppProvidersProps = {

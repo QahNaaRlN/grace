@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { AssistantRequestError, type SubmitAssistant } from '@/features/ask-assistant'
 import type { AssistantResult } from '@/shared/api'
+import { APP_UTC_OFFSET } from '@/shared/config'
 import { AppLayout } from '@/widgets/app-shell'
 
 import { AssistantPage } from './AssistantPage'
@@ -28,7 +29,7 @@ const accountResult = {
           lastReconciliation: null,
           lastImportConfirmedAt: null,
           balanceMinor: 125_050,
-          createdAt: '2026-10-01T10:00:00+05:00',
+          createdAt: `2026-10-01T10:00:00${APP_UTC_OFFSET}`,
         },
       ],
     },
@@ -53,7 +54,7 @@ const obligationsResult = {
           paidMinor: 25_000,
           remainingMinor: 75_000,
           status: 'active',
-          createdAt: '2026-09-01T10:00:00+05:00',
+          createdAt: `2026-09-01T10:00:00${APP_UTC_OFFSET}`,
           payments: [
             {
               id: '00000000-0000-0000-0000-000000000003',
@@ -87,13 +88,13 @@ const receiptsResult = {
           id: '00000000-0000-0000-0000-000000000004',
           purchaseEventId: '00000000-0000-0000-0000-000000000005',
           seller: 'Магазин',
-          issuedAt: '2026-10-04T14:00:00+05:00',
+          issuedAt: `2026-10-04T14:00:00${APP_UTC_OFFSET}`,
           issuedDate: null,
           datePrecision: 'instant',
           currency: 'RUB',
           totalMinor: 350_00,
           fiscalDocumentNumber: '42',
-          createdAt: '2026-10-04T14:05:00+05:00',
+          createdAt: `2026-10-04T14:05:00${APP_UTC_OFFSET}`,
           items: [
             {
               id: '00000000-0000-0000-0000-000000000006',
@@ -121,7 +122,7 @@ const incomePeriodResult = {
         eventId: '00000000-0000-0000-0000-000000000007',
         categoryId: null,
         categoryName: 'Зарплата',
-        occurredAt: '2026-10-01T09:00:00+05:00',
+        occurredAt: `2026-10-01T09:00:00${APP_UTC_OFFSET}`,
         postings: [
           {
             accountId: '00000000-0000-0000-0000-000000000001',
@@ -132,8 +133,8 @@ const incomePeriodResult = {
         ],
       },
       summary: {
-        from: '2026-10-01T09:00:00+05:00',
-        to: '2026-10-05T18:00:00+05:00',
+        from: `2026-10-01T09:00:00${APP_UTC_OFFSET}`,
+        to: `2026-10-05T18:00:00${APP_UTC_OFFSET}`,
         currencies: [
           {
             currency: 'RUB',

@@ -6,7 +6,6 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 import grace from './eslint-rules/grace.js'
-import baseline from './eslint.baseline.js'
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -67,5 +66,4 @@ export default defineConfig([
     files: ['src/shared/api/**'],
     rules: { 'no-restricted-imports': 'off' },
   },
-  ...baseline,
 ])

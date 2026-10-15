@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 
-import { AppProviders } from '@/app/providers/AppProviders'
+import { AppProviders } from '@/app/setup/AppProviders'
 import { appRouter } from '@/app/router'
 
 /**
