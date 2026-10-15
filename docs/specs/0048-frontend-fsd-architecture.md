@@ -10,7 +10,8 @@
   выработать стратегию по организации лучшей архитектуры».
 - Implementation branch: фаза 0 — `codex/frontend-fsd` (вместе со спецификацией);
   следующие фазы — отдельные ветки `codex/frontend-fsd-<фаза>`
-- Implementation commit: отсутствует
+- Implementation commit: фаза 0 — `3edc372`, `7a7d946` (форматирование) и коммит evidence
+- Evidence: [0048-evidence.md](0048-evidence.md)
 
 ## Проблема и пользовательский результат
 

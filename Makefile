@@ -18,7 +18,7 @@ test-go:
 	go test ./cmd/... ./internal/...
 
 test-web:
-	cd web && npm test -- --run && npm run lint && npm run lint:fsd && npm run build
+	cd web && npm test -- --run && npm run lint && npm run lint:fsd && npm run format:check && npm run build
 
 test-jev-eval:
 	./scripts/test-jev-evaluation.sh
