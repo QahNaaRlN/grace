@@ -1,7 +1,7 @@
 import { Disclosure } from '@/shared/ui/disclosure'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import { importBatchQueries } from '@/entities/import-batch'
+import { importBatchQueries, useImportRefresh } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -39,7 +39,7 @@ export function MonthPanel({
   batchId: string
   onOpenRecord: (id: string) => void
 }) {
-  const cache = useQueryClient()
+  const refreshImports = useImportRefresh()
   const [params, setParams] = useSearchParams()
   const month = params.get('month') ?? ''
   const report = useQuery({ ...importBatchQueries.month(batchId, month), enabled: !!month })
@@ -98,12 +98,7 @@ export function MonthPanel({
         {report.isError && (
           <p role="alert">
             Не удалось загрузить сверку.{' '}
-            <Button
-              variant="outline"
-              onClick={() =>
-                void cache.invalidateQueries({ queryKey: importBatchQueries.months() })
-              }
-            >
+            <Button variant="outline" onClick={() => void refreshImports.months()}>
               Повторить сверку
             </Button>
           </p>

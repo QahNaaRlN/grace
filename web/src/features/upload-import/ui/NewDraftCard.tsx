@@ -1,14 +1,13 @@
 import { useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 
-import { apiClient } from '@/shared/api'
-import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { Field } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { Notice } from '@/shared/ui/status'
+import { useCreateImportDraft } from '../api/create-import-draft'
 
 const maxBytes = 16 * 1024 * 1024
 const fileLabel = 'Таблица CSV или снимок JSON (до 16 MiB)'
@@ -37,6 +36,7 @@ function sizeText(bytes: number) {
 export function NewDraftCard({ onSaved }: { onSaved: (batchId: string) => Promise<void> | void }) {
   const input = useRef<HTMLInputElement>(null)
   const working = useRef(false)
+  const create = useCreateImportDraft()
   const [file, setFile] = useState<File>()
   const [state, setState] = useState<State>({ step: 'empty' })
   const [sourceId, setSourceId] = useState('Финансовое здоровье')
@@ -67,32 +67,8 @@ export function NewDraftCard({ onSaved }: { onSaved: (batchId: string) => Promis
     working.current = true
     setState({ step: 'saving' })
     try {
-      const header = { 'Idempotency-Key': idempotencyKey }
-      if (kind === 'csv') {
-        const { data, error } = await apiClient.POST('/api/imports/csv', {
-          body: '',
-          bodySerializer: () => file,
-          headers: { 'Content-Type': 'text/csv' },
-          params: { query: { sourceId, fileName: file.name }, header },
-        })
-        if (!data)
-          throw new Error(
-            error?.code === 'invalid_csv'
-              ? 'Не удалось прочитать CSV. Экспортируйте полный лист «Операции» в UTF-8 с исходными строками и столбцами A:O.'
-              : (error?.message ?? 'CSV не сохранён.'),
-          )
-        await onSaved(data.id)
-      } else {
-        // Pass original bytes: parsing/re-serializing JSON would round source decimals.
-        const { data, error } = await apiClient.POST('/api/imports/batches', {
-          body: {} as components['schemas']['ImportSnapshot'],
-          bodySerializer: () => file,
-          params: { header, query: { fileName: file.name } },
-        })
-        if (!data)
-          throw new Error(error?.message ?? 'Снимок не сохранён. Проверьте формат и размер файла.')
-        await onSaved(data.id)
-      }
+      const id = await create.mutateAsync({ file, kind, sourceId, idempotencyKey })
+      await onSaved(id)
       setState({ step: 'saved' })
     } catch (error) {
       setState({

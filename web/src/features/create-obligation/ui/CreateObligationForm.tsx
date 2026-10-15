@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import {
   CreateObligationSchema,
   type CreateObligationValues,
-} from '@/features/create-obligation/model/create-obligation.schema'
+} from '../model/create-obligation.schema'
 import {
   previewSchedule,
   rowsForPreview,

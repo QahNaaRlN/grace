@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render as renderUi, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -9,6 +10,11 @@ vi.mock('@/shared/api/client', () => ({ apiClient: { POST: post } }))
 
 const label = 'Таблица CSV или снимок JSON (до 16 MiB)'
 const csv = () => new File(['date;amount\n'.repeat(60)], 'Операции.csv', { type: 'text/csv' })
+
+// The card saves through a React Query mutation hook.
+function render(element: React.ReactElement) {
+  return renderUi(<QueryClientProvider client={new QueryClient()}>{element}</QueryClientProvider>)
+}
 
 beforeEach(() => post.mockReset())
 

@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Plus, RefreshCw, WalletCards } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
@@ -59,7 +59,6 @@ export function LedgerScreen({
   gated?: boolean
   children: (ledger: Ledger) => ReactNode
 }) {
-  const queryClient = useQueryClient()
   const [operationOpen, setOperationOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const queries = useLedger()
@@ -132,7 +131,10 @@ export function LedgerScreen({
             <strong>Обзор загружен частично</strong>
             <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
           </div>
-          <Button variant="outline" onClick={() => void queryClient.invalidateQueries()}>
+          <Button
+            variant="outline"
+            onClick={() => void Promise.all(all.map((query) => query.refetch()))}
+          >
             <RefreshCw className="size-4" />
             Повторить
           </Button>

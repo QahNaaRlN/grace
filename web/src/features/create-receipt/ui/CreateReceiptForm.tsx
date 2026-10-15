@@ -4,10 +4,7 @@ import { useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import {
-  CreateReceiptSchema,
-  type CreateReceiptValues,
-} from '@/features/create-receipt/model/create-receipt.schema'
+import { CreateReceiptSchema, type CreateReceiptValues } from '../model/create-receipt.schema'
 import type { FinancialEvent } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import {
