@@ -15,7 +15,7 @@ import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
 import { dueSoonText } from '@/shared/lib/finance-display'
-import { dayStart, today } from '@/shared/lib/date'
+import { today } from '@/shared/lib/date'
 import { formatMoney } from '@/shared/lib/money'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge } from '@/shared/ui/status'
@@ -33,8 +33,13 @@ import { useState } from 'react'
 
 import { CreateFinancialEventForm } from '@/features/create-financial-event'
 import { CreateObligationForm } from '@/features/create-obligation'
-import { apiClient } from '@/shared/api'
-import type { CashPosition, FinancialEvent, Obligation, PeriodSummary } from '@/shared/api'
+import { accountQueries } from '@/entities/account'
+import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
+import { obligationQueries } from '@/entities/obligation'
+import { receiptQueries } from '@/entities/receipt'
+import type { FinancialEvent, Obligation } from '@/shared/api'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -60,42 +65,6 @@ function initialPeriod() {
 function initialThrough() {
   const now = new Date()
   return localDateValue(new Date(now.getFullYear(), now.getMonth() + 1, 0))
-}
-
-async function loadAccounts() {
-  const { data } = await apiClient.GET('/api/v1/accounts')
-  if (!data) throw new Error('Не удалось загрузить счета')
-  return data.items
-}
-
-async function loadCategories() {
-  const { data } = await apiClient.GET('/api/v1/categories')
-  if (!data) throw new Error('Не удалось загрузить категории')
-  return data.items
-}
-
-async function loadEvents(categoryId = '', from = '', to = '') {
-  const { data, error } = await apiClient.GET('/api/v1/financial-events', {
-    params: {
-      query: { categoryId: categoryId || undefined, from: from || undefined, to: to || undefined },
-    },
-  })
-  if (!data) throw new Error(error?.message ?? 'Не удалось загрузить финансовые события')
-  return data.items
-}
-
-async function loadReceipts() {
-  const { data } = await apiClient.GET('/api/v1/receipts')
-  if (!data) throw new Error('Не удалось загрузить чеки')
-  return data.items
-}
-
-async function loadObligations(asOf: string) {
-  const { data } = await apiClient.GET('/api/v1/obligations', {
-    params: { query: { asOf } },
-  })
-  if (!data) throw new Error('Не удалось загрузить обязательства')
-  return data.items
 }
 
 const obligationKindLabels: Record<Obligation['kind'], string> = {
@@ -169,30 +138,11 @@ function Analytics() {
   const [toDate, setToDate] = useState(defaults.to)
   const [through, setThrough] = useState(initialThrough)
   const validPeriod = fromDate !== '' && toDate !== '' && fromDate < toDate
-  const period = useQuery<PeriodSummary>({
-    queryKey: ['period-summary', fromDate, toDate],
+  const period = useQuery({
+    ...periodSummaryQueries.period(fromDate, toDate),
     enabled: validPeriod,
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/analytics/period-summary', {
-        params: {
-          query: { from: dayStart(fromDate), to: dayStart(toDate) },
-        },
-      })
-      if (!data) throw new Error(error?.message ?? 'Не удалось загрузить сводку периода')
-      return data
-    },
   })
-  const cash = useQuery<CashPosition>({
-    queryKey: ['cash-position', through],
-    enabled: through !== '',
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/analytics/cash-position', {
-        params: { query: { through } },
-      })
-      if (!data) throw new Error(error?.message ?? 'Не удалось загрузить доступность денег')
-      return data
-    },
-  })
+  const cash = useQuery({ ...cashPositionQueries.through(through), enabled: through !== '' })
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">
@@ -379,32 +329,14 @@ export function HomePage() {
   const queryClient = useQueryClient()
   const [operationOpen, setOperationOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const accounts = useQuery({ queryKey: ['accounts'], queryFn: loadAccounts })
-  const categories = useQuery({
-    queryKey: ['categories'],
-    queryFn: loadCategories,
-  })
-  const events = useQuery({
-    queryKey: ['financial-events', '', '', ''],
-    queryFn: () => loadEvents(),
-  })
-  const receipts = useQuery({ queryKey: ['receipts'], queryFn: loadReceipts })
+  const accounts = useQuery(accountQueries.list())
+  const categories = useQuery(categoryQueries.list())
+  const events = useQuery(financialEventQueries.list())
+  const receipts = useQuery(receiptQueries.list())
   const asOf = today()
-  const obligations = useQuery({
-    queryKey: ['obligations', asOf],
-    queryFn: () => loadObligations(asOf),
-  })
+  const obligations = useQuery(obligationQueries.list(asOf))
   const through = initialThrough()
-  const cash = useQuery({
-    queryKey: ['cash-position', through],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/analytics/cash-position', {
-        params: { query: { through } },
-      })
-      if (!data) throw new Error(error?.message ?? 'Не удалось получить расчёт')
-      return data
-    },
-  })
+  const cash = useQuery(cashPositionQueries.through(through))
   const queries = [accounts, categories, events, receipts, obligations, cash]
   const error = queries.find((q) => q.isError)?.error
   const pending = queries.some((q) => q.isPending)
