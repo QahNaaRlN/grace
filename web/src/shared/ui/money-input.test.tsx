@@ -39,7 +39,12 @@ describe('SPEC-0036 amount input', () => {
   })
 
   it('formats while typing in an uncontrolled field read through FormData', async () => {
-    render(<form aria-label="f"><Label htmlFor="sum">Сумма</Label><MoneyInput id="sum" name="amount" currency="RUB" /></form>)
+    render(
+      <form aria-label="f">
+        <Label htmlFor="sum">Сумма</Label>
+        <MoneyInput id="sum" name="amount" currency="RUB" />
+      </form>,
+    )
     const input = screen.getByLabelText('Сумма') as HTMLInputElement
     await userEvent.type(input, '20000000')
     expect(input.value).toBe(`20${NBSP}000${NBSP}000`)
@@ -52,7 +57,12 @@ describe('SPEC-0036 amount input', () => {
   })
 
   it('keeps the caret in place when a separator is inserted', async () => {
-    render(<><Label htmlFor="c">Сумма</Label><MoneyInput id="c" /></>)
+    render(
+      <>
+        <Label htmlFor="c">Сумма</Label>
+        <MoneyInput id="c" />
+      </>,
+    )
     const input = screen.getByLabelText('Сумма') as HTMLInputElement
     await userEvent.type(input, '1000')
     expect(input.value).toBe(`1${NBSP}000`)
@@ -62,7 +72,13 @@ describe('SPEC-0036 amount input', () => {
   it('works as a controlled field', async () => {
     function Controlled() {
       const [value, setValue] = useState('')
-      return <><Label htmlFor="v">Сумма</Label><MoneyInput id="v" value={value} onChange={e => setValue(e.target.value)} /><output>{parseMinor(value)}</output></>
+      return (
+        <>
+          <Label htmlFor="v">Сумма</Label>
+          <MoneyInput id="v" value={value} onChange={(e) => setValue(e.target.value)} />
+          <output>{parseMinor(value)}</output>
+        </>
+      )
     }
     render(<Controlled />)
     await userEvent.type(screen.getByLabelText('Сумма'), '150000,5')

@@ -43,7 +43,11 @@ describe('SPEC-0038 import file feedback', () => {
 
   it('AC3/AC4: saves once, says so while saving and confirms in the card without claiming operations', async () => {
     let finish: (value: unknown) => void = () => {}
-    post.mockReturnValue(new Promise(resolve => { finish = resolve }))
+    post.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
     const onSaved = vi.fn()
     render(<NewDraftCard onSaved={onSaved} />)
     const user = userEvent.setup()
@@ -53,14 +57,18 @@ describe('SPEC-0038 import file feedback', () => {
     expect(screen.getByText('Сохраняем черновик на сервере…')).toBeVisible()
     expect(screen.getByLabelText(label)).toBeDisabled()
     finish({ data: { id: 'batch-1' } })
-    expect(await screen.findByText('Черновик сохранён', { selector: 'p.font-semibold' })).toBeVisible()
+    expect(
+      await screen.findByText('Черновик сохранён', { selector: 'p.font-semibold' }),
+    ).toBeVisible()
     expect(screen.getByText(/Финансовые операции ещё не созданы/)).toBeVisible()
     expect(post).toHaveBeenCalledOnce()
     expect(onSaved).toHaveBeenCalledWith('batch-1')
   })
 
   it('AC4: shows a failure in the card and retries with the same key', async () => {
-    post.mockResolvedValueOnce({ error: { code: 'invalid_csv' } }).mockResolvedValueOnce({ data: { id: 'batch-2' } })
+    post
+      .mockResolvedValueOnce({ error: { code: 'invalid_csv' } })
+      .mockResolvedValueOnce({ data: { id: 'batch-2' } })
     render(<NewDraftCard onSaved={() => {}} />)
     const user = userEvent.setup()
     await user.upload(screen.getByLabelText(label), csv())
@@ -68,15 +76,23 @@ describe('SPEC-0038 import file feedback', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось прочитать CSV')
     await user.click(screen.getByRole('button', { name: 'Повторить' }))
     await waitFor(() => expect(post).toHaveBeenCalledTimes(2))
-    const key = (call: unknown[]) => (call[1] as { params: { header: Record<string, string> } }).params.header['Idempotency-Key']
+    const key = (call: unknown[]) =>
+      (call[1] as { params: { header: Record<string, string> } }).params.header['Idempotency-Key']
     expect(key(post.mock.calls[0])).toBe(key(post.mock.calls[1]))
-    expect(await screen.findByText('Черновик сохранён', { selector: 'p.font-semibold' })).toBeVisible()
+    expect(
+      await screen.findByText('Черновик сохранён', { selector: 'p.font-semibold' }),
+    ).toBeVisible()
   })
 
   it('AC5/AC6: announces states politely and shows the right cursor', async () => {
     render(<NewDraftCard onSaved={() => {}} />)
     const input = screen.getByLabelText(label)
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite')
-    expect(input).toHaveClass('cursor-pointer', 'file:cursor-pointer', 'disabled:cursor-not-allowed', 'disabled:file:cursor-not-allowed')
+    expect(input).toHaveClass(
+      'cursor-pointer',
+      'file:cursor-pointer',
+      'disabled:cursor-not-allowed',
+      'disabled:file:cursor-not-allowed',
+    )
   })
 })

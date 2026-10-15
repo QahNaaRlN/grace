@@ -1,13 +1,11 @@
 import type { Account, FinancialEvent } from '@/shared/api/types'
 export function accountLabel(account: Account) {
-  const card = account.paymentInstruments?.find(item => !item.disabledAt)
+  const card = account.paymentInstruments?.find((item) => !item.disabledAt)
   return card ? `${card.bank} *${card.last4}` : account.name
 }
 export function formatMoney(valueMinor: number | null, currency: string) {
-  if (valueMinor === null) return "Не сверён"
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(
-    valueMinor / 100,
-  )
+  if (valueMinor === null) return 'Не сверён'
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(valueMinor / 100)
 }
 export function dateText(value: string) {
   return new Intl.DateTimeFormat('ru-RU', {
@@ -21,7 +19,9 @@ export function eventDateText(event: Pick<FinancialEvent, 'occurredAt' | 'occurr
 }
 export function eventTimeText(event: Pick<FinancialEvent, 'occurredAt' | 'occurredDate'>) {
   if (event.occurredDate) return eventDateText(event)
-  return event.occurredAt ? new Date(event.occurredAt).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' }) : 'Дата неизвестна'
+  return event.occurredAt
+    ? new Date(event.occurredAt).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' })
+    : 'Дата неизвестна'
 }
 export function today() {
   return new Intl.DateTimeFormat('sv-SE', {
@@ -36,11 +36,9 @@ export function parseMinor(text: string) {
   const normalized = text.replace(/\s/g, '').replace(/\u2212/g, '-')
   const match = /^(-?)(\d+)(?:[.,](\d{1,2}))?$/.exec(normalized)
   if (!match) return null
-  const value =
-    BigInt(match[2]) * 100n + BigInt((match[3] ?? '').padEnd(2, '0'))
+  const value = BigInt(match[2]) * 100n + BigInt((match[3] ?? '').padEnd(2, '0'))
   const signed = match[1] ? -value : value
-  return signed > BigInt(Number.MAX_SAFE_INTEGER) ||
-    signed < BigInt(Number.MIN_SAFE_INTEGER)
+  return signed > BigInt(Number.MAX_SAFE_INTEGER) || signed < BigInt(Number.MIN_SAFE_INTEGER)
     ? null
     : Number(signed)
 }
@@ -60,13 +58,28 @@ export function minorToInput(valueMinor: number | null) {
 }
 // Grace moments are Asia/Yekaterinburg (+05:00, no DST). datetime-local text ↔ RFC 3339.
 export function localDateTimeInput(iso: string) {
-  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)).replace(' ', 'T')
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Asia/Yekaterinburg',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+    .format(new Date(iso))
+    .replace(' ', 'T')
 }
 export function fromLocalDateTimeInput(value: string) {
   return `${value}:00+05:00`
 }
 export function momentText(iso: string) {
-  return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Yekaterinburg', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
+  return new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Asia/Yekaterinburg',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(iso))
 }
 // SPEC-0046: Go decides a payment is «скоро» (0–3 days); this only words it.
 export function dueSoonText(days: number) {

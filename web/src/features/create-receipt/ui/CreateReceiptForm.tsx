@@ -35,9 +35,7 @@ function emptyItem() {
 function localDateTime(value: string | null) {
   if (!value) return ''
   const date = new Date(value)
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16)
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
 }
 
 export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
@@ -60,14 +58,18 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
   })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const watchedItems = useWatch({ control, name: 'items' })
-  const enteredTotalMinor = watchedItems.reduce((sum, item) => sum + (parseMinor(item.lineTotal ?? '') ?? 0), 0)
+  const enteredTotalMinor = watchedItems.reduce(
+    (sum, item) => sum + (parseMinor(item.lineTotal ?? '') ?? 0),
+    0,
+  )
   const purchasePosting = purchase.postings.find((posting) => posting.direction === 'debit')
   const currency = purchasePosting?.currency ?? 'RUB'
   const purchaseAmountMinor = purchasePosting?.amountMinor ?? 0
-  const formatMoney = (amountMinor: number) => new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency,
-  }).format(amountMinor / 100)
+  const formatMoney = (amountMinor: number) =>
+    new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency,
+    }).format(amountMinor / 100)
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await apiClient.POST('/api/v1/receipts', {
@@ -107,8 +109,8 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
         <DialogHeader>
           <DialogTitle>Состав покупки</DialogTitle>
           <DialogDescription>
-            Позиции должны дать точную сумму покупки {formatMoney(purchaseAmountMinor)}.
-            Чек не изменяет остаток повторно.
+            Позиции должны дать точную сумму покупки {formatMoney(purchaseAmountMinor)}. Чек не
+            изменяет остаток повторно.
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={onSubmit}>
@@ -121,7 +123,9 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
             <div className="grid gap-2">
               <Label htmlFor={`issued-${purchase.id}`}>Дата чека</Label>
               <Input id={`issued-${purchase.id}`} type="datetime-local" {...register('issuedAt')} />
-              {errors.issuedAt && <p className="text-sm text-destructive">{errors.issuedAt.message}</p>}
+              {errors.issuedAt && (
+                <p className="text-sm text-destructive">{errors.issuedAt.message}</p>
+              )}
             </div>
           </div>
           <div className="grid gap-2">
@@ -131,28 +135,68 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
 
           <div className="space-y-3">
             {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto]">
+              <div
+                key={field.id}
+                className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+              >
                 <div className="grid gap-2">
                   <Label htmlFor={`item-name-${field.id}`}>Позиция</Label>
                   <Input id={`item-name-${field.id}`} {...register(`items.${index}.name`)} />
-                  {errors.items?.[index]?.name && <p className="text-xs text-destructive">{errors.items[index].name.message}</p>}
+                  {errors.items?.[index]?.name && (
+                    <p className="text-xs text-destructive">{errors.items[index].name.message}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`item-quantity-${field.id}`}>Количество</Label>
-                  <Input id={`item-quantity-${field.id}`} inputMode="decimal" className="tabular-nums" aria-invalid={errors.items?.[index]?.quantity ? true : undefined} {...register(`items.${index}.quantity`)} />
-                  {errors.items?.[index]?.quantity && <p className="text-xs text-destructive">{errors.items[index].quantity.message}</p>}
+                  <Input
+                    id={`item-quantity-${field.id}`}
+                    inputMode="decimal"
+                    className="tabular-nums"
+                    aria-invalid={errors.items?.[index]?.quantity ? true : undefined}
+                    {...register(`items.${index}.quantity`)}
+                  />
+                  {errors.items?.[index]?.quantity && (
+                    <p className="text-xs text-destructive">
+                      {errors.items[index].quantity.message}
+                    </p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`item-price-${field.id}`}>Цена</Label>
-                  <MoneyInput id={`item-price-${field.id}`} currency={currency} aria-invalid={errors.items?.[index]?.unitPrice ? true : undefined} {...register(`items.${index}.unitPrice`)} />
-                  {errors.items?.[index]?.unitPrice && <p className="text-xs text-destructive">{errors.items[index].unitPrice.message}</p>}
+                  <MoneyInput
+                    id={`item-price-${field.id}`}
+                    currency={currency}
+                    aria-invalid={errors.items?.[index]?.unitPrice ? true : undefined}
+                    {...register(`items.${index}.unitPrice`)}
+                  />
+                  {errors.items?.[index]?.unitPrice && (
+                    <p className="text-xs text-destructive">
+                      {errors.items[index].unitPrice.message}
+                    </p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor={`item-total-${field.id}`}>Итого</Label>
-                  <MoneyInput id={`item-total-${field.id}`} currency={currency} aria-invalid={errors.items?.[index]?.lineTotal ? true : undefined} {...register(`items.${index}.lineTotal`)} />
-                  {errors.items?.[index]?.lineTotal && <p className="text-xs text-destructive">{errors.items[index].lineTotal.message}</p>}
+                  <MoneyInput
+                    id={`item-total-${field.id}`}
+                    currency={currency}
+                    aria-invalid={errors.items?.[index]?.lineTotal ? true : undefined}
+                    {...register(`items.${index}.lineTotal`)}
+                  />
+                  {errors.items?.[index]?.lineTotal && (
+                    <p className="text-xs text-destructive">
+                      {errors.items[index].lineTotal.message}
+                    </p>
+                  )}
                 </div>
-                <Button className="self-end" type="button" variant="ghost" size="icon" disabled={fields.length === 1} onClick={() => remove(index)}>
+                <Button
+                  className="self-end"
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={fields.length === 1}
+                  onClick={() => remove(index)}
+                >
                   <Trash2 aria-hidden="true" />
                   <span className="sr-only">Удалить позицию</span>
                 </Button>
@@ -166,8 +210,12 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
           </Button>
 
           <div className="flex flex-wrap justify-between gap-2 rounded-lg bg-muted p-3 text-sm">
-            <span>Сумма позиций: <strong>{formatMoney(enteredTotalMinor)}</strong></span>
-            <span>Сумма покупки: <strong>{formatMoney(purchaseAmountMinor)}</strong></span>
+            <span>
+              Сумма позиций: <strong>{formatMoney(enteredTotalMinor)}</strong>
+            </span>
+            <span>
+              Сумма покупки: <strong>{formatMoney(purchaseAmountMinor)}</strong>
+            </span>
           </div>
 
           <DialogFooter>

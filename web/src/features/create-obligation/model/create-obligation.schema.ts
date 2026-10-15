@@ -5,7 +5,10 @@ import { z } from 'zod'
 export const CreateObligationSchema = z.object({
   name: z.string().trim().min(1, 'Укажите название').max(200),
   kind: z.enum(['loan', 'installment', 'other_fixed']),
-  currency: z.string().trim().regex(/^[A-Za-z]{3}$/, 'Трёхбуквенный код валюты'),
+  currency: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{3}$/, 'Трёхбуквенный код валюты'),
 })
 
 export type CreateObligationValues = z.infer<typeof CreateObligationSchema>

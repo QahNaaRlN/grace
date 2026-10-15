@@ -4,9 +4,7 @@ export function utf8ByteLength(value: string) {
 
 export function toLocalReferenceTime(date: Date) {
   const offsetMinutes = -date.getTimezoneOffset()
-  const localISO = new Date(date.getTime() + offsetMinutes * 60_000)
-    .toISOString()
-    .slice(0, -1)
+  const localISO = new Date(date.getTime() + offsetMinutes * 60_000).toISOString().slice(0, -1)
   const sign = offsetMinutes >= 0 ? '+' : '-'
   const absoluteOffset = Math.abs(offsetMinutes)
   const hours = String(Math.floor(absoluteOffset / 60)).padStart(2, '0')

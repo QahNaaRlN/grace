@@ -30,7 +30,12 @@ export function Money({
       <span
         data-slot="money"
         data-unknown="true"
-        className={cn('grace-money border-b border-dashed border-input text-unknown', sizes[size], 'font-medium', className)}
+        className={cn(
+          'grace-money border-b border-dashed border-input text-unknown',
+          sizes[size],
+          'font-medium',
+          className,
+        )}
       >
         Не сверён
       </span>
@@ -45,7 +50,12 @@ export function Money({
     <span
       data-slot="money"
       data-direction={direction}
-      className={cn('grace-money', sizes[size], direction === 'credit' && 'text-success', className)}
+      className={cn(
+        'grace-money',
+        sizes[size],
+        direction === 'credit' && 'text-success',
+        className,
+      )}
     >
       {sign}
       {text}

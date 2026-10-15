@@ -33,9 +33,7 @@ describe('personal profile', () => {
     })
     render(
       <QueryClientProvider
-        client={
-          new QueryClient({ defaultOptions: { queries: { retry: false } } })
-        }
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <ProfilePanel />
       </QueryClientProvider>,
@@ -44,9 +42,7 @@ describe('personal profile', () => {
     await user.type(await screen.findByLabelText('Имя'), 'Name')
     await user.type(screen.getByLabelText('Фамилия'), 'Family')
     await user.click(screen.getByRole('button', { name: 'Сохранить профиль' }))
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Профиль сохранён',
-    )
+    expect(await screen.findByRole('status')).toHaveTextContent('Профиль сохранён')
     expect(mocks.POST.mock.calls[0][1].body).toEqual({
       displayName: 'Name Family',
       firstName: 'Name',
@@ -60,8 +56,16 @@ describe('personal profile', () => {
     const saved = { ...profile, displayName: 'Number One' }
     mocks.POST.mockResolvedValue({ data: saved })
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    client.setQueryData(['auth-session'], { user: { id: 'user', name: 'Alias', role: 'owner', avatarUrl: null }, csrfToken: 't', mode: 'email' })
-    render(<QueryClientProvider client={client}><ProfilePanel /></QueryClientProvider>)
+    client.setQueryData(['auth-session'], {
+      user: { id: 'user', name: 'Alias', role: 'owner', avatarUrl: null },
+      csrfToken: 't',
+      mode: 'email',
+    })
+    render(
+      <QueryClientProvider client={client}>
+        <ProfilePanel />
+      </QueryClientProvider>,
+    )
     const user = userEvent.setup()
     const save = await screen.findByRole('button', { name: 'Сохранить профиль' })
     expect(save).toBeDisabled()
@@ -73,14 +77,22 @@ describe('personal profile', () => {
     expect(status).toHaveTextContent('Профиль сохранён')
     expect(status.closest('section')).toHaveTextContent('Личные данные')
     expect(mocks.POST).toHaveBeenCalledOnce()
-    expect(mocks.GET.mock.calls.map(call => call[0])).not.toContain('/api/auth/me')
-    expect(client.getQueryData<{ user: { name: string } }>(['auth-session'])?.user.name).toBe('Number One')
+    expect(mocks.GET.mock.calls.map((call) => call[0])).not.toContain('/api/auth/me')
+    expect(client.getQueryData<{ user: { name: string } }>(['auth-session'])?.user.name).toBe(
+      'Number One',
+    )
     expect(save).toBeDisabled()
   })
 
   it('SPEC-0036: shows e-mail errors in the e-mail card', async () => {
     mocks.POST.mockResolvedValue({ error: { message: 'Слишком часто' } })
-    render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ProfilePanel /></QueryClientProvider>)
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <ProfilePanel />
+      </QueryClientProvider>,
+    )
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('Новая почта'), 'new@example.test')
     await user.click(screen.getByRole('button', { name: 'Получить код' }))

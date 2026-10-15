@@ -24,7 +24,9 @@ export type ScheduleGroups = {
 }
 
 export function needsAttention(payment: ScheduledPayment) {
-  return payment.isOverdue || payment.status === 'partially_paid' || !knownStatuses.has(payment.status)
+  return (
+    payment.isOverdue || payment.status === 'partially_paid' || !knownStatuses.has(payment.status)
+  )
 }
 
 export function groupSchedule(payments: ScheduledPayment[]): ScheduleGroups {
@@ -36,7 +38,8 @@ export function groupSchedule(payments: ScheduledPayment[]): ScheduleGroups {
   }
   for (const payment of ordered) {
     if (needsAttention(payment)) groups.attention.push(payment)
-    else if (payment.remainingMinor > 0 && groups.nearest.length < NEAREST_COUNT) groups.nearest.push(payment)
+    else if (payment.remainingMinor > 0 && groups.nearest.length < NEAREST_COUNT)
+      groups.nearest.push(payment)
     else if (payment.remainingMinor > 0) groups.later.push(payment)
     else groups.paid.push(payment)
   }

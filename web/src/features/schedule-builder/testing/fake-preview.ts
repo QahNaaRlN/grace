@@ -24,7 +24,10 @@ function addMonths(date: string, months: number) {
   return first.toISOString().slice(0, 10)
 }
 
-function summary(payments: Payment[], rejectedLines: { line: number; text: string; reason: string }[] = []) {
+function summary(
+  payments: Payment[],
+  rejectedLines: { line: number; text: string; reason: string }[] = [],
+) {
   return {
     data: {
       payments,
@@ -41,20 +44,30 @@ export function fakeSchedulePreview(body: Body) {
     const [fy, fm] = (body.fromMonth ?? '').split('-').map(Number)
     const [ty, tm] = (body.toMonth ?? '').split('-').map(Number)
     const count = (ty - fy) * 12 + (tm - fm) + 1
-    return summary(Array.from({ length: count }, (_, index) => {
-      const first = new Date(Date.UTC(fy, fm - 1 + index, 1))
-      const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
-      first.setUTCDate(Math.min(body.dayOfMonth ?? 1, last))
-      return { dueOn: first.toISOString().slice(0, 10), amountMinor: body.amountMinor ?? 0 }
-    }))
+    return summary(
+      Array.from({ length: count }, (_, index) => {
+        const first = new Date(Date.UTC(fy, fm - 1 + index, 1))
+        const last = new Date(
+          Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0),
+        ).getUTCDate()
+        first.setUTCDate(Math.min(body.dayOfMonth ?? 1, last))
+        return { dueOn: first.toISOString().slice(0, 10), amountMinor: body.amountMinor ?? 0 }
+      }),
+    )
   }
   if (body.mode === 'equal') {
     const count = body.count ?? 0
-    return summary(Array.from({ length: count }, (_, index) => ({
-      dueOn: addMonths(body.firstDueOn ?? '', index),
-      amountMinor: index === 0 && body.firstAmountMinor ? body.firstAmountMinor
-        : index === count - 1 && body.lastAmountMinor ? body.lastAmountMinor : body.amountMinor ?? 0,
-    })))
+    return summary(
+      Array.from({ length: count }, (_, index) => ({
+        dueOn: addMonths(body.firstDueOn ?? '', index),
+        amountMinor:
+          index === 0 && body.firstAmountMinor
+            ? body.firstAmountMinor
+            : index === count - 1 && body.lastAmountMinor
+              ? body.lastAmountMinor
+              : (body.amountMinor ?? 0),
+      })),
+    )
   }
   if (body.mode === 'paste') {
     const payments: Payment[] = []
@@ -62,12 +75,36 @@ export function fakeSchedulePreview(body: Body) {
     ;(body.text ?? '').split('\n').forEach((line, index) => {
       const match = /(\d{2})\.(\d{2})\.(\d{4})\s+([\d\s]+),(\d{2})/.exec(line)
       if (!match) rejected.push({ line: index + 1, text: line, reason: 'нет даты платежа' })
-      else payments.push({ dueOn: `${match[3]}-${match[2]}-${match[1]}`, amountMinor: Number(match[4].replace(/\s/g, '') + match[5]) })
+      else
+        payments.push({
+          dueOn: `${match[3]}-${match[2]}-${match[1]}`,
+          amountMinor: Number(match[4].replace(/\s/g, '') + match[5]),
+        })
     })
-    if (payments.length === 0) return { error: { code: 'no_payments', message: 'Ни одной строки графика не распознано.', rejectedLines: rejected } }
+    if (payments.length === 0)
+      return {
+        error: {
+          code: 'no_payments',
+          message: 'Ни одной строки графика не распознано.',
+          rejectedLines: rejected,
+        },
+      }
     return summary(payments, rejected)
   }
   const rows = body.payments ?? []
-  const rejected = rows.flatMap((row, index) => (row.amountMinor > 0 && row.dueOn ? [] : [{ line: index + 1, text: '', reason: row.dueOn ? 'сумма должна быть больше нуля' : 'некорректная дата' }]))
-  return summary(rows.filter(row => row.amountMinor > 0 && row.dueOn), rejected)
+  const rejected = rows.flatMap((row, index) =>
+    row.amountMinor > 0 && row.dueOn
+      ? []
+      : [
+          {
+            line: index + 1,
+            text: '',
+            reason: row.dueOn ? 'сумма должна быть больше нуля' : 'некорректная дата',
+          },
+        ],
+  )
+  return summary(
+    rows.filter((row) => row.amountMinor > 0 && row.dueOn),
+    rejected,
+  )
 }

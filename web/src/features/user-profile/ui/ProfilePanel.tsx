@@ -60,7 +60,10 @@ function ProfileForm({ profile }: { profile: Profile }) {
     cache.setQueryData(['user-profile'], data)
     cache.setQueryData<Session | null>(['auth-session'], (current) =>
       current
-        ? { ...current, user: { ...current.user, name: data.displayName, avatarUrl: data.avatarUrl } }
+        ? {
+            ...current,
+            user: { ...current.user, name: data.displayName, avatarUrl: data.avatarUrl },
+          }
         : current,
     )
   }
@@ -95,48 +98,41 @@ function ProfileForm({ profile }: { profile: Profile }) {
     return 'Профиль сохранён.'
   }
   async function upload(file: File) {
-    if (file.size > 2 * 1024 * 1024)
-      throw new Error('Изображение должно быть не больше 2 МБ.')
+    if (file.size > 2 * 1024 * 1024) throw new Error('Изображение должно быть не больше 2 МБ.')
     const form = new FormData()
     form.append('avatar', file)
-    const { data, error: failure } = await apiClient.POST(
-      '/api/auth/profile/avatar',
-      {
-        params: { header: headers },
-        body: { avatar: '' },
-        bodySerializer: () => form,
-      },
-    )
+    const { data, error: failure } = await apiClient.POST('/api/auth/profile/avatar', {
+      params: { header: headers },
+      body: { avatar: '' },
+      bodySerializer: () => form,
+    })
     if (!data) throw new Error(failure?.message ?? 'Аватар не сохранён.')
     update(data)
     return 'Аватар обновлён.'
   }
   async function remove() {
-    const { response, error: failure } = await apiClient.DELETE(
-      '/api/auth/profile/avatar',
-      { params: { header: headers } },
-    )
-    if (!response.ok)
-      throw new Error(failure?.message ?? 'Не удалось удалить аватар.')
+    const { response, error: failure } = await apiClient.DELETE('/api/auth/profile/avatar', {
+      params: { header: headers },
+    })
+    if (!response.ok) throw new Error(failure?.message ?? 'Не удалось удалить аватар.')
     update({ ...profile, avatarUrl: null })
     return 'Аватар удалён.'
   }
   async function requestEmail() {
-    const { data, error: failure } = await apiClient.POST(
-      '/api/auth/profile/email/request',
-      { params: { header: headers }, body: { email } },
-    )
+    const { data, error: failure } = await apiClient.POST('/api/auth/profile/email/request', {
+      params: { header: headers },
+      body: { email },
+    })
     if (!data) throw new Error(failure?.message ?? 'Не удалось отправить код.')
     setEmailStep(true)
     return `Код отправлен на ${email}.`
   }
   async function verifyEmail() {
-    const { response, error: failure } = await apiClient.POST(
-      '/api/auth/profile/email/verify',
-      { params: { header: headers }, body: { code } },
-    )
-    if (!response.ok)
-      throw new Error(failure?.message ?? 'Не удалось подтвердить почту.')
+    const { response, error: failure } = await apiClient.POST('/api/auth/profile/email/verify', {
+      params: { header: headers },
+      body: { code },
+    })
+    if (!response.ok) throw new Error(failure?.message ?? 'Не удалось подтвердить почту.')
     setEmailStep(false)
     setCode('')
     await cache.invalidateQueries({ queryKey: ['user-profile'] })
@@ -202,10 +198,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
                 value={firstName}
                 onChange={(e) => {
                   setFirst(e.target.value)
-                  if (!customName)
-                    setDisplay(
-                      [e.target.value, lastName].filter(Boolean).join(' '),
-                    )
+                  if (!customName) setDisplay([e.target.value, lastName].filter(Boolean).join(' '))
                 }}
               />
             </div>
@@ -218,10 +211,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
                 value={lastName}
                 onChange={(e) => {
                   setLast(e.target.value)
-                  if (!customName)
-                    setDisplay(
-                      [firstName, e.target.value].filter(Boolean).join(' '),
-                    )
+                  if (!customName) setDisplay([firstName, e.target.value].filter(Boolean).join(' '))
                 }}
               />
             </div>
@@ -249,17 +239,12 @@ function ProfileForm({ profile }: { profile: Profile }) {
       </section>
       <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Почта и вход</h2>
-        <p className="mt-3 break-words">
-          {profile.email ?? 'Почта пока не привязана'}
-        </p>
+        <p className="mt-3 break-words">{profile.email ?? 'Почта пока не привязана'}</p>
         {profile.email && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            Подтверждённый адрес для входа
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Подтверждённый адрес для входа</p>
         )}
         <p className="mt-4 text-sm text-muted-foreground">
-          Для смены адреса нужен недавний вход и подтверждение нового адреса
-          кодом.
+          Для смены адреса нужен недавний вход и подтверждение нового адреса кодом.
         </p>
         <form
           className="mt-5 space-y-4"
@@ -284,9 +269,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="profile-email">
-                {profile.email ? 'Новая почта' : 'Почта'}
-              </Label>
+              <Label htmlFor="profile-email">{profile.email ? 'Новая почта' : 'Почта'}</Label>
               <Input
                 id="profile-email"
                 type="email"

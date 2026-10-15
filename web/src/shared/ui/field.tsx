@@ -32,7 +32,9 @@ export function Field({
   const hintId = `${base}-hint`
   const errorId = `${base}-error`
   const describedBy =
-    [control?.props['aria-describedby'], hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined
+    [control?.props['aria-describedby'], hint ? hintId : null, error ? errorId : null]
+      .filter(Boolean)
+      .join(' ') || undefined
   return (
     <div data-slot="field" className={cn('grid gap-2', className)}>
       <Label htmlFor={controlId}>{label}</Label>
@@ -43,7 +45,11 @@ export function Field({
             'aria-invalid': error ? true : control.props['aria-invalid'],
           })
         : children}
-      {hint && <p id={hintId} className="text-sm text-muted-foreground">{hint}</p>}
+      {hint && (
+        <p id={hintId} className="text-sm text-muted-foreground">
+          {hint}
+        </p>
+      )}
       {error && (
         <p id={errorId} className="flex items-center gap-1.5 text-sm text-destructive">
           <CircleAlert aria-hidden="true" className="size-4 shrink-0" />

@@ -14,7 +14,11 @@ const account = {
   name: 'Счёт',
   type: 'debit' as const,
   currency: 'RUB',
-  balanceReconciled: true, revision: 1, hasOperations: false, lastReconciliation: null, lastImportConfirmedAt: null,
+  balanceReconciled: true,
+  revision: 1,
+  hasOperations: false,
+  lastReconciliation: null,
+  lastImportConfirmedAt: null,
   balanceMinor: 100000,
   createdAt: '2026-10-06T00:00:00Z',
   paymentInstruments: [{ id: 'c', name: 'Карта', bank: 'Банк', last4: '0012' }],
@@ -23,9 +27,7 @@ function wrap(element: React.ReactNode) {
   return render(
     <MemoryRouter>
       <QueryClientProvider
-        client={
-          new QueryClient({ defaultOptions: { queries: { retry: false } } })
-        }
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         {element}
       </QueryClientProvider>
@@ -45,16 +47,12 @@ describe('SPEC-0020', () => {
           : { items: [] },
     }))
     wrap(<HomePage />)
-    expect(
-      await screen.findByRole('heading', { name: 'Начните с первого счёта' }),
-    ).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Начните с первого счёта' })).toBeVisible()
     expect(
       screen.queryByRole('heading', { name: 'После известных платежей' }),
     ).not.toBeInTheDocument()
     const user = userEvent.setup()
-    await user.click(
-      screen.getAllByRole('button', { name: 'Добавить первый счёт' })[0],
-    )
+    await user.click(screen.getAllByRole('button', { name: 'Добавить первый счёт' })[0])
     expect(screen.getByRole('heading', { name: 'Новый счёт' })).toBeVisible()
     expect(post).not.toHaveBeenCalled()
   })
@@ -83,20 +81,12 @@ describe('SPEC-0020', () => {
     await user.type(screen.getByLabelText('Сумма'), '1200,50')
     expect(screen.getByLabelText('Сумма')).toHaveValue('1 200,50')
     await user.type(screen.getByLabelText('Описание / комментарий'), 'Пример')
-    await user.click(
-      screen.getByRole('button', { name: 'Посмотреть подтверждение' }),
-    )
+    await user.click(screen.getByRole('button', { name: 'Посмотреть подтверждение' }))
     expect(post).not.toHaveBeenCalled()
-    expect(
-      screen.getByText('Банк *0012', { selector: 'dd' }),
-    ).toBeVisible()
-    await user.click(
-      screen.getByRole('button', { name: 'Подтвердить и сохранить' }),
-    )
+    expect(screen.getByText('Банк *0012', { selector: 'dd' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Подтвердить и сохранить' }))
     await screen.findByText('Повторите')
-    await user.click(
-      screen.getByRole('button', { name: 'Подтвердить и сохранить' }),
-    )
+    await user.click(screen.getByRole('button', { name: 'Подтвердить и сохранить' }))
     await waitFor(() => expect(post).toHaveBeenCalledTimes(2))
     expect(post.mock.calls[0][1].body.amountMinor).toBe(120050)
     expect(post.mock.calls[0][1].params.header['Idempotency-Key']).toBe(
@@ -108,10 +98,7 @@ describe('SPEC-0020', () => {
     post.mockResolvedValue({ data: account })
     wrap(<CreateAccountForm onSaved={() => {}} />)
     await user.type(screen.getByLabelText('Банк'), 'Банк')
-    await user.type(
-      screen.getByLabelText('Последние четыре цифры карты'),
-      '0012',
-    )
+    await user.type(screen.getByLabelText('Последние четыре цифры карты'), '0012')
     await user.type(screen.getByLabelText('Текущий остаток'), '100,01')
     await user.click(screen.getByRole('button', { name: 'Проверить данные' }))
     expect(post).not.toHaveBeenCalled()
@@ -156,14 +143,23 @@ describe('SPEC-0036 header account action', () => {
     get.mockImplementation(async (path: string) => ({
       data:
         path === '/api/auth/profile'
-          ? { id: 'u', displayName: 'Number One', firstName: '', lastName: '', email: null, avatarUrl: null }
+          ? {
+              id: 'u',
+              displayName: 'Number One',
+              firstName: '',
+              lastName: '',
+              email: null,
+              avatarUrl: null,
+            }
           : path === '/api/v1/analytics/cash-position'
             ? { asOf: '2026-10-06', through: '2026-10-31', currencies: [] }
             : { items: [] },
     }))
     render(
       <MemoryRouter initialEntries={['/profile']}>
-        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <QueryClientProvider
+          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+        >
           <HomePage />
         </QueryClientProvider>
       </MemoryRouter>,
@@ -174,22 +170,48 @@ describe('SPEC-0036 header account action', () => {
 })
 
 describe('SPEC-0028 unreconciled accounts', () => {
- it('saves unknown opening balance explicitly and requires confirmation', async () => {
-  const user=userEvent.setup()
-  post.mockResolvedValue({data:{...account,balanceMinor:null,balanceReconciled:false}})
-  wrap(<CreateAccountForm onSaved={() => {}} />)
-  await user.click(screen.getByLabelText('Есть карта'))
-  await user.type(screen.getByLabelText('Название'),'История')
-  await user.click(screen.getByLabelText('Остаток пока не сверён'))
-  await user.click(screen.getByRole('button',{name:'Проверить данные'}))
-  expect(screen.getByText('Не сверён')).toBeVisible()
-  expect(post).not.toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'Создать счёт'}))
-  await waitFor(()=>expect(post).toHaveBeenCalledOnce())
-  expect(post.mock.calls[0][1].body).toMatchObject({openingBalanceMinor:null,balanceReconciled:false})
- })
- it('displays unknown cash and account balances without converting them to zero', () => {
-  wrap(<Overview cash={{asOf:'2026-10-08',through:'2026-10-31',currencies:[{currency:'RUB',liquidBalanceMinor:null,availableAfterObligationsMinor:null,obligationsThroughMinor:0,overdueObligationsMinor:0,upcomingObligationsMinor:0,scheduledPayments:[]}]}} pending={false} failed={false} events={[]} accounts={[{...account,balanceMinor:null,balanceReconciled:false}]} retry={()=>{}} />)
-  expect(screen.getAllByText('Не сверён').length).toBeGreaterThanOrEqual(2)
- })
+  it('saves unknown opening balance explicitly and requires confirmation', async () => {
+    const user = userEvent.setup()
+    post.mockResolvedValue({ data: { ...account, balanceMinor: null, balanceReconciled: false } })
+    wrap(<CreateAccountForm onSaved={() => {}} />)
+    await user.click(screen.getByLabelText('Есть карта'))
+    await user.type(screen.getByLabelText('Название'), 'История')
+    await user.click(screen.getByLabelText('Остаток пока не сверён'))
+    await user.click(screen.getByRole('button', { name: 'Проверить данные' }))
+    expect(screen.getByText('Не сверён')).toBeVisible()
+    expect(post).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Создать счёт' }))
+    await waitFor(() => expect(post).toHaveBeenCalledOnce())
+    expect(post.mock.calls[0][1].body).toMatchObject({
+      openingBalanceMinor: null,
+      balanceReconciled: false,
+    })
+  })
+  it('displays unknown cash and account balances without converting them to zero', () => {
+    wrap(
+      <Overview
+        cash={{
+          asOf: '2026-10-08',
+          through: '2026-10-31',
+          currencies: [
+            {
+              currency: 'RUB',
+              liquidBalanceMinor: null,
+              availableAfterObligationsMinor: null,
+              obligationsThroughMinor: 0,
+              overdueObligationsMinor: 0,
+              upcomingObligationsMinor: 0,
+              scheduledPayments: [],
+            },
+          ],
+        }}
+        pending={false}
+        failed={false}
+        events={[]}
+        accounts={[{ ...account, balanceMinor: null, balanceReconciled: false }]}
+        retry={() => {}}
+      />,
+    )
+    expect(screen.getAllByText('Не сверён').length).toBeGreaterThanOrEqual(2)
+  })
 })

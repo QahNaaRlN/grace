@@ -5,23 +5,13 @@ import { toast } from 'sonner'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
 import type { Account, Category, FinancialEvent } from '@/shared/api/types'
-import {
-  accountLabel,
-  formatMoney,
-  parseMinor,
-} from '@/shared/lib/finance-display'
+import { accountLabel, formatMoney, parseMinor } from '@/shared/lib/finance-display'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
 const kinds = {
   purchase: 'Покупка',
@@ -52,9 +42,7 @@ export function CreateFinancialEventForm({
   const query = useQueryClient()
   const [initialDate] = useState(() => {
     const now = new Date()
-    return new Date(now.valueOf() - now.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16)
+    return new Date(now.valueOf() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
   })
   const [kind, setKind] = useState<Kind>('purchase')
   const [account, setAccount] = useState(accounts[0]?.id ?? '')
@@ -69,10 +57,7 @@ export function CreateFinancialEventForm({
   const inFlight = useRef(false)
   const selected = accounts.find((a) => a.id === account)
   const originalPurchase = events.find((e) => e.id === original)
-  const currency =
-    kind === 'refund'
-      ? originalPurchase?.postings[0]?.currency
-      : selected?.currency
+  const currency = kind === 'refund' ? originalPurchase?.postings[0]?.currency : selected?.currency
   const categoriesVisible = categories.filter(
     // SPEC-0042: hidden categories are not offered for new operations.
     (c) => c.kind === (kind === 'income' ? 'income' : 'expense') && !c.hidden,
@@ -153,13 +138,9 @@ export function CreateFinancialEventForm({
         return
       }
       await Promise.all(
-        [
-          'accounts',
-          'financial-events',
-          'cash-position',
-          'period-summary',
-          'obligations',
-        ].map((key) => query.invalidateQueries({ queryKey: [key] })),
+        ['accounts', 'financial-events', 'cash-position', 'period-summary', 'obligations'].map(
+          (key) => query.invalidateQueries({ queryKey: [key] }),
+        ),
       )
       toast.success('Операция сохранена')
       onSaved?.()
@@ -193,10 +174,7 @@ export function CreateFinancialEventForm({
             setFailure('Проверьте сумму, счёт и дату.')
             return
           }
-          if (
-            kind === 'purchase' &&
-            (category === 'none' || (!merchant && !description))
-          ) {
+          if (kind === 'purchase' && (category === 'none' || (!merchant && !description))) {
             setFailure('Выберите категорию и укажите описание или получателя.')
             return
           }
@@ -298,10 +276,7 @@ export function CreateFinancialEventForm({
                   .map((e) => (
                     <SelectItem key={e.id} value={e.id}>
                       {e.merchant || e.description || 'Покупка'} ·{' '}
-                      {formatMoney(
-                        e.postings[0].amountMinor,
-                        e.postings[0].currency,
-                      )}
+                      {formatMoney(e.postings[0].amountMinor, e.postings[0].currency)}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -309,9 +284,7 @@ export function CreateFinancialEventForm({
           </div>
         )}
         <div className="space-y-2">
-          <Label htmlFor="event-date">
-            Дата и время (часовой пояс устройства)
-          </Label>
+          <Label htmlFor="event-date">Дата и время (часовой пояс устройства)</Label>
           <Input
             name="occurredAt"
             id="event-date"
@@ -324,9 +297,11 @@ export function CreateFinancialEventForm({
           <Label htmlFor="event-description">Описание / комментарий</Label>
           <Input name="description" id="event-description" maxLength={500} />
         </div>
-        <Disclosure className="rounded-xl border p-3" triggerClassName="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent" title={<>
-            Дополнительные сведения
-          </>}>
+        <Disclosure
+          className="rounded-xl border p-3"
+          triggerClassName="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent"
+          title={<>Дополнительные сведения</>}
+        >
           <div className="mt-4 space-y-4">
             {kind !== 'transfer' && kind !== 'refund' && (
               <div className="space-y-2">
@@ -375,9 +350,7 @@ export function CreateFinancialEventForm({
             </div>
             <div>
               <dt>Счёт / карта</dt>
-              <dd>
-                {eventAccount ? accountLabel(eventAccount) : 'Не указано'}
-              </dd>
+              <dd>{eventAccount ? accountLabel(eventAccount) : 'Не указано'}</dd>
             </div>
             {kind === 'transfer' && (
               <div>
@@ -395,10 +368,7 @@ export function CreateFinancialEventForm({
             </div>
             <div>
               <dt>Категория</dt>
-              <dd>
-                {categories.find((c) => c.id === category)?.name ??
-                  'Не указано'}
-              </dd>
+              <dd>{categories.find((c) => c.id === category)?.name ?? 'Не указано'}</dd>
             </div>
             <div>
               <dt>Получатель</dt>
@@ -413,11 +383,7 @@ export function CreateFinancialEventForm({
             <Button disabled={pending} onClick={() => void save()}>
               {pending ? 'Сохранение…' : 'Подтвердить и сохранить'}
             </Button>
-            <Button
-              variant="outline"
-              disabled={pending}
-              onClick={() => setReview(null)}
-            >
+            <Button variant="outline" disabled={pending} onClick={() => setReview(null)}>
               Изменить
             </Button>
           </div>

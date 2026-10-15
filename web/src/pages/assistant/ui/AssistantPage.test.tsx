@@ -15,15 +15,21 @@ const accountResult = {
   data: {
     name: 'get_accounts',
     data: {
-      items: [{
-        id: '00000000-0000-0000-0000-000000000001',
-        name: 'Основной счёт',
-        type: 'debit',
-        currency: 'RUB',
-        balanceReconciled: true, revision: 1, hasOperations: false, lastReconciliation: null, lastImportConfirmedAt: null,
-        balanceMinor: 125_050,
-        createdAt: '2026-10-01T10:00:00+05:00',
-      }],
+      items: [
+        {
+          id: '00000000-0000-0000-0000-000000000001',
+          name: 'Основной счёт',
+          type: 'debit',
+          currency: 'RUB',
+          balanceReconciled: true,
+          revision: 1,
+          hasOperations: false,
+          lastReconciliation: null,
+          lastImportConfirmedAt: null,
+          balanceMinor: 125_050,
+          createdAt: '2026-10-01T10:00:00+05:00',
+        },
+      ],
     },
   },
 } satisfies AssistantResult
@@ -36,30 +42,34 @@ const obligationsResult = {
     name: 'get_obligations',
     data: {
       asOf: '2026-10-05',
-      items: [{
-        id: '00000000-0000-0000-0000-000000000002',
-        name: 'Рассрочка',
-        kind: 'installment',
-        currency: 'RUB',
-        totalMinor: 100_000,
-        paidMinor: 25_000,
-        remainingMinor: 75_000,
-        status: 'active',
-        createdAt: '2026-09-01T10:00:00+05:00',
-        payments: [{
-          id: '00000000-0000-0000-0000-000000000003',
-          position: 1,
-          dueOn: '2026-10-20',
-          amountMinor: 25_000,
-          paidMinor: 0,
-          remainingMinor: 25_000,
-          status: 'planned',
-          isOverdue: false,
-          dueSoon: false,
-          daysUntilDue: 6,
-          settlements: [],
-        }],
-      }],
+      items: [
+        {
+          id: '00000000-0000-0000-0000-000000000002',
+          name: 'Рассрочка',
+          kind: 'installment',
+          currency: 'RUB',
+          totalMinor: 100_000,
+          paidMinor: 25_000,
+          remainingMinor: 75_000,
+          status: 'active',
+          createdAt: '2026-09-01T10:00:00+05:00',
+          payments: [
+            {
+              id: '00000000-0000-0000-0000-000000000003',
+              position: 1,
+              dueOn: '2026-10-20',
+              amountMinor: 25_000,
+              paidMinor: 0,
+              remainingMinor: 25_000,
+              status: 'planned',
+              isOverdue: false,
+              dueSoon: false,
+              daysUntilDue: 6,
+              settlements: [],
+            },
+          ],
+        },
+      ],
     },
   },
 } satisfies AssistantResult
@@ -71,24 +81,30 @@ const receiptsResult = {
   data: {
     name: 'get_receipts',
     data: {
-      items: [{
-        id: '00000000-0000-0000-0000-000000000004',
-        purchaseEventId: '00000000-0000-0000-0000-000000000005',
-        seller: 'Магазин',
-        issuedAt: '2026-10-04T14:00:00+05:00', issuedDate: null, datePrecision: 'instant',
-        currency: 'RUB',
-        totalMinor: 350_00,
-        fiscalDocumentNumber: '42',
-        createdAt: '2026-10-04T14:05:00+05:00',
-        items: [{
-          id: '00000000-0000-0000-0000-000000000006',
-          position: 1,
-          name: 'Продукты',
-          quantityMilli: 1_000,
-          unitPriceMinor: 350_00,
-          lineTotalMinor: 350_00,
-        }],
-      }],
+      items: [
+        {
+          id: '00000000-0000-0000-0000-000000000004',
+          purchaseEventId: '00000000-0000-0000-0000-000000000005',
+          seller: 'Магазин',
+          issuedAt: '2026-10-04T14:00:00+05:00',
+          issuedDate: null,
+          datePrecision: 'instant',
+          currency: 'RUB',
+          totalMinor: 350_00,
+          fiscalDocumentNumber: '42',
+          createdAt: '2026-10-04T14:05:00+05:00',
+          items: [
+            {
+              id: '00000000-0000-0000-0000-000000000006',
+              position: 1,
+              name: 'Продукты',
+              quantityMilli: 1_000,
+              unitPriceMinor: 350_00,
+              lineTotalMinor: 350_00,
+            },
+          ],
+        },
+      ],
     },
   },
 } satisfies AssistantResult
@@ -105,28 +121,32 @@ const incomePeriodResult = {
         categoryId: null,
         categoryName: 'Зарплата',
         occurredAt: '2026-10-01T09:00:00+05:00',
-        postings: [{
-          accountId: '00000000-0000-0000-0000-000000000001',
-          accountName: 'Основной счёт',
-          amountMinor: 200_000,
-          currency: 'RUB',
-        }],
+        postings: [
+          {
+            accountId: '00000000-0000-0000-0000-000000000001',
+            accountName: 'Основной счёт',
+            amountMinor: 200_000,
+            currency: 'RUB',
+          },
+        ],
       },
       summary: {
         from: '2026-10-01T09:00:00+05:00',
         to: '2026-10-05T18:00:00+05:00',
-        currencies: [{
-          currency: 'RUB',
-          openingBalanceMinor: 10_000,
-          closingBalanceMinor: 125_050,
-          incomeMinor: 200_000,
-          purchasesMinor: 70_000,
-          refundsMinor: 0,
-          debtPaymentsMinor: 14_950,
-          netExternalCashFlowMinor: 115_050,
-          internalTransferVolumeMinor: 0,
-          expenseCategories: [],
-        }],
+        currencies: [
+          {
+            currency: 'RUB',
+            openingBalanceMinor: 10_000,
+            closingBalanceMinor: 125_050,
+            incomeMinor: 200_000,
+            purchasesMinor: 70_000,
+            refundsMinor: 0,
+            debtPaymentsMinor: 14_950,
+            netExternalCashFlowMinor: 115_050,
+            internalTransferVolumeMinor: 0,
+            expenseCategories: [],
+          },
+        ],
       },
     },
   },
@@ -158,8 +178,11 @@ describe('AssistantPage', () => {
     renderPage(submit)
 
     expect(submit).not.toHaveBeenCalled()
-    await user.click(screen.getByRole('button',{name:'Меню'}))
-    expect(screen.getAllByRole('link', { name: 'Ассистент' })[0]).toHaveAttribute('aria-current', 'page')
+    await user.click(screen.getByRole('button', { name: 'Меню' }))
+    expect(screen.getAllByRole('link', { name: 'Ассистент' })[0]).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     await user.keyboard('{Escape}')
     await user.click(screen.getByRole('button', { name: 'Спросить Grace' }))
 
@@ -175,7 +198,9 @@ describe('AssistantPage', () => {
     const [query, signal] = submit.mock.calls[0]
     expect(query.utterance).toBe('Покажи мои счета')
     expect(query.language).toBe('ru')
-    expect(query.referenceTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}$/)
+    expect(query.referenceTime).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}$/,
+    )
     expect(signal).toBeInstanceOf(AbortSignal)
     expect(await screen.findByText('Основной счёт')).toBeInTheDocument()
     expect(screen.getByText(/250,50/)).toBeInTheDocument()
@@ -206,9 +231,18 @@ describe('AssistantPage', () => {
   })
 
   it.each([
-    [{ status: 'unsupported', route: 'unsupported', confidence: 0.96 } satisfies AssistantResult, 'Запрос пока не поддерживается'],
-    [{ status: 'unavailable', errorCode: 'assistant_unavailable' } satisfies AssistantResult, 'Ассистент недоступен'],
-    [{ status: 'unavailable', errorCode: 'dependency_unavailable' } satisfies AssistantResult, 'Финансовые данные временно недоступны'],
+    [
+      { status: 'unsupported', route: 'unsupported', confidence: 0.96 } satisfies AssistantResult,
+      'Запрос пока не поддерживается',
+    ],
+    [
+      { status: 'unavailable', errorCode: 'assistant_unavailable' } satisfies AssistantResult,
+      'Ассистент недоступен',
+    ],
+    [
+      { status: 'unavailable', errorCode: 'dependency_unavailable' } satisfies AssistantResult,
+      'Финансовые данные временно недоступны',
+    ],
   ] as const)('показывает terminal state %#', async (response, expectedText) => {
     const submit = vi.fn<SubmitAssistant>().mockResolvedValue(response)
     await ask(submit)
@@ -236,8 +270,11 @@ describe('AssistantPage', () => {
 
   it('блокирует двойной submit и заменяет предыдущий результат новым', async () => {
     let finishFirst: ((result: AssistantResult) => void) | undefined
-    const first = new Promise<AssistantResult>((resolve) => { finishFirst = resolve })
-    const submit = vi.fn<SubmitAssistant>()
+    const first = new Promise<AssistantResult>((resolve) => {
+      finishFirst = resolve
+    })
+    const submit = vi
+      .fn<SubmitAssistant>()
       .mockReturnValueOnce(first)
       .mockResolvedValueOnce(receiptsResult)
     const user = userEvent.setup()

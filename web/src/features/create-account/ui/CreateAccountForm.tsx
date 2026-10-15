@@ -8,13 +8,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/shared/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/ui/select'
 
 export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
   const query = useQueryClient()
@@ -36,28 +30,25 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
     setPending(true)
     setError('')
     try {
-      const { data, error: failure } = await apiClient.POST(
-        '/api/v1/accounts',
-        {
-          params: { header: { 'X-CSRF-Token': csrfToken } },
-          body: {
-            name: review.name,
-            type: type as 'debit' | 'credit' | 'cash' | 'installment',
-            currency: 'RUB',
-            openingBalanceMinor: review.balance,
-            balanceReconciled: !unreconciled,
-            ...(card
-              ? {
-                  card: {
-                    name: review.name,
-                    bank: review.bank,
-                    last4: review.last4,
-                  },
-                }
-              : {}),
-          },
+      const { data, error: failure } = await apiClient.POST('/api/v1/accounts', {
+        params: { header: { 'X-CSRF-Token': csrfToken } },
+        body: {
+          name: review.name,
+          type: type as 'debit' | 'credit' | 'cash' | 'installment',
+          currency: 'RUB',
+          openingBalanceMinor: review.balance,
+          balanceReconciled: !unreconciled,
+          ...(card
+            ? {
+                card: {
+                  name: review.name,
+                  bank: review.bank,
+                  last4: review.last4,
+                },
+              }
+            : {}),
         },
-      )
+      })
       if (!data) {
         setError(failure?.message ?? 'Не удалось создать счёт.')
         return
@@ -88,7 +79,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           const name = card ? `${bank} *${last4}` : String(f.get('name') ?? '').trim()
           if (
             !name ||
-            ((!unreconciled || balanceText !== "") && balance === null) ||
+            ((!unreconciled || balanceText !== '') && balance === null) ||
             (card && (!bank || !/^\d{4}$/.test(last4)))
           ) {
             setError('Проверьте название, остаток и реквизиты карты.')
@@ -99,10 +90,12 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         }}
         className="space-y-4"
       >
-        {!card && <div className="space-y-2">
-          <Label htmlFor="new-account-name">Название</Label>
-          <Input id="new-account-name" name="name" required maxLength={160} />
-        </div>}
+        {!card && (
+          <div className="space-y-2">
+            <Label htmlFor="new-account-name">Название</Label>
+            <Input id="new-account-name" name="name" required maxLength={160} />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="new-account-type">Тип счёта</Label>
           <Select
@@ -125,11 +118,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         </div>
         {(type === 'debit' || type === 'credit') && (
           <label className="flex min-h-11 cursor-pointer items-center gap-3">
-            <Checkbox
-
-              checked={card}
-              onCheckedChange={checked => setCard(checked)}
-            />
+            <Checkbox checked={card} onCheckedChange={(checked) => setCard(checked)} />
             Есть карта
           </label>
         )}
@@ -154,8 +143,16 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
           </>
         )}
         <div className="space-y-2">
-          <label className="flex min-h-11 cursor-pointer items-center gap-3"><Checkbox  checked={unreconciled} onCheckedChange={checked => setUnreconciled(checked)} />Остаток пока не сверён</label>
-          <Label htmlFor="new-balance">{unreconciled ? "Известный начальный остаток (необязательно)" : "Текущий остаток"}</Label>
+          <label className="flex min-h-11 cursor-pointer items-center gap-3">
+            <Checkbox
+              checked={unreconciled}
+              onCheckedChange={(checked) => setUnreconciled(checked)}
+            />
+            Остаток пока не сверён
+          </label>
+          <Label htmlFor="new-balance">
+            {unreconciled ? 'Известный начальный остаток (необязательно)' : 'Текущий остаток'}
+          </Label>
           <MoneyInput
             id="new-balance"
             name="balance"
@@ -165,8 +162,9 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
             placeholder="0,00"
           />
           <p className="text-sm text-muted-foreground">
-            При переносе неполной истории оставьте остаток несверенным. Начальное число указывайте только при известной дате до начала истории. Для кредитного счёта задолженность обозначается отрицательным
-            балансом.
+            При переносе неполной истории оставьте остаток несверенным. Начальное число указывайте
+            только при известной дате до начала истории. Для кредитного счёта задолженность
+            обозначается отрицательным балансом.
           </p>
         </div>
         <div className="grace-actions">
@@ -201,11 +199,7 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
             <Button disabled={pending} onClick={() => void save()}>
               {pending ? 'Сохранение…' : 'Создать счёт'}
             </Button>
-            <Button
-              variant="outline"
-              disabled={pending}
-              onClick={() => setReview(null)}
-            >
+            <Button variant="outline" disabled={pending} onClick={() => setReview(null)}>
               Изменить
             </Button>
           </div>
