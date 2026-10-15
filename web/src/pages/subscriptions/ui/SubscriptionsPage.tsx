@@ -1,6 +1,6 @@
 import { Money } from '@/shared/ui/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
-import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
+import { ReminderHistory } from '@/widgets/reminder-history'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'

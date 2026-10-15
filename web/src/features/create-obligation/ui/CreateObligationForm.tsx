@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -8,13 +7,12 @@ import {
   CreateObligationSchema,
   type CreateObligationValues,
 } from '@/features/create-obligation/model/create-obligation.schema'
-import { previewSchedule } from '@/features/schedule-builder/api/preview-schedule'
-import { rowsForPreview, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
-import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
-import { cashPositionQueries } from '@/entities/analytics-report'
-import { obligationQueries } from '@/entities/obligation'
-import { apiClient } from '@/shared/api'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
+import {
+  previewSchedule,
+  rowsForPreview,
+  ScheduleBuilder,
+  type ScheduleRow,
+} from '@/entities/payment-schedule'
 import { Button } from '@/shared/ui/button'
 import {
   Card,
@@ -30,6 +28,7 @@ import { DEFAULT_CURRENCY } from '@/shared/lib/currencies'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { useCreateObligation } from '../api/use-create-obligation'
 
 const kindLabels = {
   loan: 'Кредит',
@@ -38,7 +37,7 @@ const kindLabels = {
 } as const
 
 export function CreateObligationForm() {
-  const queryClient = useQueryClient()
+  const create = useCreateObligation()
   const [rows, setRows] = useState<ScheduleRow[]>([])
   const [scheduleError, setScheduleError] = useState('')
   const {
@@ -74,28 +73,17 @@ export function CreateObligationForm() {
       )
       return
     }
-    const result = await apiClient.POST('/api/v1/obligations', {
-      params: {
-        header: {
-          'Idempotency-Key': createIdempotencyKey(),
-        },
-      },
-      body: {
-        name: values.name,
-        kind: values.kind,
-        currency: values.currency.toUpperCase(),
-        totalMinor: checked.preview.totalMinor,
-        payments: checked.preview.payments,
-      },
+    const result = await create.mutateAsync({
+      name: values.name,
+      kind: values.kind,
+      currency: values.currency.toUpperCase(),
+      totalMinor: checked.preview.totalMinor,
+      payments: checked.preview.payments,
     })
     if (result.error) {
       toast.error(result.error.message)
       return
     }
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: obligationQueries.all() }),
-      queryClient.invalidateQueries({ queryKey: cashPositionQueries.all() }),
-    ])
     reset({ name: '', kind: values.kind, currency: values.currency })
     setRows([])
     toast.success('Обязательство сохранено')

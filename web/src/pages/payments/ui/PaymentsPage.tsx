@@ -1,5 +1,5 @@
 import { CreateObligationForm } from '@/features/create-obligation'
-import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
+import { ReminderHistory } from '@/widgets/reminder-history'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { LedgerScreen } from '@/widgets/ledger-screen'
 import { Obligations } from '@/widgets/obligations-board'

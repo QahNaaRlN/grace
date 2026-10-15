@@ -1,15 +1,4 @@
 [
-  "fsd/forbidden-imports | src/features/create-obligation/ui/CreateObligationForm.test.tsx | Forbidden cross-import from slice \"schedule-builder\".",
-  "fsd/forbidden-imports | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden cross-import from slice \"schedule-builder\".",
-  "fsd/forbidden-imports | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden cross-import from slice \"schedule-builder\".",
-  "fsd/forbidden-imports | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden cross-import from slice \"schedule-builder\".",
-  "fsd/no-public-api-sidestep | src/features/create-obligation/ui/CreateObligationForm.test.tsx | Forbidden sidestep of public API when importing from \"@/features/schedule-builder/testing/fake-preview\".",
-  "fsd/no-public-api-sidestep | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden sidestep of public API when importing from \"@/features/schedule-builder/api/preview-schedule\".",
-  "fsd/no-public-api-sidestep | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden sidestep of public API when importing from \"@/features/schedule-builder/model/schedule-rows\".",
-  "fsd/no-public-api-sidestep | src/features/create-obligation/ui/CreateObligationForm.tsx | Forbidden sidestep of public API when importing from \"@/features/schedule-builder/ui/ScheduleBuilder\".",
-  "fsd/no-segmentless-slices | src/features/loan-details | This slice has no segments. Consider dividing the code inside into segments.",
-  "fsd/no-segmentless-slices | src/features/payment-reminders | This slice has no segments. Consider dividing the code inside into segments.",
-  "fsd/public-api | src/features/schedule-builder | This slice is missing a public API.",
   "fsd/public-api | src/shared/model | This segment is missing a public API.",
   "fsd/segments-by-purpose | src/app/providers | This segment's name should describe the purpose of its contents, not what the contents are."
 ]

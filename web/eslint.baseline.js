@@ -2,18 +2,6 @@
 // Each later phase only removes entries; phase 5 deletes this file.
 // Do not add new entries: fix the code instead.
 export default [
-  {
-    files: [
-      'src/features/create-account/ui/CreateAccountForm.tsx',
-      'src/features/create-financial-event/ui/CreateFinancialEventForm.tsx',
-      'src/features/create-obligation/ui/CreateObligationForm.tsx',
-      'src/features/create-receipt/ui/CreateReceiptForm.tsx',
-      'src/features/loan-details/LoanPanel.tsx',
-      'src/features/obligation-schedule/ui/ObligationSchedule.tsx',
-      'src/features/user-profile/ui/ProfilePanel.tsx',
-    ],
-    rules: { 'grace/no-direct-invalidate': 'off' },
-  },
   // SPEC-0048 phase 3 moved these files from pages/home, pages/imports and pages/subscriptions.
   // Their direct invalidations become mutation hooks in phase 4 (owner decision 2026-10-15).
   {

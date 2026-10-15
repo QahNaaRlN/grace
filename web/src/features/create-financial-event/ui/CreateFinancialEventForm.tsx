@@ -1,12 +1,6 @@
 import { Disclosure } from '@/shared/ui/disclosure'
 import { useRef, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { accountQueries } from '@/entities/account'
-import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
-import { financialEventQueries } from '@/entities/financial-event'
-import { obligationQueries } from '@/entities/obligation'
-import { apiClient } from '@/shared/api'
 import type { Account, Category, FinancialEvent } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
 import { formatMoney, parseMinor } from '@/shared/lib/money'
@@ -16,6 +10,7 @@ import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { useCreateFinancialEvent } from '../api/use-create-financial-event'
 
 const kinds = {
   purchase: 'Покупка',
@@ -43,7 +38,7 @@ export function CreateFinancialEventForm({
   events?: FinancialEvent[]
   onSaved?: () => void
 }) {
-  const query = useQueryClient()
+  const create = useCreateFinancialEvent()
   const [initialDate] = useState(() => {
     const now = new Date()
     return new Date(now.valueOf() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
@@ -75,81 +70,25 @@ export function CreateFinancialEventForm({
     inFlight.current = true
     setPending(true)
     setFailure('')
-    const headers = { 'Idempotency-Key': review.key }
-    const common = {
-      amountMinor: review.amountMinor,
-      merchant: review.merchant,
-      description: review.description,
-      occurredAt: review.occurredAt,
-    }
     try {
-      let error: { message: string } | undefined
-      if (kind === 'purchase')
-        error = (
-          await apiClient.POST('/api/v1/financial-events/purchases', {
-            params: { header: headers },
-            body: {
-              ...common,
-              accountId: account,
-              categoryId: category === 'none' ? null : category,
-            },
-          })
-        ).error
-      else if (kind === 'income')
-        error = (
-          await apiClient.POST('/api/v1/financial-events/incomes', {
-            params: { header: headers },
-            body: {
-              ...common,
-              accountId: account,
-              categoryId: category === 'none' ? null : category,
-            },
-          })
-        ).error
-      else if (kind === 'debt_payment')
-        error = (
-          await apiClient.POST('/api/v1/financial-events/debt-payments', {
-            params: { header: headers },
-            body: {
-              ...common,
-              accountId: account,
-              categoryId: category === 'none' ? null : category,
-            },
-          })
-        ).error
-      else if (kind === 'refund')
-        error = (
-          await apiClient.POST('/api/v1/financial-events/refunds', {
-            params: { header: headers },
-            body: { ...common, originalEventId: original },
-          })
-        ).error
-      else
-        error = (
-          await apiClient.POST('/api/v1/financial-events/transfers', {
-            params: { header: headers },
-            body: {
-              amountMinor: review.amountMinor,
-              description: review.description,
-              occurredAt: review.occurredAt,
-              sourceAccountId: account,
-              destinationAccountId: target,
-            },
-          })
-        ).error
+      const { error } = await create.mutateAsync({
+        kind,
+        key: review.key,
+        common: {
+          amountMinor: review.amountMinor,
+          merchant: review.merchant,
+          description: review.description,
+          occurredAt: review.occurredAt,
+        },
+        accountId: account,
+        categoryId: category === 'none' ? null : category,
+        originalEventId: original,
+        destinationAccountId: target,
+      })
       if (error) {
         setFailure(error.message)
         return
       }
-      await Promise.all(
-        [
-          accountQueries.all(),
-          financialEventQueries.all(),
-          cashPositionQueries.all(),
-          periodSummaryQueries.all(),
-          obligationQueries.all(),
-        ].map((queryKey) => query.invalidateQueries({ queryKey })),
-      )
       toast.success('Операция сохранена')
       onSaved?.()
     } catch {

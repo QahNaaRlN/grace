@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, expect, it, vi } from 'vitest'
-import { fakeSchedulePreview } from '@/features/schedule-builder/testing/fake-preview'
+import { fakeSchedulePreview } from '@/entities/payment-schedule/index.testing'
 import { LoanPanel } from './LoanPanel'
 
 const { get, post, patch } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), patch: vi.fn() }))

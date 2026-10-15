@@ -1,19 +1,15 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { cashPositionQueries } from '@/entities/analytics-report'
-import { obligationQueries } from '@/entities/obligation'
-import { apiClient } from '@/shared/api'
 import type { FinancialEvent, Obligation, ScheduledPayment } from '@/shared/api'
 import { dueSoonText } from '@/shared/lib/finance-display'
 import { formatMoney } from '@/shared/lib/money'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import { Money } from '@/shared/ui/money'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { StatusBadge, type Tone } from '@/shared/ui/status'
+import { useSettlePayment } from '../api/use-settle-payment'
 import { groupSchedule, VISIBLE_ATTENTION } from '../model/group-schedule'
 
 const statusLabels: Record<string, string> = {
@@ -288,31 +284,22 @@ function SettlementForm({
   candidates: FinancialEvent[]
   onLinked: () => void
 }) {
-  const queryClient = useQueryClient()
+  const settlement = useSettlePayment()
   const [eventID, setEventID] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   async function settle() {
     if (!eventID || isSubmitting) return
     setIsSubmitting(true)
-    const result = await apiClient.POST(
-      '/api/v1/obligations/{obligationId}/scheduled-payments/{paymentId}/settlements',
-      {
-        params: {
-          path: { obligationId: obligation.id, paymentId: payment.id },
-          header: { 'Idempotency-Key': createIdempotencyKey() },
-        },
-        body: { financialEventId: eventID },
-      },
-    )
+    const result = await settlement.mutateAsync({
+      obligationId: obligation.id,
+      paymentId: payment.id,
+      financialEventId: eventID,
+    })
     setIsSubmitting(false)
     if (result.error) {
       toast.error(result.error.message)
       return
     }
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: obligationQueries.all() }),
-      queryClient.invalidateQueries({ queryKey: cashPositionQueries.all() }),
-    ])
     toast.success('Фактический платёж связан с графиком')
     onLinked()
   }

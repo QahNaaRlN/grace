@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Copy, Download, FileText } from 'lucide-react'
 import { toast } from 'sonner'
-import { rowKey, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
-import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
-import { cashPositionQueries } from '@/entities/analytics-report'
-import { loanQueries, obligationQueries } from '@/entities/obligation'
+import { rowKey, ScheduleBuilder, type ScheduleRow } from '@/entities/payment-schedule'
+import { loanQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { minorToInput, parseMinor } from '@/shared/lib/money'
@@ -23,70 +21,32 @@ import {
   DialogDescription,
 } from '@/shared/ui/dialog'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
+import {
+  useApplyLoanSchedule,
+  useCopyLoanSchedule,
+  useSaveLoanDetails,
+  useSaveScheduleDraft,
+  useUploadLoanDocument,
+} from '../api/loan-mutations'
 
 type Draft = components['schemas']['PaymentScheduleDraft']
 type Loan = components['schemas']['LoanDetails']
 export function LoanPanel({ obligationId }: { obligationId: string }) {
-  const query = useQueryClient()
   const [draft, setDraft] = useState<Draft | null>(null)
   const [confirm, setConfirm] = useState(false)
   const details = useQuery(loanQueries.details(obligationId))
-  const refresh = () =>
-    query.invalidateQueries({ queryKey: loanQueries.details(obligationId).queryKey })
-  const copy = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await apiClient.POST('/api/v1/loans/{obligationId}/schedule-drafts', {
-        params: { path: { obligationId } },
-      })
-      if (error) throw new Error(error.message)
-      return data!
-    },
-    onSuccess: (d) => {
-      setDraft(d)
-      void refresh()
-    },
+  const copy = useCopyLoanSchedule(obligationId, {
+    onSuccess: setDraft,
     onError: (e) => toast.error(e.message),
   })
-  const upload = useMutation({
-    mutationFn: async (file: File) => {
-      if (file.size > 16 * 1024 * 1024) throw new Error('Файл должен быть не больше 16 МиБ.')
-      const { error } = await apiClient.POST('/api/v1/loans/{obligationId}/documents', {
-        params: { path: { obligationId } },
-        body: { file: '' },
-        bodySerializer: () => {
-          const form = new FormData()
-          form.append('file', file)
-          return form
-        },
-      })
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: () => {
-      toast.success('Оригинал документа сохранён')
-      void refresh()
-    },
+  const upload = useUploadLoanDocument(obligationId, {
+    onSuccess: () => toast.success('Оригинал документа сохранён'),
     onError: (e) => toast.error(e.message),
   })
-  const apply = useMutation({
-    mutationFn: async () => {
-      if (!draft) return
-      const { error } = await apiClient.POST(
-        '/api/v1/loans/{obligationId}/schedule-drafts/{draftId}/apply',
-        {
-          params: {
-            path: { obligationId, draftId: draft.id },
-          },
-          body: { revision: draft.revision, confirm: true },
-        },
-      )
-      if (error) throw new Error(error.message)
-    },
+  const apply = useApplyLoanSchedule(obligationId, {
     onSuccess: () => {
       setConfirm(false)
       setDraft(null)
-      void refresh()
-      void query.invalidateQueries({ queryKey: obligationQueries.all() })
-      void query.invalidateQueries({ queryKey: cashPositionQueries.all() })
       toast.success('Новый график применён')
     },
     onError: (e) => toast.error(e.message),
@@ -131,7 +91,6 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
               key={details.data.revision}
               initial={details.data}
               obligationId={obligationId}
-              onSaved={() => void refresh()}
             />
           )
         )}
@@ -228,10 +187,7 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
                 key={`${draft.id}-${draft.revision}`}
                 draft={draft}
                 obligationId={obligationId}
-                onSaved={(d) => {
-                  setDraft(d)
-                  void refresh()
-                }}
+                onSaved={setDraft}
                 onApply={() => setConfirm(true)}
               />
             )}
@@ -246,7 +202,7 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
                 все оплаты сохранятся. Если данные уже изменились, Grace отклонит замену.
               </DialogDescription>
             </DialogHeader>
-            <Button disabled={apply.isPending} onClick={() => apply.mutate()}>
+            <Button disabled={apply.isPending} onClick={() => apply.mutate(draft)}>
               Подтвердить замену
             </Button>
             <Button variant="outline" onClick={() => setConfirm(false)}>
@@ -258,18 +214,14 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
     </Disclosure>
   )
 }
-function LoanForm({
-  initial,
-  obligationId,
-  onSaved,
-}: {
-  initial: Loan
-  obligationId: string
-  onSaved: () => void
-}) {
+function LoanForm({ initial, obligationId }: { initial: Loan; obligationId: string }) {
   const [reminders, setReminders] = useState(initial.reminders)
-  const save = useMutation({
-    mutationFn: async (form: FormData) => {
+  const save = useSaveLoanDetails(obligationId, {
+    onSuccess: () => toast.success('Сведения о кредите сохранены'),
+    onError: (e) => toast.error(e.message),
+  })
+  function prepare(form: FormData) {
+    return () => {
       const principal = String(form.get('principal'))
       const rate = String(form.get('rate'))
       const amount = principal ? parseMinor(principal) : null
@@ -279,32 +231,23 @@ function LoanForm({
         (rate && (basis === null || basis < 0))
       )
         throw new Error('Проверьте сумму и ставку: не больше двух знаков после запятой.')
-      const { error } = await apiClient.PATCH('/api/v1/loans/{obligationId}', {
-        params: { path: { obligationId } },
-        body: {
-          lender: String(form.get('lender')),
-          agreementNumber: String(form.get('number')),
-          agreementOn: String(form.get('date')) || null,
-          principalMinor: amount,
-          annualRateBasisPoints: basis,
-          reminders,
-          revision: initial.revision,
-        },
-      })
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: () => {
-      toast.success('Сведения о кредите сохранены')
-      onSaved()
-    },
-    onError: (e) => toast.error(e.message),
-  })
+      return {
+        lender: String(form.get('lender')),
+        agreementNumber: String(form.get('number')),
+        agreementOn: String(form.get('date')) || null,
+        principalMinor: amount,
+        annualRateBasisPoints: basis,
+        reminders,
+        revision: initial.revision,
+      }
+    }
+  }
   return (
     <form
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault()
-        save.mutate(new FormData(e.currentTarget))
+        save.mutate(prepare(new FormData(e.currentTarget)))
       }}
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -378,37 +321,27 @@ function ScheduleEditor({
     })),
   )
   const [dirty, setDirty] = useState(false)
-  const save = useMutation({
-    mutationFn: async () => {
-      const payments = rows.map((p) => {
-        const amountMinor = parseMinor(p.amount)
-        if (amountMinor === null || amountMinor <= 0)
-          throw new Error('Укажите положительную сумму каждого платежа.')
-        return {
-          sourceId: p.sourceId ?? '',
-          dueOn: p.dueOn,
-          paidMinor: p.paidMinor ?? 0,
-          amountMinor,
-        }
-      })
-      const { data, error } = await apiClient.PATCH(
-        '/api/v1/loans/{obligationId}/schedule-drafts/{draftId}',
-        {
-          params: {
-            path: { obligationId, draftId: draft.id },
-          },
-          body: { revision: draft.revision, payments },
-        },
-      )
-      if (error) throw new Error(error.message)
-      return data!
-    },
+  const save = useSaveScheduleDraft(obligationId, draft.id, {
     onSuccess: (d) => {
       onSaved(d)
       toast.success('Черновик сохранён')
     },
     onError: (e) => toast.error(e.message),
   })
+  function prepare() {
+    const payments = rows.map((p) => {
+      const amountMinor = parseMinor(p.amount)
+      if (amountMinor === null || amountMinor <= 0)
+        throw new Error('Укажите положительную сумму каждого платежа.')
+      return {
+        sourceId: p.sourceId ?? '',
+        dueOn: p.dueOn,
+        paidMinor: p.paidMinor ?? 0,
+        amountMinor,
+      }
+    })
+    return { revision: draft.revision, payments }
+  }
   return (
     <div className="space-y-4">
       <ScheduleBuilder
@@ -422,7 +355,7 @@ function ScheduleEditor({
         initialMode="manual"
       />
       <div className="flex flex-wrap gap-2">
-        <Button disabled={!dirty || save.isPending} onClick={() => save.mutate()}>
+        <Button disabled={!dirty || save.isPending} onClick={() => save.mutate(prepare)}>
           Сохранить черновик
         </Button>
         <Button

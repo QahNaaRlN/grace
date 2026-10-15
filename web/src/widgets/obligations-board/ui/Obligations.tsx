@@ -1,5 +1,5 @@
 import { CalendarClock } from 'lucide-react'
-import { LoanPanel } from '@/features/loan-details/LoanPanel'
+import { LoanPanel } from '@/features/edit-loan'
 import { ObligationSchedule } from '@/features/obligation-schedule'
 import type { FinancialEvent, Obligation } from '@/shared/api'
 import { formatMoney } from '@/shared/lib/money'
