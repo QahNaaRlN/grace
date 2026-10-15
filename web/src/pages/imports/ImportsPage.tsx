@@ -7,8 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -169,7 +168,7 @@ export function ImportsPage() {
       {
         params: {
           path: { batchId },
-          header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() },
+          header: { 'Idempotency-Key': crypto.randomUUID() },
         },
         body,
       },
@@ -193,7 +192,7 @@ export function ImportsPage() {
       {
         params: {
           path: { batchId },
-          header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': confirmationKey },
+          header: { 'Idempotency-Key': confirmationKey },
         },
         body: { previewId: preview.id, previewHash: preview.hash },
       },
@@ -492,7 +491,7 @@ function ReviewForm({
         {
           params: {
             path: { batchId, recordId: record.id },
-            header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': crypto.randomUUID() },
+            header: { 'Idempotency-Key': crypto.randomUUID() },
           },
           body: { expectedRevision: revision, decision },
         },

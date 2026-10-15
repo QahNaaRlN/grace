@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, CircleAlert } from 'lucide-react'
-import type { Account, CashPosition, FinancialEvent } from '@/shared/api/types'
+import type { Account, CashPosition, FinancialEvent } from '@/shared/api'
 import { dueSoonText, accountLabel } from '@/shared/lib/finance-display'
 import { dateText, eventDateText } from '@/shared/lib/date'
 import { Button } from '@/shared/ui/button'

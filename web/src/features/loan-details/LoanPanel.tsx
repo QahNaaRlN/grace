@@ -1,11 +1,10 @@
-import { csrfToken } from '@/shared/model/auth-session'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, Download, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { rowKey, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
 import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { minorToInput, parseMinor } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
@@ -44,7 +43,7 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
   const copy = useMutation({
     mutationFn: async () => {
       const { data, error } = await apiClient.POST('/api/v1/loans/{obligationId}/schedule-drafts', {
-        params: { header: { 'X-CSRF-Token': csrfToken }, path: { obligationId } },
+        params: { path: { obligationId } },
       })
       if (error) throw new Error(error.message)
       return data!
@@ -59,7 +58,7 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
     mutationFn: async (file: File) => {
       if (file.size > 16 * 1024 * 1024) throw new Error('Файл должен быть не больше 16 МиБ.')
       const { error } = await apiClient.POST('/api/v1/loans/{obligationId}/documents', {
-        params: { header: { 'X-CSRF-Token': csrfToken }, path: { obligationId } },
+        params: { path: { obligationId } },
         body: { file: '' },
         bodySerializer: () => {
           const form = new FormData()
@@ -82,7 +81,6 @@ export function LoanPanel({ obligationId }: { obligationId: string }) {
         '/api/v1/loans/{obligationId}/schedule-drafts/{draftId}/apply',
         {
           params: {
-            header: { 'X-CSRF-Token': csrfToken },
             path: { obligationId, draftId: draft.id },
           },
           body: { revision: draft.revision, confirm: true },
@@ -289,7 +287,7 @@ function LoanForm({
       )
         throw new Error('Проверьте сумму и ставку: не больше двух знаков после запятой.')
       const { error } = await apiClient.PATCH('/api/v1/loans/{obligationId}', {
-        params: { header: { 'X-CSRF-Token': csrfToken }, path: { obligationId } },
+        params: { path: { obligationId } },
         body: {
           lender: String(form.get('lender')),
           agreementNumber: String(form.get('number')),
@@ -404,7 +402,6 @@ function ScheduleEditor({
         '/api/v1/loans/{obligationId}/schedule-drafts/{draftId}',
         {
           params: {
-            header: { 'X-CSRF-Token': csrfToken },
             path: { obligationId, draftId: draft.id },
           },
           body: { revision: draft.revision, payments },

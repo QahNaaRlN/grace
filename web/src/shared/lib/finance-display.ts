@@ -1,4 +1,4 @@
-import type { Account } from '@/shared/api/types'
+import type { Account } from '@/shared/api'
 export function accountLabel(account: Account) {
   const card = account.paymentInstruments?.find((item) => !item.disabledAt)
   return card ? `${card.bank} *${card.last4}` : account.name

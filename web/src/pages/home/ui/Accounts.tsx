@@ -2,14 +2,13 @@ import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CreditCard, Pencil, Plus, Scale } from 'lucide-react'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
-import type { Account } from '@/shared/api/types'
+import type { Account } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
 import { fromLocalDateTimeInput, localDateTimeInput, momentText } from '@/shared/lib/date'
 import { formatMoney, parseMinor } from '@/shared/lib/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
-import { csrfToken } from '@/shared/model/auth-session'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { Button } from '@/shared/ui/button'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
@@ -122,7 +121,6 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
       {
         params: {
           path: { accountId: account.id, cardId: target.id },
-          header: { 'X-CSRF-Token': csrfToken },
         },
         body: { disabled: !target.disabledAt },
       },
@@ -360,7 +358,7 @@ function ReconcileDialog({ account, onClose }: { account: Account; onClose: () =
     setPending(true)
     setError('')
     const result = await apiClient.POST('/api/v1/accounts/{accountId}/reconciliations/preview', {
-      params: { path: { accountId: account.id }, header: { 'X-CSRF-Token': csrfToken } },
+      params: { path: { accountId: account.id } },
       body,
     })
     setPending(false)
@@ -375,7 +373,7 @@ function ReconcileDialog({ account, onClose }: { account: Account; onClose: () =
     const result = await apiClient.POST('/api/v1/accounts/{accountId}/reconciliations', {
       params: {
         path: { accountId: account.id },
-        header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': key },
+        header: { 'Idempotency-Key': key },
       },
       body: {
         asOf: preview.asOf,
@@ -518,7 +516,7 @@ function EditAccountDialog({ account, onClose }: { account: Account; onClose: ()
     setPending(true)
     setError('')
     const result = await apiClient.PATCH('/api/v1/accounts/{accountId}', {
-      params: { path: { accountId: account.id }, header: { 'X-CSRF-Token': csrfToken } },
+      params: { path: { accountId: account.id } },
       body: {
         revision: account.revision,
         name: name.trim(),
@@ -614,12 +612,11 @@ function CardDialog({
       ? await apiClient.PATCH('/api/v1/accounts/{accountId}/payment-instruments/{cardId}', {
           params: {
             path: { accountId: account.id, cardId: card.id },
-            header: { 'X-CSRF-Token': csrfToken },
           },
           body,
         })
       : await apiClient.POST('/api/v1/accounts/{accountId}/payment-instruments', {
-          params: { path: { accountId: account.id }, header: { 'X-CSRF-Token': csrfToken } },
+          params: { path: { accountId: account.id } },
           body,
         })
     setPending(false)

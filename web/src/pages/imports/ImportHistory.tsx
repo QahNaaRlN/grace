@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { momentText } from '@/shared/lib/date'
 import { Button } from '@/shared/ui/button'

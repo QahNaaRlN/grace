@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type FormEvent, type KeyboardEvent } from 'react'
 import { Search } from 'lucide-react'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Checkbox } from '@/shared/ui/checkbox'

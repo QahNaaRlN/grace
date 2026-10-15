@@ -29,7 +29,7 @@ import type {
   AssistantCompleted,
   AssistantResult,
   CurrencyPeriodSummary,
-} from '@/shared/api/types'
+} from '@/shared/api'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'

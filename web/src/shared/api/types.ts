@@ -1,4 +1,4 @@
-import type { components } from '@/shared/api/generated/schema'
+import type { components } from './generated/schema'
 
 export type Account = components['schemas']['Account']
 export type Category = components['schemas']['Category']

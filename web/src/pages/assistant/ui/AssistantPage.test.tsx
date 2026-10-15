@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { AssistantRequestError, type SubmitAssistant } from '@/features/ask-assistant'
-import type { AssistantResult } from '@/shared/api/types'
+import type { AssistantResult } from '@/shared/api'
 
 import { AssistantPage } from './AssistantPage'
 

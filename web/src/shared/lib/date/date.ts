@@ -1,4 +1,4 @@
-import type { FinancialEvent } from '@/shared/api/types'
+import type { FinancialEvent } from '@/shared/api'
 import { APP_TIME_ZONE, APP_UTC_OFFSET } from '@/shared/config'
 
 // Calendar day "YYYY-MM-DD" of a moment in the app time zone.

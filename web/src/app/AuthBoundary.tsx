@@ -2,9 +2,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import { AuthContext } from '@/shared/model/auth-context'
-import { csrfToken, setCSRFToken } from '@/shared/model/auth-session'
+import { setCSRFToken } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 
 async function loadSession() {
@@ -50,16 +50,12 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
   }, [session.data, clear, knownUser])
 
   async function logout() {
-    const { response } = await apiClient.POST('/api/auth/logout', {
-      params: { header: { 'X-CSRF-Token': csrfToken } },
-    })
+    const { response } = await apiClient.POST('/api/auth/logout')
     if (!response.ok) throw new Error('Не удалось выйти. Повторите действие.')
     clear()
   }
   async function revokeSessions() {
-    const { response } = await apiClient.POST('/api/auth/revoke-sessions', {
-      params: { header: { 'X-CSRF-Token': csrfToken } },
-    })
+    const { response } = await apiClient.POST('/api/auth/revoke-sessions')
     if (!response.ok) throw new Error('Не удалось завершить сеансы.')
     clear()
   }

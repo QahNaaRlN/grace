@@ -1,8 +1,7 @@
 import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState } from 'react'
 import type { components } from '@/shared/api/generated/schema'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -96,11 +95,10 @@ export function ReceiptPhoto() {
     if (!mode?.policyHash) return
     const result = grant
       ? await apiClient.POST('/api/assistant/consents', {
-          params: { header: { 'X-CSRF-Token': csrfToken } },
           body: { scope: 'receipt', policyHash: mode.policyHash },
         })
       : await apiClient.DELETE('/api/assistant/consents/{scope}', {
-          params: { path: { scope: 'receipt' }, header: { 'X-CSRF-Token': csrfToken } },
+          params: { path: { scope: 'receipt' } },
         })
     if (result.error) throw new Error('Согласие не сохранено. Обнови страницу.')
     setMode((current) => (current ? { ...current, consentGranted: grant } : current))
@@ -110,7 +108,6 @@ export function ReceiptPhoto() {
     body.set('photo', file)
     // multipart is sent without a JSON Content-Type; the browser supplies its boundary.
     const result = await apiClient.POST('/api/receipt-drafts', {
-      params: { header: { 'X-CSRF-Token': csrfToken } },
       body: { photo: file as unknown as string },
       bodySerializer: () => body,
     })
@@ -129,7 +126,7 @@ export function ReceiptPhoto() {
     const result = await apiClient.POST('/api/receipt-drafts/{draftId}/extract', {
       params: {
         path: { draftId: draft.id },
-        header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': extractKey.current },
+        header: { 'Idempotency-Key': extractKey.current },
       },
     })
     if (!result.data)
@@ -141,14 +138,14 @@ export function ReceiptPhoto() {
   async function prepare() {
     if (!draft || !fields) return
     const edited = await apiClient.PATCH('/api/receipt-drafts/{draftId}', {
-      params: { path: { draftId: draft.id }, header: { 'X-CSRF-Token': csrfToken } },
+      params: { path: { draftId: draft.id } },
       body: { revision: draft.revision, fields },
     })
     if (!edited.data)
       throw new Error('Не удалось сохранить правки. Открой актуальный черновик и повтори.')
     accept(edited.data)
     const result = await apiClient.POST('/api/receipt-drafts/{draftId}/previews', {
-      params: { path: { draftId: draft.id }, header: { 'X-CSRF-Token': csrfToken } },
+      params: { path: { draftId: draft.id } },
       body: { revision: edited.data.revision },
     })
     if (!result.data)
@@ -163,7 +160,7 @@ export function ReceiptPhoto() {
     const result = await apiClient.POST('/api/receipt-drafts/{draftId}/confirmations', {
       params: {
         path: { draftId: draft.id },
-        header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': confirmKey.current },
+        header: { 'Idempotency-Key': confirmKey.current },
       },
       body: { previewId: preview.id, hash: preview.hash },
     })
@@ -176,7 +173,7 @@ export function ReceiptPhoto() {
   async function cancel() {
     if (!draft) return
     const result = await apiClient.DELETE('/api/receipt-drafts/{draftId}', {
-      params: { path: { draftId: draft.id }, header: { 'X-CSRF-Token': csrfToken } },
+      params: { path: { draftId: draft.id } },
     })
     if (!result.data) throw new Error('Отмена не завершена.')
     accept(result.data)

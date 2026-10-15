@@ -1,7 +1,7 @@
 import { Disclosure } from '@/shared/ui/disclosure'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'

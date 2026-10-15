@@ -11,8 +11,7 @@ import {
 import { previewSchedule } from '@/features/schedule-builder/api/preview-schedule'
 import { rowsForPreview, type ScheduleRow } from '@/features/schedule-builder/model/schedule-rows'
 import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import {
@@ -77,7 +76,6 @@ export function CreateObligationForm() {
       params: {
         header: {
           'Idempotency-Key': createIdempotencyKey(),
-          'X-CSRF-Token': csrfToken,
         },
       },
       body: {

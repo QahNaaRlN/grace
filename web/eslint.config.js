@@ -39,7 +39,7 @@ export default defineConfig([
         {
           paths: [
             {
-              name: '@/shared/model/auth-session',
+              name: '@/shared/api/csrf',
               importNames: ['csrfToken'],
               message: 'The API client middleware sets X-CSRF-Token; do not pass it manually.',
             },

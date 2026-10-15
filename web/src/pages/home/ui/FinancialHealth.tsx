@@ -7,7 +7,7 @@ import type {
   Obligation,
   Receipt,
   CashPosition,
-} from '@/shared/api/types'
+} from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
 import { dateText } from '@/shared/lib/date'
 import { formatMoney } from '@/shared/lib/money'

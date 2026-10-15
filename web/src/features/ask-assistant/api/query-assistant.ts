@@ -1,6 +1,5 @@
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
-import type { AssistantQuery, AssistantResult } from '@/shared/api/types'
+import { apiClient } from '@/shared/api'
+import type { AssistantQuery, AssistantResult } from '@/shared/api'
 
 export type SubmitAssistant = (
   query: AssistantQuery,
@@ -21,7 +20,6 @@ export const queryAssistant: SubmitAssistant = async (query, signal) => {
   let response
   try {
     response = await apiClient.POST('/api/v1/assistant/query', {
-      params: { header: { 'X-CSRF-Token': csrfToken } },
       body: query,
       signal,
     })

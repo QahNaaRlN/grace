@@ -2,8 +2,7 @@ import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { components } from '@/shared/api/generated/schema'
-import { apiClient } from '@/shared/api/client'
-import { csrfToken } from '@/shared/model/auth-session'
+import { apiClient } from '@/shared/api'
 import { currentMonth } from '@/shared/lib/date'
 import { formatMinorText, formatUsdMicros } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
@@ -66,11 +65,10 @@ export function AIAnalysis() {
     try {
       const result = grant
         ? await apiClient.POST('/api/assistant/consents', {
-            params: { header: { 'X-CSRF-Token': csrfToken } },
             body: { scope: 'analysis', policyHash: capabilities.analysis.policyHash! },
           })
         : await apiClient.DELETE('/api/assistant/consents/{scope}', {
-            params: { path: { scope: 'analysis' }, header: { 'X-CSRF-Token': csrfToken } },
+            params: { path: { scope: 'analysis' } },
           })
       if (result.error)
         throw new Error(
@@ -90,9 +88,7 @@ export function AIAnalysis() {
     try {
       let id = conversation
       if (!id) {
-        const created = await apiClient.POST('/api/assistant/conversations', {
-          params: { header: { 'X-CSRF-Token': csrfToken } },
-        })
+        const created = await apiClient.POST('/api/assistant/conversations')
         if (!created.data) throw new Error('Не удалось открыть диалог.')
         id = created.data.id
         setConversation(id)
@@ -107,7 +103,7 @@ export function AIAnalysis() {
         {
           params: {
             path: { conversationId: id },
-            header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': request.current!.key },
+            header: { 'Idempotency-Key': request.current!.key },
           },
           body: { question, month },
         },
@@ -131,7 +127,7 @@ export function AIAnalysis() {
     setError('')
     try {
       const result = await apiClient.DELETE('/api/assistant/conversations/{conversationId}', {
-        params: { path: { conversationId: conversation }, header: { 'X-CSRF-Token': csrfToken } },
+        params: { path: { conversationId: conversation } },
       })
       if (result.error) throw new Error('Не удалось удалить разговор.')
       setConversation('')

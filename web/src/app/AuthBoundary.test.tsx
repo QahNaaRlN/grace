@@ -5,13 +5,14 @@ import { useContext } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, expect, it, vi } from 'vitest'
 
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import { AuthContext } from '@/shared/model/auth-context'
-import { csrfToken, setCSRFToken } from '@/shared/model/auth-session'
+import { setCSRFToken } from '@/shared/api'
 
 import { AuthBoundary } from './AuthBoundary'
 
 vi.mock('@/shared/api/client', () => ({ apiClient: { GET: vi.fn(), POST: vi.fn() } }))
+vi.mock('@/shared/api/csrf', { spy: true })
 const session = {
   user: { id: 'user', name: 'Alice', role: 'member' },
   csrfToken: 'csrf',
@@ -51,7 +52,6 @@ function mount() {
 }
 beforeEach(() => {
   vi.clearAllMocks()
-  setCSRFToken('')
 })
 
 it('does not render financial pages without a session and clears cached data', async () => {
@@ -70,11 +70,11 @@ it('loads CSRF and clears financial cache on logout', async () => {
   } as never)
   const cache = mount()
   expect(await screen.findByText('Private finances')).toBeInTheDocument()
-  expect(csrfToken).toBe('csrf')
+  expect(setCSRFToken).toHaveBeenLastCalledWith('csrf')
   await userEvent.click(screen.getByText('Logout'))
   expect(await screen.findByText('Login required')).toBeInTheDocument()
   expect(cache.getQueryData(['accounts'])).toBeUndefined()
-  expect(csrfToken).toBe('')
+  expect(setCSRFToken).toHaveBeenLastCalledWith('')
 })
 it('removes financial content and cache on an API 401 event', async () => {
   vi.mocked(apiClient.GET).mockResolvedValue({ data: session, response: new Response() } as never)

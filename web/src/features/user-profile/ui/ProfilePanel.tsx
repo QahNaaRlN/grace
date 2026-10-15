@@ -1,10 +1,9 @@
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
-import { env } from '@/shared/config/env'
-import { csrfToken } from '@/shared/model/auth-session'
+import { env } from '@/shared/config'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -79,10 +78,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
       </p>
     )
   }
-  const headers = { 'X-CSRF-Token': csrfToken }
   async function saveNames() {
     const { data, error: failure } = await apiClient.POST('/api/auth/profile', {
-      params: { header: headers },
       body: {
         displayName: displayName.trim(),
         firstName: firstName.trim(),
@@ -102,7 +99,6 @@ function ProfileForm({ profile }: { profile: Profile }) {
     const form = new FormData()
     form.append('avatar', file)
     const { data, error: failure } = await apiClient.POST('/api/auth/profile/avatar', {
-      params: { header: headers },
       body: { avatar: '' },
       bodySerializer: () => form,
     })
@@ -111,16 +107,13 @@ function ProfileForm({ profile }: { profile: Profile }) {
     return 'Аватар обновлён.'
   }
   async function remove() {
-    const { response, error: failure } = await apiClient.DELETE('/api/auth/profile/avatar', {
-      params: { header: headers },
-    })
+    const { response, error: failure } = await apiClient.DELETE('/api/auth/profile/avatar')
     if (!response.ok) throw new Error(failure?.message ?? 'Не удалось удалить аватар.')
     update({ ...profile, avatarUrl: null })
     return 'Аватар удалён.'
   }
   async function requestEmail() {
     const { data, error: failure } = await apiClient.POST('/api/auth/profile/email/request', {
-      params: { header: headers },
       body: { email },
     })
     if (!data) throw new Error(failure?.message ?? 'Не удалось отправить код.')
@@ -129,7 +122,6 @@ function ProfileForm({ profile }: { profile: Profile }) {
   }
   async function verifyEmail() {
     const { response, error: failure } = await apiClient.POST('/api/auth/profile/email/verify', {
-      params: { header: headers },
       body: { code },
     })
     if (!response.ok) throw new Error(failure?.message ?? 'Не удалось подтвердить почту.')

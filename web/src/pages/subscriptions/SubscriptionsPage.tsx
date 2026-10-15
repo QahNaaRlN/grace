@@ -1,12 +1,11 @@
 import { Money } from '@/shared/ui/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { ReminderHistory } from '@/features/payment-reminders/ReminderHistory'
-import { csrfToken } from '@/shared/model/auth-session'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { dateText, eventDateText } from '@/shared/lib/date'
 import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
@@ -89,7 +88,7 @@ export function SubscriptionsPage() {
   const pause = useMutation({
     mutationFn: async (s: Subscription) => {
       const { error } = await apiClient.PATCH('/api/v1/subscriptions/{subscriptionId}', {
-        params: { header: { 'X-CSRF-Token': csrfToken }, path: { subscriptionId: s.id } },
+        params: { path: { subscriptionId: s.id } },
         body: {
           name: s.name,
           amountMinor: s.amountMinor,
@@ -114,7 +113,7 @@ export function SubscriptionsPage() {
     mutationFn: async () => {
       if (!expense) return
       const { error } = await apiClient.POST('/api/v1/subscriptions/{subscriptionId}/expenses', {
-        params: { header: { 'X-CSRF-Token': csrfToken }, path: { subscriptionId: expense.id } },
+        params: { path: { subscriptionId: expense.id } },
         body: { financialEventId: eventID },
       })
       if (error) throw new Error(error.message)
@@ -381,12 +380,12 @@ function SubscriptionForm({
       }
       const result = initial
         ? await apiClient.PATCH('/api/v1/subscriptions/{subscriptionId}', {
-            params: { header: { 'X-CSRF-Token': csrfToken }, path: { subscriptionId: initial.id } },
+            params: { path: { subscriptionId: initial.id } },
             body,
           })
         : await apiClient.POST('/api/v1/subscriptions', {
             params: {
-              header: { 'X-CSRF-Token': csrfToken, 'Idempotency-Key': creationKey.current },
+              header: { 'Idempotency-Key': creationKey.current },
             },
             body,
           })

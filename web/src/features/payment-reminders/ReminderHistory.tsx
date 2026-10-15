@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
