@@ -1,112 +1,25 @@
 import { useState, type FormEvent } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowDownLeft, ArrowRightLeft, Landmark, Scale, Search, Undo2 } from 'lucide-react'
-
-import { CreateReceiptForm } from '@/features/create-receipt'
+import { Search } from 'lucide-react'
 import { financialEventQueries } from '@/entities/financial-event'
 import type { Account, Category, FinancialEvent, Receipt } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
-import { calendarDay, clockText, eventTimeText } from '@/shared/lib/date'
 import { formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
-import { CategoryIcon } from '@/shared/ui/category-icon'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog'
 import { Field } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Money } from '@/shared/ui/money'
-import { Notice, StatusBadge } from '@/shared/ui/status'
+import { Notice } from '@/shared/ui/status'
+import { kindLabels, localDay, dayTitle, accountText, direction } from './operation-display'
+import { EventIcon, OperationSheet } from './OperationSheet'
 
-import { OperationActions, OperationHistory } from '@/features/edit-operation'
-
-const kindLabels: Record<FinancialEvent['kind'], string> = {
-  purchase: 'Покупка',
-  income_received: 'Доход',
-  internal_transfer: 'Перевод',
-  refund: 'Возврат',
-  debt_payment: 'Платёж по обязательству',
-  balance_adjustment: 'Корректировка остатка',
-}
-const kindIcons = {
-  income_received: ArrowDownLeft,
-  internal_transfer: ArrowRightLeft,
-  refund: Undo2,
-  debt_payment: Landmark,
-  balance_adjustment: Scale,
-}
-const sourceLabels: Record<string, string> = {
-  manual: 'Ручной ввод',
-  import: 'Импорт таблицы',
-  bank_import: 'Импорт выписки',
-  receipt: 'Фото чека',
-}
 const filterKeys = ['q', 'category', 'account', 'kind', 'from', 'to', 'voided'] as const
+
 type DayTotal = { date: string; currency: string; inflowMinor: number; outflowMinor: number }
-
-function localDay(event: FinancialEvent) {
-  if (event.occurredDate) return event.occurredDate
-  if (!event.occurredAt) return ''
-  return calendarDay(event.occurredAt)
-}
-
-function dayTitle(day: string) {
-  const text = new Intl.DateTimeFormat('ru-RU', {
-    timeZone: 'UTC',
-    day: 'numeric',
-    month: 'long',
-    weekday: 'long',
-  }).format(new Date(`${day}T00:00:00Z`))
-  // "понедельник, 13 октября" → "13 октября, понедельник"
-  const [weekday, rest] = text.split(', ')
-  return rest ? `${rest}, ${weekday}` : text
-}
-
-function timeText(event: FinancialEvent) {
-  if (!event.occurredAt) return 'время неизвестно'
-  return clockText(event.occurredAt)
-}
-
-function accountName(accounts: Account[], id: string | undefined, fallback: string | undefined) {
-  const account = accounts.find((a) => a.id === id)
-  return account ? accountLabel(account) : (fallback ?? 'Счёт не указан')
-}
-
-function accountText(event: FinancialEvent, accounts: Account[]) {
-  if (event.kind === 'internal_transfer') {
-    const from = event.postings.find((p) => p.direction === 'debit')
-    const to = event.postings.find((p) => p.direction === 'credit')
-    return `${accountName(accounts, from?.accountId, from?.accountName)} → ${accountName(accounts, to?.accountId, to?.accountName)}`
-  }
-  const posting = event.postings[0]
-  return accountName(accounts, posting?.accountId, posting?.accountName)
-}
-
-function EventIcon({ event }: { event: FinancialEvent }) {
-  const Icon = event.kind === 'purchase' ? null : kindIcons[event.kind]
-  return (
-    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-secondary-foreground">
-      {Icon ? (
-        <Icon aria-hidden="true" className="size-5" />
-      ) : (
-        <CategoryIcon icon={event.categoryIcon} />
-      )}
-    </span>
-  )
-}
-
-function direction(event: FinancialEvent) {
-  if (event.kind === 'internal_transfer') return undefined
-  return event.postings[0]?.direction === 'credit' ? ('credit' as const) : ('debit' as const)
-}
 
 // SPEC-0043: a compact list grouped by day; details and actions live in a sheet.
 export function Operations({
@@ -355,120 +268,5 @@ export function Operations({
         />
       )}
     </div>
-  )
-}
-
-function OperationSheet({
-  event,
-  accounts,
-  categories,
-  receipt,
-  onClose,
-  onChanged,
-}: {
-  event: FinancialEvent
-  accounts: Account[]
-  categories: Category[]
-  receipt?: Receipt
-  onClose: () => void
-  onChanged: (next: FinancialEvent) => void
-}) {
-  const posting = event.postings[0]
-  // Only facts that exist are shown; nothing reads «Не указано».
-  const facts: [string, string][] = [
-    ['Вид', kindLabels[event.kind]],
-    ['Дата', event.occurredAt ? eventTimeText(event) : `${eventTimeText(event)}`],
-    [event.kind === 'internal_transfer' ? 'Счета' : 'Счёт / карта', accountText(event, accounts)],
-    ...(event.kind === 'purchase'
-      ? [['Категория', event.categoryName ?? 'Без категории'] as [string, string]]
-      : []),
-    ...(event.merchant ? [['Продавец', event.merchant] as [string, string]] : []),
-    ...(event.description ? [['Описание', event.description] as [string, string]] : []),
-    ['Источник', sourceLabels[event.source] ?? event.source],
-  ]
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent
-        data-motion="menu"
-        className="left-auto right-0 top-0 h-dvh max-h-dvh max-w-[min(420px,calc(100%-1rem))] translate-x-0 translate-y-0 rounded-r-none sm:max-w-[420px]"
-      >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <EventIcon event={event} />
-            <span className="min-w-0 break-words">
-              {event.merchant || event.description || kindLabels[event.kind]}
-            </span>
-          </DialogTitle>
-          <DialogDescription>{timeText(event)}</DialogDescription>
-        </DialogHeader>
-        {event.voidedAt && (
-          <Notice tone="warning" title="Операция отменена">
-            {event.voidReason} Она не учитывается в остатках и статистике.
-          </Notice>
-        )}
-        {event.editedByUser && !event.voidedAt && (
-          <p>
-            <StatusBadge tone="info">Изменена вручную</StatusBadge>
-          </p>
-        )}
-        {posting && (
-          <p>
-            <Money
-              valueMinor={posting.amountMinor}
-              currency={posting.currency}
-              direction={direction(event)}
-              size="lg"
-            />
-          </p>
-        )}
-        <dl className="grace-fields">
-          {facts.map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-        <OperationActions
-          event={event}
-          accounts={accounts}
-          categories={categories}
-          onChanged={onChanged}
-        />
-        <OperationHistory event={event} accounts={accounts} categories={categories} />
-        {receipt && <ReceiptDetails receipt={receipt} />}
-        {event.kind === 'purchase' && !receipt && !event.voidedAt && (
-          <CreateReceiptForm purchase={event} />
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function ReceiptDetails({ receipt }: { receipt: Receipt }) {
-  return (
-    <section aria-label="Чек" className="rounded-xl bg-muted/50 p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className="font-medium">Чек · {receipt.seller}</span>
-        <Money valueMinor={receipt.totalMinor} currency={receipt.currency} size="sm" />
-      </div>
-      <ul className="space-y-1 text-sm text-muted-foreground">
-        {receipt.items.map((item) => (
-          <li key={item.id} className="flex items-start justify-between gap-3">
-            <span>
-              {item.position}. {item.name} · {item.quantityMilli / 1000}
-            </span>
-            <span className="shrink-0 tabular-nums">
-              {formatMoney(item.lineTotalMinor, receipt.currency)}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }
