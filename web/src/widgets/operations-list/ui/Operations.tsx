@@ -26,7 +26,7 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Money } from '@/shared/ui/money'
 import { Notice, StatusBadge } from '@/shared/ui/status'
 
-import { OperationActions, OperationHistory } from './OperationEditor'
+import { OperationActions, OperationHistory } from '@/features/edit-operation'
 
 const kindLabels: Record<FinancialEvent['kind'], string> = {
   purchase: 'Покупка',

@@ -316,3 +316,84 @@ Steiger требует ≥ 22.18) проверяется после push.
 | 2. Пустое пространство | В браузере не проверено: на стенде уже есть счёт. Покрыто тестом `pages/dashboard/ui/DashboardPage.test.tsx` |
 | 3–8 и 10 (записи) | Не выполнялись. Чеклист разрешает тестовые записи только после явного подтверждения пользователя, а его не было. Формы не менялись, их тесты перенесены без изменений |
 | Сравнение со снимками `e623775` (AC12) | Не выполнялось: это критерий фазы 5 |
+
+## Фаза 4 — Features
+
+Дата: 2026-10-15. Ветка: `codex/frontend-fsd-4` от `codex/frontend-fsd-3` (`ac34c21`).
+PR фазы 3 ещё не влит, поэтому PR фазы 4 содержит и её коммиты. Проверено локально
+на Windows, Node 23.
+
+| Коммит | Содержание |
+| --- | --- |
+| `6d44586` | `features/schedule-builder` → `entities/payment-schedule` (с `index.ts` и входом `index.testing.ts` для фейка предпросмотра). `loan-details` → `features/edit-loan`, `payment-reminders` → `widgets/reminder-history`. Хуки мутаций в `create-account`, `create-financial-event`, `create-obligation`, `create-receipt`, `edit-loan`, `obligation-schedule` (оплата по графику) и `user-profile` |
+| `696d4fc` | `features/reconcile-account` и `features/edit-account` вынесены из `widgets/accounts-list`, `features/manage-category` — из `widgets/categories-list`. Подписи типов счёта и исходов сверки лежат в `entities/account`, `operationsText` — в `entities/category` |
+| `9effb9d` | `OperationEditor` → `features/edit-operation` |
+| `8f9113c` | `features/manage-subscription`: пауза, привязка расхода, `SubscriptionForm` |
+| `1034bc6` | `ImportsPage` разделён: `widgets/import-review`, `features/upload-import`, `features/review-import-record`, `features/confirm-import`. Тесты всех хуков мутаций. Блок `no-direct-invalidate` удалён из ESLint baseline |
+| следующий | Этот отчёт |
+
+### Решения по ходу фазы
+
+- **Единый вид хука мутации.** Хук лежит в `features/<slice>/api` и построен на
+  `useMutation`. `mutationFn` возвращает ответ API или бросает `Error` с текстом
+  для пользователя, как раньше это делал компонент. `onSuccess` инвалидирует
+  ключи через `entities/*` `all()`, причём только при успешном ответе.
+  - Если раньше компонент ждал обновления (`await invalidateQueries`), то
+    `onSuccess` тоже возвращает promise. Тогда `mutateAsync` завершается после
+    обновления, и порядок «сохранено → обновлено → закрыть диалог» не меняется.
+  - Если раньше обновление шло в фоне (`void`), хук тоже не ждёт его: так
+    устроены `edit-loan` и привязка расхода подписки.
+  - Если часть состояния раньше менялась до обновления, хук принимает колбэк и
+    вызывает его перед инвалидацией. Так работают `onConfirmed`/`onStale` в
+    `confirm-import` и `onVerified` в подтверждении почты.
+- **Ввод проверяется внутри мутации.** Формы кредита, черновика графика и
+  подписки раньше бросали ошибку проверки в `mutationFn`, и она уходила в
+  `onError` (toast). Теперь они передают в хук функцию `prepare`, которая
+  проверяет ввод и строит тело запроса. Сообщения и их путь не изменились.
+- **Межсрезовых импортов нет.** `ScheduleBuilder` теперь — управляемый
+  компонент `entities/payment-schedule`, им пользуются `create-obligation` и
+  `edit-loan`. Подписи и форматтеры, которые раньше были общими у виджета и
+  диалога, опустились в `entities/*/model`.
+- **Чтение импорта.** Кнопки «Повторить» после ошибки загрузки черновика и
+  сверки месяца — это не мутации. Они используют `useImportRefresh` из
+  `entities/import-batch/api`. Поиск следующей нерешённой строки
+  (`nextUnresolvedRecord`) тоже перенесён туда.
+- **«Повторить» в `LedgerScreen`.** Раньше кнопка инвалидировала весь кэш
+  (`invalidateQueries()` без ключа). Теперь она заново запрашивает шесть
+  запросов ledger, о которых сообщает баннер. Остальные активные запросы
+  страницы (статистика, список операций) кнопка больше не трогает: у каждого
+  из них своя кнопка «Повторить» на месте ошибки. Это единственное изменение
+  поведения в фазе. Альтернатива — служебная фича, которая очищает весь кэш,
+  но тогда нарушилось бы правило «инвалидация — только в хуке мутации».
+- **Мелкие отличия по времени.** Поскольку `mutateAsync` ждёт обновления, в
+  нескольких диалогах (`ReconcileDialog`, `EditAccountDialog`, `CardDialog`,
+  правка и отмена операции, связь платежа с графиком) кнопка показывает
+  «Сохраняем…» до конца обновления, а не только до ответа API. Тексты, итог и
+  порядок сообщений не изменились.
+- **Код из страниц и виджетов.** Страница `/imports` теперь — только заголовок
+  и `widgets/import-review`. Виджет возвращает фрагмент, поэтому DOM страницы
+  не изменился. `Accounts.tsx`: 676 → 286 строк, `ImportsPage`: 790 → 14 (виджет
+  264, `ReviewForm` 418). `SubscriptionsPage` (323 строки) всё ещё читает
+  данные сам; перенос запросов страниц в виджеты и AC9 (≤ 300 строк) остаются
+  на фазу 5.
+- **Тесты.** У каждого хука мутации есть тест: какие ключи инвалидированы после
+  успеха и что при ошибке кэш не трогается (`src/test/query-harness.tsx`).
+  `NewDraftCard.test` рендерит карточку внутри `QueryClientProvider`, потому что
+  она сохраняет через хук. Проверки тестов не менялись.
+
+### Исполняемые свидетельства
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | Exit 0. Go: `ok` во всех пакетах. Web: 55 файлов и 257 тестов (после фазы 3 было 222), `lint`, `lint:fsd` (OK, 2 записи в baseline), `format:check`, `build`. Jev eval: `ok` |
+| AC5, вторая часть | `grep -rln invalidateQueries web/src --include=*.ts* \| grep -v "\.test\." \| grep -vE "web/src/(features\|entities)/[^/]+/api/"` → пусто |
+| Глубокие импорты (AC2) | `grep -rnoE "from '@/(pages\|widgets\|features\|entities)/[^/']+/[^']+'" web/src \| grep -v "index.testing'"` → пусто |
+| `index.ts` у каждого среза | цикл по `web/src/{pages,widgets,features,entities}/*` без `index.ts` → пусто |
+| Импорты внутри слоя (AC3) | для каждого среза `grep "from '@/<слой>/"` без собственного имени → пусто |
+| Baseline ESLint | `git diff --stat codex/frontend-fsd-3 -- web/eslint.baseline.js` → 26 удалений. `no-direct-invalidate`: 14 → 0 файлов, блоки удалены. Остался один файл в `no-time-zone-literal` (`AssistantPage.test.tsx`, решение в фазе 5) |
+| Baseline Steiger | `npm run lint:fsd -- --prune` → 13 → 2. Удалены 4 `forbidden-imports` и 4 `no-public-api-sidestep` (`schedule-builder`), 2 `no-segmentless-slices` и `public-api` у `schedule-builder`. Остались `shared/model` (нет public API) и `app/providers` (имя сегмента) — вне scope фазы |
+| Хуки мутаций | `npx vitest run src/features/*/api` → 15 файлов, 35 тестов |
+| `git diff --check` | чисто |
+
+Smoke-чеклист для фазы 4 спецификация не требует: он проходится после фаз 3 и 5.
+Пункты, где создаются записи, в любом случае требуют подтверждения владельца.

@@ -1,18 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import { Plus, ReceiptText, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import {
-  CreateReceiptSchema,
-  type CreateReceiptValues,
-} from '@/features/create-receipt/model/create-receipt.schema'
-import { receiptQueries } from '@/entities/receipt'
-import { apiClient } from '@/shared/api'
+import { CreateReceiptSchema, type CreateReceiptValues } from '../model/create-receipt.schema'
 import type { FinancialEvent } from '@/shared/api'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -27,6 +20,7 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { parseMilli, parseMinor } from '@/shared/lib/money'
+import { useCreateReceipt } from '../api/use-create-receipt'
 
 function emptyItem() {
   return { name: '', quantity: '1', unitPrice: '', lineTotal: '' }
@@ -40,7 +34,7 @@ function localDateTime(value: string | null) {
 
 export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
   const [open, setOpen] = useState(false)
-  const queryClient = useQueryClient()
+  const create = useCreateReceipt()
   const {
     control,
     register,
@@ -72,26 +66,22 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
     }).format(amountMinor / 100)
 
   const onSubmit = handleSubmit(async (values) => {
-    const result = await apiClient.POST('/api/v1/receipts', {
-      params: { header: { 'Idempotency-Key': createIdempotencyKey() } },
-      body: {
-        purchaseEventId: purchase.id,
-        seller: values.seller,
-        issuedAt: new Date(values.issuedAt).toISOString(),
-        fiscalDocumentNumber: values.fiscalDocumentNumber,
-        items: values.items.map((item) => ({
-          name: item.name,
-          quantityMilli: parseMilli(item.quantity) as number,
-          unitPriceMinor: parseMinor(item.unitPrice) as number,
-          lineTotalMinor: parseMinor(item.lineTotal) as number,
-        })),
-      },
+    const result = await create.mutateAsync({
+      purchaseEventId: purchase.id,
+      seller: values.seller,
+      issuedAt: new Date(values.issuedAt).toISOString(),
+      fiscalDocumentNumber: values.fiscalDocumentNumber,
+      items: values.items.map((item) => ({
+        name: item.name,
+        quantityMilli: parseMilli(item.quantity) as number,
+        unitPriceMinor: parseMinor(item.unitPrice) as number,
+        lineTotalMinor: parseMinor(item.lineTotal) as number,
+      })),
     })
     if (result.error) {
       toast.error(result.error.message)
       return
     }
-    await queryClient.invalidateQueries({ queryKey: receiptQueries.all() })
     reset()
     setOpen(false)
     toast.success('Чек сохранён')

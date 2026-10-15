@@ -1,18 +1,15 @@
 import { Checkbox } from '@/shared/ui/checkbox'
 import { useRef, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { accountQueries } from '@/entities/account'
-import { cashPositionQueries } from '@/entities/analytics-report'
-import { apiClient } from '@/shared/api'
 import { parseMinor, formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/ui/select'
+import { useCreateAccount } from '../api/use-create-account'
 
 export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
-  const query = useQueryClient()
+  const create = useCreateAccount()
   const [type, setType] = useState('debit')
   const [card, setCard] = useState(true)
   const [unreconciled, setUnreconciled] = useState(false)
@@ -31,30 +28,26 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
     setPending(true)
     setError('')
     try {
-      const { data, error: failure } = await apiClient.POST('/api/v1/accounts', {
-        body: {
-          name: review.name,
-          type: type as 'debit' | 'credit' | 'cash' | 'installment',
-          currency: 'RUB',
-          openingBalanceMinor: review.balance,
-          balanceReconciled: !unreconciled,
-          ...(card
-            ? {
-                card: {
-                  name: review.name,
-                  bank: review.bank,
-                  last4: review.last4,
-                },
-              }
-            : {}),
-        },
+      const { data, error: failure } = await create.mutateAsync({
+        name: review.name,
+        type: type as 'debit' | 'credit' | 'cash' | 'installment',
+        currency: 'RUB',
+        openingBalanceMinor: review.balance,
+        balanceReconciled: !unreconciled,
+        ...(card
+          ? {
+              card: {
+                name: review.name,
+                bank: review.bank,
+                last4: review.last4,
+              },
+            }
+          : {}),
       })
       if (!data) {
         setError(failure?.message ?? 'Не удалось создать счёт.')
         return
       }
-      await query.invalidateQueries({ queryKey: accountQueries.all() })
-      await query.invalidateQueries({ queryKey: cashPositionQueries.all() })
       onSaved()
     } catch {
       setError(

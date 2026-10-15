@@ -1,14 +1,13 @@
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useRef, useState, type ReactNode } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { sessionQueries } from '@/entities/session'
+import { useQuery } from '@tanstack/react-query'
 import { userQueries } from '@/entities/user'
-import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { env } from '@/shared/config'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { useProfileActions } from '../api/use-profile-actions'
 
 type Profile = components['schemas']['UserProfile']
 type Area = 'personal' | 'email'
@@ -21,7 +20,7 @@ function ProfileForm({
   profile: Profile
   sessionActions?: ReactNode
 }) {
-  const cache = useQueryClient()
+  const actions = useProfileActions(profile)
   const [firstName, setFirst] = useState(profile.firstName),
     [lastName, setLast] = useState(profile.lastName),
     [displayName, setDisplay] = useState(profile.displayName)
@@ -55,19 +54,6 @@ function ProfileForm({
       setBusy(false)
     }
   }
-  // The POST response already carries the new name and avatar: update the
-  // session in place instead of refetching /api/auth/me after every save.
-  function update(data: Profile) {
-    cache.setQueryData(userQueries.profile().queryKey, data)
-    cache.setQueryData(sessionQueries.me().queryKey, (current) =>
-      current
-        ? {
-            ...current,
-            user: { ...current.user, name: data.displayName, avatarUrl: data.avatarUrl },
-          }
-        : current,
-    )
-  }
   function feedback(area: Area) {
     if (status?.area !== area) return null
     return status.kind === 'error' ? (
@@ -81,15 +67,11 @@ function ProfileForm({
     )
   }
   async function saveNames() {
-    const { data, error: failure } = await apiClient.POST('/api/auth/profile', {
-      body: {
-        displayName: displayName.trim(),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-      },
+    const data = await actions.saveNames({
+      displayName: displayName.trim(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
     })
-    if (!data) throw new Error(failure?.message ?? 'Профиль не сохранён.')
-    update(data)
     setFirst(data.firstName)
     setLast(data.lastName)
     setDisplay(data.displayName)
@@ -97,39 +79,23 @@ function ProfileForm({
     return 'Профиль сохранён.'
   }
   async function upload(file: File) {
-    if (file.size > 2 * 1024 * 1024) throw new Error('Изображение должно быть не больше 2 МБ.')
-    const form = new FormData()
-    form.append('avatar', file)
-    const { data, error: failure } = await apiClient.POST('/api/auth/profile/avatar', {
-      body: { avatar: '' },
-      bodySerializer: () => form,
-    })
-    if (!data) throw new Error(failure?.message ?? 'Аватар не сохранён.')
-    update(data)
+    await actions.uploadAvatar(file)
     return 'Аватар обновлён.'
   }
   async function remove() {
-    const { response, error: failure } = await apiClient.DELETE('/api/auth/profile/avatar')
-    if (!response.ok) throw new Error(failure?.message ?? 'Не удалось удалить аватар.')
-    update({ ...profile, avatarUrl: null })
+    await actions.removeAvatar()
     return 'Аватар удалён.'
   }
   async function requestEmail() {
-    const { data, error: failure } = await apiClient.POST('/api/auth/profile/email/request', {
-      body: { email },
-    })
-    if (!data) throw new Error(failure?.message ?? 'Не удалось отправить код.')
+    await actions.requestEmail(email)
     setEmailStep(true)
     return `Код отправлен на ${email}.`
   }
   async function verifyEmail() {
-    const { response, error: failure } = await apiClient.POST('/api/auth/profile/email/verify', {
-      body: { code },
+    await actions.verifyEmail(code, () => {
+      setEmailStep(false)
+      setCode('')
     })
-    if (!response.ok) throw new Error(failure?.message ?? 'Не удалось подтвердить почту.')
-    setEmailStep(false)
-    setCode('')
-    await cache.invalidateQueries({ queryKey: userQueries.all() })
     return 'Почта подтверждена. Другие сеансы завершены.'
   }
   return (
