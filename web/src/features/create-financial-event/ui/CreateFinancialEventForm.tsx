@@ -1,4 +1,3 @@
-import { Disclosure } from '@/shared/ui/disclosure'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { Account, Category, FinancialEvent } from '@/shared/api'
@@ -11,6 +10,8 @@ import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { useCreateFinancialEvent } from '../api/use-create-financial-event'
+import { EventDetailsFields } from './EventDetailsFields'
+import { FinancialEventReview } from './FinancialEventReview'
 
 const kinds = {
   purchase: 'Покупка',
@@ -244,40 +245,12 @@ export function CreateFinancialEventForm({
           <Label htmlFor="event-description">Описание / комментарий</Label>
           <Input name="description" id="event-description" maxLength={500} />
         </div>
-        <Disclosure
-          className="rounded-xl border p-3"
-          triggerClassName="min-h-11 rounded-lg px-3 py-2 font-medium hover:bg-accent"
-          title={<>Дополнительные сведения</>}
-        >
-          <div className="mt-4 space-y-4">
-            {kind !== 'transfer' && kind !== 'refund' && (
-              <div className="space-y-2">
-                <Label htmlFor="event-category">Категория</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="event-category" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Не указана</SelectItem>
-                    {categoriesVisible.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            {kind !== 'transfer' && (
-              <div className="space-y-2">
-                <Label htmlFor="event-merchant">
-                  {kind === 'income' ? 'Источник' : 'Получатель'}
-                </Label>
-                <Input name="merchant" id="event-merchant" maxLength={160} />
-              </div>
-            )}
-          </div>
-        </Disclosure>
+        <EventDetailsFields
+          kind={kind}
+          category={category}
+          onCategory={setCategory}
+          categories={categoriesVisible}
+        />
         <div className="grace-actions">
           <Button type="submit" disabled={accounts.length === 0}>
             Посмотреть подтверждение
@@ -286,46 +259,22 @@ export function CreateFinancialEventForm({
       </form>
       {review && (
         <>
-          <dl className="grace-fields">
-            <div>
-              <dt>Тип</dt>
-              <dd>{kinds[kind]}</dd>
-            </div>
-            <div>
-              <dt>Сумма</dt>
-              <dd>{formatMoney(review.amountMinor, currency!)}</dd>
-            </div>
-            <div>
-              <dt>Счёт / карта</dt>
-              <dd>{eventAccount ? accountLabel(eventAccount) : 'Не указано'}</dd>
-            </div>
-            {kind === 'transfer' && (
-              <div>
-                <dt>На счёт</dt>
-                <dd>
-                  {accounts.find((a) => a.id === target)
-                    ? accountLabel(accounts.find((a) => a.id === target)!)
-                    : 'Не указано'}
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>Дата</dt>
-              <dd>{new Date(review.occurredAt).toLocaleString('ru-RU')}</dd>
-            </div>
-            <div>
-              <dt>Категория</dt>
-              <dd>{categories.find((c) => c.id === category)?.name ?? 'Не указано'}</dd>
-            </div>
-            <div>
-              <dt>Получатель</dt>
-              <dd>{review.merchant || 'Не указано'}</dd>
-            </div>
-            <div>
-              <dt>Комментарий</dt>
-              <dd>{review.description || 'Не указано'}</dd>
-            </div>
-          </dl>
+          <FinancialEventReview
+            kind={kinds[kind]}
+            amount={formatMoney(review.amountMinor, currency!)}
+            account={eventAccount ? accountLabel(eventAccount) : 'Не указано'}
+            target={
+              kind === 'transfer'
+                ? accounts.find((a) => a.id === target)
+                  ? accountLabel(accounts.find((a) => a.id === target)!)
+                  : 'Не указано'
+                : undefined
+            }
+            occurredAt={review.occurredAt}
+            category={categories.find((c) => c.id === category)?.name ?? 'Не указано'}
+            merchant={review.merchant}
+            description={review.description}
+          />
           <div className="grace-actions">
             <Button disabled={pending} onClick={() => void save()}>
               {pending ? 'Сохранение…' : 'Подтвердить и сохранить'}

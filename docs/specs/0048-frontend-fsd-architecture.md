@@ -1,6 +1,6 @@
 # SPEC-0048: архитектура Web по Feature-Sliced Design
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-15
 - Acceptance owner: владелец Grace
@@ -10,7 +10,11 @@
   выработать стратегию по организации лучшей архитектуры».
 - Implementation branch: фаза 0 — `codex/frontend-fsd` (вместе со спецификацией);
   следующие фазы — отдельные ветки `codex/frontend-fsd-<фаза>`
-- Implementation commit: фаза 0 — `3edc372`, `7a7d946` (форматирование) и коммит evidence
+- Implementation commit: фаза 0 — `3edc372`, `7a7d946` (форматирование); фаза 1 — `685b017`,
+  `a60a7f1`, `2cfdf03`; фаза 2 — `d0e25b2`, `bd16de0`, `8964133`, `bc93f78`, `cd07d89`,
+  `bc15273`; фаза 3 — `77c3b2e`, `ac34c21`; фаза 4 — `6d44586`, `696d4fc`, `9effb9d`,
+  `8f9113c`, `1034bc6`; фаза 5 — `c4aa457`, `f38d826`, `0b4b965`, `1719d13`, `cc90c84`
+  (ветка `codex/frontend-fsd-5`). Коммиты evidence перечислены в отчёте
 - Evidence: [0048-evidence.md](0048-evidence.md)
 
 ## Проблема и пользовательский результат
@@ -210,30 +214,30 @@
 
 ## Критерии приёмки
 
-- [ ] AC1: `npm run lint:fsd` (Steiger) проходит без ошибок, baseline-файла нет.
-- [ ] AC2: в `web/src` нет импортов `@/<layer>/<slice>/<segment>` из другого среза;
+- [x] AC1: `npm run lint:fsd` (Steiger) проходит без ошибок, baseline-файла нет.
+- [x] AC2: в `web/src` нет импортов `@/<layer>/<slice>/<segment>` из другого среза;
   каждый срез имеет `index.ts`.
-- [ ] AC3: нет импортов page → page, feature → feature, widget → widget и
+- [x] AC3: нет импортов page → page, feature → feature, widget → widget и
   entity → entity, кроме `@x`.
-- [ ] AC4: `shared` не импортирует ни один верхний слой и не содержит путей
+- [x] AC4: `shared` не импортирует ни один верхний слой и не содержит путей
   `/api/…` продукта, кроме транспорта `shared/api`.
-- [ ] AC5: литералы `queryKey` встречаются только в `entities/*/api`;
+- [x] AC5: литералы `queryKey` встречаются только в `entities/*/api`;
   `invalidateQueries` — только в хуках `features/*/api` и `entities`.
-- [ ] AC6: хранилище CSRF-токена импортируется только в `shared/api`; ручного
+- [x] AC6: хранилище CSRF-токена импортируется только в `shared/api`; ручного
   заголовка `X-CSRF-Token` вне `shared/api` нет. Поле `csrfToken` ответа
   `/api/auth/me` и фикстуры тестов этим критерием не ограничиваются (уточнено
   владельцем 2026-10-15 после фазы 1).
-- [ ] AC7: `Asia/Yekaterinburg` и `+05:00` встречаются только в `shared/config`.
-- [ ] AC8: каждому маршруту `app/router.tsx` соответствует свой срез `pages/*`;
+- [x] AC7: `Asia/Yekaterinburg` и `+05:00` встречаются только в `shared/config`.
+- [x] AC8: каждому маршруту `app/router.tsx` соответствует свой срез `pages/*`;
   ни одна страница не ветвится по `pathname`; набор URL совпадает с `e623775`.
-- [ ] AC9: ни один файл `web/src` вне `generated` и тестов не длиннее 300 строк.
-- [ ] AC10: `npm run format:check` проходит, коммит форматирования указан в
+- [x] AC9: ни один файл `web/src` вне `generated` и тестов не длиннее 300 строк.
+- [x] AC10: `npm run format:check` проходит, коммит форматирования указан в
   `.git-blame-ignore-revs`.
-- [ ] AC11: `make test` и `make test-integration` проходят. Число тестов web не
+- [x] AC11: `make test` и `make test-integration` проходят. Число тестов web не
   меньше, чем на `e623775`.
-- [ ] AC12: smoke-чеклист пройден для всех маршрутов (mobile 375 px и desktop),
+- [x] AC12: smoke-чеклист пройден для всех маршрутов (mobile 375 px и desktop),
   расхождений со снимками `e623775` нет.
-- [ ] AC13: `docs/architecture.md` (раздел Web UI) и ADR
+- [x] AC13: `docs/architecture.md` (раздел Web UI) и ADR
   `docs/decisions/0003-web-feature-sliced-design.md` описывают правила слоёв.
 
 ## Исполняемые проверки

@@ -1,7 +1,7 @@
 import { defineConfig } from 'steiger'
 import fsd from '@feature-sliced/steiger-plugin'
 
-// Existing violations are matched by scripts/lint-fsd.mjs against steiger.baseline.json.
+// SPEC-0048: every Feature-Sliced Design rule is an error; there is no baseline.
 export default defineConfig([
   ...fsd.configs.recommended,
   {

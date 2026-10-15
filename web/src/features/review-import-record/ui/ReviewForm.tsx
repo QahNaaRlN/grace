@@ -6,20 +6,16 @@ import { categoryQueries } from '@/entities/category'
 import { financialEventQueries } from '@/entities/financial-event'
 import { importErrorText, importLabels } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
-import { APP_UTC_OFFSET } from '@/shared/config'
 import { eventTimeText } from '@/shared/lib/date'
-import { accountLabel } from '@/shared/lib/finance-display'
-import { minorToInput, parseMinor } from '@/shared/lib/money'
+import { minorToInput } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { Checkbox } from '@/shared/ui/checkbox'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
-import { CurrencySelect } from '@/shared/ui/currency-select'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { MoneyInput } from '@/shared/ui/money-input'
 import { Textarea } from '@/shared/ui/textarea'
+import { ImportFieldsEditor } from './ImportFieldsEditor'
 import { useSaveImportDecision, type ImportDecision as Decision } from '../api/save-import-decision'
 
 type Record = components['schemas']['ImportRecord']
@@ -77,9 +73,6 @@ export function ReviewForm({
   const accounts = useQuery(accountQueries.importOptions())
   const categories = useQuery(categoryQueries.importOptions())
   const events = useQuery(financialEventQueries.importOptions())
-  function field<K extends keyof Fields>(name: K, value: Fields[K]) {
-    setFields({ ...fields, [name]: value })
-  }
   async function save(event: React.FormEvent) {
     event.preventDefault()
     if (pending) return
@@ -108,23 +101,6 @@ export function ReviewForm({
       setPending(false)
     }
   }
-  const chooseAccount = (name: 'accountId' | 'destinationAccountId', label: string) => (
-    <div>
-      <Label htmlFor={name}>{label}</Label>
-      <ChoiceSelect
-        id={name}
-        value={fields[name] || ''}
-        onValueChange={(value) => field(name, value)}
-      >
-        <option value="">Выберите счёт</option>
-        {accounts.data?.items.map((a) => (
-          <option key={a.id} value={a.id}>
-            {accountLabel(a)} ({a.currency})
-          </option>
-        ))}
-      </ChoiceSelect>
-    </div>
-  )
   return (
     <Card>
       <CardHeader>
@@ -173,153 +149,16 @@ export function ReviewForm({
               ))}
             </ChoiceSelect>
             {action === 'create' && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="kind">Вид операции</Label>
-                  <ChoiceSelect
-                    id="kind"
-                    value={fields.kind}
-                    onValueChange={(value) => field('kind', value as Fields['kind'])}
-                  >
-                    {[
-                      'purchase',
-                      'income_received',
-                      'debt_payment',
-                      'internal_transfer',
-                      'refund',
-                    ].map((k) => (
-                      <option key={k} value={k}>
-                        {importLabels[k]}
-                      </option>
-                    ))}
-                  </ChoiceSelect>
-                </div>
-                <div>
-                  <Label htmlFor="amount">Сумма</Label>
-                  <MoneyInput
-                    id="amount"
-                    currency={/^[A-Z]{3}$/.test(fields.currency) ? fields.currency : undefined}
-                    value={amountText}
-                    onChange={(e) => {
-                      setAmountText(e.target.value)
-                      field('amountMinor', parseMinor(e.target.value) ?? Number.NaN)
-                    }}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="currency">Валюта</Label>
-                  <CurrencySelect
-                    id="currency"
-                    value={fields.currency}
-                    onValueChange={(value) => field('currency', value)}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="flex min-h-11 items-center gap-3">
-                    <Checkbox
-                      checked={fields.occurredDate !== undefined}
-                      onCheckedChange={(checked) =>
-                        setFields({
-                          ...fields,
-                          occurredDate: checked
-                            ? record.source.normalized.date?.local.slice(0, 10) || ''
-                            : undefined,
-                          occurredAt: checked ? undefined : '',
-                        })
-                      }
-                    />
-                    Известен только день, время неизвестно
-                  </label>
-                </div>
-                {fields.occurredDate !== undefined ? (
-                  <div>
-                    <Label htmlFor="occurredDate">Дата операции</Label>
-                    <Input
-                      id="occurredDate"
-                      type="date"
-                      value={fields.occurredDate}
-                      onChange={(e) => field('occurredDate', e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <Label htmlFor="occurredAt">
-                        Дата и время (с часовым поясом, например {APP_UTC_OFFSET})
-                      </Label>
-                      <Input
-                        id="occurredAt"
-                        placeholder={`2026-10-06T12:30:00${APP_UTC_OFFSET}`}
-                        value={fields.occurredAt || ''}
-                        onChange={(e) => field('occurredAt', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="timeReason">Основание уточнения времени</Label>
-                      <Input
-                        id="timeReason"
-                        value={fields.timeReason || ''}
-                        onChange={(e) => field('timeReason', e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-                {chooseAccount('accountId', 'Счёт операции')}
-                {fields.kind === 'internal_transfer' &&
-                  chooseAccount('destinationAccountId', 'Счёт получателя')}
-                <div>
-                  <Label htmlFor="categoryId">Категория</Label>
-                  <ChoiceSelect
-                    id="categoryId"
-                    value={fields.categoryId || ''}
-                    onValueChange={(value) => field('categoryId', value || undefined)}
-                  >
-                    <option value="">Без категории</option>
-                    {categories.data?.items
-                      .filter((c) => !c.hidden || c.id === fields.categoryId)
-                      .map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                  </ChoiceSelect>
-                </div>
-                {fields.kind === 'refund' && (
-                  <div>
-                    <Label htmlFor="originalEventId">Исходная покупка</Label>
-                    <ChoiceSelect
-                      id="originalEventId"
-                      value={fields.originalEventId || ''}
-                      onValueChange={(value) => field('originalEventId', value)}
-                    >
-                      <option value="">Выберите покупку</option>
-                      {events.data?.items
-                        .filter((e) => e.kind === 'purchase')
-                        .map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {eventTimeText(e)} · {e.merchant || e.description}
-                          </option>
-                        ))}
-                    </ChoiceSelect>
-                  </div>
-                )}
-                <div>
-                  <Label htmlFor="merchant">Получатель</Label>
-                  <Input
-                    id="merchant"
-                    value={fields.merchant}
-                    onChange={(e) => field('merchant', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Описание</Label>
-                  <Input
-                    id="description"
-                    value={fields.description}
-                    onChange={(e) => field('description', e.target.value)}
-                  />
-                </div>
-              </div>
+              <ImportFieldsEditor
+                record={record}
+                fields={fields}
+                setFields={setFields}
+                amountText={amountText}
+                setAmountText={setAmountText}
+                accounts={accounts.data?.items ?? []}
+                categories={categories.data?.items ?? []}
+                events={events.data?.items ?? []}
+              />
             )}
             {action === 'link_existing' && (
               <div>

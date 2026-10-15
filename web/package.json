@@ -8,7 +8,7 @@
     "generate:api": "openapi-typescript ../api/openapi.yaml -o src/shared/api/generated/schema.d.ts",
     "build": "npm run generate:api && tsc -b && vite build",
     "lint": "eslint .",
-    "lint:fsd": "node scripts/lint-fsd.mjs",
+    "lint:fsd": "steiger ./src --fail-on-warnings",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

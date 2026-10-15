@@ -397,3 +397,104 @@ PR фазы 3 ещё не влит, поэтому PR фазы 4 содержи�
 
 Smoke-чеклист для фазы 4 спецификация не требует: он проходится после фаз 3 и 5.
 Пункты, где создаются записи, в любом случае требуют подтверждения владельца.
+
+## Фаза 5 — Закрепление
+
+Дата: 2026-10-15. Ветка: `codex/frontend-fsd-5` от `codex/frontend-fsd-4` (`f994f85`).
+PR фаз 3 и 4 (#46, #47) ещё не влиты, поэтому эта ветка содержит и их коммиты.
+Проверено локально на Windows, Node 23, Docker Desktop.
+
+| Коммит | Содержание |
+| --- | --- |
+| `c4aa457` | Удалены `steiger.baseline.json`, `scripts/lint-fsd.mjs` и `eslint.baseline.js`; `npm run lint:fsd` = `steiger ./src --fail-on-warnings`. Неиспользуемый zustand-стор `shared/model` удалён, `app/providers` → `app/setup`. Фикстуры `AssistantPage.test` строят время от `APP_UTC_OFFSET` |
+| `f38d826` | Страницы без собственных запросов: `widgets/sign-in` (вход и проверка пароля), `features/auth/{password,email,telegram}`, `widgets/subscriptions-board`, `features/ai-analysis`, `features/recognize-receipt-photo`, `features/ask-assistant/ui` |
+| `0b4b965`, `1719d13` | AC9: модули длиннее 300 строк разделены на соседние модули того же сегмента |
+| `cc90c84` | Тесты срезов без собственных тестов |
+| следующий | Документация (раздел Web UI, ADR 0003), статус спецификации и этот отчёт |
+
+### Решения по ходу фазы
+
+- **Steiger без baseline.** С `--fail-on-warnings` любая диагностика роняет
+  `make test`. Последние две записи baseline исправлены в коде. Стор
+  `shared/model/app-ui.store.ts` нигде не импортировался и удалён. Сегмент
+  `app/providers` переименован в `app/setup`: Steiger `segments-by-purpose`
+  отклоняет имя `providers`. Зависимость `zustand` осталась в `package.json`:
+  спецификация не меняет набор библиотек.
+- **Группа `features/auth`.** После разделения входа фич стало 22, а Steiger
+  `excessive-slicing` допускает 20 несгруппированных срезов. Вход паролем, кодом
+  по почте и через Telegram объединены в группу FSD 2.1 `features/auth`.
+- **Страницы только компонуют.** `login` и `password-entry` рендерят
+  `widgets/sign-in` (способы входа, редирект при активной сессии). `subscriptions`
+  рендерит `widgets/subscriptions-board`, а историю напоминаний передаёт в виджет
+  слотом. Без слота получился бы импорт widget → widget. `assistant` собирает
+  фичи `ai-analysis`, `recognize-receipt-photo` и `ask-assistant`. Запросы к API
+  ушли в сегменты `api` этих фич. Тексты ошибок не изменились.
+- **AC9 без изменения разметки.** Подкомпоненты и функции вынесены в соседние
+  файлы того же сегмента: `ScheduleForms`, `ScheduleLine`, `OperationSheet`,
+  `SeriesChart`, `EditOperationDialog`, `VoidOperationDialog`, `LoanForms`,
+  `ScheduleRows`, `RecordTable`, `ImportFieldsEditor`, `FinancialEventReview`,
+  `EventDetailsFields`, `ReceiptDraftEditor`, `CompletedResult`. Сравнение со
+  снимками `e623775` ниже показывает тот же текст и ту же разметку.
+- **Тесты срезов.** Добавлены тесты, где у среза не было своих:
+  - фабрики ключей всех 10 сущностей: ключи лежат под своим `all()`, `queryFn`
+    обращается к нужному пути и превращает отказ в ошибку; для сессии — 401 и
+    передача CSRF-токена клиенту;
+  - `widgets/ledger-screen`;
+  - `features/auth/email` и `features/auth/telegram`;
+  - компоновка страниц `accounts`, `analytics`, `categories`, `health`,
+    `operations` и `password-entry`.
+
+  Срезы `ai-analysis`, `ask-assistant`, `sign-in`, `subscriptions-board`,
+  `obligations-board`, `period-analytics` и `reminder-history` проверяются
+  тестами своих страниц: `AssistantPage`, `LoginPage`, `SubscriptionsPage`,
+  `PaymentsPage` и `AnalyticsPage`.
+- **Найдено, но не меняется (вне scope).** `ReceiptPhoto` после подтверждения
+  расхода по фото не инвалидирует счета и операции; так было и на `e623775`.
+  Данные обновятся при следующем запросе (`staleTime` 30 с). Это кандидат на
+  отдельное исправление. Финансовой арифметики в React при переносе не найдено.
+
+### Критерии приёмки
+
+| Критерий | Доказательство |
+| --- | --- |
+| AC1 | `cd web && npm run lint:fsd` → `✔ No problems found!`. `steiger.baseline.json` и `eslint.baseline.js` удалены (`c4aa457`) |
+| AC2 | Steiger `no-public-api-sidestep` и `public-api` без baseline → чисто. У каждого среза есть `index.ts` (цикл по `web/src/{pages,widgets,features,entities}/*` и `features/auth/*` → пусто) |
+| AC3 | Steiger `forbidden-imports` → чисто. Для каждого среза `grep "from '@/<слой>/"` без собственного имени → пусто. `@x` не понадобился |
+| AC4 | `grep -rnE "from '@/(app\|pages\|widgets\|features\|entities)" web/src/shared` → пусто. `grep -rn "'/api/" web/src/shared \| grep -v shared/api/` → пусто |
+| AC5 | `grep -rnE "queryKey: *\[" web/src --include=*.ts* \| grep -v "/entities/[^/]*/api/"` → пусто. `invalidateQueries` вне `features/*/api` и `entities/*/api` встречается только в тестовом шпионе `src/test/query-harness.tsx`. ESLint `no-inline-query-key` и `no-direct-invalidate` без исключений |
+| AC6 | `grep -rnE "import .*\bcsrfToken\b\|X-CSRF-Token" web/src \| grep -v "^web/src/shared/api/"` → пусто |
+| AC7 | `grep -rnE "Asia/Yekaterinburg\|\+05:00" web/src --include=*.ts* \| grep -vE "shared/config\|generated\|\.test\."` → пусто. ESLint `no-time-zone-literal` без исключений, тесты тоже используют `APP_UTC_OFFSET` |
+| AC8 | `app/router.test.tsx`: 15 URL как на `e623775`, у каждого маршрута свой срез `pages/*`. `grep -rn "pathname\|useLocation" web/src/pages` → пусто |
+| AC9 | `find web/src -name "*.ts*" ! -path "*generated*" ! -name "*.test.*" \| xargs wc -l \| awk '$2!="total" && $1>300'` → пусто |
+| AC10 | `npm run format:check` → «All matched files use Prettier code style!». `.git-blame-ignore-revs` содержит `7a7d946` |
+| AC11 | `make test` → exit 0: Go `ok` во всех пакетах; web — 74 файла и 292 теста (на `e623775` было 33 и 215); `lint`, `lint:fsd`, `format:check`, `build`; Jev eval `ok`. `make test-integration` → exit 0, все 13 сценариев «… checks passed» (SPEC-0001–0008, 0013, 0017, 0026, 0031, 0033, 0034). Строки `migration failed` в журнале — ожидаемые отказы небезопасного даунгрейда, их проверяют сами сценарии |
+| AC12 | Сравнение со снимками `e623775` (ниже): текст всех 14 маршрутов совпадает на 375 px и 1024 px. Единственное отличие в разметке — убранная невидимая кнопка (класс `hidden`, см. фазу 3). Горизонтальной прокрутки нет. Ошибок в консоли нет |
+| AC13 | `docs/architecture.md`, раздел «Структура Web-кода», и `docs/decisions/0003-web-feature-sliced-design.md` описывают слои, правила срезов, хуки мутаций, лимит 300 строк и проверки без baseline |
+| `git diff --check` | чисто |
+
+### Сравнение со снимками `e623775` (AC12)
+
+Стенд: `docker compose -p grace-fsd5-smoke up postgres migrate api`
+(`GRACE_AUTH_MODE=development`, отдельный том), один и тот же API и одни данные.
+Сборка `e623775` (`git archive e623775 web`) и сборка ветки по очереди
+запускались `npm run dev` на порту 5173. Во встроенном браузере скрипт обходил
+14 маршрутов: 11 защищённых, `/register`, `/forgot-password` и
+`/reset-password`. Для каждого маршрута он ждал окончания загрузки и записывал:
+
+- текст `main` (или `body` для страниц входа);
+- разметку: тег, отсортированные классы, `role` и `aria-label` каждого элемента;
+  внутренности графиков recharts не учитывались;
+- `scrollWidth`.
+
+Обход проведён на 375×812 и на ширине панели 1024 px. Стенд после проверки
+удалён (`down -v`).
+
+| Маршруты | Текст | Разметка |
+| --- | --- | --- |
+| `/`, `/operations`, `/subscriptions`, `/imports`, `/assistant`, `/register`, `/forgot-password`, `/reset-password` | совпадает | совпадает |
+| `/payments`, `/accounts`, `/categories`, `/analytics`, `/health`, `/profile` | совпадает | на 4 элемента меньше: невидимая кнопка `button.hidden` «Добавить операцию» с иконкой. На `e623775` она рендерилась на этих страницах скрытой; фаза 3 её убрала |
+
+`/login` при активной сессии в обеих сборках ведёт на `/`. Записи не создавались:
+пункты 3–8 чеклиста `0020-smoke-checklist.md` требуют подтверждения владельца.
+Навигация по меню, `back`, Esc и фокус проверены в фазе 3. Разметка оболочки и
+страниц с тех пор не изменилась, что подтверждает сравнение выше.
