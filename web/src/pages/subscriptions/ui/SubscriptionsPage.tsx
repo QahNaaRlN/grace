@@ -1,44 +1,43 @@
-import { Money } from '@/shared/ui/money'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
-import { ReminderHistory } from '@/widgets/reminder-history'
-import { useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'
 import { toast } from 'sonner'
+
 import { accountQueries } from '@/entities/account'
 import { categoryQueries } from '@/entities/category'
 import { financialEventQueries } from '@/entities/financial-event'
-import { subscriptionExpenseQueries, subscriptionQueries } from '@/entities/subscription'
-import { apiClient } from '@/shared/api'
+import {
+  subscriptionExpenseQueries,
+  subscriptionPeriodLabels,
+  subscriptionQueries,
+} from '@/entities/subscription'
+import { CreateFinancialEventForm } from '@/features/create-financial-event'
+import {
+  SubscriptionForm,
+  useLinkSubscriptionExpense,
+  useToggleSubscriptionPause,
+} from '@/features/manage-subscription'
 import type { components } from '@/shared/api/generated/schema'
 import { dateText, eventDateText } from '@/shared/lib/date'
-import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
-import { MoneyInput } from '@/shared/ui/money-input'
+import { formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
-import { Checkbox } from '@/shared/ui/checkbox'
-import { ChoiceSelect } from '@/shared/ui/choice-select'
 import { Card, CardContent } from '@/shared/ui/card'
+import { CategoryIcon } from '@/shared/ui/category-icon'
+import { ChoiceSelect } from '@/shared/ui/choice-select'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/shared/ui/dialog'
+import { Money } from '@/shared/ui/money'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
-import { CurrencySelect } from '@/shared/ui/currency-select'
-import { CategoryIcon } from '@/shared/ui/category-icon'
-import { DEFAULT_CURRENCY } from '@/shared/lib/currencies'
-import { CreateFinancialEventForm } from '@/features/create-financial-event'
+import { ReminderHistory } from '@/widgets/reminder-history'
 
 type Subscription = components['schemas']['Subscription']
-type InputData = components['schemas']['SubscriptionInput']
 type Category = components['schemas']['Category']
-const periodLabels = { weekly: 'Каждую неделю', monthly: 'Каждый месяц', yearly: 'Каждый год' }
 export function SubscriptionsPage() {
-  const query = useQueryClient()
   const [edit, setEdit] = useState<Subscription | 'new' | null>(null)
   const [expense, setExpense] = useState<Subscription | null>(null)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
@@ -51,44 +50,11 @@ export function SubscriptionsPage() {
     enabled: expense !== null,
   })
   const categories = useQuery(categoryQueries.list())
-  const refresh = () => query.invalidateQueries({ queryKey: subscriptionQueries.all() })
-  const pause = useMutation({
-    mutationFn: async (s: Subscription) => {
-      const { error } = await apiClient.PATCH('/api/v1/subscriptions/{subscriptionId}', {
-        params: { path: { subscriptionId: s.id } },
-        body: {
-          name: s.name,
-          amountMinor: s.amountMinor,
-          currency: s.currency,
-          period: s.period,
-          startsOn: s.startsOn,
-          endsOn: s.endsOn,
-          accountId: s.accountId,
-          paymentInstrumentId: s.paymentInstrumentId,
-          categoryId: s.categoryId,
-          reminders: s.reminders,
-          paused: !s.paused,
-          revision: s.revision,
-        },
-      })
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: refresh,
-    onError: (e) => toast.error(e.message),
-  })
-  const link = useMutation({
-    mutationFn: async () => {
-      if (!expense) return
-      const { error } = await apiClient.POST('/api/v1/subscriptions/{subscriptionId}/expenses', {
-        params: { path: { subscriptionId: expense.id } },
-        body: { financialEventId: eventID },
-      })
-      if (error) throw new Error(error.message)
-    },
+  const pause = useToggleSubscriptionPause({ onError: (e) => toast.error(e.message) })
+  const link = useLinkSubscriptionExpense({
     onSuccess: () => {
       setExpense(null)
       setEventID('')
-      void refresh()
       toast.success('Расход связан с подпиской')
     },
     onError: (e) => toast.error(e.message),
@@ -151,7 +117,9 @@ export function SubscriptionsPage() {
                     <p className="mt-1">
                       <Money valueMinor={s.amountMinor} currency={s.currency} size="lg" />
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{periodLabels[s.period]}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {subscriptionPeriodLabels[s.period]}
+                    </p>
                     <SubscriptionCategory
                       category={categories.data?.find((c) => c.id === s.categoryId)}
                     />
@@ -223,10 +191,7 @@ export function SubscriptionsPage() {
               initial={edit === 'new' ? undefined : edit}
               accounts={accounts.data ?? []}
               categories={categories.data ?? []}
-              onSaved={() => {
-                setEdit(null)
-                void refresh()
-              }}
+              onSaved={() => setEdit(null)}
             />
           )}
         </DialogContent>
@@ -269,7 +234,10 @@ export function SubscriptionsPage() {
               ))}
             </ChoiceSelect>
           )}
-          <Button disabled={!eventID || link.isPending} onClick={() => link.mutate()}>
+          <Button
+            disabled={!eventID || link.isPending}
+            onClick={() => link.mutate({ subscription: expense, financialEventId: eventID })}
+          >
             Связать расход
           </Button>
           <Button variant="outline" onClick={() => setPurchaseOpen(true)}>
@@ -299,166 +267,6 @@ export function SubscriptionsPage() {
     </div>
   )
 }
-function SubscriptionForm({
-  initial,
-  accounts,
-  categories,
-  onSaved,
-}: {
-  initial?: Subscription
-  accounts: components['schemas']['Account'][]
-  categories: Category[]
-  onSaved: () => void
-}) {
-  const creationKey = useRef(createIdempotencyKey())
-  const [period, setPeriod] = useState<InputData['period']>(initial?.period ?? 'monthly')
-  const [account, setAccount] = useState(initial?.paymentInstrumentId ?? initial?.accountId ?? '')
-  const [reminders, setReminders] = useState(initial?.reminders ?? false)
-  const [currency, setCurrency] = useState(initial?.currency ?? DEFAULT_CURRENCY)
-  const [category, setCategory] = useState(initial?.categoryId ?? '')
-  // SPEC-0047: expense categories, as for a purchase; hidden ones only if already chosen.
-  const choices = categories.filter((c) => c.kind === 'expense' && (!c.hidden || c.id === category))
-  const save = useMutation({
-    mutationFn: async (form: FormData) => {
-      const amount = parseMinor(String(form.get('amount')))
-      if (amount === null || amount <= 0)
-        throw new Error('Укажите положительную сумму с точностью до копейки.')
-      if (!category) throw new Error('Выберите категорию расхода.')
-      const body: InputData = {
-        name: String(form.get('name')),
-        amountMinor: amount,
-        currency,
-        period,
-        startsOn: String(form.get('start')),
-        endsOn: String(form.get('end')) || null,
-        accountId:
-          accounts.find(
-            (a) => a.id === account || a.paymentInstruments?.some((c) => c.id === account),
-          )?.id ?? null,
-        paymentInstrumentId:
-          accounts.flatMap((a) => a.paymentInstruments ?? []).find((c) => c.id === account)?.id ??
-          null,
-        categoryId: category,
-        paused: initial?.paused ?? false,
-        reminders,
-        revision: initial?.revision ?? 0,
-      }
-      const result = initial
-        ? await apiClient.PATCH('/api/v1/subscriptions/{subscriptionId}', {
-            params: { path: { subscriptionId: initial.id } },
-            body,
-          })
-        : await apiClient.POST('/api/v1/subscriptions', {
-            params: {
-              header: { 'Idempotency-Key': creationKey.current },
-            },
-            body,
-          })
-      if (result.error) throw new Error(result.error.message)
-    },
-    onSuccess: () => {
-      toast.success('Подписка сохранена')
-      onSaved()
-    },
-    onError: (e) => toast.error(e.message),
-  })
-  return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault()
-        save.mutate(new FormData(e.currentTarget))
-      }}
-    >
-      <div className="space-y-2">
-        <Label htmlFor="sub-name">Название</Label>
-        <Input id="sub-name" name="name" defaultValue={initial?.name} required maxLength={160} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="sub-amount">Сумма</Label>
-          <MoneyInput
-            id="sub-amount"
-            name="amount"
-            defaultValue={initial ? minorToInput(initial.amountMinor) : ''}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="sub-currency">Валюта</Label>
-          <CurrencySelect id="sub-currency" value={currency} onValueChange={setCurrency} />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="sub-category">Категория</Label>
-        <ChoiceSelect id="sub-category" value={category} onValueChange={setCategory}>
-          <option value="">Выберите категорию</option>
-          {choices.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </ChoiceSelect>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="sub-period">Период</Label>
-        <ChoiceSelect
-          id="sub-period"
-          value={period}
-          onValueChange={(v) => setPeriod(v as InputData['period'])}
-        >
-          {Object.entries(periodLabels).map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </ChoiceSelect>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="sub-start">Первое списание</Label>
-          <Input
-            id="sub-start"
-            name="start"
-            type="date"
-            defaultValue={initial?.startsOn}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="sub-end">До даты · необязательно</Label>
-          <Input id="sub-end" name="end" type="date" defaultValue={initial?.endsOn ?? ''} />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="sub-account">С какой карты или счёта</Label>
-        <ChoiceSelect id="sub-account" value={account} onValueChange={setAccount}>
-          <option value="">Не указывать</option>
-          {accounts.flatMap((a) => [
-            <option key={a.id} value={a.id}>
-              {a.name} · счёт
-            </option>,
-            ...(a.paymentInstruments ?? [])
-              .filter((c) => !c.disabledAt || c.id === account)
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.bank} *{c.last4}
-                </option>
-              )),
-          ])}
-        </ChoiceSelect>
-      </div>
-      <label className="flex min-h-11 items-start gap-3 text-sm">
-        <Checkbox checked={reminders} onCheckedChange={(v) => setReminders(v === true)} />
-        <span>Напоминать по почте за 3 и 1 день. Нужна подтверждённая почта в профиле.</span>
-      </label>
-      <Button className="w-full" disabled={save.isPending}>
-        {save.isPending ? 'Сохраняю…' : 'Сохранить'}
-      </Button>
-    </form>
-  )
-}
-
 function SubscriptionCategory({ category }: { category?: Category }) {
   if (!category) return <p className="mt-1 text-sm text-muted-foreground">Без категории</p>
   return (
