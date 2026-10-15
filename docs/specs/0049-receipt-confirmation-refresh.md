@@ -1,13 +1,13 @@
 # SPEC-0049: обновление данных после подтверждения расхода по фото чека
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-15
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-16 в чате: «Принимаю SPEC-0049 как есть, без
   инвалидации обязательств».
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/receipt-confirmation-refresh`
+- Implementation commit: `bc84bcc` ([evidence](0049-evidence.md))
 - Зависит от: SPEC-0048, фазы 3–5 (PR #46–#48 в `main`, `d486582`)
 
 ## Проблема и пользовательский результат
@@ -80,13 +80,13 @@
 
 ## Критерии приёмки
 
-- [ ] AC1. Успешное подтверждение инвалидирует ровно шесть ключей из Scope.
-- [ ] AC2. Неуспешное подтверждение не инвалидирует ни одного ключа.
-- [ ] AC3. Хук передаёт `draftId`, `previewId`, `hash` и `Idempotency-Key`
+- [x] AC1. Успешное подтверждение инвалидирует ровно шесть ключей из Scope.
+- [x] AC2. Неуспешное подтверждение не инвалидирует ни одного ключа.
+- [x] AC3. Хук передаёт `draftId`, `previewId`, `hash` и `Idempotency-Key`
   без изменений.
-- [ ] AC4. `ReceiptPhoto.tsx` не вызывает `confirmReceipt` напрямую; тексты
+- [x] AC4. `ReceiptPhoto.tsx` не вызывает `confirmReceipt` напрямую; тексты
   и существующие тесты `ReceiptPhoto.test.tsx` проходят без правок.
-- [ ] AC5. `make test` и `git diff --check` проходят.
+- [x] AC5. `make test` и `git diff --check` проходят.
 
 ## Исполняемые проверки
 
