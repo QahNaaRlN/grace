@@ -2,7 +2,6 @@ import { Notice } from '@/shared/ui/status'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { components } from '@/shared/api/generated/schema'
-import { apiClient } from '@/shared/api'
 import { currentMonth } from '@/shared/lib/date'
 import { formatMinorText, formatUsdMicros } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
@@ -11,6 +10,14 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
+import {
+  askAnalysis,
+  createConversation,
+  deleteConversation,
+  getAICapabilities,
+  getConversationMessages,
+  setAnalysisConsent,
+} from '../api/ai-analysis'
 
 type Capabilities = components['schemas']['AICapabilities']
 type Message = components['schemas']['AIConversationMessage']
@@ -27,7 +34,7 @@ export function AIAnalysis() {
   const [error, setError] = useState('')
   const request = useRef<{ body: string; key: string } | undefined>(undefined)
   async function refresh() {
-    const result = await apiClient.GET('/api/assistant/capabilities')
+    const result = await getAICapabilities()
     if (result.data) {
       setCapabilities(result.data)
       setCapabilityError(false)
@@ -35,8 +42,7 @@ export function AIAnalysis() {
   }
   useEffect(() => {
     let active = true
-    void apiClient
-      .GET('/api/assistant/capabilities')
+    void getAICapabilities()
       .then((result) => {
         if (!active) return
         if (result.data) setCapabilities(result.data)
@@ -46,12 +52,9 @@ export function AIAnalysis() {
         if (active) setCapabilityError(true)
       })
     if (initialConversation)
-      void apiClient
-        .GET('/api/assistant/conversations/{conversationId}', {
-          params: { path: { conversationId: initialConversation } },
-        })
-        .then((result) => {
-          if (active && result.data) setMessages(result.data.messages)
+      void getConversationMessages(initialConversation)
+        .then((saved) => {
+          if (active && saved) setMessages(saved)
         })
         .catch(() => {})
     return () => {
@@ -63,17 +66,7 @@ export function AIAnalysis() {
     setPending(true)
     setError('')
     try {
-      const result = grant
-        ? await apiClient.POST('/api/assistant/consents', {
-            body: { scope: 'analysis', policyHash: capabilities.analysis.policyHash! },
-          })
-        : await apiClient.DELETE('/api/assistant/consents/{scope}', {
-            params: { path: { scope: 'analysis' } },
-          })
-      if (result.error)
-        throw new Error(
-          'Не удалось изменить согласие. Обнови страницу и проверь выбранного провайдера.',
-        )
+      await setAnalysisConsent(capabilities.analysis.policyHash!, grant)
       await refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Согласие не сохранено.')
@@ -88,9 +81,7 @@ export function AIAnalysis() {
     try {
       let id = conversation
       if (!id) {
-        const created = await apiClient.POST('/api/assistant/conversations')
-        if (!created.data) throw new Error('Не удалось открыть диалог.')
-        id = created.data.id
+        id = await createConversation()
         setConversation(id)
         const nextParams = new URLSearchParams(params)
         nextParams.set('conversation', id)
@@ -98,22 +89,9 @@ export function AIAnalysis() {
       }
       const body = JSON.stringify({ question, month })
       if (request.current?.body !== body) request.current = { body, key: crypto.randomUUID() }
-      const result = await apiClient.POST(
-        '/api/assistant/conversations/{conversationId}/messages',
-        {
-          params: {
-            path: { conversationId: id },
-            header: { 'Idempotency-Key': request.current!.key },
-          },
-          body: { question, month },
-        },
-      )
-      if (!result.data)
-        throw new Error(
-          'Ответ пока не получен. Можно повторить запрос: сохранённый ответ откроется без повторного платного вызова.',
-        )
-      setMessages((current) => [...current.filter((m) => m.id !== result.data!.id), result.data!])
-      if (result.data.status === 'completed') request.current = undefined
+      const answer = await askAnalysis(id, request.current!.key, { question, month })
+      setMessages((current) => [...current.filter((m) => m.id !== answer.id), answer])
+      if (answer.status === 'completed') request.current = undefined
       await refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Анализ сейчас недоступен.')
@@ -126,10 +104,7 @@ export function AIAnalysis() {
     setPending(true)
     setError('')
     try {
-      const result = await apiClient.DELETE('/api/assistant/conversations/{conversationId}', {
-        params: { path: { conversationId: conversation } },
-      })
-      if (result.error) throw new Error('Не удалось удалить разговор.')
+      await deleteConversation(conversation)
       setConversation('')
       setMessages([])
       request.current = undefined
