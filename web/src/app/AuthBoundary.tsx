@@ -3,30 +3,21 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
 import { apiClient } from '@/shared/api'
-import { AuthContext } from '@/entities/session'
+import { AuthContext, loadSession, sessionQueries } from '@/entities/session'
 import { setCSRFToken } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
-
-async function loadSession() {
-  const { data, response } = await apiClient.GET('/api/auth/me')
-  if (response.status === 401) return null
-  if (!data) throw new Error('Проверка доступа временно недоступна')
-  setCSRFToken(data.csrfToken)
-  return data
-}
 
 export function AuthBoundary({ children }: { children: ReactNode }) {
   const cache = useQueryClient()
   const navigate = useNavigate()
   const [knownUser, setKnownUser] = useState<string | undefined>(undefined)
   const session = useQuery({
-    queryKey: ['auth-session'],
+    ...sessionQueries.me(),
     queryFn: async () => {
       const result = await loadSession()
       if (result) setKnownUser((previous) => previous ?? result.user.id)
       return result
     },
-    retry: false,
     staleTime: 0,
     refetchOnWindowFocus: true,
   })

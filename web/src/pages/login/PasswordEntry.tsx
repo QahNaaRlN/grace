@@ -2,6 +2,7 @@ import { PasswordInput } from '@/shared/ui/password-input'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { authMethodQueries } from '@/entities/user'
 import { apiClient } from '@/shared/api'
 import { setCSRFToken } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
@@ -283,14 +284,7 @@ export function PasswordForm({ view }: { view: View }) {
   )
 }
 export function PasswordEntry({ view }: { view: Exclude<View, 'login'> }) {
-  const methods = useQuery({
-    queryKey: ['auth-methods'],
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/auth/methods')
-      if (!data) throw new Error('Проверка доступа недоступна.')
-      return data
-    },
-  })
+  const methods = useQuery(authMethodQueries.list())
   const titles = {
     register: 'Регистрация в Grace',
     forgot: 'Восстановление пароля',

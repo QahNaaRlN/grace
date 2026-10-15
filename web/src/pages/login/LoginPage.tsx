@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { authMethodQueries } from '@/entities/user'
+import { sessionQueries } from '@/entities/session'
 import { apiClient } from '@/shared/api'
 import { setCSRFToken } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
@@ -23,26 +25,8 @@ export function LoginPage() {
   )
   const [cooldown, setCooldown] = useState(0)
   const sending = useRef(false)
-  const methods = useQuery({
-    queryKey: ['auth-methods'],
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/auth/methods')
-      if (!data) throw new Error('Способы входа временно недоступны.')
-      return data
-    },
-    retry: false,
-  })
-  const session = useQuery({
-    queryKey: ['auth-session'],
-    queryFn: async () => {
-      const { data, response } = await apiClient.GET('/api/auth/me')
-      if (response.status === 401) return null
-      if (!data) throw new Error('Не удалось проверить сеанс.')
-      setCSRFToken(data.csrfToken)
-      return data
-    },
-    retry: false,
-  })
+  const methods = useQuery({ ...authMethodQueries.list(), retry: false })
+  const session = useQuery(sessionQueries.me())
   useEffect(() => {
     if (session.data) void navigate('/', { replace: true })
   }, [session.data, navigate])
@@ -86,7 +70,7 @@ export function LoginPage() {
       if (!data) throw new Error(failure?.message ?? 'Не удалось подтвердить код.')
       cache.clear()
       setCSRFToken(data.csrfToken)
-      cache.setQueryData(['auth-session'], data)
+      cache.setQueryData(sessionQueries.me().queryKey, data)
       void navigate('/', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Вход временно недоступен.')

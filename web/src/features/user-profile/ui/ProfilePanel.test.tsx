@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ProfilePanel } from './ProfilePanel'
+import { sessionQueries } from '@/entities/session'
 const mocks = vi.hoisted(() => ({
   GET: vi.fn(),
   POST: vi.fn(),
@@ -56,7 +57,7 @@ describe('personal profile', () => {
     const saved = { ...profile, displayName: 'Number One' }
     mocks.POST.mockResolvedValue({ data: saved })
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    client.setQueryData(['auth-session'], {
+    client.setQueryData(sessionQueries.all(), {
       user: { id: 'user', name: 'Alias', role: 'owner', avatarUrl: null },
       csrfToken: 't',
       mode: 'email',
@@ -78,7 +79,7 @@ describe('personal profile', () => {
     expect(status.closest('section')).toHaveTextContent('Личные данные')
     expect(mocks.POST).toHaveBeenCalledOnce()
     expect(mocks.GET.mock.calls.map((call) => call[0])).not.toContain('/api/auth/me')
-    expect(client.getQueryData<{ user: { name: string } }>(['auth-session'])?.user.name).toBe(
+    expect(client.getQueryData<{ user: { name: string } }>(sessionQueries.all())?.user.name).toBe(
       'Number One',
     )
     expect(save).toBeDisabled()

@@ -23,8 +23,6 @@ export default [
   },
   {
     files: [
-      'src/app/AuthBoundary.test.tsx',
-      'src/app/AuthBoundary.tsx',
       'src/features/create-account/ui/CreateAccountForm.tsx',
       'src/features/create-financial-event/ui/CreateFinancialEventForm.tsx',
       'src/features/create-obligation/ui/CreateObligationForm.tsx',
@@ -32,7 +30,6 @@ export default [
       'src/features/loan-details/LoanPanel.tsx',
       'src/features/obligation-schedule/ui/ObligationSchedule.tsx',
       'src/features/payment-reminders/ReminderHistory.tsx',
-      'src/features/user-profile/ui/ProfilePanel.tsx',
       'src/pages/home/ui/Accounts.tsx',
       'src/pages/home/ui/HomePage.tsx',
       'src/pages/home/ui/OperationEditor.tsx',
@@ -42,8 +39,6 @@ export default [
       'src/pages/imports/ImportsPage.tsx',
       'src/pages/imports/MonthPanel.tsx',
       'src/pages/imports/RecordReview.tsx',
-      'src/pages/login/LoginPage.tsx',
-      'src/pages/login/PasswordEntry.tsx',
       'src/pages/statistics/StatisticsPage.tsx',
       'src/pages/subscriptions/SubscriptionsPage.tsx',
     ],

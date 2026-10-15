@@ -6,7 +6,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, expect, it, vi } from 'vitest'
 
 import { apiClient } from '@/shared/api'
-import { AuthContext } from '@/entities/session'
+import { accountQueries } from '@/entities/account'
+import { AuthContext, sessionQueries } from '@/entities/session'
 import { setCSRFToken } from '@/shared/api'
 
 import { AuthBoundary } from './AuthBoundary'
@@ -30,7 +31,7 @@ function Protected() {
 }
 function mount() {
   const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  cache.setQueryData(['accounts'], ['private-account'])
+  cache.setQueryData(accountQueries.all(), ['private-account'])
   render(
     <QueryClientProvider client={cache}>
       <MemoryRouter>
@@ -61,7 +62,7 @@ it('does not render financial pages without a session and clears cached data', a
   const cache = mount()
   expect(await screen.findByText('Login required')).toBeInTheDocument()
   expect(screen.queryByText('Private finances')).not.toBeInTheDocument()
-  expect(cache.getQueryData(['accounts'])).toBeUndefined()
+  expect(cache.getQueryData(accountQueries.all())).toBeUndefined()
 })
 it('loads CSRF and clears financial cache on logout', async () => {
   vi.mocked(apiClient.GET).mockResolvedValue({ data: session, response: new Response() } as never)
@@ -73,7 +74,7 @@ it('loads CSRF and clears financial cache on logout', async () => {
   expect(setCSRFToken).toHaveBeenLastCalledWith('csrf')
   await userEvent.click(screen.getByText('Logout'))
   expect(await screen.findByText('Login required')).toBeInTheDocument()
-  expect(cache.getQueryData(['accounts'])).toBeUndefined()
+  expect(cache.getQueryData(accountQueries.all())).toBeUndefined()
   expect(setCSRFToken).toHaveBeenLastCalledWith('')
 })
 it('removes financial content and cache on an API 401 event', async () => {
@@ -84,7 +85,7 @@ it('removes financial content and cache on an API 401 event', async () => {
     window.dispatchEvent(new Event('grace:unauthenticated'))
   })
   expect(await screen.findByText('Login required')).toBeInTheDocument()
-  expect(cache.getQueryData(['accounts'])).toBeUndefined()
+  expect(cache.getQueryData(accountQueries.all())).toBeUndefined()
 })
 it('clears the previous user data when the session identity changes in another tab', async () => {
   vi.mocked(apiClient.GET).mockResolvedValue({ data: session, response: new Response() } as never)
@@ -95,8 +96,8 @@ it('clears the previous user data when the session identity changes in another t
     response: new Response(),
   } as never)
   await act(async () => {
-    await cache.refetchQueries({ queryKey: ['auth-session'] })
+    await cache.refetchQueries({ queryKey: sessionQueries.all() })
   })
   expect(await screen.findByText('Login required')).toBeInTheDocument()
-  expect(cache.getQueryData(['accounts'])).toBeUndefined()
+  expect(cache.getQueryData(accountQueries.all())).toBeUndefined()
 })
