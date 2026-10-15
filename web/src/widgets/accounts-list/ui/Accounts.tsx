@@ -1,24 +1,21 @@
-import { useState, type FormEvent } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { CreditCard, Pencil, Plus, Scale } from 'lucide-react'
 
-import { accountQueries } from '@/entities/account'
 import {
-  cashPositionQueries,
-  periodSummaryQueries,
-  statisticsQueries,
-} from '@/entities/analytics-report'
-import { financialEventQueries } from '@/entities/financial-event'
-import { apiClient } from '@/shared/api'
-import type { components } from '@/shared/api/generated/schema'
+  accountQueries,
+  accountTypeLabels,
+  reconciliationOutcomeLabels,
+  type PaymentCard,
+} from '@/entities/account'
+import { CardDialog, EditAccountDialog, useToggleCard } from '@/features/edit-account'
+import { ReconcileDialog } from '@/features/reconcile-account'
 import type { Account } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
-import { fromLocalDateTimeInput, localDateTimeInput, momentText } from '@/shared/lib/date'
-import { formatMoney, parseMinor } from '@/shared/lib/money'
-import { createIdempotencyKey } from '@/shared/lib/idempotency'
+import { momentText } from '@/shared/lib/date'
+import { formatMoney } from '@/shared/lib/money'
 import { AccountIcon } from '@/shared/ui/account-icon'
 import { Button } from '@/shared/ui/button'
-import { ChoiceSelect } from '@/shared/ui/choice-select'
 import {
   Dialog,
   DialogContent,
@@ -27,33 +24,8 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog'
 import { Disclosure } from '@/shared/ui/disclosure'
-import { Field } from '@/shared/ui/field'
-import { Input } from '@/shared/ui/input'
 import { Money } from '@/shared/ui/money'
-import { MoneyInput } from '@/shared/ui/money-input'
 import { Notice, StatusBadge } from '@/shared/ui/status'
-
-type Card = NonNullable<Account['paymentInstruments']>[number]
-type Preview = components['schemas']['ReconciliationPreview']
-const typeLabels: Record<Account['type'], string> = {
-  debit: 'Дебетовый счёт',
-  credit: 'Кредитный счёт',
-  installment: 'Рассрочка',
-  cash: 'Наличные',
-}
-const outcomeLabels = {
-  matched: 'Остаток совпал',
-  opening_set: 'Начальный остаток установлен',
-  adjusted: 'Разница записана корректировкой',
-}
-// Everything a balance feeds: lists, overview, analytics.
-const refreshKeys = [
-  accountQueries.all(),
-  financialEventQueries.all(),
-  cashPositionQueries.all(),
-  statisticsQueries.all(),
-  periodSummaryQueries.all(),
-]
 
 function errorText(error: unknown, fallback: string) {
   return (error as { message?: string } | undefined)?.message ?? fallback
@@ -113,27 +85,18 @@ export function Accounts({ items }: { items: Account[] }) {
 
 function AccountSheet({ account, onClose }: { account: Account; onClose: () => void }) {
   const [dialog, setDialog] = useState<'reconcile' | 'edit' | 'card' | null>(null)
-  const [card, setCard] = useState<Card | null>(null)
-  const cache = useQueryClient()
+  const [card, setCard] = useState<PaymentCard | null>(null)
+  const toggle = useToggleCard(account.id)
   const [cardError, setCardError] = useState('')
   const cards = account.paymentInstruments ?? []
   const canHaveCards = account.type === 'debit' || account.type === 'credit'
   const status = syncStatus(account)
   const last = account.lastReconciliation
 
-  async function toggleCard(target: Card) {
+  async function toggleCard(target: PaymentCard) {
     setCardError('')
-    const result = await apiClient.PATCH(
-      '/api/v1/accounts/{accountId}/payment-instruments/{cardId}',
-      {
-        params: {
-          path: { accountId: account.id, cardId: target.id },
-        },
-        body: { disabled: !target.disabledAt },
-      },
-    )
+    const result = await toggle.mutateAsync(target)
     if (!result.data) return setCardError(errorText(result.error, 'Не удалось изменить карту.'))
-    await cache.invalidateQueries({ queryKey: accountQueries.all() })
   }
 
   return (
@@ -153,7 +116,7 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
             <span className="min-w-0 break-words">{account.name}</span>
           </DialogTitle>
           <DialogDescription>
-            {typeLabels[account.type]} · {account.currency}
+            {accountTypeLabels[account.type]} · {account.currency}
           </DialogDescription>
         </DialogHeader>
         <p>
@@ -184,7 +147,7 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
               <dd>
                 <StatusBadge tone={status.tone}>
                   {last
-                    ? `${outcomeLabels[last.outcome]}, на ${momentText(last.asOf)}`
+                    ? `${reconciliationOutcomeLabels[last.outcome]}, на ${momentText(last.asOf)}`
                     : 'Не сверялся'}
                 </StatusBadge>
               </dd>
@@ -305,7 +268,7 @@ function ReconciliationHistory({ account }: { account: Account }) {
           {history.data.map((item) => (
             <li key={item.id}>
               <span className="block">
-                {momentText(item.asOf)} — {outcomeLabels[item.outcome]}
+                {momentText(item.asOf)} — {reconciliationOutcomeLabels[item.outcome]}
               </span>
               <span className="block text-muted-foreground">
                 в банке {formatMoney(item.statedMinor, account.currency)}
@@ -319,358 +282,5 @@ function ReconciliationHistory({ account }: { account: Account }) {
         </ol>
       )}
     </Disclosure>
-  )
-}
-
-function ReconcileDialog({ account, onClose }: { account: Account; onClose: () => void }) {
-  const cache = useQueryClient()
-  const [key] = useState(createIdempotencyKey)
-  const [stated, setStated] = useState('')
-  const [moment, setMoment] = useState(() => localDateTimeInput(new Date().toISOString()))
-  const [preview, setPreview] = useState<Preview | null>(null)
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState('')
-  const [done, setDone] = useState('')
-
-  function input() {
-    const statedMinor = parseMinor(stated)
-    if (statedMinor === null) {
-      setError('Введите остаток из банка: число, не больше двух знаков после запятой.')
-      return null
-    }
-    if (!moment) {
-      setError('Укажите дату и время остатка.')
-      return null
-    }
-    return { asOf: fromLocalDateTimeInput(moment), statedMinor }
-  }
-
-  async function check(submit: FormEvent) {
-    submit.preventDefault()
-    const body = input()
-    if (!body || pending) return
-    setPending(true)
-    setError('')
-    const result = await apiClient.POST('/api/v1/accounts/{accountId}/reconciliations/preview', {
-      params: { path: { accountId: account.id } },
-      body,
-    })
-    setPending(false)
-    if (!result.data) return setError(errorText(result.error, 'Не удалось посчитать сверку.'))
-    setPreview(result.data)
-  }
-
-  async function confirm() {
-    if (!preview || pending) return
-    setPending(true)
-    setError('')
-    const result = await apiClient.POST('/api/v1/accounts/{accountId}/reconciliations', {
-      params: {
-        path: { accountId: account.id },
-        header: { 'Idempotency-Key': key },
-      },
-      body: {
-        asOf: preview.asOf,
-        statedMinor: preview.statedMinor,
-        previewHash: preview.previewHash,
-      },
-    })
-    setPending(false)
-    if (!result.data) {
-      setPreview(null)
-      return setError(errorText(result.error, 'Не удалось сохранить сверку.'))
-    }
-    await Promise.all(refreshKeys.map((queryKey) => cache.invalidateQueries({ queryKey })))
-    setDone(outcomeLabels[result.data.reconciliation.outcome])
-  }
-
-  const money = (value: number) => formatMoney(value, account.currency)
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !pending) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Сверить остаток</DialogTitle>
-          <DialogDescription>
-            Введите остаток из приложения банка и момент, на который он показан. Grace посчитает
-            свой остаток на этот момент.
-          </DialogDescription>
-        </DialogHeader>
-        {done ? (
-          <>
-            <Notice tone="success" title="Сверка сохранена">
-              {done}.
-            </Notice>
-            <div className="flex justify-end">
-              <Button onClick={onClose}>Готово</Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <form onSubmit={check} className="space-y-4">
-              <Field label="Остаток в банке">
-                <MoneyInput
-                  allowNegative
-                  value={stated}
-                  currency={account.currency}
-                  onChange={(e) => {
-                    setStated(e.target.value)
-                    setPreview(null)
-                  }}
-                />
-              </Field>
-              <Field label="На дату и время">
-                <Input
-                  type="datetime-local"
-                  value={moment}
-                  onChange={(e) => {
-                    setMoment(e.target.value)
-                    setPreview(null)
-                  }}
-                />
-              </Field>
-              {!preview && (
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={pending}>
-                    {pending ? 'Считаем…' : 'Проверить'}
-                  </Button>
-                </div>
-              )}
-            </form>
-            {preview && (
-              <section aria-label="Результат сверки" className="space-y-3">
-                <dl className="grace-fields">
-                  {preview.outcome === 'opening_set' ? (
-                    <>
-                      <div>
-                        <dt>Операции до этого момента</dt>
-                        <dd>{money(preview.computedMinor)}</dd>
-                      </div>
-                      <div>
-                        <dt>Начальный остаток</dt>
-                        <dd>{money(preview.proposedOpeningMinor ?? 0)}</dd>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <dt>Остаток в Grace</dt>
-                        <dd>{money(preview.computedMinor)}</dd>
-                      </div>
-                      <div>
-                        <dt>Разница</dt>
-                        <dd>{money(preview.differenceMinor)}</dd>
-                      </div>
-                    </>
-                  )}
-                </dl>
-                <p className="text-sm text-muted-foreground">
-                  {preview.outcome === 'opening_set' &&
-                    'Счёт ещё не сверялся. Grace запишет начальный остаток так, чтобы баланс совпал с банком, и счёт станет сверенным.'}
-                  {preview.outcome === 'matched' &&
-                    'Остатки совпадают. Счёт будет отмечен сверенным на этот момент.'}
-                  {preview.outcome === 'adjusted' &&
-                    'Остатки расходятся. Grace создаст операцию «Корректировка остатка» на разницу; она не попадёт в расходы и доходы.'}
-                </p>
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button variant="outline" onClick={() => setPreview(null)} disabled={pending}>
-                    Изменить данные
-                  </Button>
-                  <Button onClick={() => void confirm()} disabled={pending}>
-                    {pending ? 'Сохраняем…' : 'Подтвердить сверку'}
-                  </Button>
-                </div>
-              </section>
-            )}
-            {error && (
-              <Notice tone="danger" title="Сверка не выполнена">
-                {error}
-              </Notice>
-            )}
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function EditAccountDialog({ account, onClose }: { account: Account; onClose: () => void }) {
-  const cache = useQueryClient()
-  const [name, setName] = useState(account.name)
-  const [type, setType] = useState<string>(account.type)
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState('')
-  async function save(submit: FormEvent) {
-    submit.preventDefault()
-    if (pending) return
-    setPending(true)
-    setError('')
-    const result = await apiClient.PATCH('/api/v1/accounts/{accountId}', {
-      params: { path: { accountId: account.id } },
-      body: {
-        revision: account.revision,
-        name: name.trim(),
-        ...(type !== account.type ? { type: type as Account['type'] } : {}),
-      },
-    })
-    setPending(false)
-    if (!result.data) return setError(errorText(result.error, 'Не удалось сохранить счёт.'))
-    await cache.invalidateQueries({ queryKey: accountQueries.all() })
-    onClose()
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !pending) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Сведения счёта</DialogTitle>
-          <DialogDescription>Валюта счёта не меняется.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={save} className="space-y-4">
-          <Field label="Название">
-            <Input
-              value={name}
-              maxLength={160}
-              required
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Field>
-          <Field
-            label="Тип"
-            hint={
-              account.hasOperations
-                ? 'По счёту есть операции: смена типа изменила бы смысл остатка.'
-                : undefined
-            }
-          >
-            <ChoiceSelect value={type} onValueChange={setType} disabled={account.hasOperations}>
-              {Object.entries(typeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </ChoiceSelect>
-          </Field>
-          {error && (
-            <Notice tone="danger" title="Не сохранено">
-              {error}
-            </Notice>
-          )}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
-              Отмена
-            </Button>
-            <Button type="submit" disabled={pending}>
-              {pending ? 'Сохраняем…' : 'Сохранить'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function CardDialog({
-  account,
-  card,
-  onClose,
-}: {
-  account: Account
-  card: Card | null
-  onClose: () => void
-}) {
-  const cache = useQueryClient()
-  const [form, setForm] = useState({
-    name: card?.name ?? 'Карта',
-    bank: card?.bank ?? '',
-    last4: card?.last4 ?? '',
-  })
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState('')
-  async function save(submit: FormEvent) {
-    submit.preventDefault()
-    if (pending) return
-    if (!/^\d{4}$/.test(form.last4)) return setError('Последние четыре цифры — ровно 4 цифры.')
-    setPending(true)
-    setError('')
-    const body = { name: form.name.trim(), bank: form.bank.trim(), last4: form.last4 }
-    const result = card
-      ? await apiClient.PATCH('/api/v1/accounts/{accountId}/payment-instruments/{cardId}', {
-          params: {
-            path: { accountId: account.id, cardId: card.id },
-          },
-          body,
-        })
-      : await apiClient.POST('/api/v1/accounts/{accountId}/payment-instruments', {
-          params: { path: { accountId: account.id } },
-          body,
-        })
-    setPending(false)
-    if (!result.data) return setError(errorText(result.error, 'Не удалось сохранить карту.'))
-    await cache.invalidateQueries({ queryKey: accountQueries.all() })
-    onClose()
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !pending) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{card ? 'Изменить карту' : 'Добавить карту'}</DialogTitle>
-          <DialogDescription>Карта — способ платить со счёта «{account.name}».</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={save} className="space-y-4">
-          <Field label="Банк">
-            <Input
-              value={form.bank}
-              maxLength={160}
-              required
-              onChange={(e) => setForm({ ...form, bank: e.target.value })}
-            />
-          </Field>
-          <Field label="Последние четыре цифры">
-            <Input
-              value={form.last4}
-              inputMode="numeric"
-              maxLength={4}
-              required
-              onChange={(e) => setForm({ ...form, last4: e.target.value.replace(/\D/g, '') })}
-            />
-          </Field>
-          <Field label="Название">
-            <Input
-              value={form.name}
-              maxLength={160}
-              required
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-          </Field>
-          {error && (
-            <Notice tone="danger" title="Не сохранено">
-              {error}
-            </Notice>
-          )}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
-              Отмена
-            </Button>
-            <Button type="submit" disabled={pending}>
-              {pending ? 'Сохраняем…' : 'Сохранить'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
   )
 }
