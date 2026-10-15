@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, expect, it, vi } from 'vitest'
 
 import { apiClient } from '@/shared/api'
-import { AuthContext } from '@/shared/model/auth-context'
+import { AuthContext } from '@/entities/session'
 import { setCSRFToken } from '@/shared/api'
 
 import { AuthBoundary } from './AuthBoundary'

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { AuthContext } from '@/shared/model/auth-context'
+import { AuthContext } from '@/entities/session'
 import { AuthActions } from './AuthActions'
 const { post } = vi.hoisted(() => ({ post: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: { POST: post } }))

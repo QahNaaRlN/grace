@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
@@ -7,7 +7,6 @@ import { env } from '@/shared/config'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { AuthActions } from '@/shared/ui/layout/AuthActions'
 
 type Profile = components['schemas']['UserProfile']
 type Session = components['schemas']['AuthSession']
@@ -18,7 +17,14 @@ async function loadProfile() {
   if (!data) throw new Error('Не удалось загрузить профиль.')
   return data
 }
-function ProfileForm({ profile }: { profile: Profile }) {
+// sessionActions: access and sign-out controls composed by the page (features/logout).
+function ProfileForm({
+  profile,
+  sessionActions,
+}: {
+  profile: Profile
+  sessionActions?: ReactNode
+}) {
   const cache = useQueryClient()
   const [firstName, setFirst] = useState(profile.firstName),
     [lastName, setLast] = useState(profile.lastName),
@@ -293,14 +299,12 @@ function ProfileForm({ profile }: { profile: Profile }) {
       </section>
       <section className="rounded-2xl border border-border bg-card p-6">
         <h2>Доступ и сеансы</h2>
-        <div className="grace-actions">
-          <AuthActions />
-        </div>
+        <div className="grace-actions">{sessionActions}</div>
       </section>
     </div>
   )
 }
-export function ProfilePanel() {
+export function ProfilePanel({ sessionActions }: { sessionActions?: ReactNode }) {
   const result = useQuery({ queryKey: ['user-profile'], queryFn: loadProfile })
   if (result.isPending) return <LoadingSkeleton label="Загружаем профиль…" />
   if (result.error)
@@ -312,5 +316,5 @@ export function ProfilePanel() {
         </div>
       </div>
     )
-  return <ProfileForm key={result.data.id} profile={result.data} />
+  return <ProfileForm key={result.data.id} profile={result.data} sessionActions={sessionActions} />
 }

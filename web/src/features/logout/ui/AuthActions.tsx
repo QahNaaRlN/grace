@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 
 import { apiClient } from '@/shared/api'
-import { AuthContext } from '@/shared/model/auth-context'
+import { AuthContext } from '@/entities/session'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'

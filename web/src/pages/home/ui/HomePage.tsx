@@ -20,6 +20,7 @@ import { formatMoney } from '@/shared/lib/money'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
+import { AuthActions } from '@/features/logout'
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { AppLayout } from '@/shared/ui/layout/AppLayout'
+import { AppLayout } from '@/widgets/app-shell'
 
 function localDateValue(date: Date) {
   const year = date.getFullYear()
@@ -585,7 +586,7 @@ export function HomePage() {
                 receipts={receipts.data ?? []}
               />
             )}
-            {path === '/profile' && <ProfilePanel />}
+            {path === '/profile' && <ProfilePanel sessionActions={<AuthActions />} />}
           </>
         )}
       </div>

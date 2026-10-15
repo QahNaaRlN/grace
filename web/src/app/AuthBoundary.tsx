@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
 import { apiClient } from '@/shared/api'
-import { AuthContext } from '@/shared/model/auth-context'
+import { AuthContext } from '@/entities/session'
 import { setCSRFToken } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 
