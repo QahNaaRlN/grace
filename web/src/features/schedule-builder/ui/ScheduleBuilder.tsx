@@ -1,7 +1,8 @@
 import { useEffect, useState, type KeyboardEvent } from 'react'
 import { ArrowDownToLine, Plus, Trash2 } from 'lucide-react'
 
-import { dateText, formatMoney, parseMinor } from '@/shared/lib/finance-display'
+import { dateText } from '@/shared/lib/date'
+import { formatMoney, parseMinor } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
 import { Disclosure } from '@/shared/ui/disclosure'

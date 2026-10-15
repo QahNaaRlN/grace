@@ -6,7 +6,9 @@ import { ArrowDownLeft, ArrowRightLeft, Landmark, Scale, Search, Undo2 } from 'l
 import { CreateReceiptForm } from '@/features/create-receipt'
 import { apiClient } from '@/shared/api/client'
 import type { Account, Category, FinancialEvent, Receipt } from '@/shared/api/types'
-import { accountLabel, eventTimeText, formatMoney } from '@/shared/lib/finance-display'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { calendarDay, clockText, eventTimeText } from '@/shared/lib/date'
+import { formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { CategoryIcon } from '@/shared/ui/category-icon'
@@ -53,12 +55,7 @@ type DayTotal = { date: string; currency: string; inflowMinor: number; outflowMi
 function localDay(event: FinancialEvent) {
   if (event.occurredDate) return event.occurredDate
   if (!event.occurredAt) return ''
-  return new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Asia/Yekaterinburg',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(event.occurredAt))
+  return calendarDay(event.occurredAt)
 }
 
 function dayTitle(day: string) {
@@ -75,11 +72,7 @@ function dayTitle(day: string) {
 
 function timeText(event: FinancialEvent) {
   if (!event.occurredAt) return 'время неизвестно'
-  return new Intl.DateTimeFormat('ru-RU', {
-    timeZone: 'Asia/Yekaterinburg',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(event.occurredAt))
+  return clockText(event.occurredAt)
 }
 
 function accountName(accounts: Account[], id: string | undefined, fallback: string | undefined) {

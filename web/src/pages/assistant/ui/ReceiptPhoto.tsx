@@ -12,6 +12,7 @@ import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { ChoiceSelect } from '@/shared/ui/choice-select'
 import { accountLabel } from '@/shared/lib/finance-display'
+import { formatMinorText } from '@/shared/lib/money'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 
 type Draft = components['schemas']['ReceiptDraft']
@@ -29,10 +30,6 @@ const emptyItem = {
   brand: null,
   package: null,
   broadGroup: null,
-}
-function rubles(minor: string) {
-  const value = BigInt(minor)
-  return `${(value / 100n).toLocaleString('ru-RU')},${(value % 100n).toString().padStart(2, '0')} ₽`
 }
 export function ReceiptPhoto() {
   const [mode, setMode] = useState<Mode>()
@@ -479,7 +476,7 @@ export function ReceiptPhoto() {
           <div className="space-y-3 rounded-lg border p-4">
             <p className="font-medium">
               {preview.action === 'create'
-                ? `Будет создан один расход на ${rubles(preview.amountMinor)}.`
+                ? `Будет создан один расход на ${formatMinorText(preview.amountMinor, '₽')}.`
                 : 'Чек будет добавлен к покупке. Баланс не изменится.'}
             </p>
             <p className="text-sm">

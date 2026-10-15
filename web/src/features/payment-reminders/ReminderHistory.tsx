@@ -3,7 +3,7 @@ import { apiClient } from '@/shared/api/client'
 import { Button } from '@/shared/ui/button'
 import { Disclosure } from '@/shared/ui/disclosure'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
-import { dateText } from '@/shared/lib/finance-display'
+import { dateText } from '@/shared/lib/date'
 
 const labels = {
   pending: 'Ожидает отправки',

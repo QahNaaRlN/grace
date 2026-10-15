@@ -8,13 +8,8 @@ import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
-import {
-  dateText,
-  eventDateText,
-  formatMoney,
-  minorToInput,
-  parseMinor,
-} from '@/shared/lib/finance-display'
+import { dateText, eventDateText } from '@/shared/lib/date'
+import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
 import { Button } from '@/shared/ui/button'

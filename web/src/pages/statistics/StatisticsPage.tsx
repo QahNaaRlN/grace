@@ -6,7 +6,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
 import type { StatisticsBucket, StatisticsCurrency } from '@/shared/api/types'
-import { formatMoney } from '@/shared/lib/finance-display'
+import { APP_TIME_ZONE } from '@/shared/config'
+import { formatMoney } from '@/shared/lib/money'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -14,7 +15,7 @@ import { Label } from '@/shared/ui/label'
 
 function defaultStatisticsPeriod() {
   const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Yekaterinburg',
+    timeZone: APP_TIME_ZONE,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -407,7 +408,7 @@ export function StatisticsPage({ compact = false }: { compact?: boolean }) {
         </div>
       )}
       <p className="text-sm text-muted-foreground">
-        Только записанные события · Asia/Yekaterinburg. Полнота истории не подтверждена; ноль на
+        Только записанные события · {APP_TIME_ZONE}. Полнота истории не подтверждена; ноль на
         графике означает отсутствие записей. Неполные крайние периоды показаны по выбранным датам.
       </p>
       {!valid ? (

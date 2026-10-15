@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { eventDateText, eventTimeText } from './finance-display'
+import { eventDateText, eventTimeText } from '.'
 
 it('renders calendar history with unknown time rather than epoch or fabricated hours', () => {
   const event = { occurredAt: null, occurredDate: '2026-09-02' }

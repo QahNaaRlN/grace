@@ -14,7 +14,9 @@ import { Operations } from './Operations'
 import { StatisticsPage } from '@/pages/statistics/StatisticsPage'
 import { FinancialHealth } from './FinancialHealth'
 import { CreateAccountForm } from '@/features/create-account/ui/CreateAccountForm'
-import { today, formatMoney, dueSoonText } from '@/shared/lib/finance-display'
+import { dueSoonText } from '@/shared/lib/finance-display'
+import { dayStart, today } from '@/shared/lib/date'
+import { formatMoney } from '@/shared/lib/money'
 import { Money } from '@/shared/ui/money'
 import { StatusBadge } from '@/shared/ui/status'
 import { ProfilePanel } from '@/features/user-profile/ui/ProfilePanel'
@@ -44,10 +46,6 @@ function localDateValue(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
-}
-
-function localBoundary(value: string) {
-  return `${value}T00:00:00+05:00`
 }
 
 function initialPeriod() {
@@ -176,7 +174,7 @@ function Analytics() {
     queryFn: async () => {
       const { data, error } = await apiClient.GET('/api/v1/analytics/period-summary', {
         params: {
-          query: { from: localBoundary(fromDate), to: localBoundary(toDate) },
+          query: { from: dayStart(fromDate), to: dayStart(toDate) },
         },
       })
       if (!data) throw new Error(error?.message ?? 'Не удалось загрузить сводку периода')

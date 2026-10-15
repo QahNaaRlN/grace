@@ -82,7 +82,6 @@
   "fsd/public-api | src/features/schedule-builder | This slice is missing a public API.",
   "fsd/public-api | src/features/user-profile | This slice is missing a public API.",
   "fsd/public-api | src/shared/api | This segment is missing a public API.",
-  "fsd/public-api | src/shared/config | This segment is missing a public API.",
   "fsd/public-api | src/shared/model | This segment is missing a public API.",
   "fsd/public-api | src/shared/ui/layout | This top-level folder in shared/ui is missing a public API.",
   "fsd/segments-by-purpose | src/app/providers | This segment's name should describe the purpose of its contents, not what the contents are."

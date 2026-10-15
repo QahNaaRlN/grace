@@ -51,16 +51,9 @@ export default [
   },
   {
     files: [
-      'src/pages/assistant/ui/AIAnalysis.tsx',
       'src/pages/assistant/ui/AssistantPage.test.tsx',
       'src/pages/home/ui/Accounts.test.tsx',
-      'src/pages/home/ui/HomePage.tsx',
-      'src/pages/home/ui/OperationEditor.tsx',
-      'src/pages/home/ui/Operations.tsx',
       'src/pages/imports/ImportsPage.test.tsx',
-      'src/pages/imports/ImportsPage.tsx',
-      'src/pages/statistics/StatisticsPage.tsx',
-      'src/shared/lib/finance-display.ts',
     ],
     rules: { 'grace/no-time-zone-literal': 'off' },
   },

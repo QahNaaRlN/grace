@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
-import { momentText } from '@/shared/lib/finance-display'
+import { momentText } from '@/shared/lib/date'
 import { Button } from '@/shared/ui/button'
 import { StatusBadge } from '@/shared/ui/status'
 

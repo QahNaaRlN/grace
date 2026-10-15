@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 
-import { minorToInput, parseMinor } from '@/shared/lib/finance-display'
+import { minorToInput, parseMinor } from '@/shared/lib/money'
 import { Label } from './label'
 import { formatAmountText, NBSP } from '@/shared/lib/amount-text'
 import { MoneyInput } from './money-input'

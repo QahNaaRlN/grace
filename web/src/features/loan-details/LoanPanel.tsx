@@ -7,7 +7,7 @@ import { rowKey, type ScheduleRow } from '@/features/schedule-builder/model/sche
 import { ScheduleBuilder } from '@/features/schedule-builder/ui/ScheduleBuilder'
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
-import { minorToInput, parseMinor } from '@/shared/lib/finance-display'
+import { minorToInput, parseMinor } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'

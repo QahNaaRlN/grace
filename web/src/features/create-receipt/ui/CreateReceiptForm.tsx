@@ -26,7 +26,7 @@ import {
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { MoneyInput } from '@/shared/ui/money-input'
-import { parseMilli, parseMinor } from '@/shared/lib/finance-display'
+import { parseMilli, parseMinor } from '@/shared/lib/money'
 
 function emptyItem() {
   return { name: '', quantity: '1', unitPrice: '', lineTotal: '' }

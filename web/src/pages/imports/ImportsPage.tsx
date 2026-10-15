@@ -16,13 +16,10 @@ import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { AppLayout } from '@/shared/ui/layout/AppLayout'
-import {
-  formatMoney,
-  eventTimeText,
-  accountLabel,
-  minorToInput,
-  parseMinor,
-} from '@/shared/lib/finance-display'
+import { APP_UTC_OFFSET } from '@/shared/config'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { eventTimeText } from '@/shared/lib/date'
+import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { CurrencySelect } from '@/shared/ui/currency-select'
 import { PreviewPanel } from './PreviewPanel'
@@ -650,11 +647,11 @@ function ReviewForm({
                   <>
                     <div>
                       <Label htmlFor="occurredAt">
-                        Дата и время (с часовым поясом, например +05:00)
+                        Дата и время (с часовым поясом, например {APP_UTC_OFFSET})
                       </Label>
                       <Input
                         id="occurredAt"
-                        placeholder="2026-10-06T12:30:00+05:00"
+                        placeholder={`2026-10-06T12:30:00${APP_UTC_OFFSET}`}
                         value={fields.occurredAt || ''}
                         onChange={(e) => field('occurredAt', e.target.value)}
                       />

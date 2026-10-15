@@ -4,6 +4,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import type { components } from '@/shared/api/generated/schema'
 import { apiClient } from '@/shared/api/client'
 import { csrfToken } from '@/shared/model/auth-session'
+import { currentMonth } from '@/shared/lib/date'
+import { formatMinorText, formatUsdMicros } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -13,28 +15,12 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 
 type Capabilities = components['schemas']['AICapabilities']
 type Message = components['schemas']['AIConversationMessage']
-function amount(value: string, currency: string) {
-  const n = BigInt(value),
-    positive = n < 0n ? -n : n
-  return `${n < 0n ? '−' : ''}${(positive / 100n).toLocaleString('ru-RU')},${(positive % 100n).toString().padStart(2, '0')} ${currency}`
-}
-function dollars(value: string) {
-  const n = BigInt(value)
-  const fraction = (n % 1000000n).toString().padStart(6, '0').replace(/0+$/, '').padEnd(2, '0')
-  return `$${n / 1000000n}.${fraction}`
-}
 export function AIAnalysis() {
   const [params, setParams] = useSearchParams()
   const [initialConversation] = useState(() => params.get('conversation') || '')
   const [capabilities, setCapabilities] = useState<Capabilities>()
   const [capabilityError, setCapabilityError] = useState(false)
-  const [month, setMonth] = useState(() =>
-    new Intl.DateTimeFormat('sv-SE', {
-      timeZone: 'Asia/Yekaterinburg',
-      year: 'numeric',
-      month: '2-digit',
-    }).format(new Date()),
-  )
+  const [month, setMonth] = useState(currentMonth)
   const [question, setQuestion] = useState('Помоги понять мои расходы за выбранный месяц.')
   const [conversation, setConversation] = useState(initialConversation)
   const [messages, setMessages] = useState<Message[]>([])
@@ -197,7 +183,7 @@ export function AIAnalysis() {
           <>
             <p className="text-sm">
               Модель {mode.model} · {mode.provider} через OpenRouter. Доступно для эксперимента:{' '}
-              {dollars(capabilities.remainingMicros)}.
+              {formatUsdMicros(capabilities.remainingMicros)}.
             </p>
             {!mode.consentGranted ? (
               <div className="space-y-3 rounded-lg border p-4">
@@ -278,7 +264,7 @@ export function AIAnalysis() {
                   className="flex flex-wrap items-start justify-between gap-2 text-sm"
                 >
                   <dt className="min-w-0 break-words">{fact.label}</dt>
-                  <dd className="font-medium">{amount(fact.valueMinor, fact.currency)}</dd>
+                  <dd className="font-medium">{formatMinorText(fact.valueMinor, fact.currency)}</dd>
                 </div>
               ))}
             </dl>
@@ -308,7 +294,7 @@ export function AIAnalysis() {
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground">
-                  Стоимость запроса: {dollars(message.response.costMicros)}.
+                  Стоимость запроса: {formatUsdMicros(message.response.costMicros)}.
                 </p>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { parseMilli, parseMinor } from '@/shared/lib/finance-display'
+import { parseMilli, parseMinor } from '@/shared/lib/money'
 
 // SPEC-0036: amounts and quantities stay text until parsed into integers.
 const money = z

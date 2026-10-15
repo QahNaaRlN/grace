@@ -5,14 +5,9 @@ import { CreditCard, Pencil, Plus, Scale } from 'lucide-react'
 import { apiClient } from '@/shared/api/client'
 import type { components } from '@/shared/api/generated/schema'
 import type { Account } from '@/shared/api/types'
-import {
-  accountLabel,
-  formatMoney,
-  fromLocalDateTimeInput,
-  localDateTimeInput,
-  momentText,
-  parseMinor,
-} from '@/shared/lib/finance-display'
+import { accountLabel } from '@/shared/lib/finance-display'
+import { fromLocalDateTimeInput, localDateTimeInput, momentText } from '@/shared/lib/date'
+import { formatMoney, parseMinor } from '@/shared/lib/money'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
 import { csrfToken } from '@/shared/model/auth-session'
 import { AccountIcon } from '@/shared/ui/account-icon'
