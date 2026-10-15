@@ -10,7 +10,6 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Notice } from '@/shared/ui/status'
 import {
   cancelReceipt,
-  confirmReceipt,
   extractReceipt,
   getReceiptDraft,
   loadReceiptContext,
@@ -23,6 +22,7 @@ import {
   type ReceiptDraftFields,
   type ReceiptDraftPreview,
 } from '../api/receipt-drafts'
+import { useConfirmReceiptDraft } from '../api/use-confirm-receipt-draft'
 import { ReceiptDraftEditor } from './ReceiptDraftEditor'
 
 type Account = components['schemas']['Account']
@@ -39,6 +39,7 @@ export function ReceiptPhoto() {
   const [error, setError] = useState('')
   const extractKey = useRef<string>('')
   const confirmKey = useRef<string>('')
+  const confirmation = useConfirmReceiptDraft()
   useEffect(() => {
     let active = true
     void loadReceiptContext()
@@ -112,7 +113,7 @@ export function ReceiptPhoto() {
   }
   async function confirm() {
     if (!draft || !preview) return
-    accept(await confirmReceipt(draft.id, preview, confirmKey.current))
+    accept(await confirmation.mutateAsync({ draftId: draft.id, preview, key: confirmKey.current }))
   }
   async function cancel() {
     if (!draft) return

@@ -1,5 +1,8 @@
 # Spec-first процесс Grace
 
+Принята владельцем 2026-10-16 (без инвалидации обязательств), статус `verified` ([evidence](0049-evidence.md)):
+[SPEC-0049 — обновление данных после подтверждения чека](0049-receipt-confirmation-refresh.md).
+
 Принята владельцем 2026-10-15 (Steiger, Prettier без `;` и с одинарными кавычками), статус `integrated` (фазы 0–5, PR #42–#48; post-merge проверки на `d486582` пройдены):
 [SPEC-0048 — архитектура Web по Feature-Sliced Design](0048-frontend-fsd-architecture.md)
 — аудит слоёв, правила срезов, серверное состояние, автоматические проверки и

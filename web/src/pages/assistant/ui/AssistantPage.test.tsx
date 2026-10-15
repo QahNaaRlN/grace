@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AssistantRequestError, type SubmitAssistant } from '@/features/ask-assistant'
 import type { AssistantResult } from '@/shared/api'
 import { APP_UTC_OFFSET } from '@/shared/config'
+import { queryHarness } from '@/test/query-harness'
 import { AppLayout } from '@/widgets/app-shell'
 
 import { AssistantPage } from './AssistantPage'
@@ -161,6 +162,7 @@ function renderPage(submitAssistant: SubmitAssistant) {
         <AssistantPage submitAssistant={submitAssistant} />
       </AppLayout>
     </MemoryRouter>,
+    { wrapper: queryHarness().wrapper },
   )
   fireEvent.click(screen.getByRole('button', { name: 'Быстрые запросы к данным Grace' }))
   return view
