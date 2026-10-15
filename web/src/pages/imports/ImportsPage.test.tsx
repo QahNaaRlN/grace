@@ -1,8 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, type QueryKey } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it, vi } from 'vitest'
+import { accountQueries } from '@/entities/account'
+import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
+import { importBatchQueries } from '@/entities/import-batch'
 import { ImportsPage } from './ImportsPage'
 
 const client = vi.hoisted(() => ({ GET: vi.fn(), PATCH: vi.fn(), POST: vi.fn() }))
@@ -53,10 +58,18 @@ it.each([false, true])(
       const key = path.split('/').at(-1) as keyof typeof lists
       return { data: { items: lists[key] ?? [] } }
     })
+    // The list caches the home screens read; import options must never overwrite them.
+    const keys: Record<keyof typeof lists, QueryKey> = {
+      accounts: accountQueries.list().queryKey,
+      categories: categoryQueries.list().queryKey,
+      'financial-events': financialEventQueries.list().queryKey,
+    }
     const cache = new QueryClient({
       defaultOptions: { queries: { retry: false, staleTime: Infinity } },
     })
-    if (warm) for (const [key, items] of Object.entries(lists)) cache.setQueryData([key], items)
+    if (warm)
+      for (const [name, items] of Object.entries(lists))
+        cache.setQueryData(keys[name as keyof typeof keys], items)
     render(
       <QueryClientProvider client={cache}>
         <MemoryRouter initialEntries={['/imports?batch=cache-batch']}>
@@ -76,10 +89,11 @@ it.each([false, true])(
     await user.click(screen.getByRole('option', { name: 'Связать с операцией' }))
     await user.click(screen.getByLabelText('Существующая операция'))
     await user.click(await screen.findByRole('option', { name: /Операция для проверки/ }))
-    for (const [key, items] of Object.entries(lists)) {
-      if (warm) expect(cache.getQueryData([key])).toEqual(items)
-      else expect(cache.getQueryData([key])).toBeUndefined()
-      const loaded = await cache.fetchQuery({ queryKey: [key], queryFn: async () => items })
+    for (const [name, items] of Object.entries(lists)) {
+      const queryKey = keys[name as keyof typeof keys]
+      if (warm) expect(cache.getQueryData(queryKey)).toEqual(items)
+      else expect(cache.getQueryData(queryKey)).toBeUndefined()
+      const loaded = await cache.fetchQuery({ queryKey, queryFn: async () => items })
       expect(loaded.map((item) => item.id)).toEqual(items.map((item) => item.id))
     }
   },
@@ -202,9 +216,7 @@ it('keeps a saved decision when batch revision refreshes before record details',
   await user.type(screen.getByLabelText('Почему принято это решение'), 'Проверенный дубль')
   await user.click(screen.getByRole('button', { name: 'Сохранить решение' }))
   await waitFor(() =>
-    expect(cache.getQueryData<{ revision: number }>(['imports', 'batch', 'batch'])?.revision).toBe(
-      2,
-    ),
+    expect(cache.getQueryData(importBatchQueries.batch('batch').queryKey)?.revision).toBe(2),
   )
   expect(screen.getByLabelText('Решение')).toHaveTextContent('Исключить')
   await act(async () => {
@@ -326,6 +338,12 @@ it('keeps the selected month and refreshes financial views after confirmation', 
   await user.click(await screen.findByRole('button', { name: 'Подтвердить импорт 1 операций' }))
   await screen.findByText('Подтверждение сохранено')
   expect(screen.getByLabelText('Месяц для сверки')).toHaveValue('2026-09')
-  for (const key of ['imports', 'accounts', 'financial-events', 'period-summary', 'cash-position'])
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: [key] })
+  for (const queryKey of [
+    importBatchQueries.all(),
+    accountQueries.all(),
+    financialEventQueries.all(),
+    periodSummaryQueries.all(),
+    cashPositionQueries.all(),
+  ])
+    expect(invalidate).toHaveBeenCalledWith({ queryKey })
 })

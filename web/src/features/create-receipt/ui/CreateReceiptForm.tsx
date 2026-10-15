@@ -9,6 +9,7 @@ import {
   CreateReceiptSchema,
   type CreateReceiptValues,
 } from '@/features/create-receipt/model/create-receipt.schema'
+import { receiptQueries } from '@/entities/receipt'
 import { apiClient } from '@/shared/api'
 import type { FinancialEvent } from '@/shared/api'
 import { createIdempotencyKey } from '@/shared/lib/idempotency'
@@ -90,7 +91,7 @@ export function CreateReceiptForm({ purchase }: { purchase: FinancialEvent }) {
       toast.error(result.error.message)
       return
     }
-    await queryClient.invalidateQueries({ queryKey: ['receipts'] })
+    await queryClient.invalidateQueries({ queryKey: receiptQueries.all() })
     reset()
     setOpen(false)
     toast.success('Чек сохранён')

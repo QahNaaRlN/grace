@@ -1,6 +1,8 @@
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { sessionQueries } from '@/entities/session'
+import { userQueries } from '@/entities/user'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { env } from '@/shared/config'
@@ -9,14 +11,8 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 
 type Profile = components['schemas']['UserProfile']
-type Session = components['schemas']['AuthSession']
 type Area = 'personal' | 'email'
 type Status = { area: Area; kind: 'notice' | 'error'; text: string }
-async function loadProfile() {
-  const { data } = await apiClient.GET('/api/auth/profile')
-  if (!data) throw new Error('Не удалось загрузить профиль.')
-  return data
-}
 // sessionActions: access and sign-out controls composed by the page (features/logout).
 function ProfileForm({
   profile,
@@ -62,8 +58,8 @@ function ProfileForm({
   // The POST response already carries the new name and avatar: update the
   // session in place instead of refetching /api/auth/me after every save.
   function update(data: Profile) {
-    cache.setQueryData(['user-profile'], data)
-    cache.setQueryData<Session | null>(['auth-session'], (current) =>
+    cache.setQueryData(userQueries.profile().queryKey, data)
+    cache.setQueryData(sessionQueries.me().queryKey, (current) =>
       current
         ? {
             ...current,
@@ -133,7 +129,7 @@ function ProfileForm({
     if (!response.ok) throw new Error(failure?.message ?? 'Не удалось подтвердить почту.')
     setEmailStep(false)
     setCode('')
-    await cache.invalidateQueries({ queryKey: ['user-profile'] })
+    await cache.invalidateQueries({ queryKey: userQueries.all() })
     return 'Почта подтверждена. Другие сеансы завершены.'
   }
   return (
@@ -305,7 +301,7 @@ function ProfileForm({
   )
 }
 export function ProfilePanel({ sessionActions }: { sessionActions?: ReactNode }) {
-  const result = useQuery({ queryKey: ['user-profile'], queryFn: loadProfile })
+  const result = useQuery(userQueries.profile())
   if (result.isPending) return <LoadingSkeleton label="Загружаем профиль…" />
   if (result.error)
     return (

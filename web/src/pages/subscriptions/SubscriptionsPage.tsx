@@ -5,6 +5,10 @@ import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, Pause, Pencil, Plus, Repeat2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { accountQueries } from '@/entities/account'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
+import { subscriptionExpenseQueries, subscriptionQueries } from '@/entities/subscription'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import { dateText, eventDateText } from '@/shared/lib/date'
@@ -40,51 +44,15 @@ export function SubscriptionsPage() {
   const [expense, setExpense] = useState<Subscription | null>(null)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [eventID, setEventID] = useState('')
-  const subscriptions = useQuery({
-    queryKey: ['subscriptions'],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/subscriptions')
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
-  })
-  const accounts = useQuery({
-    queryKey: ['accounts'],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/accounts')
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
-  })
-  const events = useQuery({
-    queryKey: ['financial-events', 'subscription-picker'],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/financial-events')
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
-  })
+  const subscriptions = useQuery(subscriptionQueries.list())
+  const accounts = useQuery(accountQueries.list())
+  const events = useQuery(financialEventQueries.subscriptionPicker())
   const expenseHistory = useQuery({
-    queryKey: ['subscription-expenses', expense?.id],
+    ...subscriptionExpenseQueries.list(expense?.id),
     enabled: expense !== null,
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET(
-        '/api/v1/subscriptions/{subscriptionId}/expenses',
-        { params: { path: { subscriptionId: expense!.id } } },
-      )
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
   })
-  const categories = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/categories')
-      if (error) throw new Error(error.message)
-      return data?.items ?? []
-    },
-  })
-  const refresh = () => query.invalidateQueries({ queryKey: ['subscriptions'] })
+  const categories = useQuery(categoryQueries.list())
+  const refresh = () => query.invalidateQueries({ queryKey: subscriptionQueries.all() })
   const pause = useMutation({
     mutationFn: async (s: Subscription) => {
       const { error } = await apiClient.PATCH('/api/v1/subscriptions/{subscriptionId}', {

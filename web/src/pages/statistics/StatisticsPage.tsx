@@ -4,7 +4,7 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { apiClient } from '@/shared/api'
+import { statisticsQueries } from '@/entities/analytics-report'
 import type { StatisticsBucket, StatisticsCurrency } from '@/shared/api'
 import { APP_TIME_ZONE } from '@/shared/config'
 import { formatMoney } from '@/shared/lib/money'
@@ -349,16 +349,8 @@ export function StatisticsPage({ compact = false }: { compact?: boolean }) {
     Number.isFinite(maxTo.getTime()) &&
     to <= maxTo.toISOString().slice(0, 10)
   const query = useQuery({
-    queryKey: ['statistics', from, to, granularity],
+    ...statisticsQueries.range(from, to, granularity),
     enabled: valid,
-    queryFn: async () => {
-      const { data, error } = await apiClient.GET('/api/v1/analytics/statistics', {
-        params: { query: { from, to, granularity } },
-      })
-      if (!data || !Array.isArray(data.currencies))
-        throw new Error(error?.message ?? 'Не удалось загрузить статистику')
-      return data
-    },
   })
   const item =
     query.data?.currencies.find((c) => c.currency === currency) ?? query.data?.currencies[0]

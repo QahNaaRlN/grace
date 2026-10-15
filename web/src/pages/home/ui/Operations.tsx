@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowDownLeft, ArrowRightLeft, Landmark, Scale, Search, Undo2 } from 'lucide-react'
 
 import { CreateReceiptForm } from '@/features/create-receipt'
-import { apiClient } from '@/shared/api'
+import { financialEventQueries } from '@/entities/financial-event'
 import type { Account, Category, FinancialEvent, Receipt } from '@/shared/api'
 import { accountLabel } from '@/shared/lib/finance-display'
 import { calendarDay, clockText, eventTimeText } from '@/shared/lib/date'
@@ -123,30 +123,7 @@ export function Operations({
     filterKeys.map((key) => [key, params.get(key) ?? '']),
   ) as Record<(typeof filterKeys)[number], string>
   const [selected, setSelected] = useState<FinancialEvent | null>(null)
-  const list = useInfiniteQuery({
-    queryKey: ['financial-events', 'page', filter],
-    initialPageParam: '',
-    queryFn: async ({ pageParam }) => {
-      const { data, error } = await apiClient.GET('/api/v1/financial-events', {
-        params: {
-          query: {
-            limit: 50,
-            cursor: pageParam || undefined,
-            q: filter.q || undefined,
-            categoryId: filter.category || undefined,
-            accountId: filter.account || undefined,
-            kind: (filter.kind || undefined) as FinancialEvent['kind'] | undefined,
-            from: filter.from || undefined,
-            to: filter.to || undefined,
-            voided: filter.voided === 'true' || undefined,
-          },
-        },
-      })
-      if (!data) throw new Error(error?.message ?? 'Не удалось загрузить операции.')
-      return data
-    },
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-  })
+  const list = useInfiniteQuery(financialEventQueries.page(filter))
   const items = list.data?.pages.flatMap((page) => page.items) ?? []
   const totals = new Map<string, DayTotal[]>()
   for (const total of list.data?.pages.flatMap((page) => page.dayTotals) ?? []) {

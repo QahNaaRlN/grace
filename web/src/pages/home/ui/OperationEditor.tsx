@@ -1,6 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { accountQueries } from '@/entities/account'
+import {
+  cashPositionQueries,
+  periodSummaryQueries,
+  statisticsQueries,
+} from '@/entities/analytics-report'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import type { Account, Category, FinancialEvent } from '@/shared/api'
@@ -50,12 +58,12 @@ const fieldLabels: Record<string, string> = {
 }
 
 const refreshKeys = [
-  ['financial-events'],
-  ['accounts'],
-  ['cash-position'],
-  ['statistics'],
-  ['period-summary'],
-  ['categories'],
+  financialEventQueries.all(),
+  accountQueries.all(),
+  cashPositionQueries.all(),
+  statisticsQueries.all(),
+  periodSummaryQueries.all(),
+  categoryQueries.all(),
 ]
 
 // 409 linked carries a ready message naming what to unlink first.
@@ -402,15 +410,8 @@ export function OperationHistory({
   categories: Category[]
 }) {
   const history = useQuery({
-    queryKey: ['financial-events', 'history', event.id, event.revision],
+    ...financialEventQueries.history(event),
     enabled: event.revision > 1,
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/v1/financial-events/{eventId}/history', {
-        params: { path: { eventId: event.id } },
-      })
-      if (!data) throw new Error('История недоступна.')
-      return data.items
-    },
   })
   if (event.revision <= 1) return null
   const currency = event.postings[0]?.currency ?? 'RUB'

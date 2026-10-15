@@ -2,6 +2,13 @@ import { useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CreditCard, Pencil, Plus, Scale } from 'lucide-react'
 
+import { accountQueries } from '@/entities/account'
+import {
+  cashPositionQueries,
+  periodSummaryQueries,
+  statisticsQueries,
+} from '@/entities/analytics-report'
+import { financialEventQueries } from '@/entities/financial-event'
 import { apiClient } from '@/shared/api'
 import type { components } from '@/shared/api/generated/schema'
 import type { Account } from '@/shared/api'
@@ -41,11 +48,11 @@ const outcomeLabels = {
 }
 // Everything a balance feeds: lists, overview, analytics.
 const refreshKeys = [
-  ['accounts'],
-  ['financial-events'],
-  ['cash-position'],
-  ['statistics'],
-  ['period-summary'],
+  accountQueries.all(),
+  financialEventQueries.all(),
+  cashPositionQueries.all(),
+  statisticsQueries.all(),
+  periodSummaryQueries.all(),
 ]
 
 function errorText(error: unknown, fallback: string) {
@@ -126,7 +133,7 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
       },
     )
     if (!result.data) return setCardError(errorText(result.error, 'Не удалось изменить карту.'))
-    await cache.invalidateQueries({ queryKey: ['accounts'] })
+    await cache.invalidateQueries({ queryKey: accountQueries.all() })
   }
 
   return (
@@ -283,21 +290,8 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
 
 function ReconciliationHistory({ account }: { account: Account }) {
   const history = useQuery({
-    queryKey: [
-      'accounts',
-      account.id,
-      'reconciliations',
-      account.revision,
-      account.lastReconciliation?.createdAt,
-    ],
+    ...accountQueries.reconciliations(account),
     enabled: !!account.lastReconciliation,
-    queryFn: async () => {
-      const { data } = await apiClient.GET('/api/v1/accounts/{accountId}/reconciliations', {
-        params: { path: { accountId: account.id } },
-      })
-      if (!data) throw new Error('История сверок недоступна.')
-      return data.items
-    },
   })
   if (!account.lastReconciliation) return null
   return (
@@ -525,7 +519,7 @@ function EditAccountDialog({ account, onClose }: { account: Account; onClose: ()
     })
     setPending(false)
     if (!result.data) return setError(errorText(result.error, 'Не удалось сохранить счёт.'))
-    await cache.invalidateQueries({ queryKey: ['accounts'] })
+    await cache.invalidateQueries({ queryKey: accountQueries.all() })
     onClose()
   }
   return (
@@ -621,7 +615,7 @@ function CardDialog({
         })
     setPending(false)
     if (!result.data) return setError(errorText(result.error, 'Не удалось сохранить карту.'))
-    await cache.invalidateQueries({ queryKey: ['accounts'] })
+    await cache.invalidateQueries({ queryKey: accountQueries.all() })
     onClose()
   }
   return (

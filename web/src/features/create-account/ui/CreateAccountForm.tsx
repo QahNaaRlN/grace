@@ -1,6 +1,8 @@
 import { Checkbox } from '@/shared/ui/checkbox'
 import { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { accountQueries } from '@/entities/account'
+import { cashPositionQueries } from '@/entities/analytics-report'
 import { apiClient } from '@/shared/api'
 import { parseMinor, formatMoney } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
@@ -51,8 +53,8 @@ export function CreateAccountForm({ onSaved }: { onSaved: () => void }) {
         setError(failure?.message ?? 'Не удалось создать счёт.')
         return
       }
-      await query.invalidateQueries({ queryKey: ['accounts'] })
-      await query.invalidateQueries({ queryKey: ['cash-position'] })
+      await query.invalidateQueries({ queryKey: accountQueries.all() })
+      await query.invalidateQueries({ queryKey: cashPositionQueries.all() })
       onSaved()
     } catch {
       setError(

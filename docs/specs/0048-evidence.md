@@ -119,3 +119,68 @@ Steiger требует ≥ 22.18) проверяется после push.
 в буквальном виде пустой не станет: она находит поле `csrfToken` ответа
 `/api/auth/me` (`setCSRFToken(data.csrfToken)`) и фикстуры сессии в тестах.
 Предлагаю владельцу уточнить проверку в спецификации до формы выше.
+
+## Фаза 2 — Entities
+
+Дата: 2026-10-15. Ветка: `codex/frontend-fsd-2` от `main` (`2620440`, фазы 0 и 1).
+Проверено локально на Windows, Node 23.
+
+| Коммит | Содержание |
+| --- | --- |
+| `d0e25b2` | `entities/session/api` (`sessionQueries.me`, `loadSession`; запрос `/api/auth/me` убран из `AuthBoundary` и `LoginPage`), `entities/user/api` (`userQueries.profile`, `authMethodQueries.list`), `entities/account/api`; `ProfilePanel`, `PasswordEntry` и тесты на фабриках |
+| `bd16de0` | Фабрики `category`, `financial-event`, `receipt`, `obligation` (+ `loanQueries`, `paymentReminderQueries`), `subscription` (+ `subscriptionExpenseQueries`), `import-batch`, `analytics-report` (`statisticsQueries`, `periodSummaryQueries`, `cashPositionQueries`) |
+| `8964133` | Фичи инвалидируют через `entities/*` `all()`; `LoanPanel` и `ReminderHistory` читают через фабрики |
+| `bc93f78` | `HomePage`, `Accounts`, `Categories`, `Operations`, `OperationEditor` на фабриках |
+| `cd07d89` | `ImportsPage`, `ImportHistory`, `RecordReview`, `MonthPanel`, `SubscriptionsPage`, `StatisticsPage`; `ImportsPage.test` на ключах фабрик |
+| `bc15273` | Блок `grace/no-inline-query-key` удалён из `eslint.baseline.js` |
+| следующий | Этот отчёт |
+
+### Решения по ходу фазы
+
+- **Формы ключей сохранены.** Каждая фабрика строит ключи от своего `all()`,
+  и они совпадают с прежними литералами (`['accounts']`, `['obligations', asOf]`,
+  `['imports', 'records', batchId, view]` и т. д.). Поэтому прежняя инвалидация по
+  префиксу работает как раньше. Изменён один ключ: список событий на главной
+  `['financial-events', '', '', '']` стал `['financial-events', 'list']`. По этому
+  ключу ничего не подставляется, а инвалидация идёт по префиксу `['financial-events']`.
+- **Несколько корней в одном срезе.** Если у ключа был свой корень, он остался:
+  `['cash-position']`, `['period-summary']`, `['statistics']` лежат в
+  `entities/analytics-report`, `['loan-details']` и `['payment-reminders']` в
+  `entities/obligation`, `['subscription-expenses']` в `entities/subscription`,
+  `['auth-methods']` в `entities/user`. Каждая фабрика имеет свой `all()`. Если
+  перенести их под общий корень, инвалидация `['statistics']`, `['obligations']`
+  или `['subscriptions']` стала бы запрашивать лишние данные.
+- **`entities/analytics-report` вместо `entities/statistics`.** Steiger
+  `fsd/inconsistent-naming` отклоняет срез во множественном числе среди
+  единственных. В baseline добавлять нельзя, поэтому срез переименован.
+  Спецификация называет список срезов ориентиром.
+- **Один `queryFn` на ключ.** Раньше один ключ мог загружаться разными функциями
+  с разными запасными текстами ошибок. Теперь у каждого ключа одна функция.
+  Затронуты случаи:
+  - `['cash-position', through]` на главной и в «Аналитике» использует один
+    кэш. Запасной текст теперь всегда «Не удалось загрузить доступность денег»
+    (раньше на главной было «Не удалось получить расчёт»). Сообщение сервера
+    показывается, как и раньше.
+  - `['accounts']` и `['categories']` в `SubscriptionsPage` используют загрузчики
+    главной. Подписки эти ошибки не показывают.
+  - `['auth-methods']` в `PasswordEntry` и `['auth-session']` в `LoginPage` тоже
+    не показывают текст ошибки. `retry: false` и `staleTime`/`refetchOnWindowFocus`
+    у `AuthBoundary` переданы поверх фабрики.
+- **Инвалидация не тронута.** Прямые `invalidateQueries` остаются в тех же 14
+  файлах до хуков мутаций фазы 4. Теперь они берут ключи у фабрик, без литералов.
+- **Срезы `entities` друг друга не импортируют**, поэтому `@x` не понадобился.
+  `ImportRecordsView` (фильтр строк импорта) объявлен в `entities/import-batch`,
+  а `RecordReview` использует его как `View`.
+
+### Исполняемые свидетельства
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | exit 0: Go `ok` во всех пакетах; web — 35 файлов и 219 тестов (столько же, сколько после фазы 1), `lint`, `lint:fsd` (OK, 25 в baseline), `format:check`, `build`; Jev eval `ok` |
+| AC5, первая часть (готовность фазы 2) | `grep -rnE "queryKey: *\[" web/src --include=*.ts* \| grep -v "/entities/[^/]*/api/"` → пусто |
+| Baseline ESLint | `git diff --stat main -- web/eslint.baseline.js web/steiger.baseline.json` → 0 вставок, 28 удалений. `grace/no-inline-query-key`: 23 → 0 файлов (блок удалён); `no-direct-invalidate` 14 → 14; `no-time-zone-literal` 3 → 3 |
+| Baseline Steiger | `npm run lint:fsd -- --prune` → OK, 25 → 25. Записей не добавлено и не удалено: нарушения в baseline не связаны с ключами запросов |
+| Правило без baseline | ESLint по `src` с одним `grace/no-inline-query-key` (без `eslint.baseline.js`) → ни одного файла |
+| Связи entities | `grep -rn "@/entities\|@/features\|@/pages\|@/widgets" web/src/entities` → пусто |
+| ESLint-проба | Временный `src/pages/home/ui/EslintProbe.ts` с `useQuery({ queryKey: ['accounts'], … })` → `npx eslint` exit 1, `grace/no-inline-query-key`. Файл удалён |
+| `git diff --check` | чисто |

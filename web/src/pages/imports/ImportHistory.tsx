@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 
-import { apiClient } from '@/shared/api'
+import { importBatchQueries } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { momentText } from '@/shared/lib/date'
 import { Button } from '@/shared/ui/button'
@@ -29,18 +29,7 @@ export function ImportHistory({
   selectedId: string
   onOpen: (id: string) => void
 }) {
-  const history = useInfiniteQuery({
-    queryKey: ['imports', 'batches'],
-    initialPageParam: '',
-    queryFn: async ({ pageParam }) => {
-      const { data } = await apiClient.GET('/api/imports/batches', {
-        params: { query: { cursor: pageParam || undefined, limit: 20 } },
-      })
-      if (!data) throw new Error('Не удалось загрузить историю импортов.')
-      return data
-    },
-    getNextPageParam: (last) => last.nextCursor || undefined,
-  })
+  const history = useInfiniteQuery(importBatchQueries.batches())
   const items = history.data?.pages.flatMap((page) => page.items) ?? []
   if (history.isError)
     return (

@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react'
+import { statisticsQueries } from '@/entities/analytics-report'
+import { categoryQueries } from '@/entities/category'
+import { financialEventQueries } from '@/entities/financial-event'
 import type { Category } from '@/shared/api'
 import { apiClient } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
@@ -44,8 +47,8 @@ export function Categories({ items }: { items: Category[] }) {
   const expense = items.filter((c) => c.kind === 'expense')
   const refresh = () =>
     Promise.all(
-      [['categories'], ['financial-events'], ['statistics']].map((queryKey) =>
-        cache.invalidateQueries({ queryKey }),
+      [categoryQueries.all(), financialEventQueries.all(), statisticsQueries.all()].map(
+        (queryKey) => cache.invalidateQueries({ queryKey }),
       ),
     )
 
