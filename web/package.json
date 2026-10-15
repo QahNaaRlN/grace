@@ -8,6 +8,9 @@
 		"generate:api": "openapi-typescript ../api/openapi.yaml -o src/shared/api/generated/schema.d.ts",
 		"build": "npm run generate:api && tsc -b && vite build",
 		"lint": "eslint .",
+		"lint:fsd": "node scripts/lint-fsd.mjs",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"test": "vitest run",
 		"preview": "vite preview"
 	},
@@ -32,6 +35,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@feature-sliced/steiger-plugin": "^0.8.0",
 		"@tailwindcss/vite": "^4.3.1",
 		"@testing-library/jest-dom": "^7.0.1",
 		"@testing-library/react": "^16.3.3",
@@ -46,6 +50,8 @@
 		"globals": "^17.6.0",
 		"jsdom": "^30.1.2",
 		"openapi-typescript": "^7.13.0",
+		"prettier": "^3.9.10",
+		"steiger": "^0.7.0",
 		"tailwindcss": "^4.3.1",
 		"tw-animate-css": "^1.4.0",
 		"typescript": "^5.9.3",
