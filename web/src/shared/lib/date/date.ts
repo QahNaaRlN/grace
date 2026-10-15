@@ -74,3 +74,24 @@ export function momentText(iso: string) {
     minute: '2-digit',
   }).format(new Date(iso))
 }
+
+// The browser's local calendar day "YYYY-MM-DD", used for default period inputs.
+function browserDay(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+// The current browser month as a half-open period [first day, first day of next month).
+export function browserMonthPeriod() {
+  const now = new Date()
+  return {
+    from: browserDay(new Date(now.getFullYear(), now.getMonth(), 1)),
+    to: browserDay(new Date(now.getFullYear(), now.getMonth() + 1, 1)),
+  }
+}
+// The last day of the current browser month.
+export function browserMonthEnd() {
+  const now = new Date()
+  return browserDay(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+}

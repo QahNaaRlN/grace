@@ -184,3 +184,135 @@ Steiger требует ≥ 22.18) проверяется после push.
 | Связи entities | `grep -rn "@/entities\|@/features\|@/pages\|@/widgets" web/src/entities` → пусто |
 | ESLint-проба | Временный `src/pages/home/ui/EslintProbe.ts` с `useQuery({ queryKey: ['accounts'], … })` → `npx eslint` exit 1, `grace/no-inline-query-key`. Файл удалён |
 | `git diff --check` | чисто |
+
+## Фаза 3 — Pages и router
+
+Дата: 2026-10-15. Ветка: `codex/frontend-fsd-3` от `main` (`6f98a0c`, фазы 0–2).
+Проверено локально на Windows, Node 23.
+
+| Коммит | Содержание |
+| --- | --- |
+| `77c3b2e` | Layout route в `app/router.tsx` и `router.test.tsx`. `pages/home` разделён на 8 срезов, блоки главной и `StatisticsPage` перенесены в `widgets`, добавлен `widgets/ledger-screen`. Сегменты `ui/` и `index.ts` у `imports`, `login`, `subscriptions`. Новые `features/password-auth` и `pages/password-entry`. Baseline Steiger сокращён |
+| следующий | Этот отчёт |
+
+### Структура после фазы
+
+- **`app/router.tsx`.** Защищённые маршруты — дочерние элементы одного layout
+  route без `path`: `AuthBoundary` → `AppLayout` → `<Outlet>`. `/login`,
+  `/register`, `/forgot-password` и `/reset-password` лежат вне layout. Страницы
+  `assistant`, `imports` и `subscriptions` больше не оборачивают себя в `AppLayout`.
+- **`pages/*`: один срез на маршрут (AC8).** `dashboard` (`/`), `operations`,
+  `payments`, `accounts`, `categories`, `analytics`, `health`, `profile`,
+  `subscriptions`, `assistant`, `imports`, `login`, `password-entry`. Срез
+  `password-entry` обслуживает `/register`, `/forgot-password` и `/reset-password`
+  через параметр `view`, как раньше. Новые страницы не обращаются к API и не
+  читают `pathname`. Они задают заголовок и компонуют виджеты.
+- **`widgets/ledger-screen`.** Общий каркас денежных страниц. В нём:
+  - шесть запросов главной: счета, категории, события, чеки, обязательства и
+    позиция денег;
+  - статус в заголовке;
+  - кнопки «Добавить счёт» и «Добавить операцию» с диалогами;
+  - баннер «Обзор загружен частично»;
+  - скелетон и приглашение «Начните с первого счёта».
+
+  Страница задаёт `accountAction` (`always`, `when-empty` или `never`, по
+  SPEC-0036), `operationAction` и `gated`. Данные приходят в render-prop
+  `children(ledger)`. Поэтому пустой ledger и диалоги создания написаны один раз.
+- **Виджеты главной:**
+  - `overview`;
+  - `operations-list`, вместе с `OperationEditor` до фазы 4;
+  - `accounts-list`;
+  - `obligations-board` — бывший `Obligations` из `HomePage`;
+  - `categories-list`;
+  - `financial-health`;
+  - `period-analytics` — бывший `Analytics` («Подробные расчёты остатков и
+    платежей»);
+  - `statistics-charts` — бывший `StatisticsPage`, теперь `StatisticsPanel`:
+    `compact` на `/`, полный вид на `/analytics`.
+
+  Импорт page → page `home → statistics` исчез.
+- **`features/password-auth`.** `PasswordForm` нужен и на `/login`, и на
+  `/register` и соседних страницах. Если оставить его в `pages/login`, появится
+  импорт page → page. Поэтому форма опустилась в фичу из списка спецификации.
+- **`index.ts` у `features/create-account`, `user-profile`, `obligation-schedule`.**
+  Новые страницы и виджеты импортируют эти фичи через public API. Без него
+  Steiger выдал бы новые `no-public-api-sidestep` на новых путях.
+- **`shared/lib/date`: `browserMonthPeriod` и `browserMonthEnd`.** Это бывшие
+  `initialPeriod` и `initialThrough` из `HomePage` без изменений, по локальной
+  дате браузера. Ими пользуются `ledger-screen` и `period-analytics`.
+
+### Решения по ходу фазы
+
+- **Поведение layout route.** `AuthBoundary` и `AppLayout` больше не
+  монтируются заново при каждом переходе. Следствия:
+  - Запрос `/api/auth/me` выполняется при входе в защищённую часть и при
+    возврате фокуса окна (`refetchOnWindowFocus`), а не при каждом переходе по
+    меню. Защита от 401 сохраняется: клиент API по-прежнему отправляет событие
+    `grace:unauthenticated`, кэш очищается, пользователь попадает на `/login`.
+  - Мобильное меню после выбора раздела закрывается с той же анимацией, что и
+    по крестику. Раньше оно исчезало вместе с размонтированной оболочкой.
+- **Скрытая кнопка «Добавить операцию».** На `main` диалог операции рендерился на
+  всех страницах `HomePage`. Вне `/` и `/operations` его кнопка имела класс
+  `hidden`. Теперь диалог есть только на этих двух страницах. Видимых изменений
+  нет.
+- **Тесты.** `HomePage.test.tsx` и `DueSoon.test.tsx` разнесены по срезам,
+  проверки не изменены:
+  - `pages/dashboard` — пустой ledger;
+  - `pages/profile` — SPEC-0036;
+  - `pages/payments` — SPEC-0046, «скоро»;
+  - `widgets/overview` — 3 теста;
+  - `features/create-account` — 2 теста;
+  - `features/create-financial-event` — 1 тест.
+
+  `AssistantPage.test` теперь рендерит страницу внутри `AppLayout`, потому что
+  проверяет меню оболочки. Добавлен `app/router.test.tsx` с 3 тестами.
+- **ESLint `no-time-zone-literal`.** Перенесённые `Accounts.test.tsx` и
+  `ImportsPage.test.tsx` берут смещение из `APP_UTC_OFFSET`. Записи удалены и
+  на новых путях не появились.
+- **ESLint `no-direct-invalidate`: решение владельца.** Вместе с кодом
+  перенесены 7 файлов с прямыми `invalidateQueries`:
+  - `Accounts`;
+  - `Categories`;
+  - `OperationEditor`;
+  - `LedgerScreen` — кнопка «Повторить» бывшего `HomePage`;
+  - `ImportsPage`;
+  - `MonthPanel`;
+  - `SubscriptionsPage`.
+
+  Чтобы их исправить, нужны хуки мутаций в `features/*/api`. Это работа фазы 4,
+  где `ImportsPage` ещё и делится. Делать это в фазе 3 неразумно. Поэтому
+  записи временно стоят на новых путях отдельным блоком
+  `eslint.baseline.js`. Число файлов в правиле не выросло (14 → 14). Владелец
+  2026-10-15 в чате: «Keep the moved no-direct-invalidate entries in the separate
+  baseline block until phase 4.» Блок удаляется в фазе 4 вместе с хуками мутаций.
+- **Финансовая арифметика в React** при переносе не найдена: вычисления не
+  менялись. `Obligations` по-прежнему суммирует `remainingMinor` по валютам для
+  подписи «Осталось». Это отображение серверных остатков, а не новая арифметика.
+
+### Исполняемые свидетельства
+
+| Проверка | Результат |
+| --- | --- |
+| `make test` | Exit 0. Go: `ok` во всех пакетах. Web: 40 файлов и 222 теста (было 219), `lint`, `lint:fsd` (OK, 13 записей в baseline), `format:check`, `build`. Jev eval: `ok` |
+| Ни одна страница не ветвится по `pathname` | `grep -rn "pathname\|useLocation" web/src/pages` → пусто |
+| Нет импортов page → page и widget → widget | `grep -rn "from '@/pages/" web/src/pages` → пусто; `grep -rn "from '@/widgets/" web/src/widgets \| grep -v test` → пусто |
+| AC8: прежние URL, у каждого маршрута свой срез | `npx vitest run src/app/router.test.tsx` → 3 passed. Набор из 15 путей совпадает с `e623775`. Есть один layout route без `path` с 11 защищёнными путями, 4 публичных пути лежат вне его. `/categories` рендерится в оболочке после проверки сессии |
+| Baseline Steiger | `npm run lint:fsd -- --prune` удалил 12 записей, 25 → 13. Удалены 5 `no-public-api-sidestep` (`HomePage`, `HomePage.test`), 4 `no-segmentless-slices` (`imports`, `login`, `statistics`, `subscriptions`) и 3 `public-api` (`create-account`, `obligation-schedule`, `user-profile`). Новых диагностик нет |
+| Baseline ESLint | `git diff --stat main -- web/eslint.baseline.js web/steiger.baseline.json` → 13 вставок, 22 удаления. Путей файлов 17 → 15. `no-time-zone-literal`: 3 → 1. `no-direct-invalidate`: 14 → 14, из них 7 путей перенесены (см. выше) |
+| `git diff --check` | Чисто |
+
+### Smoke-чеклист (`0020-smoke-checklist.md`)
+
+Стенд: `docker compose -p grace-fsd3-smoke up postgres migrate api` с
+`GRACE_AUTH_MODE=development` и отдельным томом, плюс `npm run dev` из ветки.
+Проверка во встроенном браузере: desktop 1280 px и mobile 375×812. После
+проверки стенд удалён (`down -v`).
+
+| Пункт | Результат |
+| --- | --- |
+| 1. Разделы и меню | Все 11 защищённых маршрутов открыты на desktop через боковую навигацию и на 375 px через «Меню». Заголовок страницы и активный пункт совпадают с URL. После перехода фокус на `#main-content`, на телефоне видна нижняя панель. `back` возвращает в предыдущий раздел. Диалог «Добавить операцию» открывается и закрывается по Esc. Ошибок в консоли нет |
+| 9. Узкий экран | На 375 px `scrollWidth` = 375 на всех маршрутах, горизонтальной прокрутки нет. На desktop `scrollWidth` не больше ширины окна |
+| Публичные маршруты | `/register`, `/forgot-password` и `/reset-password` открываются без оболочки. `/login` с активной сессией ведёт на `/`, как на `main` |
+| 2. Пустое пространство | В браузере не проверено: на стенде уже есть счёт. Покрыто тестом `pages/dashboard/ui/DashboardPage.test.tsx` |
+| 3–8 и 10 (записи) | Не выполнялись. Чеклист разрешает тестовые записи только после явного подтверждения пользователя, а его не было. Формы не менялись, их тесты перенесены без изменений |
+| Сравнение со снимками `e623775` (AC12) | Не выполнялось: это критерий фазы 5 |

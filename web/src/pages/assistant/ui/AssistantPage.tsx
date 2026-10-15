@@ -34,7 +34,6 @@ import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Label } from '@/shared/ui/label'
-import { AppLayout } from '@/widgets/app-shell'
 import { Textarea } from '@/shared/ui/textarea'
 import { AIAnalysis } from './AIAnalysis'
 import { ReceiptPhoto } from './ReceiptPhoto'
@@ -427,78 +426,76 @@ export function AssistantPage({
   }
 
   return (
-    <AppLayout>
-      <section className="space-y-6">
-        <PageHeader
-          title="Ассистент"
-          description="Спросите о своих деньгах. Ответы опираются на проверяемые расчёты Grace."
-        />
-        <AIAnalysis />
-        <ReceiptPhoto />
-        <AIGuide />
-        <Disclosure title="Быстрые запросы к данным Grace">
-          <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary p-4 text-sm leading-relaxed text-secondary-foreground shadow-sm sm:p-5">
-            <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card">
-              <ShieldCheck className="size-5" aria-hidden="true" />
-            </div>
-            <p>
-              <span className="font-semibold">Перед отправкой:</span> текст текущего вопроса, язык и
-              время передаются TypeSafe. Финансовые записи и результаты инструментов провайдеру не
-              отправляются.
-            </p>
+    <section className="space-y-6">
+      <PageHeader
+        title="Ассистент"
+        description="Спросите о своих деньгах. Ответы опираются на проверяемые расчёты Grace."
+      />
+      <AIAnalysis />
+      <ReceiptPhoto />
+      <AIGuide />
+      <Disclosure title="Быстрые запросы к данным Grace">
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary p-4 text-sm leading-relaxed text-secondary-foreground shadow-sm sm:p-5">
+          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-card">
+            <ShieldCheck className="size-5" aria-hidden="true" />
           </div>
+          <p>
+            <span className="font-semibold">Перед отправкой:</span> текст текущего вопроса, язык и
+            время передаются TypeSafe. Финансовые записи и результаты инструментов провайдеру не
+            отправляются.
+          </p>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Что вы хотите узнать?</CardTitle>
-              <CardDescription>
-                Например: «Покажи мои счета», «Какие обязательства актуальны?» или «Куда ушли деньги
-                после последнего дохода?»
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-3" onSubmit={submit}>
-                <Label htmlFor="assistant-question">Вопрос</Label>
-                <Textarea
-                  id="assistant-question"
-                  value={utterance}
-                  onChange={(event) => setUtterance(event.target.value)}
-                  onKeyDown={handleKeyDown}
-                  aria-invalid={Boolean(
-                    error && (byteCount === 0 || byteCount > MAX_UTTERANCE_BYTES),
-                  )}
-                  aria-describedby="assistant-hint assistant-counter"
-                  placeholder="Покажи мои последние чеки"
-                  disabled={isSubmitting}
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <span id="assistant-hint">Ctrl+Enter или ⌘+Enter — отправить</span>
-                  <span
-                    id="assistant-counter"
-                    className={byteCount > MAX_UTTERANCE_BYTES ? 'text-destructive' : undefined}
-                  >
-                    {byteCount} / {MAX_UTTERANCE_BYTES} байт
-                  </span>
-                </div>
-                <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>
-                  <Send className="mr-2 size-4" aria-hidden="true" />
-                  {isSubmitting ? 'Спрашиваю…' : 'Спросить Grace'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Что вы хотите узнать?</CardTitle>
+            <CardDescription>
+              Например: «Покажи мои счета», «Какие обязательства актуальны?» или «Куда ушли деньги
+              после последнего дохода?»
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-3" onSubmit={submit}>
+              <Label htmlFor="assistant-question">Вопрос</Label>
+              <Textarea
+                id="assistant-question"
+                value={utterance}
+                onChange={(event) => setUtterance(event.target.value)}
+                onKeyDown={handleKeyDown}
+                aria-invalid={Boolean(
+                  error && (byteCount === 0 || byteCount > MAX_UTTERANCE_BYTES),
+                )}
+                aria-describedby="assistant-hint assistant-counter"
+                placeholder="Покажи мои последние чеки"
+                disabled={isSubmitting}
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                <span id="assistant-hint">Ctrl+Enter или ⌘+Enter — отправить</span>
+                <span
+                  id="assistant-counter"
+                  className={byteCount > MAX_UTTERANCE_BYTES ? 'text-destructive' : undefined}
+                >
+                  {byteCount} / {MAX_UTTERANCE_BYTES} байт
+                </span>
+              </div>
+              <Button className="w-full sm:w-auto" type="submit" disabled={isSubmitting}>
+                <Send className="mr-2 size-4" aria-hidden="true" />
+                {isSubmitting ? 'Спрашиваю…' : 'Спросить Grace'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-          <div role="status" aria-live="polite">
-            {isSubmitting && <LoadingSkeleton label="Grace выбирает безопасный источник данных…" />}
-            {error && <Notice title="Не удалось выполнить запрос" text={error} />}
-            {result && (
-              <ResultBoundary result={result}>
-                <AssistantResultView result={result} />
-              </ResultBoundary>
-            )}
-          </div>
-        </Disclosure>
-      </section>
-    </AppLayout>
+        <div role="status" aria-live="polite">
+          {isSubmitting && <LoadingSkeleton label="Grace выбирает безопасный источник данных…" />}
+          {error && <Notice title="Не удалось выполнить запрос" text={error} />}
+          {result && (
+            <ResultBoundary result={result}>
+              <AssistantResultView result={result} />
+            </ResultBoundary>
+          )}
+        </div>
+      </Disclosure>
+    </section>
   )
 }

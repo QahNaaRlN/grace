@@ -1,61 +1,52 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Outlet, type RouteObject } from 'react-router-dom'
 
-import { HomePage } from '@/pages/home'
+import { AccountsPage } from '@/pages/accounts'
+import { AnalyticsPage } from '@/pages/analytics'
 import { AssistantPage } from '@/pages/assistant'
-import { LoginPage } from '@/pages/login/LoginPage'
-import { ImportsPage } from '@/pages/imports/ImportsPage'
+import { CategoriesPage } from '@/pages/categories'
+import { DashboardPage } from '@/pages/dashboard'
+import { HealthPage } from '@/pages/health'
+import { ImportsPage } from '@/pages/imports'
+import { LoginPage } from '@/pages/login'
+import { OperationsPage } from '@/pages/operations'
+import { PasswordEntryPage } from '@/pages/password-entry'
+import { PaymentsPage } from '@/pages/payments'
+import { ProfilePage } from '@/pages/profile'
+import { SubscriptionsPage } from '@/pages/subscriptions'
+import { AppLayout } from '@/widgets/app-shell'
 import { AuthBoundary } from './AuthBoundary'
-import { PasswordEntry } from '@/pages/login/PasswordEntry'
-import { SubscriptionsPage } from '@/pages/subscriptions/SubscriptionsPage'
 
 /**
- * Маршрутизатор приложения с корневой страницей разработки.
+ * Маршруты приложения: публичные страницы входа и layout route с проверкой доступа и
+ * оболочкой, внутри которого каждая страница — свой срез `pages/*`.
  */
-export const appRouter = createBrowserRouter([
+export const appRoutes: RouteObject[] = [
   {
-    path: '/subscriptions',
     element: (
       <AuthBoundary>
-        <SubscriptionsPage />
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
       </AuthBoundary>
     ),
+    children: [
+      { path: '/', element: <DashboardPage /> },
+      { path: '/operations', element: <OperationsPage /> },
+      { path: '/payments', element: <PaymentsPage /> },
+      { path: '/accounts', element: <AccountsPage /> },
+      { path: '/categories', element: <CategoriesPage /> },
+      { path: '/analytics', element: <AnalyticsPage /> },
+      { path: '/health', element: <HealthPage /> },
+      { path: '/profile', element: <ProfilePage /> },
+      { path: '/subscriptions', element: <SubscriptionsPage /> },
+      { path: '/assistant', element: <AssistantPage /> },
+      { path: '/imports', element: <ImportsPage /> },
+    ],
   },
-  {
-    path: '/',
-    element: (
-      <AuthBoundary>
-        <HomePage />
-      </AuthBoundary>
-    ),
-  },
-  {
-    path: '/assistant',
-    element: (
-      <AuthBoundary>
-        <AssistantPage />
-      </AuthBoundary>
-    ),
-  },
-  ...['operations', 'payments', 'accounts', 'categories', 'analytics', 'health', 'profile'].map(
-    (page) => ({
-      path: `/${page}`,
-      element: (
-        <AuthBoundary>
-          <HomePage />
-        </AuthBoundary>
-      ),
-    }),
-  ),
   { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <PasswordEntry view="register" /> },
-  { path: '/forgot-password', element: <PasswordEntry view="forgot" /> },
-  { path: '/reset-password', element: <PasswordEntry view="reset" /> },
-  {
-    path: '/imports',
-    element: (
-      <AuthBoundary>
-        <ImportsPage />
-      </AuthBoundary>
-    ),
-  },
-])
+  { path: '/register', element: <PasswordEntryPage view="register" /> },
+  { path: '/forgot-password', element: <PasswordEntryPage view="forgot" /> },
+  { path: '/reset-password', element: <PasswordEntryPage view="reset" /> },
+]
+
+export const appRouter = createBrowserRouter(appRoutes)
