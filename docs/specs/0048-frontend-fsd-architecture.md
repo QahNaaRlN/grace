@@ -219,8 +219,10 @@
   `/api/…` продукта, кроме транспорта `shared/api`.
 - [ ] AC5: литералы `queryKey` встречаются только в `entities/*/api`;
   `invalidateQueries` — только в хуках `features/*/api` и `entities`.
-- [ ] AC6: `csrfToken` используется только в `shared/api`; ручного заголовка
-  `X-CSRF-Token` в компонентах нет.
+- [ ] AC6: хранилище CSRF-токена импортируется только в `shared/api`; ручного
+  заголовка `X-CSRF-Token` вне `shared/api` нет. Поле `csrfToken` ответа
+  `/api/auth/me` и фикстуры тестов этим критерием не ограничиваются (уточнено
+  владельцем 2026-10-15 после фазы 1).
 - [ ] AC7: `Asia/Yekaterinburg` и `+05:00` встречаются только в `shared/config`.
 - [ ] AC8: каждому маршруту `app/router.tsx` соответствует свой срез `pages/*`;
   ни одна страница не ветвится по `pathname`; набор URL совпадает с `e623775`.
@@ -241,7 +243,7 @@
     make test-integration
     # AC5–AC7, AC9
     ! grep -rnE "queryKey: *\[" web/src --include=*.ts* | grep -v "/entities/[^/]*/api/"
-    ! grep -rln "csrfToken" web/src --include=*.tsx
+    ! grep -rnE "import .*\bcsrfToken\b|X-CSRF-Token" web/src | grep -v "^web/src/shared/api/"
     ! grep -rnE "Asia/Yekaterinburg|\+05:00" web/src --include=*.ts* | grep -vE "shared/config|generated|\.test\."
     find web/src -name "*.ts*" ! -path "*generated*" ! -name "*.test.*" | xargs wc -l | awk '$2!="total" && $1>300'
 
