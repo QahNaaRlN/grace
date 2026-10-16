@@ -58,7 +58,7 @@ vps 'chmod 0755 /opt/grace/releases/test/*.sh /usr/local/mock/docker &&
 # The owner's key pair stays outside /opt/grace; only the public key reaches the VPS.
 vps 'age-keygen -o /root/owner-identity 2>/dev/null'
 recipient="$(vps 'age-keygen -y /root/owner-identity')"
-offsite_env() { # offsite_env SECRET
+offsite_env() { # offsite_env SECRET [RECIPIENT]
   vps "umask 077; cat > /opt/grace/shared/secrets/offsite.env <<EOF
 GRACE_OFFSITE_ENDPOINT='http://$run_id-s3:8080'
 GRACE_OFFSITE_REGION='ru-central1'
@@ -66,7 +66,7 @@ GRACE_OFFSITE_BUCKET='backups'
 GRACE_OFFSITE_PREFIX='grace'
 GRACE_OFFSITE_ACCESS_KEY_ID='test-access'
 GRACE_OFFSITE_SECRET_ACCESS_KEY='$1'
-GRACE_OFFSITE_AGE_RECIPIENT='$recipient'
+GRACE_OFFSITE_AGE_RECIPIENT='${2:-$recipient}'
 GRACE_OFFSITE_ALERT_TO='owner@example.test'
 EOF"
 }
@@ -83,7 +83,7 @@ fi
 
 echo "AC1/AC2: a daily backup is encrypted, uploaded and decryptable only with the owner's key"
 offsite_env test-secret
-vps 'grep -rl "AGE-SECRET-KEY" /opt/grace' && fail "a private key is under /opt/grace"
+vps 'grep -rlE "AGE-SECRET-KEY-1[0-9A-Z]{20}" /opt/grace' && fail "a private key is under /opt/grace"
 backup daily > "$tmp_dir/upload.out" || fail "backup with off-site copy failed"
 dump="$(head -n 1 "$tmp_dir/upload.out")"
 name="$(basename "$dump")"
@@ -127,11 +127,26 @@ vps 'grep -q "Subject: Grace: backup failed (upload)" /tmp/curl-message &&
   ! grep -q "mail-password-value\|wrong-secret-value" /tmp/curl-args /tmp/curl-message' \
   || fail "alert content is wrong"
 
+echo "AC4: a private key in the recipient setting is refused and never printed"
+private_key="$(vps 'grep "^AGE-SECRET-KEY-" /root/owner-identity')"
+offsite_env test-secret "$private_key"
+if backup manual > "$tmp_dir/private.out" 2> "$tmp_dir/private.err"; then fail "a private key was accepted as recipient"; fi
+grep -q 'holds a private age key' "$tmp_dir/private.err" || { cat "$tmp_dir/private.err" >&2; fail "private key not reported"; }
+vps 'grep -q "^stage=config$" /opt/grace/backups/.offsite-failure' || fail "config failure not recorded"
+if grep -q "$private_key" "$tmp_dir/private.out" "$tmp_dir/private.err"; then fail "the private key reached the output"; fi
+vps 'PATH=/usr/local/mail:$PATH /opt/grace/current/backup-failure-mail.sh' >/dev/null || fail "alert script failed"
+vps "! grep -q '$private_key' /tmp/curl-message /tmp/curl-args" || fail "the private key reached the alert"
+
+echo "AC4: age errors never reach the output"
+offsite_env test-secret 'age1notavalidkey'
+if backup manual > "$tmp_dir/badkey.out" 2> "$tmp_dir/badkey.err"; then fail "an invalid recipient was accepted"; fi
+if grep -q 'age1notavalidkey\|age: error' "$tmp_dir/badkey.out" "$tmp_dir/badkey.err"; then fail "age output reached the log"; fi
+
 echo "upload-pending retries the failed copy once the key is fixed"
 offsite_env test-secret
 vps '/opt/grace/current/backup.sh upload-pending' > "$tmp_dir/pending.out" || fail "upload-pending failed"
 grep -q "off-site copy uploaded: $(basename "$failed").age" "$tmp_dir/pending.out" || fail "pending copy not uploaded"
-[ "$(grep -c 'off-site copy uploaded' "$tmp_dir/pending.out")" -eq 2 ] || fail "expected the two pending dumps"
+[ "$(grep -c 'off-site copy uploaded' "$tmp_dir/pending.out")" -eq 4 ] || fail "expected the four pending dumps"
 vps 'test ! -f /opt/grace/backups/.offsite-failure' || fail "failure state not cleared"
 
 echo "AC6 (synthetic): the owner's restore drill restores a real dump"
