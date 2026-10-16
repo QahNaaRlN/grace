@@ -3,6 +3,7 @@ Description=Grace daily PostgreSQL backup
 Requires=docker.service
 After=docker.service
 ConditionPathExists=/opt/grace/current/backup.sh
+OnFailure=grace-backup-failure.service
 
 [Service]
 Type=oneshot

@@ -161,8 +161,7 @@ release. Database down migration не выполняется автоматич�
 ```
 
 Backup считается пригодным только после `pg_restore --list` и отдельного restore
-drill. Пока копии находятся только на том же VPS, потеря VPS остаётся
-непокрытым риском.
+drill. Зашифрованная копия вне VPS описана в разделе «Off-site backup».
 
 Ежедневный timer устанавливается при bootstrap:
 
@@ -179,6 +178,129 @@ systemctl enable --now grace-backup.timer
 `pre-release-*` backup, в том числе пустой проверенный dump перед первой
 migration. Эти копии автоматически не удаляются. Timer создаёт `daily-*` и
 хранит последние семь таких файлов.
+
+## Off-site backup (SPEC-0050)
+
+Каждый `daily`, `manual` и `pre-release` dump после проверки шифруется
+открытым ключом владельца (`age`) и загружается в Yandex Object Storage.
+Закрытого ключа на VPS нет. Ключ облака на VPS может только загружать объекты.
+Без `/opt/grace/shared/secrets/offsite.env` всё работает как раньше, с одним
+предупреждением «copies stay on this VPS only».
+
+### Ключ владельца
+
+На своей машине (Linux/macOS: пакет `age`; Windows: через Docker):
+
+```bash
+docker run --rm -it alpine:3.20 sh -c 'apk add --no-cache --quiet age && age-keygen'
+```
+
+Строка `AGE-SECRET-KEY-…` — закрытый ключ. Сохранить его в менеджер паролей и
+отдельно офлайн (например, распечатка или флешка в надёжном месте). Без него
+копии не расшифровать. Строка `public key: age1…` идёт в `offsite.env`.
+
+### Bucket и сервисные аккаунты (консоль Yandex Cloud)
+
+1. Bucket с ограниченным доступом (не публичный), например `grace-backups-<суффикс>`,
+   класс хранения «Стандартное». Включить **версионирование**.
+2. Жизненный цикл bucket, три правила; в каждом удалять неактуальные версии
+   (NoncurrentVersionExpiration) через 35 дней:
+   - префикс `grace/daily-` — удалять объекты через 35 дней;
+   - префикс `grace/pre-release-` — через 180 дней;
+   - префикс `grace/manual-` — через 180 дней.
+3. Сервисные аккаунты без ролей на каталог. Роли назначаются только на bucket
+   (Безопасность → Права доступа):
+   - `grace-backup-uploader` — `storage.uploader`. Его статический ключ
+     попадает только в `offsite.env` на VPS;
+   - `grace-backup-reader` — `storage.viewer`. Его статический ключ хранится
+     только у владельца, для восстановления, и на VPS не кладётся.
+4. Политика доступа bucket (Безопасность → Политика доступа), четыре правила:
+
+   | Правило | Результат | Кто | Действия | Ресурсы |
+   |---|---|---|---|---|
+   | `uploader-put-only` | Разрешить | `grace-backup-uploader` | `s3:PutObject` | `<bucket>/*` |
+   | `reader-restore` | Разрешить | `grace-backup-reader` | `s3:GetObject`, `s3:ListBucket` | `<bucket>/*`, `<bucket>` |
+   | правило для доступа из консоли | Разрешить | все, условие `PrincipalIsAWSService = true` | все | `<bucket>/*`, `<bucket>` |
+   | `uploader-no-read` | Запретить | `grace-backup-uploader` | `s3:GetObject`, `s3:GetObjectVersion`, `s3:ListBucket`, `s3:ListBucketVersions` | `<bucket>/*`, `<bucket>` |
+
+   Почему так: если политика задана, запрос, не подошедший ни под одно её
+   правило, проверяется по ACL объекта ([порядок проверки
+   доступа](https://yandex.cloud/ru/docs/storage/security/overview)). Поэтому
+   каждому, кому нужен доступ, — загрузчику, читателю и консоли — нужно явное
+   `Allow`, иначе он может потерять доступ. Правило `Deny` тоже не даёт
+   окончательного отказа, а передаёт решение ACL объекта, поэтому отказ на чтение
+   проверяется командами ниже. Удаление роль `storage.uploader` не разрешает;
+   перезапись возможна, но версионирование сохраняет прежнюю версию.
+
+### Установка на VPS
+
+```bash
+apt-get install -y age rclone curl
+install -m 0600 -o grace-deploy -g grace-deploy /dev/null /opt/grace/shared/secrets/offsite.env
+# заполнить по deployments/production/offsite.env.example
+install -m 0644 /opt/grace/current/grace-backup.service /etc/systemd/system/grace-backup.service
+install -m 0644 /opt/grace/current/grace-backup-failure.service \
+  /etc/systemd/system/grace-backup-failure.service
+systemctl daemon-reload
+sudo -u grace-deploy /opt/grace/current/backup.sh
+```
+
+Последняя команда должна вывести путь dump и строку
+`off-site copy uploaded: <name>.dump.age sha256=…`.
+
+Проверка прав (каждая команда должна получить отказ доступа):
+
+```bash
+sudo -u grace-deploy sh -c 'set -a; . /opt/grace/shared/secrets/offsite.env; set +a
+export RCLONE_CONFIG_O_TYPE=s3 RCLONE_CONFIG_O_PROVIDER=Other \
+  RCLONE_CONFIG_O_ENDPOINT="$GRACE_OFFSITE_ENDPOINT" RCLONE_CONFIG_O_REGION="$GRACE_OFFSITE_REGION" \
+  RCLONE_CONFIG_O_ACCESS_KEY_ID="$GRACE_OFFSITE_ACCESS_KEY_ID" \
+  RCLONE_CONFIG_O_SECRET_ACCESS_KEY="$GRACE_OFFSITE_SECRET_ACCESS_KEY"
+o="o:$GRACE_OFFSITE_BUCKET/grace"
+rclone lsf "$o"; rclone cat "$o/<name>.dump.age" | head -c1; rclone deletefile "$o/<name>.dump.age"'
+```
+
+### Сбои
+
+При ошибке backup или загрузки `grace-backup.service` завершается с ошибкой,
+а `grace-backup-failure.service` отправляет письмо на `GRACE_OFFSITE_ALERT_TO`
+через Postbox (те же SMTP-настройки, что в `email.env`). Письмо содержит этап,
+имя файла и время, без секретов и финансовых данных. Локальный dump при сбое
+загрузки сохраняется. Догрузить всё, что не ушло в облако:
+
+```bash
+sudo -u grace-deploy /opt/grace/current/backup.sh upload-pending
+```
+
+Сбой загрузки во время deploy не останавливает выпуск: выводится
+предупреждение, копию догружает `upload-pending` или следующий запуск.
+
+### Restore drill с машины владельца
+
+Нужны Docker и POSIX shell (на Windows — Git Bash). Файл с ключом читателя
+(`GRACE_OFFSITE_ENDPOINT`, `_REGION`, `_BUCKET`, `_PREFIX`, `_ACCESS_KEY_ID`,
+`_SECRET_ACCESS_KEY` аккаунта `grace-backup-reader`) и закрытый ключ `age`
+хранятся у владельца.
+
+```bash
+scripts/restore-offsite.sh ~/grace-reader.env ~/grace-age-identity.txt
+```
+
+Скрипт скачивает последний `daily-*.dump.age`, проверяет SHA-256, расшифровывает,
+восстанавливает его в одноразовый PostgreSQL и печатает число строк в
+`financial_events`, `postings`, `accounts`, `loan_documents`. Для сравнения
+с production сразу после ручного backup выполнить на VPS тот же `SELECT count(*)`.
+
+### Полная потеря VPS
+
+1. Поднять новый VPS по разделам выше (bootstrap, секреты из хранилища
+   владельца, первый deploy пустой базы не выполнять).
+2. На машине владельца скачать и расшифровать нужную копию:
+   `rclone copyto <remote>/<name>.dump.age .` и
+   `age -d -i <identity> -o grace.dump <name>.dump.age`.
+3. Перенести `grace.dump` на VPS, запустить `postgres` текущего release, создать
+   роль `grace_financial` (`CREATE ROLE grace_financial NOLOGIN`) и выполнить
+   `pg_restore -U grace -d grace --exit-on-error < grace.dump`, затем deploy.
 
 ## Operations
 

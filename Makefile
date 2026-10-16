@@ -41,6 +41,7 @@ test-integration:
 test-production:
 	./scripts/test-commitments-rollout.sh
 	./scripts/test-production-deployment.sh
+	./scripts/test-offsite-backup.sh
 
 build:
 	go build -o bin/grace-api ./cmd/api

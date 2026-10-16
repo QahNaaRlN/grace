@@ -28,9 +28,13 @@ POSTGRES_PASSWORD=test-postgres-password GRACE_SECRETS_DIR="$secrets" docker com
 sh -n "$bundle/deploy.sh"
 sh -n "$bundle/backup.sh"
 sh -n "$bundle/restore-drill.sh"
+sh -n "$bundle/offsite-upload.sh"
+sh -n "$bundle/backup-failure-mail.sh"
 sh -n "$bundle/install-firewall.sh"
 test -f "$bundle/grace-backup.service"
 test -f "$bundle/grace-backup.timer"
+test -f "$bundle/grace-backup-failure.service"
+grep -q 'OnFailure=grace-backup-failure.service' "$bundle/grace-backup.service"
 test -f "$bundle/grace-firewall.service"
 test -f "$bundle/grace-firewall.nft"
 

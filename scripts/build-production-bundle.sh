@@ -23,6 +23,9 @@ cp "$repo_root/deployments/production/deploy.sh" "$output/deploy.sh"
 cp "$repo_root/scripts/check-public-entrypoint.sh" "$output/check-public-entrypoint.sh"
 cp "$repo_root/deployments/production/backup.sh" "$output/backup.sh"
 cp "$repo_root/deployments/production/restore-drill.sh" "$output/restore-drill.sh"
+cp "$repo_root/deployments/production/offsite-upload.sh" "$output/offsite-upload.sh"
+cp "$repo_root/deployments/production/backup-failure-mail.sh" "$output/backup-failure-mail.sh"
+cp "$repo_root/deployments/production/grace-backup-failure.service" "$output/grace-backup-failure.service"
 cp "$repo_root/deployments/production/grace-backup.service" "$output/grace-backup.service"
 cp "$repo_root/deployments/production/grace-backup.timer" "$output/grace-backup.timer"
 cp "$repo_root/deployments/production/grace-firewall.nft" "$output/grace-firewall.nft"
@@ -42,5 +45,5 @@ done
 cp "$repo_root"/deployments/production/migrations/000002_reference_categories.* \
   "$output/migrations/"
 
-chmod 0755 "$output/deploy.sh" "$output/check-public-entrypoint.sh" "$output/backup.sh" "$output/restore-drill.sh" \
+chmod 0755 "$output/deploy.sh" "$output/check-public-entrypoint.sh" "$output/backup.sh" "$output/restore-drill.sh" "$output/offsite-upload.sh" "$output/backup-failure-mail.sh" \
   "$output/install-firewall.sh"

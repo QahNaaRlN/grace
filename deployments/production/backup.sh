@@ -2,10 +2,12 @@
 set -eu
 
 label="${1:-manual}"
+script_dir="$(CDPATH='' cd -- "$(dirname "$0")" && pwd)"
 case "$label" in
   daily|manual) ;;
+  upload-pending) exec "$script_dir/offsite-upload.sh" --pending ;;
   *)
-    echo "usage: $0 [daily|manual]" >&2
+    echo "usage: $0 [daily|manual|upload-pending]" >&2
     exit 2
     ;;
 esac
@@ -48,9 +50,11 @@ if [ "$label" = "daily" ]; then
     cut -d' ' -f2- |
     while IFS= read -r expired_backup; do
       case "$expired_backup" in
-        "$backups_dir"/daily-*.dump) rm -f -- "$expired_backup" ;;
+        "$backups_dir"/daily-*.dump) rm -f -- "$expired_backup" "$expired_backup.uploaded" ;;
       esac
     done
 fi
 
 echo "$backup"
+# The local dump is complete either way; a failed upload fails the unit (SPEC-0050).
+"$script_dir/offsite-upload.sh" "$backup"
