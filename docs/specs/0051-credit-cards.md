@@ -1,14 +1,14 @@
 # SPEC-0051: кредитные карты — условия, долг и льготный период
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-16 в чате: «лучше пока приступить к разработке,
   потом добавлю другие модели, если есть. Будет отдельная задача по синхронизации
   условий кредитных карт».
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/credit-cards`
+- Implementation commit: см. [evidence](0051-evidence.md)
 - Этап roadmap: 3 «Счета, кредитные договоры и финансирование», первая часть
 
 ## Проблема и пользовательский результат
@@ -156,7 +156,7 @@
 Схемы `CreditCardTerms`, `CreditCardSnapshot`, `CreditCardStatus`
 (расчёт: `debtMinor`, `availableMinor`, `statementPeriod`, `graceAmountMinor`,
 `graceDueOn`, `minimumMinor`, `minimumDueOn`, `graceAtRisk`, `unknown[]`).
-Все суммы — строки минимальных единиц, как в остальном API.
+Все суммы — целые числа минимальных единиц, как у счетов и операций.
 
 ## Данные, миграция и rollback
 
