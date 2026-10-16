@@ -247,3 +247,32 @@ func TestPreviewPeriodRejectsInvalidRequests(t *testing.T) {
 		t.Fatalf("600 months must be allowed: %v", err)
 	}
 }
+
+// SPEC-0053: banks put principal, interest and other charges in different
+// columns; the owner names them and every row's parts add up to the payment.
+func TestPreviewPasteLoanPartsFromDifferentBanks(t *testing.T) {
+	// Bank A: payment, principal, interest, balance.
+	preview, err := PreviewSchedule(previewRequest{Mode: "paste", Text: bankTable(3), PrincipalColumn: 2, InterestColumn: 3})
+	if err != nil || len(preview.Payments) != 3 {
+		t.Fatalf("bank A: %#v %v", preview, err)
+	}
+	first := preview.Payments[0]
+	if *first.PrincipalMinor != 1_800_000 || *first.InterestMinor != 700_000 || *first.OtherMinor != 0 {
+		t.Fatalf("bank A parts %d %d %d", *first.PrincipalMinor, *first.InterestMinor, *first.OtherMinor)
+	}
+	// Bank B: interest, principal, insurance, then the payment.
+	text := "Дата;Проценты;Основной долг;Страховка;Сумма платежа\n15.01.2027;7000,00;17500,00;500,00;25000,00\n15.02.2027;6900,00;17600,00;600,00;25000,00"
+	preview, err = PreviewSchedule(previewRequest{Mode: "paste", Text: text, AmountColumn: 4, PrincipalColumn: 2, InterestColumn: 1, OtherColumn: 3})
+	if err != nil || len(preview.Payments) != 1 || len(preview.RejectedLines) != 2 {
+		t.Fatalf("bank B: %#v %v", preview, err)
+	}
+	if p := preview.Payments[0]; p.AmountMinor != 2_500_000 || *p.PrincipalMinor != 1_750_000 || *p.InterestMinor != 700_000 || *p.OtherMinor != 50_000 {
+		t.Fatalf("bank B parts %#v", p)
+	}
+	if reason := preview.RejectedLines[1].Reason; reason != "основной долг, проценты и прочее не равны платежу" {
+		t.Fatalf("parts that do not add up must be rejected, got %q", reason)
+	}
+	if _, err := PreviewSchedule(previewRequest{Mode: "paste", Text: text, PrincipalColumn: 2}); !errors.Is(err, ErrPreviewInvalid) {
+		t.Fatalf("principal without interest must be rejected, got %v", err)
+	}
+}

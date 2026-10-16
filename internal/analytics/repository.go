@@ -156,6 +156,16 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 	}
 	rows.Close()
 
+	splits, err := debtSplits(ctx, db, from, to, "")
+	if err != nil {
+		return PeriodSummary{}, err
+	}
+	for currency, buckets := range splits {
+		if item := byCurrency[currency]; item != nil {
+			item.DebtSplit = buckets[""]
+		}
+	}
+
 	currencies := make([]CurrencyPeriodSummary, 0, len(byCurrency))
 	keys := sortedKeys(byCurrency)
 	for _, currency := range keys {

@@ -24,19 +24,23 @@ const (
 var ErrPreviewInvalid = errors.New("invalid schedule preview request")
 
 type previewRequest struct {
-	Mode             string                 `json:"mode"`
-	FirstDueOn       string                 `json:"firstDueOn,omitempty"`
-	Count            int                    `json:"count,omitempty"`
-	Interval         string                 `json:"interval,omitempty"`
-	AmountMinor      int64                  `json:"amountMinor,omitempty"`
-	FirstAmountMinor *int64                 `json:"firstAmountMinor,omitempty"`
-	LastAmountMinor  *int64                 `json:"lastAmountMinor,omitempty"`
-	Text             string                 `json:"text,omitempty"`
-	AmountColumn     int                    `json:"amountColumn,omitempty"`
-	Payments         []createPaymentRequest `json:"payments,omitempty"`
-	DayOfMonth       int                    `json:"dayOfMonth,omitempty"`
-	FromMonth        string                 `json:"fromMonth,omitempty"`
-	ToMonth          string                 `json:"toMonth,omitempty"`
+	Mode             string `json:"mode"`
+	FirstDueOn       string `json:"firstDueOn,omitempty"`
+	Count            int    `json:"count,omitempty"`
+	Interval         string `json:"interval,omitempty"`
+	AmountMinor      int64  `json:"amountMinor,omitempty"`
+	FirstAmountMinor *int64 `json:"firstAmountMinor,omitempty"`
+	LastAmountMinor  *int64 `json:"lastAmountMinor,omitempty"`
+	Text             string `json:"text,omitempty"`
+	AmountColumn     int    `json:"amountColumn,omitempty"`
+	// SPEC-0053: money columns of a bank loan schedule; banks order them differently.
+	PrincipalColumn int                    `json:"principalColumn,omitempty"`
+	InterestColumn  int                    `json:"interestColumn,omitempty"`
+	OtherColumn     int                    `json:"otherColumn,omitempty"`
+	Payments        []createPaymentRequest `json:"payments,omitempty"`
+	DayOfMonth      int                    `json:"dayOfMonth,omitempty"`
+	FromMonth       string                 `json:"fromMonth,omitempty"`
+	ToMonth         string                 `json:"toMonth,omitempty"`
 }
 
 type RejectedLine struct {
@@ -62,7 +66,7 @@ func PreviewSchedule(request previewRequest) (SchedulePreview, error) {
 	case "period":
 		return previewPeriod(request)
 	case "paste":
-		return previewPaste(request.Text, request.AmountColumn)
+		return previewPaste(request.Text, pasteColumns{request.AmountColumn, request.PrincipalColumn, request.InterestColumn, request.OtherColumn})
 	case "rows":
 		return previewRows(request.Payments)
 	default:
@@ -152,7 +156,11 @@ var (
 	currencyMark = regexp.MustCompile(`(?i)\s*(₽|руб\.?|rub)\s*`)
 )
 
-func previewPaste(text string, amountColumn int) (SchedulePreview, error) {
+// pasteColumns are 1-based money columns after the date; 0 means "not in the table".
+type pasteColumns struct{ amount, principal, interest, other int }
+
+func previewPaste(text string, columns pasteColumns) (SchedulePreview, error) {
+	amountColumn := columns.amount
 	if strings.TrimSpace(text) == "" {
 		return SchedulePreview{}, fmt.Errorf("%w: вставьте строки графика", ErrPreviewInvalid)
 	}
@@ -161,6 +169,14 @@ func previewPaste(text string, amountColumn int) (SchedulePreview, error) {
 	}
 	if amountColumn < 0 || amountColumn > 12 {
 		return SchedulePreview{}, fmt.Errorf("%w: номер колонки суммы — от 1 до 12", ErrPreviewInvalid)
+	}
+	for _, column := range []int{columns.principal, columns.interest, columns.other} {
+		if column < 0 || column > 12 {
+			return SchedulePreview{}, fmt.Errorf("%w: номер колонки — от 1 до 12", ErrPreviewInvalid)
+		}
+	}
+	if (columns.principal == 0) != (columns.interest == 0) {
+		return SchedulePreview{}, fmt.Errorf("%w: укажите обе колонки — основной долг и проценты", ErrPreviewInvalid)
 	}
 	if amountColumn == 0 {
 		amountColumn = 1
@@ -199,19 +215,54 @@ func previewPaste(text string, amountColumn int) (SchedulePreview, error) {
 			continue
 		}
 		amount := amounts[amountColumn-1]
+		payment := createPaymentRequest{DueOn: due.Format(dateLayout), AmountMinor: amount}
+		partsReason := ""
+		if columns.principal > 0 {
+			payment.PrincipalMinor, payment.InterestMinor, payment.OtherMinor, partsReason = lineParts(amounts, columns, amount)
+		}
 		switch {
 		case amount <= 0:
 			reject("сумма должна быть больше нуля")
+		case partsReason != "":
+			reject(partsReason)
 		case !previous.IsZero() && !due.After(previous):
 			reject("дата не позже предыдущего платежа")
 		case len(payments) == maxSchedulePayments:
 			reject(fmt.Sprintf("больше %d платежей", maxSchedulePayments))
 		default:
-			payments = append(payments, createPaymentRequest{DueOn: due.Format(dateLayout), AmountMinor: amount})
+			payments = append(payments, payment)
 			previous = due
 		}
 	}
 	return summarize(payments, rejected)
+}
+
+// lineParts reads principal, interest and other charges of a pasted row. Without
+// an "other" column, other charges are the payment minus principal and interest.
+func lineParts(amounts []int64, columns pasteColumns, amount int64) (*int64, *int64, *int64, string) {
+	cell := func(column int) (int64, bool) {
+		if column > len(amounts) {
+			return 0, false
+		}
+		return amounts[column-1], true
+	}
+	principal, ok1 := cell(columns.principal)
+	interest, ok2 := cell(columns.interest)
+	if !ok1 || !ok2 {
+		return nil, nil, nil, "нет колонок основного долга или процентов"
+	}
+	other := amount - principal - interest
+	if columns.other > 0 {
+		value, ok := cell(columns.other)
+		if !ok {
+			return nil, nil, nil, "нет колонки прочих платежей"
+		}
+		other = value
+	}
+	if !validParts(&principal, &interest, &other, amount) {
+		return nil, nil, nil, "основной долг, проценты и прочее не равны платежу"
+	}
+	return &principal, &interest, &other, ""
 }
 
 // lineDate finds the first date in a line and returns the text after it.
@@ -301,8 +352,12 @@ func previewRows(rows []createPaymentRequest) (SchedulePreview, error) {
 			rejected = append(rejected, RejectedLine{Line: index + 1, Text: text, Reason: "сумма должна быть больше нуля"})
 		case !previous.IsZero() && !due.After(previous):
 			rejected = append(rejected, RejectedLine{Line: index + 1, Text: text, Reason: "дата не позже предыдущего платежа"})
+		case (row.PrincipalMinor != nil || row.InterestMinor != nil || row.OtherMinor != nil) &&
+			!validParts(row.PrincipalMinor, row.InterestMinor, row.OtherMinor, row.AmountMinor):
+			rejected = append(rejected, RejectedLine{Line: index + 1, Text: text, Reason: "основной долг, проценты и прочее не равны платежу"})
 		default:
-			payments = append(payments, createPaymentRequest{DueOn: due.Format(dateLayout), AmountMinor: row.AmountMinor})
+			payments = append(payments, createPaymentRequest{DueOn: due.Format(dateLayout), AmountMinor: row.AmountMinor,
+				PrincipalMinor: row.PrincipalMinor, InterestMinor: row.InterestMinor, OtherMinor: row.OtherMinor})
 			previous = due
 		}
 	}

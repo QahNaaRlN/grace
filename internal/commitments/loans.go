@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/QahNaaRlN/grace/internal/loans"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -21,10 +22,13 @@ type Loan struct {
 	AgreementOn           *string         `json:"agreementOn"`
 	PrincipalMinor        *int64          `json:"principalMinor"`
 	AnnualRateBasisPoints *int            `json:"annualRateBasisPoints"`
+	RepaymentType         string          `json:"repaymentType"`
 	Reminders             bool            `json:"reminders"`
 	Revision              int             `json:"revision"`
 	Documents             []Document      `json:"documents"`
 	Drafts                []ScheduleDraft `json:"drafts"`
+	// Debt is computed for GET (SPEC-0053) and ignored on save.
+	Debt *loans.DebtStatus `json:"debt,omitempty"`
 }
 type Document struct {
 	ID        string    `json:"id"`
@@ -36,6 +40,15 @@ type Document struct {
 }
 
 func (h *Handler) GetLoan(w http.ResponseWriter, r *http.Request) {
+	on := loans.Today()
+	if value := r.URL.Query().Get("on"); value != "" {
+		parsed, err := loans.ParseDay(value)
+		if err != nil || loans.FormatDay(parsed) != value {
+			web.WriteError(w, 400, "invalid_request", "Дата должна быть в формате ГГГГ-ММ-ДД.")
+			return
+		}
+		on = parsed
+	}
 	tx, err := h.pool.BeginTx(r.Context(), pgx.TxOptions{})
 	if err != nil {
 		failure(w, err)
@@ -47,8 +60,8 @@ func (h *Handler) GetLoan(w http.ResponseWriter, r *http.Request) {
 		failure(w, err)
 		return
 	}
-	loan := Loan{Documents: []Document{}, Drafts: []ScheduleDraft{}}
-	err = tx.QueryRow(r.Context(), `SELECT lender,agreement_number,agreement_on::text,principal_minor,annual_rate_basis_points,reminders,revision FROM loan_details WHERE obligation_id::text=$1`, id).Scan(&loan.Lender, &loan.AgreementNumber, &loan.AgreementOn, &loan.PrincipalMinor, &loan.AnnualRateBasisPoints, &loan.Reminders, &loan.Revision)
+	loan := Loan{Documents: []Document{}, Drafts: []ScheduleDraft{}, RepaymentType: loans.TypeUnknown}
+	err = tx.QueryRow(r.Context(), `SELECT lender,agreement_number,agreement_on::text,principal_minor,annual_rate_basis_points,repayment_type,reminders,revision FROM loan_details WHERE obligation_id::text=$1`, id).Scan(&loan.Lender, &loan.AgreementNumber, &loan.AgreementOn, &loan.PrincipalMinor, &loan.AnnualRateBasisPoints, &loan.RepaymentType, &loan.Reminders, &loan.Revision)
 	if err != nil && err != pgx.ErrNoRows {
 		failure(w, err)
 		return
@@ -93,6 +106,12 @@ func (h *Handler) GetLoan(w http.ResponseWriter, r *http.Request) {
 		failure(w, err)
 		return
 	}
+	debt, err := loans.Debt(r.Context(), tx, id, on)
+	if err != nil {
+		failure(w, err)
+		return
+	}
+	loan.Debt = &debt
 	web.WriteJSON(w, 200, loan)
 }
 func (h *Handler) SaveLoan(w http.ResponseWriter, r *http.Request) {
@@ -100,11 +119,16 @@ func (h *Handler) SaveLoan(w http.ResponseWriter, r *http.Request) {
 	if !web.DecodeJSON(w, r, &loan) {
 		return
 	}
-	loan.Documents=[]Document{}
-	loan.Drafts=[]ScheduleDraft{}
+	loan.Documents = []Document{}
+	loan.Drafts = []ScheduleDraft{}
+	loan.Debt = nil
+	if loan.RepaymentType == "" {
+		loan.RepaymentType = loans.TypeUnknown
+	}
 	loan.Lender = strings.TrimSpace(loan.Lender)
 	loan.AgreementNumber = strings.TrimSpace(loan.AgreementNumber)
-	if !validText(loan.Lender, 160) || !validText(loan.AgreementNumber, 160) || (loan.AgreementOn != nil && !validDate(*loan.AgreementOn)) || (loan.PrincipalMinor != nil && (*loan.PrincipalMinor < 1 || *loan.PrincipalMinor > 9007199254740991)) || (loan.AnnualRateBasisPoints != nil && (*loan.AnnualRateBasisPoints < 0 || *loan.AnnualRateBasisPoints > 100000)) {
+	if !validText(loan.Lender, 160) || !validText(loan.AgreementNumber, 160) || (loan.AgreementOn != nil && !validDate(*loan.AgreementOn)) || (loan.PrincipalMinor != nil && (*loan.PrincipalMinor < 1 || *loan.PrincipalMinor > 9007199254740991)) || (loan.AnnualRateBasisPoints != nil && (*loan.AnnualRateBasisPoints < 0 || *loan.AnnualRateBasisPoints > 100000)) ||
+		(loan.RepaymentType != loans.Annuity && loan.RepaymentType != loans.Differentiated && loan.RepaymentType != loans.TypeUnknown) {
 		invalid(w)
 		return
 	}
@@ -119,9 +143,9 @@ func (h *Handler) SaveLoan(w http.ResponseWriter, r *http.Request) {
 		failure(w, err)
 		return
 	}
-	err = tx.QueryRow(r.Context(), `INSERT INTO loan_details(obligation_id,lender,agreement_number,agreement_on,principal_minor,annual_rate_basis_points,reminders) SELECT $1,$2,$3,$4,$5,$6,$7 WHERE $8=0 ON CONFLICT(obligation_id) DO NOTHING RETURNING revision`, id, loan.Lender, loan.AgreementNumber, loan.AgreementOn, loan.PrincipalMinor, loan.AnnualRateBasisPoints, loan.Reminders, loan.Revision).Scan(&loan.Revision)
+	err = tx.QueryRow(r.Context(), `INSERT INTO loan_details(obligation_id,lender,agreement_number,agreement_on,principal_minor,annual_rate_basis_points,reminders,repayment_type) SELECT $1,$2,$3,$4,$5,$6,$7,$9 WHERE $8=0 ON CONFLICT(obligation_id) DO NOTHING RETURNING revision`, id, loan.Lender, loan.AgreementNumber, loan.AgreementOn, loan.PrincipalMinor, loan.AnnualRateBasisPoints, loan.Reminders, loan.Revision, loan.RepaymentType).Scan(&loan.Revision)
 	if err == pgx.ErrNoRows {
-		err = tx.QueryRow(r.Context(), `UPDATE loan_details SET lender=$2,agreement_number=$3,agreement_on=$4,principal_minor=$5,annual_rate_basis_points=$6,reminders=$7,revision=revision+1 WHERE obligation_id::text=$1 AND revision=$8 RETURNING revision`, id, loan.Lender, loan.AgreementNumber, loan.AgreementOn, loan.PrincipalMinor, loan.AnnualRateBasisPoints, loan.Reminders, loan.Revision).Scan(&loan.Revision)
+		err = tx.QueryRow(r.Context(), `UPDATE loan_details SET lender=$2,agreement_number=$3,agreement_on=$4,principal_minor=$5,annual_rate_basis_points=$6,reminders=$7,repayment_type=$9,revision=revision+1 WHERE obligation_id::text=$1 AND revision=$8 RETURNING revision`, id, loan.Lender, loan.AgreementNumber, loan.AgreementOn, loan.PrincipalMinor, loan.AnnualRateBasisPoints, loan.Reminders, loan.Revision, loan.RepaymentType).Scan(&loan.Revision)
 	}
 	if err != nil {
 		failure(w, err)

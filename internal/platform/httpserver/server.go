@@ -14,6 +14,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/creditcards"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/imports"
+	"github.com/QahNaaRlN/grace/internal/loans"
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
@@ -144,6 +145,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		router.Get("/accounts", accountsHandler.List)
 		commitments.NewHandler(pool).Routes(router)
 		creditcards.NewHandler(pool).Routes(router)
+		loans.NewHandler(pool).Routes(router)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Patch("/accounts/{accountId}", accountsHandler.Update)
 		router.Post("/accounts/{accountId}/payment-instruments", accountsHandler.AddCard)
