@@ -3,6 +3,7 @@ package commitments
 import (
 	"context"
 	"github.com/QahNaaRlN/grace/internal/auth"
+	"github.com/QahNaaRlN/grace/internal/creditcards"
 	"github.com/QahNaaRlN/grace/internal/platform/access"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
@@ -143,6 +144,13 @@ func (w *ReminderWorker) process(ctx context.Context, email, today string) error
 	if err != nil {
 		return err
 	}
+	cards, err := creditCardCandidates(ctx, tx, today)
+	if err != nil {
+		return err
+	}
+	for _, c := range cards {
+		candidates = append(candidates, candidate{"credit_card", c.id, c.due, c.lead})
+	}
 	for _, c := range candidates {
 		if _, err = tx.Exec(ctx, `INSERT INTO payment_reminders(source_kind,source_id,due_on,lead_days) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, c.kind, c.id, c.due, c.lead); err != nil {
 			return err
@@ -212,6 +220,9 @@ func (w *ReminderWorker) process(ctx context.Context, email, today string) error
 		if kind == "subscription" {
 			link = w.publicURL + "/subscriptions"
 		}
+		if kind == "credit_card" {
+			link = w.publicURL + "/accounts"
+		}
 		if w.sender.SendPaymentReminder(ctx, email, due, link) != nil {
 			status = "uncertain"
 		}
@@ -226,7 +237,74 @@ func (w *ReminderWorker) process(ctx context.Context, email, today string) error
 	return finishErr
 }
 
+type cardReminder struct {
+	id, due string
+	lead    int
+}
+
+// creditCardCandidates finds cards with reminders on whose grace or minimum
+// payment is due in 3 or 1 days and still unpaid (SPEC-0051).
+func creditCardCandidates(ctx context.Context, tx pgx.Tx, today string) ([]cardReminder, error) {
+	rows, err := tx.Query(ctx, `SELECT s.account_id::text FROM credit_card_settings s JOIN accounts a ON a.id=s.account_id WHERE s.reminders AND a.type='credit'`)
+	if err != nil {
+		return nil, err
+	}
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	day, err := creditcards.ParseDay(today)
+	if err != nil {
+		return nil, err
+	}
+	out := []cardReminder{}
+	for _, id := range ids {
+		dates, err := creditcards.DueDates(ctx, tx, id, day)
+		if err != nil {
+			return nil, err
+		}
+		for _, due := range dates {
+			for _, lead := range []int{3, 1} {
+				if creditcards.FormatDay(day.AddDate(0, 0, lead)) == due {
+					out = append(out, cardReminder{id, due, lead})
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
 func reminderStillActive(ctx context.Context, tx pgx.Tx, kind, source, due string) (bool, error) {
+	if kind == "credit_card" {
+		var reminders bool
+		err := tx.QueryRow(ctx, `SELECT reminders FROM credit_card_settings WHERE account_id::text=$1 FOR UPDATE`, source).Scan(&reminders)
+		if err == pgx.ErrNoRows || (err == nil && !reminders) {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+		dates, err := creditcards.DueDates(ctx, tx, source, creditcards.Today())
+		if err != nil {
+			return false, err
+		}
+		for _, d := range dates {
+			if d == due {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
 	if kind == "subscription" {
 		var start, period, end string
 		err := tx.QueryRow(ctx, `SELECT starts_on::text,period,COALESCE(ends_on::text,'') FROM subscriptions WHERE id::text=$1 AND reminders AND NOT paused FOR UPDATE`, source).Scan(&start, &period, &end)
