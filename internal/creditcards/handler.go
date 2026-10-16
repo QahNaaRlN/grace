@@ -620,3 +620,33 @@ func failure(w http.ResponseWriter, err error) {
 
 // Today is the current calendar day in the application time zone (UTC+5).
 func Today() time.Time { return day(time.Now().UTC().Add(5 * time.Hour)) }
+
+// DueDates lists the days on which the card still needs a payment: the grace
+// payment of a closed statement and the minimum payment, when money is owed.
+func DueDates(ctx context.Context, tx pgx.Tx, accountID string, on time.Time) ([]string, error) {
+	card, err := Load(ctx, tx, accountID, on)
+	if err != nil {
+		return nil, err
+	}
+	s := card.Status
+	out := []string{}
+	add := func(due *string, amount *int64) {
+		if due != nil && amount != nil && *amount > 0 && !containsString(out, *due) {
+			out = append(out, *due)
+		}
+	}
+	if !s.GraceEstimate {
+		add(s.GraceDueOn, s.GraceAmountMinor)
+	}
+	add(s.MinimumDueOn, s.MinimumMinor)
+	return out, nil
+}
+
+func containsString(values []string, value string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
