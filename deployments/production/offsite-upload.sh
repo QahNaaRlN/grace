@@ -65,7 +65,8 @@ upload() {
   name="$(basename "$dump")"
   encrypted="$dump.age"
   umask 077
-  age -r "$GRACE_OFFSITE_AGE_RECIPIENT" -o "$encrypted" "$dump" || fail encrypt "$name"
+  # age errors can quote the recipient, so they are not passed to the journal.
+  age -r "$GRACE_OFFSITE_AGE_RECIPIENT" -o "$encrypted" "$dump" 2>/dev/null || { rm -f "$encrypted"; fail encrypt "$name"; }
   sha256sum "$encrypted" | sed "s|  .*|  $name.age|" > "$encrypted.sha256"
   put "$encrypted" "$name.age" >/dev/null 2>&1 || { rm -f "$encrypted" "$encrypted.sha256"; fail upload "$name"; }
   put "$encrypted.sha256" "$name.age.sha256" >/dev/null 2>&1 || { rm -f "$encrypted" "$encrypted.sha256"; fail upload "$name"; }
@@ -73,6 +74,19 @@ upload() {
   rm -f "$encrypted" "$encrypted.sha256"
   touch "$dump.uploaded"
 }
+
+# Only the owner's public key belongs on the VPS. Neither message quotes the value.
+case "$GRACE_OFFSITE_AGE_RECIPIENT" in
+  age1*) ;;
+  AGE-SECRET-KEY-*)
+    echo "GRACE_OFFSITE_AGE_RECIPIENT holds a private age key: put the public key (age1...) there, remove the private key from this VPS and replace the key pair" >&2
+    fail config offsite.env
+    ;;
+  *)
+    echo "GRACE_OFFSITE_AGE_RECIPIENT must be an age public key (age1...)" >&2
+    fail config offsite.env
+    ;;
+esac
 
 if [ "$1" = "--pending" ]; then
   set --
