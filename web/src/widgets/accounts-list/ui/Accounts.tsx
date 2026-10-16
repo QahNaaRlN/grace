@@ -26,6 +26,7 @@ import {
 import { Disclosure } from '@/shared/ui/disclosure'
 import { Money } from '@/shared/ui/money'
 import { Notice, StatusBadge } from '@/shared/ui/status'
+import { CreditCardPanel } from './CreditCardPanel'
 
 function errorText(error: unknown, fallback: string) {
   return (error as { message?: string } | undefined)?.message ?? fallback
@@ -78,12 +79,22 @@ export function Accounts({ items }: { items: Account[] }) {
           )
         })}
       </ul>
-      {selected && <AccountSheet account={selected} onClose={() => setSelectedId(null)} />}
+      {selected && (
+        <AccountSheet account={selected} accounts={items} onClose={() => setSelectedId(null)} />
+      )}
     </>
   )
 }
 
-function AccountSheet({ account, onClose }: { account: Account; onClose: () => void }) {
+function AccountSheet({
+  account,
+  accounts,
+  onClose,
+}: {
+  account: Account
+  accounts: Account[]
+  onClose: () => void
+}) {
   const [dialog, setDialog] = useState<'reconcile' | 'edit' | 'card' | null>(null)
   const [card, setCard] = useState<PaymentCard | null>(null)
   const toggle = useToggleCard(account.id)
@@ -132,6 +143,8 @@ function AccountSheet({ account, onClose }: { account: Account; onClose: () => v
             Изменить сведения
           </Button>
         </div>
+
+        {account.type === 'credit' && <CreditCardPanel account={account} accounts={accounts} />}
 
         <section aria-labelledby="account-sync" className="space-y-2">
           <h3 id="account-sync" className="text-sm font-semibold">

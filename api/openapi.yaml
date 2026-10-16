@@ -2697,10 +2697,26 @@ components:
         note: { type: string, maxLength: 500 }
         revision: { type: integer, minimum: 0 }
     CreditCardTerms:
-      allOf:
-        - $ref: '#/components/schemas/CreditCardTermsInput'
-        - type: object
-          required: [id, limitMinor, purchaseRateBasisPoints, cashRateBasisPoints, statementDay, paymentDays, graceDays, minPercentBasisPoints, minAmountMinor, minRoundingMinor, documentId]
+      type: object
+      required: [id, effectiveFrom, limitMinor, purchaseRateBasisPoints, cashRateBasisPoints, graceModel, statementDay, paymentDays, graceDays, minPercentBasisPoints, minAmountMinor, minRoundingMinor, minPercentIsCap, minIncludesInterest, documentId, note, revision]
+      properties:
+        id: { type: string, format: uuid }
+        effectiveFrom: { type: string, format: date }
+        limitMinor: { type: [integer, 'null'], minimum: 1, maximum: 9007199254740991 }
+        purchaseRateBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 100000 }
+        cashRateBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 100000 }
+        graceModel: { type: string, enum: [statement, from_first_purchase, none, unknown] }
+        statementDay: { type: [integer, 'null'], minimum: 1, maximum: 31 }
+        paymentDays: { type: [integer, 'null'], minimum: 1, maximum: 90 }
+        graceDays: { type: [integer, 'null'], minimum: 1, maximum: 400 }
+        minPercentBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 10000 }
+        minAmountMinor: { type: [integer, 'null'], minimum: 0, maximum: 9007199254740991 }
+        minRoundingMinor: { type: [integer, 'null'], minimum: 1, maximum: 100000000 }
+        minPercentIsCap: { type: boolean }
+        minIncludesInterest: { type: boolean }
+        documentId: { type: [string, 'null'], format: uuid }
+        note: { type: string, maxLength: 500 }
+        revision: { type: integer, minimum: 0 }
     CreditCardSnapshotInput:
       type: object
       additionalProperties: false
@@ -2716,10 +2732,18 @@ components:
         minimumDueOn: { type: [string, 'null'], format: date }
         note: { type: string, maxLength: 500 }
     CreditCardSnapshot:
-      allOf:
-        - $ref: '#/components/schemas/CreditCardSnapshotInput'
-        - type: object
-          required: [id, availableMinor, graceAmountMinor, graceDueOn, minimumMinor, minimumDueOn]
+      type: object
+      required: [id, takenOn, debtMinor, availableMinor, graceAmountMinor, graceDueOn, minimumMinor, minimumDueOn, note]
+      properties:
+        id: { type: string, format: uuid }
+        takenOn: { type: string, format: date }
+        debtMinor: { type: integer, minimum: -9007199254740991, maximum: 9007199254740991 }
+        availableMinor: { type: [integer, 'null'], minimum: 0, maximum: 9007199254740991 }
+        graceAmountMinor: { type: [integer, 'null'], minimum: 0, maximum: 9007199254740991 }
+        graceDueOn: { type: [string, 'null'], format: date }
+        minimumMinor: { type: [integer, 'null'], minimum: 0, maximum: 9007199254740991 }
+        minimumDueOn: { type: [string, 'null'], format: date }
+        note: { type: string, maxLength: 500 }
     CreditCardDocument:
       type: object
       required: [id, filename, size, createdAt]

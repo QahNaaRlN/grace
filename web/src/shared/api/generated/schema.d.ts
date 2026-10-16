@@ -1504,7 +1504,29 @@ export interface components {
             note: string;
             revision: number;
         };
-        CreditCardTerms: components["schemas"]["CreditCardTermsInput"] & Record<string, never>;
+        CreditCardTerms: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            effectiveFrom: string;
+            limitMinor: number | null;
+            purchaseRateBasisPoints: number | null;
+            cashRateBasisPoints: number | null;
+            /** @enum {string} */
+            graceModel: "statement" | "from_first_purchase" | "none" | "unknown";
+            statementDay: number | null;
+            paymentDays: number | null;
+            graceDays: number | null;
+            minPercentBasisPoints: number | null;
+            minAmountMinor: number | null;
+            minRoundingMinor: number | null;
+            minPercentIsCap: boolean;
+            minIncludesInterest: boolean;
+            /** Format: uuid */
+            documentId: string | null;
+            note: string;
+            revision: number;
+        };
         CreditCardSnapshotInput: {
             id?: string;
             /** Format: date */
@@ -1519,7 +1541,21 @@ export interface components {
             minimumDueOn?: string | null;
             note: string;
         };
-        CreditCardSnapshot: components["schemas"]["CreditCardSnapshotInput"] & Record<string, never>;
+        CreditCardSnapshot: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            takenOn: string;
+            debtMinor: number;
+            availableMinor: number | null;
+            graceAmountMinor: number | null;
+            /** Format: date */
+            graceDueOn: string | null;
+            minimumMinor: number | null;
+            /** Format: date */
+            minimumDueOn: string | null;
+            note: string;
+        };
         CreditCardDocument: {
             /** Format: uuid */
             id: string;
