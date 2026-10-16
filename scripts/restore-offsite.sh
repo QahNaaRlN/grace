@@ -17,10 +17,15 @@ for file in "$env_file" "$identity"; do
   [ -f "$file" ] || { echo "no such file: $file" >&2; exit 2; }
 done
 
+# A file saved on Windows ends lines with CRLF; a stray \r would join every value.
+env_clean="$(mktemp)"
+trap 'rm -f "$env_clean"' EXIT
+tr -d '\r' < "$env_file" > "$env_clean"
 set -a
 # shellcheck source=/dev/null
-. "$env_file"
+. "$env_clean"
 set +a
+rm -f "$env_clean"
 prefix="${GRACE_OFFSITE_PREFIX:-grace}"
 remote="offsite:$GRACE_OFFSITE_BUCKET/$prefix"
 RCLONE_CONFIG_OFFSITE_TYPE=s3
@@ -54,7 +59,13 @@ tools="$(docker run -d $network_args \
 # A stalled mirror must not hang the drill: bounded attempts.
 docker exec "$tools" sh -c 'for attempt in 1 2 3; do
   timeout 120 apk add --no-cache --quiet age rclone && exit 0; done; exit 1'
-docker exec -i "$tools" sh -c 'umask 077; mkdir /work; cat > /work/identity' < "$identity"
+# Keep only key lines: a copy of age-keygen's screen output starts with "Public key: …".
+if ! tr -d '\r' < "$identity" | grep -q '^AGE-SECRET-KEY-'; then
+  echo "no AGE-SECRET-KEY line in $identity" >&2
+  exit 2
+fi
+tr -d '\r' < "$identity" | grep '^AGE-SECRET-KEY-' |
+  docker exec -i "$tools" sh -c 'umask 077; mkdir /work; cat > /work/identity'
 
 if [ -z "$object" ]; then
   object="$(docker exec "$tools" rclone lsf --include 'daily-*.dump.age' "$remote" | sort | tail -n 1)"

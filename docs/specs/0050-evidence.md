@@ -2,8 +2,8 @@
 
 Дата: 2026-10-16. Спецификация: [accepted SPEC-0050](0050-offsite-backup.md).
 Ветка: `codex/offsite-backup` от `main` `cb4a432`, implementation commit — см. git log ветки.
-Статус: `implementing`. Локальные проверки пройдены; production-проверки AC2, AC3,
-AC6 и AC7 ждут создания bucket и ключей владельцем (открытое решение 2).
+Статус: `implementing`. Локальные и production-проверки AC1, AC3–AC8 пройдены;
+для AC2 осталась одна команда на VPS (см. «Production-проверки»).
 
 ## Что сделано
 
@@ -41,13 +41,13 @@ Scope говорит «после загрузки размер и SHA-256 за�
 
 | Критерий | Исполняемое свидетельство | Статус |
 |---|---|---|
-| AC1 | `scripts/test-offsite-backup.sh`, «AC1/AC2»: daily загружается, объект скачивается, `sha256sum -c` проходит, расшифровка даёт исходный dump, в `.age` нет открытого текста | локально пройдено; production — после установки |
-| AC2 | Тот же блок: в `/opt/grace` нет `AGE-SECRET-KEY`; в production — `grep -r AGE-SECRET-KEY /opt/grace` пуст | локально пройдено; production — ожидает |
-| AC3 | Команды отказа из `docs/production-deployment.md` (list, cat, deletefile) и проверка версии после перезаписи | ожидает bucket; локальный S3-сервер политики не эмулирует |
+| AC1 | `scripts/test-offsite-backup.sh`, «AC1/AC2»: daily загружается, объект скачивается, `sha256sum -c` проходит, расшифровка даёт исходный dump, в `.age` нет открытого текста | пройдено локально и в production |
+| AC2 | Тот же блок: в `/opt/grace` нет `AGE-SECRET-KEY`; в production — `grep -r AGE-SECRET-KEY /opt/grace` пуст | локально пройдено; production — частично, см. ниже |
+| AC3 | Команды отказа из `docs/production-deployment.md` (list, cat, deletefile) и проверка версии после перезаписи | пройдено в production |
 | AC4 | Тест «AC4»: неверный ключ → выход ≠ 0, dump на месте, маркера нет, `stage=upload`, секретов в выводе нет; письмо с этапом, получателем, без паролей в аргументах и тексте | локально пройдено |
 | AC5 | Тест «AC5»: без `offsite.env` одна строка вывода (путь dump) и ровно одно предупреждение | локально пройдено; `test-production-deployment.sh` — см. ниже |
-| AC6 | Тест «AC6 (synthetic)»: `restore-offsite.sh` восстанавливает настоящий `pg_dump` (роль `grace_financial`, RLS-политика, bytea) и печатает ожидаемые числа строк | синтетически пройдено; на production-копии — ожидает |
-| AC7 | Lifecycle в консоли Yandex Cloud | ожидает bucket |
+| AC6 | Тест «AC6 (synthetic)»: `restore-offsite.sh` восстанавливает настоящий `pg_dump` (роль `grace_financial`, RLS-политика, bytea) и печатает ожидаемые числа строк | пройдено синтетически и на production-копии |
+| AC7 | Lifecycle в консоли Yandex Cloud | пройдено |
 | AC8 | `make test`, `git diff --check`, `shellcheck` (v0.10.0) новых и изменённых скриптов | см. ниже |
 
 ## Результаты (Windows, Docker 29.8.2)
@@ -102,10 +102,36 @@ Deploy `822b8f8` (run 38876154732) прошёл, релиз здоров. Pre-re
   ключа нет ни в выводе, ни в письме. Неверный `age1…` → отказ без вывода `age`.
   Проверка AC2 ищет само значение ключа, а не строку-префикс.
 
+## Production-проверки — 2026-10-16
+
+Релиз `fc19d32` (deploy run 38878996293) здоров. Pre-release backup ушёл
+в облако во время deploy: `off-site copy uploaded: pre-release-20261016T091417Z-….dump.age`.
+
+- **AC1.** Ручной backup `manual-20261016T092101Z-sha-fc19d32….dump.age` и его
+  `.sha256` есть в bucket. `upload-pending` догрузил всю прежнюю историю: 7 daily,
+  pre-release с 2026-10-05, manual 2026-10-05.
+- **AC2.** `offsite.env` проходит проверку из PR #53: получатель `age1…`, закрытого
+  ключа в нём нет, иначе загрузка отказала бы на этапе `config`. Полный поиск
+  `AGE-SECRET-KEY-1` по `/opt/grace` на VPS ещё не выполнен.
+- **AC3.** С ключом VPS: список — `AccessDenied 403`, чтение — `AccessDenied 403`,
+  прямой `DELETE` через `curl --aws-sigv4` — `403`. Объект после этого на месте.
+  Версионирование bucket включено.
+- **AC6.** `scripts/restore-offsite.sh` на машине владельца (Windows, Git Bash,
+  ключ читателя) скачал `manual-20261016T092101Z…`, `sha256sum -c` — OK, расшифровал,
+  восстановил в чистый PostgreSQL: `financial_events 153`, `postings 162`,
+  `accounts 11`, `loan_documents 0`. Совпадает с production сразу после backup
+  (`153 | 162 | 11 | 0`).
+- **AC7.** Три правила lifecycle настроены (см. «Настройка Yandex Cloud»).
+
+Найдено при drill и исправлено в `restore-offsite.sh`: файлы, сохранённые
+в Блокноте Windows, заканчивают строки на CRLF, и `
+` попадал в значения; файл
+ключа начинался со строки `Public key: …` с экрана `age-keygen`. Скрипт теперь
+удаляет `
+` и берёт из файла ключа только строки `AGE-SECRET-KEY-`. Тест
+`test-offsite-backup.sh` проверяет восстановление из таких файлов.
+
 ## Что осталось владельцу (production)
 
-1. Создать ключ `age`, статические ключи двух сервисных аккаунтов, заполнить
-   `offsite.env` на VPS и файл читателя у себя.
-2. Выпустить релиз с этой веткой, установить units, выполнить ручной backup.
-3. Проверить отказы (AC3), lifecycle (AC7), drill с машины владельца (AC6)
-   и записать результаты сюда; после этого статус — `verified`.
+1. На VPS: `sudo grep -rlE 'AGE-SECRET-KEY-1[0-9A-Z]{20}' /opt/grace` должен ничего
+   не вывести (AC2). После этого статус — `verified`.

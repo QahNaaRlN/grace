@@ -184,4 +184,12 @@ for expected in 'financial_events 3' 'postings 4' 'accounts 2' 'loan_documents 1
   grep -q "$expected" "$tmp_dir/restore.out" || { cat "$tmp_dir/restore.out" >&2; fail "restore output lacks: $expected"; }
 done
 
+echo "AC6: files saved on Windows (CRLF, copied screen line) still restore"
+{ printf 'Public key: %s\r\n' "$recipient"; sed 's/$/\r/' "$tmp_dir/identity"; } > "$tmp_dir/identity-windows"
+sed 's/$/\r/' "$tmp_dir/owner.env" > "$tmp_dir/owner-windows.env"
+GRACE_RESTORE_NETWORK="$network" sh "$repo_root/scripts/restore-offsite.sh" \
+  "$tmp_dir/owner-windows.env" "$tmp_dir/identity-windows" > "$tmp_dir/restore-windows.out" \
+  || { cat "$tmp_dir/restore-windows.out" >&2; fail "restore from Windows files failed"; }
+grep -q 'off-site restore drill passed' "$tmp_dir/restore-windows.out" || fail "Windows restore not reported"
+
 echo "off-site backup checks passed"
