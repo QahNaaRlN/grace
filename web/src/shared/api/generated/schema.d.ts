@@ -954,6 +954,137 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}/credit-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        /** @description SPEC-0051. Terms versions, bank snapshots and the status at the end of `on` (default today, UTC+5). */
+        get: operations["getCreditCard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createCreditCardTerms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/terms/{termsId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                termsId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Edits a version; `revision` must match, the replaced values are kept in history. */
+        patch: operations["editCreditCardTerms"];
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description What the bank shows. Never changes postings. */
+        post: operations["createCreditCardSnapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveCreditCardSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadCreditCardDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/credit-card/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["downloadCreditCardDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{accountId}/reconciliations": {
         parameters: {
             query?: never;
@@ -1351,11 +1482,102 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CreditCardTermsInput: {
+            id?: string;
+            /** Format: date */
+            effectiveFrom: string;
+            limitMinor?: number | null;
+            purchaseRateBasisPoints?: number | null;
+            cashRateBasisPoints?: number | null;
+            /** @enum {string} */
+            graceModel: "statement" | "from_first_purchase" | "none" | "unknown";
+            statementDay?: number | null;
+            paymentDays?: number | null;
+            graceDays?: number | null;
+            minPercentBasisPoints?: number | null;
+            minAmountMinor?: number | null;
+            minRoundingMinor?: number | null;
+            minPercentIsCap: boolean;
+            minIncludesInterest: boolean;
+            /** Format: uuid */
+            documentId?: string | null;
+            note: string;
+            revision: number;
+        };
+        CreditCardTerms: components["schemas"]["CreditCardTermsInput"] & Record<string, never>;
+        CreditCardSnapshotInput: {
+            id?: string;
+            /** Format: date */
+            takenOn: string;
+            debtMinor: number;
+            availableMinor?: number | null;
+            graceAmountMinor?: number | null;
+            /** Format: date */
+            graceDueOn?: string | null;
+            minimumMinor?: number | null;
+            /** Format: date */
+            minimumDueOn?: string | null;
+            note: string;
+        };
+        CreditCardSnapshot: components["schemas"]["CreditCardSnapshotInput"] & Record<string, never>;
+        CreditCardDocument: {
+            /** Format: uuid */
+            id: string;
+            filename: string;
+            size: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreditCardComparison: {
+            /** Format: date */
+            takenOn: string;
+            bankDebtMinor: number;
+            ledgerDebtMinor: number;
+            differenceMinor: number;
+        };
+        /** @description Debt is positive when money is owed. Null means unknown, never zero. */
+        CreditCardStatus: {
+            /** Format: date */
+            on: string;
+            /** @enum {string} */
+            source: "ledger" | "snapshot" | "none";
+            debtMinor: number | null;
+            availableMinor: number | null;
+            /** Format: date */
+            statementClosedOn: string | null;
+            /** Format: date */
+            nextStatementOn: string | null;
+            graceAmountMinor: number | null;
+            /** Format: date */
+            graceDueOn: string | null;
+            graceEstimate: boolean;
+            graceLost: boolean;
+            graceAtRisk: boolean;
+            minimumMinor: number | null;
+            /** Format: date */
+            minimumDueOn: string | null;
+            minimumIsUpperBound: boolean;
+            overdueMinimumMinor: number;
+            unknown: ("terms" | "limit" | "grace_model" | "minimum_rule" | "interest" | "history" | "statement_day" | "debt")[];
+        };
+        CreditCard: {
+            /** Format: uuid */
+            accountId: string;
+            currency: string;
+            reminders: boolean;
+            /** Format: uuid */
+            activeTermsId: string | null;
+            terms: components["schemas"]["CreditCardTerms"][];
+            snapshots: components["schemas"]["CreditCardSnapshot"][];
+            documents: components["schemas"]["CreditCardDocument"][];
+            status: components["schemas"]["CreditCardStatus"];
+            bankComparison: null | components["schemas"]["CreditCardComparison"];
+        };
         PaymentReminderStatus: {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            sourceKind: "subscription" | "loan";
+            sourceKind: "subscription" | "loan" | "credit_card";
             /** Format: uuid */
             sourceId: string;
             /** Format: date */
@@ -5680,6 +5902,249 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["AccountConflict"];
             422: components["responses"]["ValidationError"];
+        };
+    };
+    getCreditCard: {
+        parameters: {
+            query?: {
+                on?: string;
+            };
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credit card terms and status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createCreditCardTerms: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditCardTermsInput"];
+            };
+        };
+        responses: {
+            /** @description Retry of an already created version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            /** @description New terms version */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    editCreditCardTerms: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+                termsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditCardTermsInput"];
+            };
+        };
+        responses: {
+            /** @description Edited version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createCreditCardSnapshot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditCardSnapshotInput"];
+            };
+        };
+        responses: {
+            /** @description Retry of an already recorded snapshot */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            /** @description Recorded snapshot */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    saveCreditCardSettings: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reminders: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved settings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCard"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    uploadCreditCardDocument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Stored PDF, attach it to a terms version by id */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditCardDocument"];
+                };
+            };
+            401: components["responses"]["AuthenticationError"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    downloadCreditCardDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
         };
     };
     listReconciliations: {
