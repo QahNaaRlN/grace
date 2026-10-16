@@ -1,0 +1,8 @@
+[Unit]
+Description=Email the owner that the Grace backup failed
+
+[Service]
+Type=oneshot
+User=grace-deploy
+Group=grace-deploy
+ExecStart=/opt/grace/current/backup-failure-mail.sh

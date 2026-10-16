@@ -192,6 +192,9 @@ compose_release exec -T postgres pg_dump -U grace -d grace -Fc > "$backup"
 compose_release exec -T postgres pg_restore --list < "$backup" >/dev/null
 chmod 0600 "$backup"
 echo "verified pre-deploy backup: $backup"
+# An off-site failure must not block a release; the next daily run or
+# `backup.sh upload-pending` uploads the copy (SPEC-0050).
+"$release_dir/offsite-upload.sh" "$backup" || echo "warning: pre-release backup is not off-site yet" >&2
 
 # Release 090ebad (2026-10-14): migration 22 failed on published import rows.
 # Its single transaction rolled back, but migrate left version 22 marked dirty.

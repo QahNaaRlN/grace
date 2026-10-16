@@ -1,13 +1,13 @@
 # SPEC-0050: зашифрованная копия backup вне VPS
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace
 - Acceptance record: владелец 2026-10-16 в чате: «Принимаю SPEC-0050 как есть. Запиши
   принятие и реализуй». Решения по открытым вопросам — в разделе «Решения владельца».
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/offsite-backup`
+- Implementation commit: см. [evidence](0050-evidence.md)
 
 ## Проблема и пользовательский результат
 
