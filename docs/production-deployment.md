@@ -203,20 +203,34 @@ docker run --rm -it alpine:3.20 sh -c 'apk add --no-cache --quiet age && age-key
 
 1. Bucket с ограниченным доступом (не публичный), например `grace-backups-<суффикс>`,
    класс хранения «Стандартное». Включить **версионирование**.
-2. Жизненный цикл bucket:
-   - префикс `grace/daily-` — удалять через 35 дней;
-   - префиксы `grace/pre-release-` и `grace/manual-` — удалять через 180 дней;
-   - для всего bucket — удалять неактуальные версии через 35 дней.
-3. Сервисный аккаунт `grace-backup-uploader` с ролью `storage.uploader` на этот
-   bucket; создать для него статический ключ доступа. Ключ попадает только в
-   `offsite.env` на VPS.
-4. Политика доступа bucket: правило `Deny` для `grace-backup-uploader` на
-   действия `s3:GetObject`, `s3:GetObjectVersion`, `s3:ListBucket`,
-   `s3:ListBucketVersions`, `s3:DeleteObject`, `s3:DeleteObjectVersion`.
-   Роль `storage.uploader` сама по себе разрешает чтение и перезапись; запрет
-   закрывает чтение, а версионирование сохраняет перезаписанные копии.
-5. Сервисный аккаунт `grace-backup-reader` с ролью `storage.viewer` и статическим
-   ключом — только для владельца, для восстановления. На VPS не кладётся.
+2. Жизненный цикл bucket, три правила; в каждом удалять неактуальные версии
+   (NoncurrentVersionExpiration) через 35 дней:
+   - префикс `grace/daily-` — удалять объекты через 35 дней;
+   - префикс `grace/pre-release-` — через 180 дней;
+   - префикс `grace/manual-` — через 180 дней.
+3. Сервисные аккаунты без ролей на каталог. Роли назначаются только на bucket
+   (Безопасность → Права доступа):
+   - `grace-backup-uploader` — `storage.uploader`. Его статический ключ
+     попадает только в `offsite.env` на VPS;
+   - `grace-backup-reader` — `storage.viewer`. Его статический ключ хранится
+     только у владельца, для восстановления, и на VPS не кладётся.
+4. Политика доступа bucket (Безопасность → Политика доступа), четыре правила:
+
+   | Правило | Результат | Кто | Действия | Ресурсы |
+   |---|---|---|---|---|
+   | `uploader-put-only` | Разрешить | `grace-backup-uploader` | `s3:PutObject` | `<bucket>/*` |
+   | `reader-restore` | Разрешить | `grace-backup-reader` | `s3:GetObject`, `s3:ListBucket` | `<bucket>/*`, `<bucket>` |
+   | правило для доступа из консоли | Разрешить | все, условие `PrincipalIsAWSService = true` | все | `<bucket>/*`, `<bucket>` |
+   | `uploader-no-read` | Запретить | `grace-backup-uploader` | `s3:GetObject`, `s3:GetObjectVersion`, `s3:ListBucket`, `s3:ListBucketVersions` | `<bucket>/*`, `<bucket>` |
+
+   Почему так: если политика задана, запрос, не подошедший ни под одно её
+   правило, проверяется по ACL объекта ([порядок проверки
+   доступа](https://yandex.cloud/ru/docs/storage/security/overview)). Поэтому
+   каждому, кому нужен доступ, — загрузчику, читателю и консоли — нужно явное
+   `Allow`, иначе он может потерять доступ. Правило `Deny` тоже не даёт
+   окончательного отказа, а передаёт решение ACL объекта, поэтому отказ на чтение
+   проверяется командами ниже. Удаление роль `storage.uploader` не разрешает;
+   перезапись возможна, но версионирование сохраняет прежнюю версию.
 
 ### Установка на VPS
 
