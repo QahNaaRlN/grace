@@ -1,6 +1,6 @@
 # SPEC-0030: графики статистики
 
-- Status: accepted
+- Status: integrated (объединённый выпуск `d475cca`: CI run 38038836282 и Deploy production run 38039374895 успешны)
 - Date: 2026-10-09
 - Acceptance owner: владелец Grace
 - Acceptance record: «приступить к работе» после предложения первых трёх

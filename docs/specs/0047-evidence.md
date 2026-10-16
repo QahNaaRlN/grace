@@ -4,6 +4,8 @@
 Ветка: `codex/subscription-form-fixes`, implementation commit `6cb2940`.
 Статус: `verified` локально (Windows + Docker PostgreSQL).
 
+Обновление 2026-10-16 (сверка roadmap): PR #41, merge `e623775`: CI `main` run 38573760071 и Deploy production run 38575191780 (2026-10-14) успешны; статус `integrated`.
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `shared/lib/currencies.ts` + `shared/ui/currency-select.tsx`; формы подписки, обязательства, решения по строке импорта; RUB по умолчанию; сохранённая валюта вне списка остаётся отдельной опцией | `SubscriptionsPage.test.tsx`: «Валюта» — выпадающий список с «Российский рубль · RUB», выбор USD уходит в запрос; `CreateObligationForm` и `ImportsPage` — существующие тесты проходят |

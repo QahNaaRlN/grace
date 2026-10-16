@@ -5,6 +5,8 @@
 `MoneyInput` используется в графике), implementation commit `b846159`.
 Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
+Обновление 2026-10-16 (сверка roadmap): release `8ad9705`, содержащий merge `ed641ac`, развёрнут 2026-10-14 (Deploy production run 38560119989).
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `internal/obligations/schedulepreview.go`, режим `equal`: даты через `internal/platform/calendar.Occurrence` (anchor day, конец месяца) | `TestPreviewEqualMortgage`: 120 платежей с 2027-01-15, последний 2036-12-15, первая/последняя суммы, итог; результат проходит `normalizeAndValidateCreate`. `TestPreviewEqualKeepsAnchorDayAcrossShortMonths`: 31.12 → 31.01 → 29.02.2028 → 31.03. Web: `CreateObligationForm.test.tsx` — ипотека 120 × 20 000 000 ₽: название, дата, количество, сумма, «Построить», «Сохранить» (6 действий) |

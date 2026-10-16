@@ -32,3 +32,5 @@ Migration 000010 does not alter existing timestamp values. Its down path refuses
 to discard date-only events. After first date-only publication, use a compatible
 application release or the established backup/restore procedure. Production
 deploy creates a pre-release backup and never automatically downgrades the DB.
+
+Обновление 2026-10-16 (сверка roadmap): CI `main` и Deploy production №12 для `f257f8e` успешны ([0028-evidence](0028-evidence.md)); статус `integrated`, работает в production.

@@ -1,6 +1,6 @@
 # SPEC-0047: валюта списком, категория подписки, вёрстка графика
 
-- Статус: verified
+- Статус: integrated (PR #41, merge `e623775`: CI run 38573760071 и Deploy production run 38575191780 успешны)
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-14
 - Acceptance owner: владелец Grace

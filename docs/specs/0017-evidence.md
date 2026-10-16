@@ -66,3 +66,5 @@ Web editing/confirmation only supports safe integer values; exact display beyond
 that range is intentionally blocked. No source-private data or invitation token
 is committed. Publication of real financial data requires the user's separate
 confirmation through the product.
+
+Обновление 2026-10-16 (сверка roadmap): CI `main` и Deploy production №12 для `f257f8e` успешны ([0028-evidence](0028-evidence.md)); статус `integrated`, работает в production.

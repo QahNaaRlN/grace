@@ -1,6 +1,6 @@
 # SPEC-0026: Ассистент в Grace и расходы по фото чека
 
-- Статус: accepted
+- Статус: integrated (объединённый выпуск `d475cca`: CI run 38038836282 и Deploy production run 38039374895 успешны)
 - Автор: Codex
 - Дата: 2026-10-08
 - Acceptance owner: owner
