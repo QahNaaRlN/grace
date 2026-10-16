@@ -118,6 +118,8 @@ paths:
       - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
     get:
       operationId: getLoan
+      parameters:
+        - { name: on, in: query, required: false, description: 'SPEC-0053: day of the debt status; today in the application time zone by default.', schema: { type: string, format: date } }
       responses:
         '200':
           description: Owner-scoped commitment.
@@ -244,6 +246,196 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PaymentScheduleDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/schedule-drafts/{draftId}/calculate-parts:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: calculatePaymentScheduleParts
+      description: >-
+        SPEC-0053. Fills principal and interest of the draft rows by the loan's
+        repayment type, issued principal, rate and agreement date. The draft is
+        saved with partsSource=calculated; the schedule is not applied. Without
+        the loan details the answer is 422 with code loan_details_required and
+        the list of missing fields.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [revision], properties: { revision: { type: integer, minimum: 1 } } }
+      responses:
+        '200':
+          description: Draft with calculated parts and per-row warnings.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentSchedulePartsCalculation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/prepayments:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: createLoanPrepayment
+      description: SPEC-0053. Links an unlinked debt payment to the loan without a schedule row; without parts the whole amount repays principal.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLoanPrepayment' }
+      responses:
+        '200':
+          description: Idempotent repeat; the current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '201':
+          description: Prepayment created; the current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/prepayments/{prepaymentId}:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: prepaymentId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateLoanPrepayment
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoanPartsEdit' }
+      responses:
+        '200':
+          description: The current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/debt-snapshots:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: createLoanDebtSnapshot
+      description: SPEC-0053. Outstanding debt copied from the bank app; it never changes postings, the schedule or allocations.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoanDebtSnapshotInput' }
+      responses:
+        '200':
+          description: Idempotent repeat; the current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '201':
+          description: Snapshot saved; the current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/loans/{obligationId}/debt-snapshots/{snapshotId}:
+    parameters:
+      - { name: obligationId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: snapshotId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateLoanDebtSnapshot
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/LoanDebtSnapshotInput'
+                - type: object
+                  required: [revision]
+                  properties: { revision: { type: integer, minimum: 1 } }
+      responses:
+        '200':
+          description: The current debt status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanDebtStatus' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/financial-events/{eventId}/loan-allocation:
+    parameters:
+      - { name: eventId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getLoanAllocation
+      description: SPEC-0053. How a debt payment linked to a loan splits into principal, interest and other charges.
+      responses:
+        '200':
+          description: Allocation of the operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanAllocation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    put:
+      operationId: saveLoanAllocation
+      description: The owner's split of the part that paid a schedule row; revision 0 replaces the split derived from the row.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoanPartsEdit' }
+      responses:
+        '200':
+          description: Allocation of the operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanAllocation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      operationId: resetLoanAllocation
+      description: Returns the schedule part to the split derived from the row.
+      parameters:
+        - $ref: '#/components/parameters/CSRF'
+        - { name: revision, in: query, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200':
+          description: Allocation of the operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanAllocation' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
@@ -2853,16 +3045,18 @@ components:
         agreementOn: { type: [string, 'null'], format: date }
         principalMinor: { type: [integer, 'null'], minimum: 1, maximum: 9007199254740991 }
         annualRateBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 100000 }
+        repaymentType: { type: string, enum: [annuity, differentiated, unknown], description: 'SPEC-0053: used only to calculate parts of existing schedule rows.' }
         reminders: { type: boolean }
         revision: { type: integer, minimum: 0 }
     LoanDetails:
       allOf:
         - $ref: '#/components/schemas/LoanDetailsInput'
         - type: object
-          required: [documents, drafts]
+          required: [repaymentType, documents, drafts]
           properties:
             documents: { type: array, items: { $ref: '#/components/schemas/LoanDocument' } }
             drafts: { type: array, items: { $ref: '#/components/schemas/PaymentScheduleDraft' } }
+            debt: { $ref: '#/components/schemas/LoanDebtStatus' }
     LoanDocument:
       type: object
       required: [id, filename, version, sha256, size, createdAt]
@@ -2881,6 +3075,10 @@ components:
         dueOn: { type: string, format: date }
         amountMinor: { type: integer, minimum: 1, maximum: 9007199254740991 }
         paidMinor: { type: integer, minimum: 0 }
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
+        partsSource: { type: string, enum: [bank, calculated], description: 'SPEC-0053: present with parts; calculated while the owner keeps the calculation of Grace.' }
     PaymentScheduleEdit:
       type: object
       required: [revision, payments]
@@ -2901,6 +3099,130 @@ components:
           properties:
             id: { type: string, format: uuid }
             appliedAt: { type: [string, 'null'], format: date-time }
+    LoanParts:
+      type: object
+      required: [principalMinor, interestMinor, otherMinor]
+      properties:
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
+    LoanPartsEdit:
+      type: object
+      additionalProperties: false
+      required: [principalMinor, interestMinor, otherMinor, revision]
+      properties:
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
+        revision: { type: integer, minimum: 0 }
+    CreateLoanPrepayment:
+      type: object
+      additionalProperties: false
+      required: [financialEventId]
+      description: Parts are all three or none; their sum equals the payment.
+      properties:
+        financialEventId: { type: string, format: uuid }
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
+    LoanDebtSnapshotInput:
+      type: object
+      required: [takenOn, principalMinor]
+      properties:
+        takenOn: { type: string, format: date, description: Not later than today. }
+        principalMinor: { type: integer, format: int64, minimum: 0, maximum: 9007199254740991 }
+        accruedInterestMinor: { type: [integer, 'null'], format: int64, minimum: 0 }
+        payoffMinor: { type: [integer, 'null'], format: int64, minimum: 0 }
+        note: { type: string, maxLength: 500 }
+    LoanDebtSnapshot:
+      type: object
+      required: [id, takenOn, principalMinor, accruedInterestMinor, payoffMinor, note, revision]
+      properties:
+        id: { type: string, format: uuid }
+        takenOn: { type: string, format: date }
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        accruedInterestMinor: { type: [integer, 'null'], format: int64 }
+        payoffMinor: { type: [integer, 'null'], format: int64 }
+        note: { type: string }
+        revision: { type: integer, minimum: 1 }
+    LoanTotals:
+      type: object
+      required: [principalMinor, interestMinor, otherMinor, unknownMinor]
+      properties:
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
+        unknownMinor: { type: integer, format: int64, minimum: 0, description: Money whose split is not known. }
+    LoanPrepayment:
+      allOf:
+        - $ref: '#/components/schemas/LoanParts'
+        - type: object
+          required: [id, financialEventId, paidOn, amountMinor, revision]
+          properties:
+            id: { type: string, format: uuid }
+            financialEventId: { type: string, format: uuid }
+            paidOn: { type: string, format: date }
+            amountMinor: { type: integer, format: int64, minimum: 1 }
+            revision: { type: integer, minimum: 1 }
+    LoanDebtStatus:
+      type: object
+      description: >-
+        SPEC-0053. Outstanding principal at the end of the day: from the latest bank
+        snapshot on or before it (else the issued principal) minus the principal of
+        later payments; unknown while any of those payments has no split.
+      required: [on, issuedMinor, principalOutstandingMinor, basis, basisOn, unallocatedPayments, latestSnapshot, gracePrincipalOnSnapshotMinor, discrepancyMinor, paid, upcoming, scheduleOutdated, snapshots, prepayments]
+      properties:
+        on: { type: string, format: date }
+        issuedMinor: { type: [integer, 'null'], format: int64 }
+        principalOutstandingMinor: { type: [integer, 'null'], format: int64 }
+        basis: { type: string, enum: [snapshot, issued, unknown] }
+        basisOn: { type: [string, 'null'], format: date }
+        unallocatedPayments: { type: integer, minimum: 0 }
+        latestSnapshot: { oneOf: [{ $ref: '#/components/schemas/LoanDebtSnapshot' }, { type: 'null' }] }
+        gracePrincipalOnSnapshotMinor: { type: [integer, 'null'], format: int64, description: Principal by Grace on the latest snapshot day, from the previous basis. }
+        discrepancyMinor: { type: [integer, 'null'], format: int64, description: Grace minus bank on the latest snapshot day. }
+        paid: { $ref: '#/components/schemas/LoanTotals' }
+        upcoming: { $ref: '#/components/schemas/LoanTotals' }
+        scheduleOutdated: { type: boolean, description: The principal the schedule still expects differs from the principal left. }
+        snapshots: { type: array, items: { $ref: '#/components/schemas/LoanDebtSnapshot' } }
+        prepayments: { type: array, items: { $ref: '#/components/schemas/LoanPrepayment' } }
+    LoanScheduleAllocation:
+      type: object
+      required: [settlementId, scheduledPaymentId, dueOn, amountMinor, parts, source, revision]
+      properties:
+        settlementId: { type: string, format: uuid }
+        scheduledPaymentId: { type: string, format: uuid }
+        dueOn: { type: string, format: date }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        parts: { oneOf: [{ $ref: '#/components/schemas/LoanParts' }, { type: 'null' }] }
+        source: { type: string, enum: [owner, schedule, unknown] }
+        revision: { type: integer, minimum: 0, description: 0 while the split is derived from the row. }
+    LoanAllocation:
+      type: object
+      required: [financialEventId, obligationId, obligationName, currency, amountMinor, schedule, prepayment, unallocatedMinor]
+      properties:
+        financialEventId: { type: string, format: uuid }
+        obligationId: { type: string, format: uuid }
+        obligationName: { type: string }
+        currency: { type: string }
+        amountMinor: { type: integer, format: int64, minimum: 1 }
+        schedule: { oneOf: [{ $ref: '#/components/schemas/LoanScheduleAllocation' }, { type: 'null' }] }
+        prepayment: { oneOf: [{ $ref: '#/components/schemas/LoanPrepayment' }, { type: 'null' }] }
+        unallocatedMinor: { type: integer, format: int64, minimum: 0 }
+    PaymentSchedulePartsCalculation:
+      type: object
+      required: [draft, rows, principalTotalMinor, principalDifferenceMinor]
+      properties:
+        draft: { $ref: '#/components/schemas/PaymentScheduleDraft' }
+        rows:
+          type: array
+          items:
+            type: object
+            required: [warning]
+            properties:
+              warning: { type: [string, 'null'], enum: [payment_below_interest, principal_exhausted, not_differentiated, null] }
+        principalTotalMinor: { type: integer, format: int64 }
+        principalDifferenceMinor: { type: integer, format: int64, description: Calculated principal minus the issued principal. }
     ReceiptDraftItem:
       type: object
       additionalProperties: false
@@ -4209,7 +4531,7 @@ components:
         netExpenseMinor: { type: integer, format: int64 }
     CurrencyPeriodSummary:
       type: object
-      required: [currency, openingBalanceMinor, closingBalanceMinor, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, netExternalCashFlowMinor, internalTransferVolumeMinor, expenseCategories]
+      required: [currency, openingBalanceMinor, closingBalanceMinor, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, debtPrincipalMinor, debtInterestMinor, debtOtherMinor, debtUnallocatedMinor, netExternalCashFlowMinor, internalTransferVolumeMinor, expenseCategories]
       properties:
         currency: { type: string, minLength: 3, maxLength: 3 }
         openingBalanceMinor: { type: [integer, "null"], format: int64 }
@@ -4218,6 +4540,10 @@ components:
         purchasesMinor: { type: integer, format: int64, minimum: 0 }
         refundsMinor: { type: integer, format: int64, minimum: 0 }
         debtPaymentsMinor: { type: integer, format: int64, minimum: 0 }
+        debtPrincipalMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: loan principal repaid.' }
+        debtInterestMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: loan interest paid, the cost of credit.' }
+        debtOtherMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: fees, insurance and penalties paid with loan payments.' }
+        debtUnallocatedMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: debt payments whose split is not known; the four parts add up to debtPaymentsMinor.' }
         netExternalCashFlowMinor: { type: integer, format: int64 }
         internalTransferVolumeMinor: { type: integer, format: int64, minimum: 0 }
         expenseCategories:
@@ -4263,7 +4589,7 @@ components:
           items: { $ref: '#/components/schemas/StatisticsBucket' }
     StatisticsBucket:
       type: object
-      required: [from, to, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, outflowsMinor]
+      required: [from, to, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, debtPrincipalMinor, debtInterestMinor, debtOtherMinor, debtUnallocatedMinor, outflowsMinor]
       properties:
         from: { type: string, format: date }
         to: { type: string, format: date }
@@ -4271,6 +4597,10 @@ components:
         purchasesMinor: { type: integer, format: int64, minimum: 0 }
         refundsMinor: { type: integer, format: int64, minimum: 0 }
         debtPaymentsMinor: { type: integer, format: int64, minimum: 0 }
+        debtPrincipalMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: loan principal repaid.' }
+        debtInterestMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: loan interest paid, the cost of credit.' }
+        debtOtherMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: fees, insurance and penalties paid with loan payments.' }
+        debtUnallocatedMinor: { type: integer, format: int64, minimum: 0, description: 'SPEC-0053: debt payments whose split is not known; the four parts add up to debtPaymentsMinor.' }
         outflowsMinor: { type: integer, format: int64, minimum: 0 }
     CashScheduledPayment:
       type: object
@@ -4408,12 +4738,16 @@ components:
         createdAt: { type: string, format: date-time }
     ScheduledPayment:
       type: object
-      required: [id, position, dueOn, amountMinor, paidMinor, remainingMinor, status, isOverdue, dueSoon, daysUntilDue, settlements]
+      required: [id, position, dueOn, amountMinor, principalMinor, interestMinor, otherMinor, partsSource, paidMinor, remainingMinor, status, isOverdue, dueSoon, daysUntilDue, settlements]
       properties:
         id: { type: string, format: uuid }
         position: { type: integer, minimum: 1 }
         dueOn: { type: string, format: date }
         amountMinor: { type: integer, format: int64, minimum: 1 }
+        principalMinor: { type: [integer, 'null'], format: int64, description: 'SPEC-0053: parts of a loan row; all null when unknown.' }
+        interestMinor: { type: [integer, 'null'], format: int64 }
+        otherMinor: { type: [integer, 'null'], format: int64 }
+        partsSource: { type: [string, 'null'], enum: [bank, calculated, null] }
         paidMinor: { type: integer, format: int64, minimum: 0 }
         remainingMinor: { type: integer, format: int64, minimum: 0 }
         status: { type: string, enum: [planned, overdue, partially_paid, paid] }
@@ -4444,9 +4778,13 @@ components:
       type: object
       additionalProperties: false
       required: [dueOn, amountMinor]
+      description: 'SPEC-0053: loan rows may carry all three parts adding up to the amount.'
       properties:
         dueOn: { type: string, format: date }
         amountMinor: { type: integer, format: int64, minimum: 1 }
+        principalMinor: { type: integer, format: int64, minimum: 0 }
+        interestMinor: { type: integer, format: int64, minimum: 0 }
+        otherMinor: { type: integer, format: int64, minimum: 0 }
     CreateObligation:
       type: object
       additionalProperties: false
@@ -4500,6 +4838,9 @@ components:
               minimum: 1
               maximum: 12
               description: Which money column after the date is the payment; default 1.
+            principalColumn: { type: integer, minimum: 1, maximum: 12, description: 'SPEC-0053: money column of loan principal; requires interestColumn.' }
+            interestColumn: { type: integer, minimum: 1, maximum: 12 }
+            otherColumn: { type: integer, minimum: 1, maximum: 12, description: Without it, other charges are the payment minus principal and interest. }
         - type: object
           additionalProperties: false
           required: [mode, payments]
@@ -4516,6 +4857,9 @@ components:
                 properties:
                   dueOn: { type: string }
                   amountMinor: { type: integer, format: int64 }
+                  principalMinor: { type: integer, format: int64 }
+                  interestMinor: { type: integer, format: int64 }
+                  otherMinor: { type: integer, format: int64 }
     RejectedScheduleLine:
       type: object
       required: [line, text, reason]
@@ -4543,6 +4887,7 @@ components:
       required: [financialEventId]
       properties:
         financialEventId: { type: string, format: uuid }
+        prepayRemainder: { type: boolean, description: 'SPEC-0053: for a loan, the amount above the row remainder becomes a prepayment.' }
     Error:
       type: object
       required: [code, message]

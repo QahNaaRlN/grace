@@ -183,6 +183,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/loans/{obligationId}/schedule-drafts/{draftId}/calculate-parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SPEC-0053. Fills principal and interest of the draft rows by the loan's repayment type, issued principal, rate and agreement date. The draft is saved with partsSource=calculated; the schedule is not applied. Without the loan details the answer is 422 with code loan_details_required and the list of missing fields. */
+        post: operations["calculatePaymentScheduleParts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/prepayments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SPEC-0053. Links an unlinked debt payment to the loan without a schedule row; without parts the whole amount repays principal. */
+        post: operations["createLoanPrepayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/prepayments/{prepaymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                prepaymentId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateLoanPrepayment"];
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/debt-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SPEC-0053. Outstanding debt copied from the bank app; it never changes postings, the schedule or allocations. */
+        post: operations["createLoanDebtSnapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loans/{obligationId}/debt-snapshots/{snapshotId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+                snapshotId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateLoanDebtSnapshot"];
+        trace?: never;
+    };
+    "/api/v1/financial-events/{eventId}/loan-allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        /** @description SPEC-0053. How a debt payment linked to a loan splits into principal, interest and other charges. */
+        get: operations["getLoanAllocation"];
+        /** @description The owner's split of the part that paid a schedule row; revision 0 replaces the split derived from the row. */
+        put: operations["saveLoanAllocation"];
+        post?: never;
+        /** @description Returns the schedule part to the split derived from the row. */
+        delete: operations["resetLoanAllocation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/receipt-drafts": {
         parameters: {
             query?: never;
@@ -1667,12 +1784,18 @@ export interface components {
             agreementOn: string | null;
             principalMinor: number | null;
             annualRateBasisPoints: number | null;
+            /**
+             * @description SPEC-0053: used only to calculate parts of existing schedule rows.
+             * @enum {string}
+             */
+            repaymentType?: "annuity" | "differentiated" | "unknown";
             reminders: boolean;
             revision: number;
         };
         LoanDetails: components["schemas"]["LoanDetailsInput"] & {
             documents: components["schemas"]["LoanDocument"][];
             drafts: components["schemas"]["PaymentScheduleDraft"][];
+            debt?: components["schemas"]["LoanDebtStatus"];
         };
         LoanDocument: {
             /** Format: uuid */
@@ -1690,6 +1813,17 @@ export interface components {
             dueOn: string;
             amountMinor: number;
             paidMinor: number;
+            /** Format: int64 */
+            principalMinor?: number;
+            /** Format: int64 */
+            interestMinor?: number;
+            /** Format: int64 */
+            otherMinor?: number;
+            /**
+             * @description SPEC-0053: present with parts; calculated while the owner keeps the calculation of Grace.
+             * @enum {string}
+             */
+            partsSource?: "bank" | "calculated";
         };
         PaymentScheduleEdit: {
             revision: number;
@@ -1705,6 +1839,160 @@ export interface components {
             id: string;
             /** Format: date-time */
             appliedAt: string | null;
+        };
+        LoanParts: {
+            /** Format: int64 */
+            principalMinor: number;
+            /** Format: int64 */
+            interestMinor: number;
+            /** Format: int64 */
+            otherMinor: number;
+        };
+        LoanPartsEdit: {
+            /** Format: int64 */
+            principalMinor: number;
+            /** Format: int64 */
+            interestMinor: number;
+            /** Format: int64 */
+            otherMinor: number;
+            revision: number;
+        };
+        /** @description Parts are all three or none; their sum equals the payment. */
+        CreateLoanPrepayment: {
+            /** Format: uuid */
+            financialEventId: string;
+            /** Format: int64 */
+            principalMinor?: number;
+            /** Format: int64 */
+            interestMinor?: number;
+            /** Format: int64 */
+            otherMinor?: number;
+        };
+        LoanDebtSnapshotInput: {
+            /**
+             * Format: date
+             * @description Not later than today.
+             */
+            takenOn: string;
+            /** Format: int64 */
+            principalMinor: number;
+            /** Format: int64 */
+            accruedInterestMinor?: number | null;
+            /** Format: int64 */
+            payoffMinor?: number | null;
+            note?: string;
+        };
+        LoanDebtSnapshot: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            takenOn: string;
+            /** Format: int64 */
+            principalMinor: number;
+            /** Format: int64 */
+            accruedInterestMinor: number | null;
+            /** Format: int64 */
+            payoffMinor: number | null;
+            note: string;
+            revision: number;
+        };
+        LoanTotals: {
+            /** Format: int64 */
+            principalMinor: number;
+            /** Format: int64 */
+            interestMinor: number;
+            /** Format: int64 */
+            otherMinor: number;
+            /**
+             * Format: int64
+             * @description Money whose split is not known.
+             */
+            unknownMinor: number;
+        };
+        LoanPrepayment: components["schemas"]["LoanParts"] & {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            financialEventId: string;
+            /** Format: date */
+            paidOn: string;
+            /** Format: int64 */
+            amountMinor: number;
+            revision: number;
+        };
+        /** @description SPEC-0053. Outstanding principal at the end of the day: from the latest bank snapshot on or before it (else the issued principal) minus the principal of later payments; unknown while any of those payments has no split. */
+        LoanDebtStatus: {
+            /** Format: date */
+            on: string;
+            /** Format: int64 */
+            issuedMinor: number | null;
+            /** Format: int64 */
+            principalOutstandingMinor: number | null;
+            /** @enum {string} */
+            basis: "snapshot" | "issued" | "unknown";
+            /** Format: date */
+            basisOn: string | null;
+            unallocatedPayments: number;
+            latestSnapshot: components["schemas"]["LoanDebtSnapshot"] | null;
+            /**
+             * Format: int64
+             * @description Principal by Grace on the latest snapshot day
+             */
+            gracePrincipalOnSnapshotMinor: number | null;
+            /**
+             * Format: int64
+             * @description Grace minus bank on the latest snapshot day.
+             */
+            discrepancyMinor: number | null;
+            paid: components["schemas"]["LoanTotals"];
+            upcoming: components["schemas"]["LoanTotals"];
+            /** @description The principal the schedule still expects differs from the principal left. */
+            scheduleOutdated: boolean;
+            snapshots: components["schemas"]["LoanDebtSnapshot"][];
+            prepayments: components["schemas"]["LoanPrepayment"][];
+        };
+        LoanScheduleAllocation: {
+            /** Format: uuid */
+            settlementId: string;
+            /** Format: uuid */
+            scheduledPaymentId: string;
+            /** Format: date */
+            dueOn: string;
+            /** Format: int64 */
+            amountMinor: number;
+            parts: components["schemas"]["LoanParts"] | null;
+            /** @enum {string} */
+            source: "owner" | "schedule" | "unknown";
+            /** @description 0 while the split is derived from the row. */
+            revision: number;
+        };
+        LoanAllocation: {
+            /** Format: uuid */
+            financialEventId: string;
+            /** Format: uuid */
+            obligationId: string;
+            obligationName: string;
+            currency: string;
+            /** Format: int64 */
+            amountMinor: number;
+            schedule: components["schemas"]["LoanScheduleAllocation"] | null;
+            prepayment: components["schemas"]["LoanPrepayment"] | null;
+            /** Format: int64 */
+            unallocatedMinor: number;
+        };
+        PaymentSchedulePartsCalculation: {
+            draft: components["schemas"]["PaymentScheduleDraft"];
+            rows: {
+                /** @enum {string|null} */
+                warning: "payment_below_interest" | "principal_exhausted" | "not_differentiated" | null;
+            }[];
+            /** Format: int64 */
+            principalTotalMinor: number;
+            /**
+             * Format: int64
+             * @description Calculated principal minus the issued principal.
+             */
+            principalDifferenceMinor: number;
         };
         ReceiptDraftItem: {
             name: string | null;
@@ -2691,6 +2979,26 @@ export interface components {
             refundsMinor: number;
             /** Format: int64 */
             debtPaymentsMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: loan principal repaid.
+             */
+            debtPrincipalMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: loan interest paid, the cost of credit.
+             */
+            debtInterestMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: fees, insurance and penalties paid with loan payments.
+             */
+            debtOtherMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: debt payments whose split is not known; the four parts add up to debtPaymentsMinor.
+             */
+            debtUnallocatedMinor: number;
             /** Format: int64 */
             netExternalCashFlowMinor: number;
             /** Format: int64 */
@@ -2736,6 +3044,26 @@ export interface components {
             refundsMinor: number;
             /** Format: int64 */
             debtPaymentsMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: loan principal repaid.
+             */
+            debtPrincipalMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: loan interest paid, the cost of credit.
+             */
+            debtInterestMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: fees, insurance and penalties paid with loan payments.
+             */
+            debtOtherMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: debt payments whose split is not known; the four parts add up to debtPaymentsMinor.
+             */
+            debtUnallocatedMinor: number;
             /** Format: int64 */
             outflowsMinor: number;
         };
@@ -2890,6 +3218,17 @@ export interface components {
             dueOn: string;
             /** Format: int64 */
             amountMinor: number;
+            /**
+             * Format: int64
+             * @description SPEC-0053: parts of a loan row; all null when unknown.
+             */
+            principalMinor: number | null;
+            /** Format: int64 */
+            interestMinor: number | null;
+            /** Format: int64 */
+            otherMinor: number | null;
+            /** @enum {string|null} */
+            partsSource: "bank" | "calculated" | null;
             /** Format: int64 */
             paidMinor: number;
             /** Format: int64 */
@@ -2922,11 +3261,18 @@ export interface components {
             createdAt: string;
             payments: components["schemas"]["ScheduledPayment"][];
         };
+        /** @description SPEC-0053: loan rows may carry all three parts adding up to the amount. */
         CreateScheduledPayment: {
             /** Format: date */
             dueOn: string;
             /** Format: int64 */
             amountMinor: number;
+            /** Format: int64 */
+            principalMinor?: number;
+            /** Format: int64 */
+            interestMinor?: number;
+            /** Format: int64 */
+            otherMinor?: number;
         };
         CreateObligation: {
             name: string;
@@ -2969,6 +3315,11 @@ export interface components {
             text: string;
             /** @description Which money column after the date is the payment; default 1. */
             amountColumn?: number;
+            /** @description SPEC-0053: money column of loan principal; requires interestColumn. */
+            principalColumn?: number;
+            interestColumn?: number;
+            /** @description Without it */
+            otherColumn?: number;
         } | {
             /** @constant */
             mode: "rows";
@@ -2976,6 +3327,12 @@ export interface components {
                 dueOn: string;
                 /** Format: int64 */
                 amountMinor: number;
+                /** Format: int64 */
+                principalMinor?: number;
+                /** Format: int64 */
+                interestMinor?: number;
+                /** Format: int64 */
+                otherMinor?: number;
             }[];
         };
         RejectedScheduleLine: {
@@ -2996,6 +3353,8 @@ export interface components {
         CreateScheduledPaymentSettlement: {
             /** Format: uuid */
             financialEventId: string;
+            /** @description SPEC-0053: for a loan, the amount above the row remainder becomes a prepayment. */
+            prepayRemainder?: boolean;
         };
         Error: {
             code: string;
@@ -3304,7 +3663,10 @@ export interface operations {
     };
     getLoan: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description SPEC-0053: day of the debt status; today in the application time zone by default. */
+                on?: string;
+            };
             header?: never;
             path: {
                 obligationId: string;
@@ -3513,6 +3875,288 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaymentScheduleDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    calculatePaymentScheduleParts: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Draft with calculated parts and per-row warnings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentSchedulePartsCalculation"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createLoanPrepayment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLoanPrepayment"];
+            };
+        };
+        responses: {
+            /** @description Idempotent repeat; the current debt status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            /** @description Prepayment created; the current debt status. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateLoanPrepayment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+                prepaymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanPartsEdit"];
+            };
+        };
+        responses: {
+            /** @description The current debt status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createLoanDebtSnapshot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanDebtSnapshotInput"];
+            };
+        };
+        responses: {
+            /** @description Idempotent repeat; the current debt status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            /** @description Snapshot saved; the current debt status. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateLoanDebtSnapshot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                obligationId: string;
+                snapshotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanDebtSnapshotInput"] & {
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The current debt status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanDebtStatus"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getLoanAllocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Allocation of the operation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanAllocation"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    saveLoanAllocation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanPartsEdit"];
+            };
+        };
+        responses: {
+            /** @description Allocation of the operation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanAllocation"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    resetLoanAllocation: {
+        parameters: {
+            query: {
+                revision: number;
+            };
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Allocation of the operation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanAllocation"];
                 };
             };
             404: components["responses"]["NotFound"];
