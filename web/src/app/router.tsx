@@ -1,20 +1,15 @@
 import { createBrowserRouter, Outlet, type RouteObject } from 'react-router-dom'
 
-import { AccountsPage } from '@/pages/accounts'
-import { AnalyticsPage } from '@/pages/analytics'
-import { AssistantPage } from '@/pages/assistant'
-import { CategoriesPage } from '@/pages/categories'
-import { DashboardPage } from '@/pages/dashboard'
-import { HealthPage } from '@/pages/health'
-import { ImportsPage } from '@/pages/imports'
-import { LoginPage } from '@/pages/login'
-import { OperationsPage } from '@/pages/operations'
-import { PasswordEntryPage } from '@/pages/password-entry'
-import { PaymentsPage } from '@/pages/payments'
-import { ProfilePage } from '@/pages/profile'
-import { SubscriptionsPage } from '@/pages/subscriptions'
 import { AppLayout } from '@/widgets/app-shell'
 import { AuthBoundary } from './AuthBoundary'
+import { lazyPage } from './lazyPage'
+
+/**
+ * Страница загружается своим чанком при первом переходе на неё (SPEC-0052). При ошибке
+ * загрузки открывается адрес, на который шла навигация, а при первой загрузке — текущий.
+ */
+const page = (load: Parameters<typeof lazyPage>[0]) =>
+  lazyPage(load, () => appRouter.state.navigation.location ?? appRouter.state.location)
 
 /**
  * Маршруты приложения: публичные страницы входа и layout route с проверкой доступа и
@@ -30,23 +25,83 @@ export const appRoutes: RouteObject[] = [
       </AuthBoundary>
     ),
     children: [
-      { path: '/', element: <DashboardPage /> },
-      { path: '/operations', element: <OperationsPage /> },
-      { path: '/payments', element: <PaymentsPage /> },
-      { path: '/accounts', element: <AccountsPage /> },
-      { path: '/categories', element: <CategoriesPage /> },
-      { path: '/analytics', element: <AnalyticsPage /> },
-      { path: '/health', element: <HealthPage /> },
-      { path: '/profile', element: <ProfilePage /> },
-      { path: '/subscriptions', element: <SubscriptionsPage /> },
-      { path: '/assistant', element: <AssistantPage /> },
-      { path: '/imports', element: <ImportsPage /> },
+      {
+        path: '/',
+        lazy: page(async () => ({ Component: (await import('@/pages/dashboard')).DashboardPage })),
+      },
+      {
+        path: '/operations',
+        lazy: page(async () => ({
+          Component: (await import('@/pages/operations')).OperationsPage,
+        })),
+      },
+      {
+        path: '/payments',
+        lazy: page(async () => ({ Component: (await import('@/pages/payments')).PaymentsPage })),
+      },
+      {
+        path: '/accounts',
+        lazy: page(async () => ({ Component: (await import('@/pages/accounts')).AccountsPage })),
+      },
+      {
+        path: '/categories',
+        lazy: page(async () => ({
+          Component: (await import('@/pages/categories')).CategoriesPage,
+        })),
+      },
+      {
+        path: '/analytics',
+        lazy: page(async () => ({ Component: (await import('@/pages/analytics')).AnalyticsPage })),
+      },
+      {
+        path: '/health',
+        lazy: page(async () => ({ Component: (await import('@/pages/health')).HealthPage })),
+      },
+      {
+        path: '/profile',
+        lazy: page(async () => ({ Component: (await import('@/pages/profile')).ProfilePage })),
+      },
+      {
+        path: '/subscriptions',
+        lazy: page(async () => ({
+          Component: (await import('@/pages/subscriptions')).SubscriptionsPage,
+        })),
+      },
+      {
+        path: '/assistant',
+        lazy: page(async () => ({ Component: (await import('@/pages/assistant')).AssistantPage })),
+      },
+      {
+        path: '/imports',
+        lazy: page(async () => ({ Component: (await import('@/pages/imports')).ImportsPage })),
+      },
     ],
   },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <PasswordEntryPage view="register" /> },
-  { path: '/forgot-password', element: <PasswordEntryPage view="forgot" /> },
-  { path: '/reset-password', element: <PasswordEntryPage view="reset" /> },
+  {
+    path: '/login',
+    lazy: page(async () => ({ Component: (await import('@/pages/login')).LoginPage })),
+  },
+  {
+    path: '/register',
+    lazy: page(async () => {
+      const { PasswordEntryPage } = await import('@/pages/password-entry')
+      return { element: <PasswordEntryPage view="register" /> }
+    }),
+  },
+  {
+    path: '/forgot-password',
+    lazy: page(async () => {
+      const { PasswordEntryPage } = await import('@/pages/password-entry')
+      return { element: <PasswordEntryPage view="forgot" /> }
+    }),
+  },
+  {
+    path: '/reset-password',
+    lazy: page(async () => {
+      const { PasswordEntryPage } = await import('@/pages/password-entry')
+      return { element: <PasswordEntryPage view="reset" /> }
+    }),
+  },
 ]
 
 export const appRouter = createBrowserRouter(appRoutes)

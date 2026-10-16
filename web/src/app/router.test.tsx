@@ -1,3 +1,7 @@
+/// <reference types="node" />
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router-dom'
@@ -47,6 +51,18 @@ describe('SPEC-0048 router', () => {
     )
   })
 
+  // SPEC-0052 AC2: every page is a route-level chunk.
+  it('loads every page through route lazy, not a static import', () => {
+    const source = readFileSync(join(process.cwd(), 'src/app/router.tsx'), 'utf8')
+    expect(source).not.toMatch(/from '@\/pages\//)
+    const leaves = (routes: RouteObject[]): RouteObject[] =>
+      routes.flatMap((route) => (route.children ? leaves(route.children) : [route]))
+    for (const route of leaves(appRoutes)) {
+      expect(route.lazy, route.path).toBeTypeOf('function')
+      expect(route.element ?? route.Component, route.path).toBeUndefined()
+    }
+  })
+
   it('renders a protected page inside the shell after the session check', async () => {
     vi.mocked(apiClient.GET).mockImplementation((async (path: string) =>
       path === '/api/auth/me'
@@ -65,5 +81,16 @@ describe('SPEC-0048 router', () => {
     )
     expect(await screen.findByRole('heading', { name: 'Категории', level: 1 })).toBeVisible()
     expect(screen.getByRole('navigation', { name: 'Навигация' })).toBeInTheDocument()
+  })
+
+  // SPEC-0052 AC4: the shared password-entry chunk keeps the view of each URL.
+  it('renders a sign-in page with its view', async () => {
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/register'] })
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByText('Регистрация в Grace')).toBeVisible()
   })
 })
