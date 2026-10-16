@@ -5,6 +5,8 @@
 implementation commit `09fd14a`.
 Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
+Обновление 2026-10-16 (сверка roadmap): release `8ad9705`, содержащий merge `ed641ac`, развёрнут 2026-10-14 (Deploy production run 38560119989).
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `MoneyInput` (`shared/ui/money-input.tsx`) + `formatAmountText` (`shared/lib/amount-text.ts`): группировка NBSP при вводе, курсор сохраняется; валюта суффиксом и `aria-describedby` | `money-input.test.tsx` (7 тестов: форматирование, вставка `20 000 000,00 ₽`, FormData, курсор, controlled); `CreateObligationForm.test.tsx`: `20000000` → `20 000 000`, отправка `2000000000`; `HomePage.test.tsx`: `1 200,50` → `120050` |

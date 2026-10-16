@@ -7,6 +7,8 @@ Implementation commits по этапам: `4dc5c2f` (фокус, нажатие,
 `a7969e1` (шрифтовая шкала, правила), `c6691d7` (устойчивость статусов).
 Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
+Обновление 2026-10-16 (сверка roadmap): release `8ad9705`, содержащий merge `ed641ac`, развёрнут 2026-10-14 (Deploy production run 38560119989).
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `accent` = `muted` (только hover), новый `selected`; текущий раздел навигации `bg-selected text-selected-foreground font-semibold` | `tokens.test.ts`: `selected`/`accent` ≥ 1.15:1 в обеих темах. Ручная проверка mock-превью (`docs/preview-ui.mjs`) light/dark |

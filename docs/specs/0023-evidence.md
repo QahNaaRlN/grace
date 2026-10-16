@@ -11,6 +11,8 @@ Status: locally verified. Main integration, remote CI, production rollout and
 publication of the owner's real financial history have not occurred. Every
 fixture and confirmed event used here is synthetic.
 
+Обновление 2026-10-16 (сверка roadmap): CI `main` и Deploy production №12 для `f257f8e` успешны ([0028-evidence](0028-evidence.md)); статус `integrated`, работает в production.
+
 ## Delivered behavior
 
 CSV uploads preserve original bytes, source coordinates and text amounts;

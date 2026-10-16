@@ -1,6 +1,6 @@
 # SPEC-0031: почта, пароль и приглашения
 
-- Статус: accepted
+- Статус: integrated (объединённый выпуск `d475cca`: CI run 38038836282 и Deploy production run 38039374895 успешны)
 - Дата: 2026-10-09
 - Acceptance owner: владелец Grace
 - Acceptance record: «Давай добавим ... регистрацию ... почте, паролю, коду

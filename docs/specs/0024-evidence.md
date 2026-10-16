@@ -5,6 +5,8 @@ commit ff98699, direct owner request 2026-10-07.
 Branch: `codex/interface-motion`. Implementation commit: 46b2b51.
 Status: verified locally; main integration, remote CI and deployment pending.
 
+Обновление 2026-10-16 (сверка roadmap): CI `main` и Deploy production №12 для `f257f8e` успешны ([0028-evidence](0028-evidence.md)); статус `integrated`, работает в production.
+
 ## Delivered behavior
 
 The favicon is a white heart/pulse on an indigo rounded square. HTML uses

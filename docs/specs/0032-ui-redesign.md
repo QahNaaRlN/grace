@@ -1,6 +1,6 @@
 # SPEC-0032: единый полный интерфейс Grace
 
-- Status: accepted
+- Status: integrated (объединённый выпуск `d475cca`: CI run 38038836282 и Deploy production run 38039374895 успешны)
 - Date: 2026-10-09
 - Owner: владелец Grace
 - Acceptance record: «Займись полной переработкой ... лаконичный, приятный

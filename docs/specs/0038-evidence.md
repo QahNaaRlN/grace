@@ -6,6 +6,8 @@ GitHub issue [#14](https://github.com/QahNaaRlN/grace/issues/14).
 implementation commit `590013c`.
 Статус: `integrated` — PR #22, merge `ed641ac`; post-merge `make test` в основной копии и CI `main` на `517e621` пройдены. Production не развёрнут (деплой вручную).
 
+Обновление 2026-10-16 (сверка roadmap): release `8ad9705`, содержащий merge `ed641ac`, развёрнут 2026-10-14 (Deploy production run 38560119989).
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `pages/imports/NewDraftCard.tsx`: блок файла — имя, «Таблица CSV · 0,7 КБ», «Файл выбран — готов к сохранению», «Заменить файл», «Убрать» | `NewDraftCard.test.tsx` AC1 |

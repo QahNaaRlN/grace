@@ -4,6 +4,8 @@
 Ветка: `codex/receipt-confirmation-refresh` от `main` `5b70e38`, implementation commit `bc84bcc`.
 Статус: `verified` локально (Windows).
 
+Обновление 2026-10-16 (сверка roadmap): PR #50, merge `cb4a432`: CI `main` run 38811547370 успешен; статус `integrated`, production не развёрнут.
+
 | Критерий | Реализация | Исполняемое свидетельство |
 |---|---|---|
 | AC1 | `features/recognize-receipt-photo/api/use-confirm-receipt-draft.ts`: после успеха инвалидирует `accountQueries`, `financialEventQueries`, `receiptQueries`, `cashPositionQueries`, `periodSummaryQueries`, `statisticsQueries` (`all()`); `obligationQueries` — нет, по решению владельца | `use-confirm-receipt-draft.test.tsx` «confirms the reviewed preview…»: `invalidated()` равен ровно этим шести ключам |

@@ -1,6 +1,6 @@
 # SPEC-0027: Исторические операции с неизвестным временем
 
-- Статус: verified
+- Статус: integrated (выпуск `f257f8e`: CI `main` и Deploy production №12 успешны, см. [0028-evidence](0028-evidence.md))
 - Автор: Codex
 - Дата: 2026-10-08
 - Acceptance owner: owner
