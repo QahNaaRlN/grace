@@ -55,7 +55,8 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/features/*/api/**'],
+    // A slice may sit in a group (features/auth/password), as Steiger allows.
+    files: ['src/features/*/api/**', 'src/features/*/*/api/**'],
     rules: { 'grace/no-direct-invalidate': 'off' },
   },
   {

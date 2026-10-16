@@ -1,3 +1,4 @@
+import { CreditCardsDue } from '@/widgets/credit-cards-due'
 import { LedgerScreen } from '@/widgets/ledger-screen'
 import { Overview } from '@/widgets/overview'
 import { StatisticsPanel } from '@/widgets/statistics-charts'
@@ -20,6 +21,7 @@ export function DashboardPage() {
             accounts={accounts.data ?? []}
             retry={() => void cash.refetch()}
           />
+          <CreditCardsDue accounts={accounts.data ?? []} />
           <StatisticsPanel compact />
         </div>
       )}

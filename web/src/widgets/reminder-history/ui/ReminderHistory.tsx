@@ -5,6 +5,11 @@ import { Disclosure } from '@/shared/ui/disclosure'
 import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { dateText } from '@/shared/lib/date'
 
+const reminderSourceLabels = {
+  subscription: 'Подписка',
+  loan: 'Кредит',
+  credit_card: 'Кредитная карта',
+}
 const labels = {
   pending: 'Ожидает отправки',
   dispatching: 'Передаётся почтовому сервису',
@@ -42,7 +47,7 @@ export function ReminderHistory() {
                 className="flex flex-wrap justify-between gap-2 rounded-xl bg-muted/50 p-3 text-sm"
               >
                 <span>
-                  {item.sourceKind === 'loan' ? 'Кредит' : 'Подписка'} · {dateText(item.dueOn)} · за{' '}
+                  {reminderSourceLabels[item.sourceKind]} · {dateText(item.dueOn)} · за{' '}
                   {item.leadDays} дн.
                 </span>
                 <span
