@@ -1,10 +1,10 @@
 # SPEC-0052: разделение кода Web по маршрутам
 
-- Статус: draft
+- Статус: accepted
 - Автор: Claude (по поручению сессии SPEC-0051)
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace
-- Acceptance record: отсутствует
+- Acceptance record: принята владельцем 2026-10-16 в сессии Claude Code с рекомендациями по всем трём открытым решениям: `lazy` маршрутов, одна перезагрузка при ошибке чанка (вариант (а)), все страницы
 - Implementation branch: `codex/route-code-splitting`
 - Implementation commit: отсутствует
 
@@ -131,6 +131,9 @@ SPEC-0048 (открытое решение 3) вынесла code splitting ма
     git diff --check
 
 ## Открытые решения
+
+Все три приняты владельцем 2026-10-16 по рекомендациям: 1 — `RouteObject.lazy`;
+2 — вариант (а); 3 — все страницы.
 
 1. **`RouteObject.lazy` или `React.lazy` + `Suspense`.** Рекомендация —
    `lazy` маршрута: это штатный механизм data router (`createBrowserRouter`
