@@ -1,5 +1,10 @@
 # Spec-first процесс Grace
 
+Draft 2026-10-16, ждёт решения владельца (открытые решения 1–3):
+[SPEC-0052 — разделение кода Web по маршрутам](0052-route-code-splitting.md)
+— страницы `pages/*` загружаются по маршруту, основной чанк меньше 500 кБ.
+Номер 0051 занят веткой `codex/credit-cards`.
+
 Принята владельцем 2026-10-16 (Yandex Object Storage, ключ только на загрузку, письмо через Postbox, хранение 35/180 дней), статус `verified` (PR #52–#54; production-проверки AC1–AC7 пройдены на `fc19d32`; [evidence](0050-evidence.md)):
 [SPEC-0050 — зашифрованная копия backup вне VPS](0050-offsite-backup.md).
 
