@@ -1,10 +1,11 @@
 # SPEC-0050: зашифрованная копия backup вне VPS
 
-- Статус: draft
+- Статус: accepted
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace
-- Acceptance record: отсутствует
+- Acceptance record: владелец 2026-10-16 в чате: «Принимаю SPEC-0050 как есть. Запиши
+  принятие и реализуй». Решения по открытым вопросам — в разделе «Решения владельца».
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 
