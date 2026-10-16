@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // Interaction-heavy jsdom tests exceed the 5 s default when the whole suite runs in parallel.
+    testTimeout: 15_000,
   },
   resolve: {
     alias: {
