@@ -67,7 +67,7 @@ it('lists cards that need a payment, nearest date first, and skips debit account
   )
   const items = await screen.findAllByRole('listitem')
   expect(items).toHaveLength(2)
-  expect(items[0]).toHaveTextContent(/Synthetic soon.*минимальный платёж до 600/)
+  expect(items[0]).toHaveTextContent(/Synthetic soon.*минимальный платёж не больше 600/)
   expect(items[0]).toHaveTextContent('Скоро срок')
   expect(items[1]).toHaveTextContent(/Synthetic later.*заплатите 5 000.*чтобы не платить проценты/)
   expect(get).toHaveBeenCalledTimes(2)

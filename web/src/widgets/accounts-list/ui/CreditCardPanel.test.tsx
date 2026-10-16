@@ -85,7 +85,7 @@ it('says how much to pay to keep the grace period and warns when the date is nea
   show(data)
   expect(await screen.findByText(/чтобы не платить/)).toHaveTextContent('9 000')
   expect(screen.getByText('Скоро срок')).toBeInTheDocument()
-  expect(screen.getByText(/Минимальный платёж: до/)).toHaveTextContent('1 400')
+  expect(screen.getByText(/Минимальный платёж: не больше/)).toHaveTextContent('1 400')
 })
 
 it('shows unknowns instead of zeros when the card has no terms', async () => {

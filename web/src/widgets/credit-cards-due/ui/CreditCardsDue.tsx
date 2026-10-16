@@ -37,8 +37,9 @@ export function CreditCardsDue({ accounts }: { accounts: Account[] }) {
             </Link>
             <span>
               {keepsGrace ? 'заплатите' : 'минимальный платёж'}{' '}
-              {!keepsGrace && status.minimumIsUpperBound ? 'до ' : ''}
-              <strong>{formatMoney(amount, card.currency)}</strong> до {dateText(date)}
+              {!keepsGrace && status.minimumIsUpperBound ? 'не больше ' : ''}
+              <strong>{formatMoney(amount, card.currency)}</strong>
+              {keepsGrace ? '' : ','} до {dateText(date)}
               {keepsGrace ? ', чтобы не платить проценты' : ''}
             </span>
             {status.graceLost && <StatusBadge tone="danger">Льготный период потерян</StatusBadge>}

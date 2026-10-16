@@ -123,7 +123,7 @@ export function CreditCardPanel({ account, accounts }: { account: Account; accou
               {active.statementDay !== null &&
                 `, выписка ${active.statementDay}-го, ${active.paymentDays} дн. на оплату`}
               {active.graceDays !== null && `, ${active.graceDays} дн. с первой покупки`}. Действуют
-              с {dateText(active.effectiveFrom)}.
+              с {dateText(active.effectiveFrom)}
             </p>
           )}
           {data.documents.map((doc) => (
@@ -195,9 +195,10 @@ function GraceBlock({
       {grace !== null && status.graceDueOn && (
         <p className="flex flex-wrap items-center gap-2">
           {grace === 0 ? (
-            <StatusBadge tone="success">
-              Льготный период сохранён — платить сейчас не нужно
-            </StatusBadge>
+            <>
+              <StatusBadge tone="success">Льготный период сохранён</StatusBadge>
+              <span className="text-sm">Платить сейчас не нужно.</span>
+            </>
           ) : (
             <span>
               Заплатите <strong>{money(grace)}</strong> до {dateText(status.graceDueOn)}, чтобы не
@@ -216,11 +217,10 @@ function GraceBlock({
       )}
       {status.minimumMinor !== null && status.minimumDueOn && status.minimumMinor > 0 && (
         <p className="text-sm">
-          Минимальный платёж: {status.minimumIsUpperBound ? 'до ' : ''}
-          {money(status.minimumMinor)} до {dateText(status.minimumDueOn)}
+          Минимальный платёж: {status.minimumIsUpperBound ? 'не больше ' : ''}
+          {money(status.minimumMinor)}, оплатить до {dateText(status.minimumDueOn)}
           {status.overdueMinimumMinor > 0 &&
-            `, из них просрочено ${money(status.overdueMinimumMinor)}`}
-          .
+            `; из них просрочено ${money(status.overdueMinimumMinor)}`}
         </p>
       )}
       {bank && (bank.graceAmountMinor !== null || bank.minimumMinor !== null) && (
@@ -230,7 +230,6 @@ function GraceBlock({
             ` для льготного периода ${money(bank.graceAmountMinor)}${bank.graceDueOn ? ` до ${dateText(bank.graceDueOn)}` : ''}`}
           {bank.minimumMinor !== null &&
             `; минимальный ${money(bank.minimumMinor)}${bank.minimumDueOn ? ` до ${dateText(bank.minimumDueOn)}` : ''}`}
-          .
         </p>
       )}
     </div>
