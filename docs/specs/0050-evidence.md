@@ -2,8 +2,8 @@
 
 Дата: 2026-10-16. Спецификация: [accepted SPEC-0050](0050-offsite-backup.md).
 Ветка: `codex/offsite-backup` от `main` `cb4a432`, implementation commit — см. git log ветки.
-Статус: `implementing`. Локальные и production-проверки AC1, AC3–AC8 пройдены;
-для AC2 осталась одна команда на VPS (см. «Production-проверки»).
+Статус: `verified`. Все критерии AC1–AC8 проверены локально и в production
+(см. «Production-проверки»).
 
 ## Что сделано
 
@@ -42,7 +42,7 @@ Scope говорит «после загрузки размер и SHA-256 за�
 | Критерий | Исполняемое свидетельство | Статус |
 |---|---|---|
 | AC1 | `scripts/test-offsite-backup.sh`, «AC1/AC2»: daily загружается, объект скачивается, `sha256sum -c` проходит, расшифровка даёт исходный dump, в `.age` нет открытого текста | пройдено локально и в production |
-| AC2 | Тот же блок: в `/opt/grace` нет `AGE-SECRET-KEY`; в production — `grep -r AGE-SECRET-KEY /opt/grace` пуст | локально пройдено; production — частично, см. ниже |
+| AC2 | Тот же блок: в `/opt/grace` нет `AGE-SECRET-KEY`; в production — `grep -rlE 'AGE-SECRET-KEY-1[0-9A-Z]{20}' /opt/grace` пуст | пройдено локально и в production |
 | AC3 | Команды отказа из `docs/production-deployment.md` (list, cat, deletefile) и проверка версии после перезаписи | пройдено в production |
 | AC4 | Тест «AC4»: неверный ключ → выход ≠ 0, dump на месте, маркера нет, `stage=upload`, секретов в выводе нет; письмо с этапом, получателем, без паролей в аргументах и тексте | локально пройдено |
 | AC5 | Тест «AC5»: без `offsite.env` одна строка вывода (путь dump) и ровно одно предупреждение | локально пройдено; `test-production-deployment.sh` — см. ниже |
@@ -110,9 +110,9 @@ Deploy `822b8f8` (run 38876154732) прошёл, релиз здоров. Pre-re
 - **AC1.** Ручной backup `manual-20261016T092101Z-sha-fc19d32….dump.age` и его
   `.sha256` есть в bucket. `upload-pending` догрузил всю прежнюю историю: 7 daily,
   pre-release с 2026-10-05, manual 2026-10-05.
-- **AC2.** `offsite.env` проходит проверку из PR #53: получатель `age1…`, закрытого
-  ключа в нём нет, иначе загрузка отказала бы на этапе `config`. Полный поиск
-  `AGE-SECRET-KEY-1` по `/opt/grace` на VPS ещё не выполнен.
+- **AC2.** `offsite.env` проходит проверку из PR #53: получатель `age1…`.
+  `sudo grep -rlE 'AGE-SECRET-KEY-1[0-9A-Z]{20}' /opt/grace` на VPS ничего не вывел:
+  закрытого ключа на сервере нет.
 - **AC3.** С ключом VPS: список — `AccessDenied 403`, чтение — `AccessDenied 403`,
   прямой `DELETE` через `curl --aws-sigv4` — `403`. Объект после этого на месте.
   Версионирование bucket включено.
@@ -131,7 +131,8 @@ Deploy `822b8f8` (run 38876154732) прошёл, релиз здоров. Pre-re
 ` и берёт из файла ключа только строки `AGE-SECRET-KEY-`. Тест
 `test-offsite-backup.sh` проверяет восстановление из таких файлов.
 
-## Что осталось владельцу (production)
+## Что осталось владельцу
 
-1. На VPS: `sudo grep -rlE 'AGE-SECRET-KEY-1[0-9A-Z]{20}' /opt/grace` должен ничего
-   не вывести (AC2). После этого статус — `verified`.
+Ничего обязательного. Закрытый ключ `age` и ключ читателя хранятся у владельца
+(менеджер паролей и офлайн-копия). Restore drill стоит повторять после крупных
+изменений схемы или раз в несколько месяцев.

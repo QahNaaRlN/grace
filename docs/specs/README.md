@@ -1,6 +1,9 @@
 # Spec-first процесс Grace
 
-Принята владельцем 2026-10-16 (без инвалидации обязательств), статус `integrated` (PR #50, merge `cb4a432`; CI `main` run 38811547370 пройден; production не развёрнут; [evidence](0049-evidence.md)):
+Принята владельцем 2026-10-16 (Yandex Object Storage, ключ только на загрузку, письмо через Postbox, хранение 35/180 дней), статус `verified` (PR #52–#54; production-проверки AC1–AC7 пройдены на `fc19d32`; [evidence](0050-evidence.md)):
+[SPEC-0050 — зашифрованная копия backup вне VPS](0050-offsite-backup.md).
+
+Принята владельцем 2026-10-16 (без инвалидации обязательств), статус `integrated` (PR #50, merge `cb4a432`; CI `main` run 38811547370 пройден; в production с выпуском `822b8f8`; [evidence](0049-evidence.md)):
 [SPEC-0049 — обновление данных после подтверждения чека](0049-receipt-confirmation-refresh.md).
 
 Принята владельцем 2026-10-15 (Steiger, Prettier без `;` и с одинарными кавычками), статус `integrated` (фазы 0–5, PR #42–#48; post-merge проверки на `d486582` пройдены):
