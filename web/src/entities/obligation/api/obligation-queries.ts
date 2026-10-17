@@ -32,6 +32,24 @@ export const loanQueries = {
     }),
 }
 
+// SPEC-0053: how a debt payment splits for its loan; null when it is not linked to one.
+export const loanAllocationQueries = {
+  all: () => ['loan-allocation'] as const,
+  event: (eventId: string) =>
+    queryOptions({
+      queryKey: [...loanAllocationQueries.all(), eventId] as const,
+      queryFn: async () => {
+        const { data, error, response } = await apiClient.GET(
+          '/api/v1/financial-events/{eventId}/loan-allocation',
+          { params: { path: { eventId } } },
+        )
+        if (response.status === 404) return null
+        if (error) throw new Error(error.message)
+        return data ?? null
+      },
+    }),
+}
+
 export const paymentReminderQueries = {
   all: () => ['payment-reminders'] as const,
   list: () =>

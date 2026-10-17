@@ -15,6 +15,10 @@ type ScheduledPayment struct {
 	Position       int          `json:"position"`
 	DueOn          string       `json:"dueOn"`
 	AmountMinor    int64        `json:"amountMinor"`
+	PrincipalMinor *int64       `json:"principalMinor"`
+	InterestMinor  *int64       `json:"interestMinor"`
+	OtherMinor     *int64       `json:"otherMinor"`
+	PartsSource    *string      `json:"partsSource"`
 	PaidMinor      int64        `json:"paidMinor"`
 	RemainingMinor int64        `json:"remainingMinor"`
 	Status         string       `json:"status"`
@@ -40,6 +44,10 @@ type Obligation struct {
 type createPaymentRequest struct {
 	DueOn       string `json:"dueOn"`
 	AmountMinor int64  `json:"amountMinor"`
+	// SPEC-0053: optional split of a loan row; all three or none.
+	PrincipalMinor *int64 `json:"principalMinor,omitempty"`
+	InterestMinor  *int64 `json:"interestMinor,omitempty"`
+	OtherMinor     *int64 `json:"otherMinor,omitempty"`
 }
 
 type createRequest struct {
@@ -52,6 +60,8 @@ type createRequest struct {
 
 type settlementRequest struct {
 	FinancialEventID string `json:"financialEventId"`
+	// SPEC-0053: for a loan, book the amount above the row remainder as a prepayment.
+	PrepayRemainder bool `json:"prepayRemainder"`
 }
 
 type CreateCommand struct {
@@ -69,6 +79,7 @@ type SettlementCommand struct {
 	ObligationID     string
 	PaymentID        string
 	FinancialEventID string
+	PrepayRemainder  bool
 	IdempotencyKey   string
 	RequestHash      string
 }

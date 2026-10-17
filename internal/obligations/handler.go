@@ -129,10 +129,11 @@ func (handler *Handler) CreateSettlement(w http.ResponseWriter, r *http.Request)
 		ObligationID     string `json:"obligationId"`
 		PaymentID        string `json:"paymentId"`
 		FinancialEventID string `json:"financialEventId"`
-	}{obligationID, paymentID, request.FinancialEventID}
+		PrepayRemainder  bool   `json:"prepayRemainder,omitempty"`
+	}{obligationID, paymentID, request.FinancialEventID, request.PrepayRemainder}
 	settlement, created, err := handler.repo.CreateSettlement(r.Context(), SettlementCommand{
 		ObligationID: obligationID, PaymentID: paymentID,
-		FinancialEventID: request.FinancialEventID, IdempotencyKey: key,
+		FinancialEventID: request.FinancialEventID, PrepayRemainder: request.PrepayRemainder, IdempotencyKey: key,
 		RequestHash: hashRequest(hashPayload),
 	})
 	if errors.Is(err, ErrNotFound) {
@@ -201,6 +202,11 @@ func normalizeAndValidateCreate(request *createRequest) bool {
 		parsed, err := time.Parse(dateLayout, payment.DueOn)
 		if err != nil || parsed.Format(dateLayout) != payment.DueOn || payment.AmountMinor <= 0 ||
 			(index > 0 && !parsed.After(previous)) || sum > math.MaxInt64-payment.AmountMinor {
+			return false
+		}
+		// SPEC-0053: only loan rows carry principal, interest and other parts.
+		hasParts := payment.PrincipalMinor != nil || payment.InterestMinor != nil || payment.OtherMinor != nil
+		if hasParts && (request.Kind != "loan" || !validParts(payment.PrincipalMinor, payment.InterestMinor, payment.OtherMinor, payment.AmountMinor)) {
 			return false
 		}
 		sum += payment.AmountMinor

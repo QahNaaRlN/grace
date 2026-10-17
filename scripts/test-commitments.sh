@@ -13,7 +13,10 @@ until docker compose exec -T postgres pg_isready -U grace -d grace >/dev/null 2>
 docker compose run --rm migrate -path=/migrations -database='postgres://grace:grace@postgres:5432/grace?sslmode=disable' up
 postgres_port="$(docker compose port postgres 5432 | sed -n '1s/.*://p')"
 export TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable"
-go test -p 1 -tags=integration ./internal/commitments ./internal/creditcards -count=1
+go test -p 1 -tags=integration ./internal/commitments ./internal/creditcards ./internal/loans -count=1
+if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000025_loan_principal_interest.down.sql; then
+ echo 'Loan principal and interest data was discarded by downgrade' >&2; exit 1
+fi
 if docker compose exec -T postgres psql -U grace -d grace -v ON_ERROR_STOP=1 < migrations/000024_credit_cards.down.sql; then
  echo 'Credit card history was discarded by downgrade' >&2; exit 1
 fi

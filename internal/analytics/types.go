@@ -36,6 +36,7 @@ type CurrencyPeriodSummary struct {
 	PurchasesMinor              int64                    `json:"purchasesMinor"`
 	RefundsMinor                int64                    `json:"refundsMinor"`
 	DebtPaymentsMinor           int64                    `json:"debtPaymentsMinor"`
+	DebtSplit
 	NetExternalCashFlowMinor    int64                    `json:"netExternalCashFlowMinor"`
 	InternalTransferVolumeMinor int64                    `json:"internalTransferVolumeMinor"`
 	ExpenseCategories           []ExpenseCategorySummary `json:"expenseCategories"`

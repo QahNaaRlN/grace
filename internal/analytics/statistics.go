@@ -38,7 +38,8 @@ type StatisticsBucket struct {
 	PurchasesMinor    int64  `json:"purchasesMinor"`
 	RefundsMinor      int64  `json:"refundsMinor"`
 	DebtPaymentsMinor int64  `json:"debtPaymentsMinor"`
-	OutflowsMinor     int64  `json:"outflowsMinor"`
+	DebtSplit
+	OutflowsMinor int64 `json:"outflowsMinor"`
 }
 
 func statisticsPeriod(fromRaw, toRaw, granularity string) (time.Time, time.Time, error) {
@@ -187,6 +188,24 @@ func statisticsSnapshot(ctx context.Context, db periodQuerier, from, to time.Tim
 	}
 	if err = rows.Err(); err != nil {
 		return Statistics{}, err
+	}
+	rows.Close()
+	splits, err := debtSplits(ctx, db, from, to, granularity)
+	if err != nil {
+		return Statistics{}, err
+	}
+	for currency, buckets := range splits {
+		index, ok := byCurrency[currency]
+		if !ok {
+			return Statistics{}, errors.New("statistics currency mismatch")
+		}
+		series := result.Currencies[index].Series
+		for i := range series {
+			left, _ := time.ParseInLocation(dateLayout, series[i].From, from.Location())
+			if split, ok := buckets[bucketStart(left, granularity).Format(dateLayout)]; ok {
+				series[i].DebtSplit = split
+			}
+		}
 	}
 	return result, nil
 }

@@ -52,6 +52,7 @@ export function StatisticsCharts({
           <SeriesChart item={item} />
         </CardContent>
       </Card>
+      {item.summary.debtPaymentsMinor > 0 && <DebtSplitCard item={item} />}
       <Card className="xl:col-span-2">
         <CardHeader>
           <CardTitle>Доходы и расходы</CardTitle>
@@ -65,6 +66,39 @@ export function StatisticsCharts({
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// SPEC-0053: what loan payments did — reduced principal or paid the bank for
+// the credit. Payments without a known split stay visible as unallocated.
+function DebtSplitCard({ item }: { item: StatisticsCurrency }) {
+  const s = item.summary
+  const rows: [string, number][] = [
+    ['Основной долг', s.debtPrincipalMinor],
+    ['Проценты', s.debtInterestMinor],
+    ['Комиссии и прочее', s.debtOtherMinor],
+    ['Не распределено', s.debtUnallocatedMinor],
+  ]
+  return (
+    <Card className="xl:col-span-2">
+      <CardHeader>
+        <CardTitle>Платежи по кредитам</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Проценты, комиссии и прочее — стоимость кредитов. Основной долг уменьшает задолженность и
+          не считается расходом второй раз.
+        </p>
+        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm sm:max-w-md">
+          {rows.map(([label, value]) => (
+            <div key={label} className="contents">
+              <dt className="text-muted-foreground">{label}</dt>
+              <dd className="text-right tabular-nums">{formatMoney(value, item.currency)}</dd>
+            </div>
+          ))}
+        </dl>
+      </CardContent>
+    </Card>
   )
 }
 

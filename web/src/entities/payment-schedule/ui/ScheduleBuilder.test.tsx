@@ -168,3 +168,70 @@ describe('SPEC-0047 schedule layout', () => {
     expect(cells[8]).toContainElement(screen.getByLabelText('Сумма платежа 2'))
   })
 })
+
+describe('SPEC-0053 loan parts', () => {
+  function Loan() {
+    const [rows, setRows] = useState<ScheduleRow[]>([])
+    return (
+      <ScheduleBuilder
+        rows={rows}
+        onChange={setRows}
+        currency="RUB"
+        idPrefix="loan"
+        initialMode="paste"
+        withParts
+      />
+    )
+  }
+
+  it('maps bank columns of principal and interest and shows the parts of each row', async () => {
+    const user = userEvent.setup()
+    post.mockImplementation(async (_path: string, init: { body: { mode: string } }) =>
+      init.body.mode === 'paste'
+        ? {
+            data: {
+              payments: [
+                {
+                  dueOn: '2027-01-15',
+                  amountMinor: 2_500_000,
+                  principalMinor: 1_750_000,
+                  interestMinor: 700_000,
+                  otherMinor: 50_000,
+                },
+              ],
+              totalMinor: 2_500_000,
+              rejectedLines: [],
+            },
+          }
+        : fakeSchedulePreview(init.body as Parameters<typeof fakeSchedulePreview>[0]),
+    )
+    render(<Loan />)
+    await user.click(screen.getByLabelText('Строки графика из банка'))
+    await user.paste('15.01.2027;7000,00;17500,00;500,00;25000,00')
+    await user.click(screen.getByRole('combobox', { name: 'Сумма платежа — колонка после даты' }))
+    await user.click(await screen.findByRole('option', { name: '4-я' }))
+    await user.click(screen.getByRole('combobox', { name: 'Основной долг — колонка' }))
+    await user.click(await screen.findByRole('option', { name: '2-я' }))
+    await user.click(screen.getByRole('button', { name: 'Распознать график' }))
+    expect(await screen.findByText('Укажите обе колонки: основной долг и проценты.')).toBeVisible()
+    await user.click(screen.getByRole('combobox', { name: 'Проценты — колонка' }))
+    await user.click(await screen.findByRole('option', { name: '1-я' }))
+    await user.click(screen.getByRole('combobox', { name: 'Прочее — колонка' }))
+    await user.click(await screen.findByRole('option', { name: '3-я' }))
+    await user.click(screen.getByRole('button', { name: 'Распознать график' }))
+    await waitFor(() =>
+      expect(post.mock.calls[0][1].body).toEqual({
+        mode: 'paste',
+        text: '15.01.2027;7000,00;17500,00;500,00;25000,00',
+        amountColumn: 4,
+        principalColumn: 2,
+        interestColumn: 1,
+        otherColumn: 3,
+      }),
+    )
+    const principal = await screen.findByLabelText<HTMLInputElement>('Тело, платёж 1')
+    expect(principal.value).toMatch(/^17\s500,00$/)
+    expect(screen.getByLabelText<HTMLInputElement>('Прочее, платёж 1').value).toBe('500,00')
+    expect(screen.getByRole('checkbox', { name: 'Указать тело и проценты' })).toBeChecked()
+  })
+})

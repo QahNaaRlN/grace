@@ -1,1 +1,6 @@
-export { loanQueries, obligationQueries, paymentReminderQueries } from './api'
+export {
+  loanAllocationQueries,
+  loanQueries,
+  obligationQueries,
+  paymentReminderQueries,
+} from './api'

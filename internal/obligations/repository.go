@@ -80,9 +80,11 @@ func (repo *Repository) Create(ctx context.Context, command CreateCommand) (Obli
 	}
 	for index, payment := range command.Payments {
 		if _, err := tx.Exec(ctx, `
-			INSERT INTO scheduled_payments (obligation_id, position, due_on, amount_minor)
-			VALUES ($1, $2, $3, $4)`,
+			INSERT INTO scheduled_payments (obligation_id, position, due_on, amount_minor,
+				principal_minor, interest_minor, other_minor, parts_source)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $5::bigint IS NULL THEN NULL ELSE 'bank' END)`,
 			obligationID, index+1, payment.DueOn, payment.AmountMinor,
+			payment.PrincipalMinor, payment.InterestMinor, payment.OtherMinor,
 		); err != nil {
 			return Obligation{}, false, fmt.Errorf("insert scheduled payment: %w", err)
 		}
@@ -127,14 +129,14 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 	}
 
 	var paymentAmount int64
-	var currency string
+	var currency, kind string
 	err = tx.QueryRow(ctx, `
-		SELECT sp.amount_minor, o.currency
+		SELECT sp.amount_minor, o.currency, o.kind
 		FROM scheduled_payments sp
 		JOIN obligations o ON o.id = sp.obligation_id
 		WHERE sp.id::text = $1 AND o.id::text = $2 AND sp.plan_active
 		FOR UPDATE OF sp, o`, command.PaymentID, command.ObligationID,
-	).Scan(&paymentAmount, &currency)
+	).Scan(&paymentAmount, &currency, &kind)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Settlement{}, false, ErrNotFound
 	}
@@ -176,6 +178,8 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 	var used bool
 	if err := tx.QueryRow(ctx, `SELECT EXISTS (
 		SELECT 1 FROM scheduled_payment_settlements WHERE financial_event_id::text = $1
+	) OR EXISTS (
+		SELECT 1 FROM loan_prepayments WHERE financial_event_id::text = $1
 	)`, command.FinancialEventID).Scan(&used); err != nil {
 		return Settlement{}, false, fmt.Errorf("check financial event settlement: %w", err)
 	}
@@ -191,8 +195,14 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 	).Scan(&paidMinor); err != nil {
 		return Settlement{}, false, fmt.Errorf("sum scheduled payment settlements: %w", err)
 	}
-	if postings[0].amount > paymentAmount-paidMinor {
-		return Settlement{}, false, fmt.Errorf("%w: debt payment exceeds scheduled payment remainder", ErrInvalid)
+	settled, prepaid := postings[0].amount, int64(0)
+	if settled > paymentAmount-paidMinor {
+		// SPEC-0053: one bank charge may pay a loan row and repay the loan early;
+		// the remainder becomes a prepayment only on the owner's confirmation.
+		if !command.PrepayRemainder || kind != "loan" || paymentAmount-paidMinor <= 0 {
+			return Settlement{}, false, fmt.Errorf("%w: debt payment exceeds scheduled payment remainder", ErrInvalid)
+		}
+		settled, prepaid = paymentAmount-paidMinor, settled-(paymentAmount-paidMinor)
 	}
 
 	var settlementID string
@@ -202,10 +212,27 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 			idempotency_key, request_hash
 		) VALUES ($1, $2, $3, $4, $5)
 		RETURNING id::text`, command.PaymentID, command.FinancialEventID,
-		postings[0].amount, command.IdempotencyKey, command.RequestHash,
+		settled, command.IdempotencyKey, command.RequestHash,
 	).Scan(&settlementID)
 	if err != nil {
 		return Settlement{}, false, fmt.Errorf("insert settlement: %w", err)
+	}
+	if prepaid > 0 {
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO loan_prepayments (obligation_id, financial_event_id, amount_minor,
+				principal_minor, interest_minor, other_minor, creation_key, request_hash)
+			VALUES ($1, $2, $3, $3, 0, 0, $4, $5)`, command.ObligationID, command.FinancialEventID,
+			prepaid, "settlement:"+command.IdempotencyKey, command.RequestHash,
+		); err != nil {
+			return Settlement{}, false, fmt.Errorf("insert prepayment remainder: %w", err)
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO loan_allocation_revisions (financial_event_id, part, current)
+			VALUES ($1, 'prepayment', jsonb_build_object('principalMinor', $2::bigint, 'interestMinor', 0, 'otherMinor', 0))`,
+			command.FinancialEventID, prepaid,
+		); err != nil {
+			return Settlement{}, false, fmt.Errorf("record prepayment remainder: %w", err)
+		}
 	}
 	settlement, err := loadSettlement(ctx, tx, settlementID)
 	if err != nil {
@@ -221,6 +248,7 @@ const obligationQuery = `
 	SELECT
 		o.id::text, o.name, o.kind, o.currency, o.total_minor, o.created_at,
 		sp.id::text, sp.position, sp.due_on::text, sp.amount_minor,
+		sp.principal_minor, sp.interest_minor, sp.other_minor, sp.parts_source,
 		s.id::text, s.financial_event_id::text, s.amount_minor, s.created_at
 	FROM obligations o
 	JOIN scheduled_payments sp ON sp.obligation_id = o.id AND sp.plan_active
@@ -259,6 +287,7 @@ func collectObligations(rows pgx.Rows, asOf string) ([]Obligation, error) {
 			&obligation.ID, &obligation.Name, &obligation.Kind, &obligation.Currency,
 			&obligation.TotalMinor, &obligation.CreatedAt, &payment.ID,
 			&payment.Position, &payment.DueOn, &payment.AmountMinor,
+			&payment.PrincipalMinor, &payment.InterestMinor, &payment.OtherMinor, &payment.PartsSource,
 			&settlementID, &eventID, &settlementAmount, &settlementCreatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan obligation: %w", err)

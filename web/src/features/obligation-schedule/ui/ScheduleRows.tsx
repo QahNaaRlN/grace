@@ -88,7 +88,7 @@ export function PaymentRow({
       !linking.usedEventIDs.has(event.id) &&
       posting?.currency === obligation.currency &&
       posting.direction === 'debit' &&
-      posting.amountMinor <= payment.remainingMinor
+      (obligation.kind === 'loan' || posting.amountMinor <= payment.remainingMinor)
     )
   })
   return (
@@ -99,6 +99,16 @@ export function PaymentRow({
           осталось{' '}
           <Money valueMinor={payment.remainingMinor} currency={obligation.currency} size="sm" />
         </span>
+        {payment.principalMinor !== null && payment.interestMinor !== null && (
+          <span className="text-xs text-muted-foreground">
+            тело {formatMoney(payment.principalMinor, obligation.currency)} · проценты{' '}
+            {formatMoney(payment.interestMinor, obligation.currency)}
+            {payment.otherMinor
+              ? ` · прочее ${formatMoney(payment.otherMinor, obligation.currency)}`
+              : ''}
+            {payment.partsSource === 'calculated' ? ' · рассчитано Grace' : ''}
+          </span>
+        )}
         <span className="ml-auto flex min-w-0 max-w-full flex-wrap items-center gap-2">
           {payment.dueSoon && (
             <StatusBadge tone="warning">{dueSoonText(payment.daysUntilDue)}</StatusBadge>
@@ -152,6 +162,8 @@ export function SettlementForm({
   const settlement = useSettlePayment()
   const [eventID, setEventID] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const chosen = candidates.find((event) => event.id === eventID)
+  const above = chosen ? chosen.postings[0].amountMinor > payment.remainingMinor : false
   async function settle() {
     if (!eventID || isSubmitting) return
     setIsSubmitting(true)
@@ -159,13 +171,18 @@ export function SettlementForm({
       obligationId: obligation.id,
       paymentId: payment.id,
       financialEventId: eventID,
+      prepayRemainder: above,
     })
     setIsSubmitting(false)
     if (result.error) {
       toast.error(result.error.message)
       return
     }
-    toast.success('Фактический платёж связан с графиком')
+    toast.success(
+      above
+        ? 'Платёж закрыл строку графика, остальное — досрочное погашение'
+        : 'Фактический платёж связан с графиком',
+    )
     onLinked()
   }
   return (
@@ -190,8 +207,14 @@ export function SettlementForm({
         disabled={!eventID || isSubmitting}
         onClick={() => void settle()}
       >
-        {isSubmitting ? 'Связываю…' : 'Связать'}
+        {isSubmitting ? 'Связываю…' : above ? 'Связать и погасить досрочно' : 'Связать'}
       </Button>
+      {above && (
+        <p className="w-full text-sm text-muted-foreground">
+          Платёж больше остатка строки: остаток закроет строку, остальное станет досрочным
+          погашением кредита. Новый график после погашения скопируйте из банка.
+        </p>
+      )}
     </div>
   )
 }

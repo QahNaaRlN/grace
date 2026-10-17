@@ -21,6 +21,10 @@ function mortgage(): Obligation {
       position: i + 1,
       dueOn: iso(i),
       amountMinor: 5000000,
+      principalMinor: null,
+      interestMinor: null,
+      otherMinor: null,
+      partsSource: null,
       paidMinor: 0,
       remainingMinor: 5000000,
       status: 'planned' as const,
@@ -206,5 +210,33 @@ describe('SPEC-0039 compact obligation schedule', () => {
     expect(within(attention).getByText('Ещё 4 требуют внимания')).toBeVisible()
     await userEvent.setup().click(within(attention).getByRole('button', { name: 'Показать все 4' }))
     expect(within(attention).getByText('Статус неизвестен')).toBeVisible()
+  })
+})
+
+describe('SPEC-0053 loan rows', () => {
+  it('shows the parts of a row and books a larger payment as row plus prepayment', async () => {
+    const loan = mortgage()
+    loan.payments[19] = {
+      ...loan.payments[19],
+      principalMinor: 3_000_000,
+      interestMinor: 2_000_000,
+      otherMinor: 0,
+      partsSource: 'calculated',
+    }
+    post.mockResolvedValue({ data: {} })
+    show(loan, [debt('e9', 6_000_000)])
+    const user = userEvent.setup()
+    const attention = screen.getByRole('region', { name: 'Требуют внимания' })
+    const row = within(attention)
+      .getAllByRole('listitem')
+      .find((li) => li.textContent?.includes('рассчитано Grace'))!
+    expect(within(row).getByText(/тело 30\s000,00.*проценты 20\s000,00/)).toBeVisible()
+    await user.click(within(row).getByRole('button', { name: 'Связать платёж' }))
+    await user.click(within(row).getByRole('combobox', { name: 'Фактический платёж' }))
+    await user.click(await screen.findByRole('option', { name: /Банк/ }))
+    expect(within(row).getByText(/остальное станет досрочным погашением/)).toBeVisible()
+    await user.click(within(row).getByRole('button', { name: 'Связать и погасить досрочно' }))
+    await waitFor(() => expect(post).toHaveBeenCalledOnce())
+    expect(post.mock.calls[0][1].body).toEqual({ financialEventId: 'e9', prepayRemainder: true })
   })
 })

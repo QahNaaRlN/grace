@@ -21,3 +21,13 @@ func ParseAsOf(raw string, now time.Time) (string, error) {
 	}
 	return raw, nil
 }
+
+// validParts accepts a complete non-negative split that adds up to the amount.
+func validParts(principal, interest, other *int64, amount int64) bool {
+	if principal == nil || interest == nil || other == nil {
+		return false
+	}
+	return *principal >= 0 && *interest >= 0 && *other >= 0 &&
+		*principal <= amount && *interest <= amount && *other <= amount &&
+		*principal+*interest+*other == amount
+}

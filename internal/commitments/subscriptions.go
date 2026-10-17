@@ -53,6 +53,7 @@ func (h *Handler) Routes(r chi.Router) {
 	r.Post("/loans/{obligationId}/schedule-drafts", h.CopySchedule)
 	r.Patch("/loans/{obligationId}/schedule-drafts/{draftId}", h.EditSchedule)
 	r.Post("/loans/{obligationId}/schedule-drafts/{draftId}/apply", h.ApplySchedule)
+	r.Post("/loans/{obligationId}/schedule-drafts/{draftId}/calculate-parts", h.CalculateParts)
 }
 
 func (h *Handler) ListExpenses(w http.ResponseWriter, r *http.Request) {
