@@ -127,11 +127,19 @@ post-merge проверки — в конце отчёта.
 ## После интеграции в `main` `95c5fa8`
 
 PR #57 влит 2026-10-17. На `main` `95c5fa8`: CI run 39032209158 — success,
-Delivery run 39032837875 — success (публикация images; production не
-развёртывался). Повторно в основной копии:
+Delivery run 39032837875 — success (публикация images). Повторно в основной копии:
 
 - `make test`: exit 0 — Go, web 83 файла / 324 теста, ESLint, Steiger,
   Prettier, сборка, Jev.
 - `make test-integration`: exit 0 — все 13 наборов, включая `internal/loans`
   и отказ down-миграции 000025 удалить данные.
 - `git diff --check` — чисто.
+
+## Production
+
+Release `95c5fa8` выпущен 2026-10-17: Deploy production run 39034114035 —
+success, все шаги, включая проверенный pre-deploy backup, миграции
+(000024 и 000025 — в составе SPEC-0051 и SPEC-0053), внутреннюю проверку
+готовности и внешний authenticated smoke. После выпуска
+`https://graceapp.ru/health` — 200, API без сессии — 401. Проверка интерфейса
+владельцем после выпуска ещё не выполнена.
