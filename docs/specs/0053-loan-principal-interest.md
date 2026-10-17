@@ -1,6 +1,6 @@
 # SPEC-0053: кредиты с графиком — тело, проценты и снимки долга
 
-- Статус: accepted
+- Статус: verified
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-17
 - Acceptance owner: владелец Grace
@@ -8,7 +8,7 @@
   («SPEC-0053 принимаю») после записи решений review (раздел «Решения
   владельца»); открытое решение 1 не блокирует реализацию
 - Implementation branch: `codex/loan-principal-interest`
-- Implementation commit: отсутствует
+- Implementation commit: см. [evidence](0053-evidence.md)
 - Этап roadmap: 3 «Счета, кредитные договоры и финансирование», вторая часть
   (первая — [SPEC-0051](0051-credit-cards.md))
 

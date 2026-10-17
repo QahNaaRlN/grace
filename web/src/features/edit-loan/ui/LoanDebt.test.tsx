@@ -94,7 +94,9 @@ describe('SPEC-0053 loan debt', () => {
     get.mockResolvedValue({ data: loan(debt()) })
     renderPanel()
     const section = await screen.findByRole('region', { name: 'Долг по кредиту' })
-    expect(within(section).getByText(/от данных банка на/)).toBeVisible()
+    expect(
+      within(section).getByText(/Данные банка на .* минус тело платежей после этой даты/),
+    ).toBeVisible()
     expect(within(section).getByText(/Банк на .*полное погашение/)).toBeVisible()
     expect(within(section).getByText(/расхождение 0,08/)).toBeVisible()
     expect(within(section).getByText('График устарел')).toBeVisible()

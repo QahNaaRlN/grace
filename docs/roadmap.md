@@ -25,7 +25,7 @@ draft; номер 0025 не использован.
 | ИИ (OpenRouter) | Adapter, политика моделей, синтетическое сравнение, consent, бюджет | Включение в production evidence не подтверждено: protected config, свежий баланс ключа, согласие на передачу данных ([0034](specs/0034-evidence.md)) |
 | Напоминания | Durable outbox за 3 и 1 день, verified email, общий лимит | Подтвердить production SMTP и сверить reservations с облачным счётом |
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
-| Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Реализация в `codex/loan-principal-interest` не начата |
+| Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Реализация `verified` в `codex/loan-principal-interest` ([evidence](specs/0053-evidence.md)); ждёт интеграции в `main` |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Завершённые этапы

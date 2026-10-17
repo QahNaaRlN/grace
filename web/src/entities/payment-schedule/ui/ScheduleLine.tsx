@@ -1,4 +1,4 @@
-import { type KeyboardEvent } from 'react'
+import { Fragment, type KeyboardEvent } from 'react'
 import { ArrowDownToLine, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -75,7 +75,8 @@ export function ScheduleLine({
         <Trash2 aria-hidden="true" />
       </Button>
       {onParts && (
-        <div className="col-span-4 grid grid-cols-3 gap-2 pb-2">
+        // One part per line on a phone so amounts are not cut off; three in a row wider.
+        <div className="col-span-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 pb-2 sm:grid-cols-[repeat(3,auto_minmax(0,1fr))]">
           {(
             [
               ['principal', 'Тело'],
@@ -83,18 +84,21 @@ export function ScheduleLine({
               ['other', 'Прочее'],
             ] as const
           ).map(([name, label]) => (
-            <MoneyInput
-              key={name}
-              id={`${idPrefix}-${name}-${number}`}
-              aria-label={`${label}, платёж ${number}`}
-              placeholder={label}
-              currency={currency}
-              value={parts[name]}
-              onChange={(event) => onParts({ ...parts, [name]: event.target.value })}
-            />
+            <Fragment key={name}>
+              <span aria-hidden="true" className="text-xs text-muted-foreground">
+                {label}
+              </span>
+              <MoneyInput
+                id={`${idPrefix}-${name}-${number}`}
+                aria-label={`${label}, платёж ${number}`}
+                currency={currency}
+                value={parts[name]}
+                onChange={(event) => onParts({ ...parts, [name]: event.target.value })}
+              />
+            </Fragment>
           ))}
           {row.partsSource === 'calculated' && (
-            <p className="col-span-3 text-xs text-muted-foreground">
+            <p className="col-span-full text-xs text-muted-foreground">
               Рассчитано Grace — сверьте с графиком банка
             </p>
           )}

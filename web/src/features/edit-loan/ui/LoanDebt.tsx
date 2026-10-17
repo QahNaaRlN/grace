@@ -27,12 +27,6 @@ type Totals = components['schemas']['LoanTotals']
 const money = (value: number | null | undefined, currency: string) =>
   value === null || value === undefined ? 'неизвестно' : formatMoney(value, currency)
 
-const basisText: Record<Debt['basis'], string> = {
-  snapshot: 'от данных банка',
-  issued: 'от суммы выдачи',
-  unknown: '',
-}
-
 function TotalsList({
   title,
   totals,
@@ -89,8 +83,9 @@ export function LoanDebt({
         </p>
         {debt.principalOutstandingMinor !== null ? (
           <p className="text-xs text-muted-foreground">
-            {basisText[debt.basis]}
-            {debt.basisOn ? ` на ${dateText(debt.basisOn)}` : ''}, минус тело платежей после неё
+            {debt.basis === 'snapshot' && debt.basisOn
+              ? `Данные банка на ${dateText(debt.basisOn)} минус тело платежей после этой даты`
+              : 'Сумма выдачи минус тело всех платежей'}
           </p>
         ) : debt.basis === 'unknown' ? (
           <p className="text-xs text-muted-foreground">
