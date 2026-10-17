@@ -8,6 +8,307 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/v1/installment-plans:
+    get:
+      operationId: listInstallmentPlans
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - 'on'
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InstallmentPlan'
+                  'on':
+                    type: string
+                    format: date
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - name: 'on'
+        in: query
+        schema:
+          type: string
+          format: date
+    post:
+      operationId: createInstallmentPlan
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentPlan'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstallmentPlan'
+  /api/v1/installment-plans/{planId}:
+    parameters:
+    - name: planId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      operationId: getInstallmentPlan
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentPlan'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - name: 'on'
+        in: query
+        schema:
+          type: string
+          format: date
+  /api/v1/installment-plans/{planId}/schedule-drafts:
+    parameters:
+    - name: planId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    post:
+      operationId: createInstallmentDraft
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentScheduleDraft'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallmentDraftInput'
+  /api/v1/installment-plans/{planId}/schedule-drafts/{draftId}:
+    parameters:
+    - name: planId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: draftId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    put:
+      operationId: updateInstallmentDraft
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentScheduleDraft'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallmentDraftInput'
+  /api/v1/installment-plans/{planId}/schedule-drafts/{draftId}/apply:
+    parameters:
+    - name: planId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: draftId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    post:
+      operationId: applyInstallmentDraft
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentPlan'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyInstallmentDraft'
+  /api/v1/financial-events/{eventId}/installment-allocation:
+    parameters:
+    - name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      operationId: getInstallmentAllocation
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentAllocationView'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    put:
+      operationId: setInstallmentAllocation
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentAllocationView'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallmentAllocationInput'
+    delete:
+      operationId: removeInstallmentAllocation
+      responses:
+        '200':
+          description: Owner-scoped deterministic result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentAllocationView'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallmentAllocationInput'
   /api/v1/payment-reminders:
     get:
       operationId: listPaymentReminders
@@ -2866,6 +3167,467 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    InstallmentRow:
+      type: object
+      required:
+      - dueOn
+      - amountMinor
+      properties:
+        dueOn:
+          type: string
+          format: date
+        amountMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    InstallmentPayment:
+      type: object
+      required:
+      - id
+      - position
+      - dueOn
+      - amountMinor
+      - paidMinor
+      - remainingMinor
+      properties:
+        id:
+          type: string
+          format: uuid
+        position:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        dueOn:
+          type: string
+          format: date
+        amountMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        paidMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        remainingMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+    InstallmentPlan:
+      type: object
+      required:
+      - id
+      - obligationId
+      - name
+      - mode
+      - provider
+      - contractNumber
+      - currency
+      - accountId
+      - purchaseEventId
+      - openedOn
+      - observedOn
+      - principalMinor
+      - initialRemainingMinor
+      - paidMinor
+      - remainingMinor
+      - accountDebtMinor
+      - differenceMinor
+      - historical
+      - reminders
+      - revision
+      - payments
+      - drafts
+      properties:
+        id:
+          type: string
+          format: uuid
+        obligationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        mode:
+          type: string
+          enum:
+          - standalone
+          - credit_card
+        provider:
+          type: string
+        contractNumber:
+          type: string
+        currency:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        purchaseEventId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        openedOn:
+          type: string
+          format: date
+        observedOn:
+          type: string
+          format: date
+        principalMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        initialRemainingMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        paidMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        remainingMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        accountDebtMinor:
+          type:
+          - integer
+          - 'null'
+        differenceMinor:
+          type:
+          - integer
+          - 'null'
+        historical:
+          type: boolean
+        reminders:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentPayment'
+        drafts:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentScheduleDraft'
+    CreateInstallmentPlan:
+      type: object
+      required:
+      - name
+      - mode
+      - provider
+      - currency
+      - openedOn
+      - principalMinor
+      - payments
+      properties:
+        name:
+          type: string
+        mode:
+          type: string
+          enum:
+          - standalone
+          - credit_card
+        provider:
+          type: string
+        contractNumber:
+          type: string
+        currency:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        purchaseEventId:
+          type: string
+          format: uuid
+        purchase:
+          type: object
+          required:
+          - categoryId
+          properties:
+            categoryId:
+              type: string
+              format: uuid
+            merchant:
+              type: string
+            description:
+              type: string
+        openedOn:
+          type: string
+          format: date
+        observedOn:
+          type: string
+          format: date
+        principalMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        initialRemainingMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        historical:
+          type: boolean
+        reminders:
+          type: boolean
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentRow'
+        firstPayment:
+          type: object
+          required:
+          - sourceAccountId
+          - amountMinor
+          - 'on'
+          properties:
+            sourceAccountId:
+              type: string
+              format: uuid
+            amountMinor:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            'on':
+              type: string
+              format: date
+    InstallmentAllocation:
+      type: object
+      required:
+      - paymentId
+      - amountMinor
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        amountMinor:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    InstallmentAllocationInput:
+      type: object
+      required:
+      - revision
+      - reason
+      - items
+      properties:
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentAllocation'
+    InstallmentAllocationView:
+      type: object
+      required:
+      - accountId
+      - currency
+      - eventId
+      - revision
+      - creditMinor
+      - unallocatedMinor
+      - items
+      - history
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        currency:
+          type: string
+        eventId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        creditMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        unallocatedMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentAllocation'
+        history:
+          type: array
+          items:
+            type: object
+            required:
+            - previous
+            - current
+            - reason
+            - changedAt
+            properties:
+              previous: {}
+              current: {}
+              reason:
+                type: string
+              changedAt:
+                type: string
+                format: date-time
+    InstallmentScheduleDraft:
+      type: object
+      required:
+      - id
+      - revision
+      - planRevision
+      - payments
+      - applied
+      properties:
+        id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        planRevision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentRow'
+        applied:
+          type: boolean
+    InstallmentDraftInput:
+      type: object
+      required:
+      - revision
+      properties:
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallmentRow'
+    ApplyInstallmentDraft:
+      type: object
+      required:
+      - revision
+      - planRevision
+      properties:
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        planRevision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+    CardPaymentRequirement:
+      type: object
+      required:
+      - source
+      - status
+      - snapshotId
+      - takenOn
+      - periodFrom
+      - graceAmountMinor
+      - graceDueOn
+      - minimumMinor
+      - minimumDueOn
+      - minimumInGrace
+      - reason
+      properties:
+        source:
+          type: string
+          enum:
+          - bank_confirmed
+          - unknown
+        status:
+          type: string
+          enum:
+          - current
+          - unknown
+          - needs_confirmation
+        snapshotId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        takenOn:
+          type:
+          - string
+          - 'null'
+          format: date
+        periodFrom:
+          type:
+          - string
+          - 'null'
+          format: date
+        graceAmountMinor:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 9007199254740991
+        graceDueOn:
+          type:
+          - string
+          - 'null'
+          format: date
+        minimumMinor:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 9007199254740991
+        minimumDueOn:
+          type:
+          - string
+          - 'null'
+          format: date
+        minimumInGrace:
+          type: boolean
+        reason:
+          type: string
+    CashCardRequirement:
+      type: object
+      required:
+      - accountId
+      - accountName
+      - snapshotId
+      - dueOn
+      - amountMinor
+      - source
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        accountName:
+          type: string
+        snapshotId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        dueOn:
+          type: string
+          format: date
+        amountMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        source:
+          type: string
+          enum:
+          - bank_confirmed
     CreditCardTermsInput:
       type: object
       additionalProperties: false
@@ -2914,6 +3676,17 @@ components:
       additionalProperties: false
       required: [takenOn, debtMinor, note]
       properties:
+        installmentsIncluded:
+          type: boolean
+        minimumInGrace:
+          type: boolean
+        periodFrom:
+          type:
+          - string
+          - 'null'
+          format: date
+        confirmAllOperations:
+          type: boolean
         id: { type: string }
         takenOn: { type: string, format: date }
         debtMinor: { type: integer, minimum: -9007199254740991, maximum: 9007199254740991 }
@@ -2927,6 +3700,15 @@ components:
       type: object
       required: [id, takenOn, debtMinor, availableMinor, graceAmountMinor, graceDueOn, minimumMinor, minimumDueOn, note]
       properties:
+        installmentsIncluded:
+          type: boolean
+        minimumInGrace:
+          type: boolean
+        periodFrom:
+          type:
+          - string
+          - 'null'
+          format: date
         id: { type: string, format: uuid }
         takenOn: { type: string, format: date }
         debtMinor: { type: integer, minimum: -9007199254740991, maximum: 9007199254740991 }
@@ -2974,11 +3756,13 @@ components:
         overdueMinimumMinor: { type: integer }
         unknown:
           type: array
-          items: { type: string, enum: [terms, limit, grace_model, minimum_rule, interest, history, statement_day, debt] }
+          items: { type: string, enum: [terms, limit, grace_model, minimum_rule, interest, history, statement_day, debt, installment_requirement] }
     CreditCard:
       type: object
       required: [accountId, currency, reminders, activeTermsId, terms, snapshots, documents, status, bankComparison]
       properties:
+        paymentRequirement:
+          $ref: '#/components/schemas/CardPaymentRequirement'
         accountId: { type: string, format: uuid }
         currency: { type: string }
         reminders: { type: boolean }
@@ -2996,7 +3780,7 @@ components:
       required: [id, sourceKind, sourceId, dueOn, leadDays, status]
       properties:
         id: { type: string, format: uuid }
-        sourceKind: { type: string, enum: [subscription, loan, credit_card] }
+        sourceKind: { type: string, enum: [subscription, loan, credit_card, installment] }
         sourceId: { type: string, format: uuid }
         dueOn: { type: string, format: date }
         leadDays: { type: integer, enum: [1, 3] }
@@ -4533,6 +5317,10 @@ components:
       type: object
       required: [currency, openingBalanceMinor, closingBalanceMinor, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, debtPrincipalMinor, debtInterestMinor, debtOtherMinor, debtUnallocatedMinor, netExternalCashFlowMinor, internalTransferVolumeMinor, expenseCategories]
       properties:
+        installmentPrincipalRepaidMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
         currency: { type: string, minLength: 3, maxLength: 3 }
         openingBalanceMinor: { type: [integer, "null"], format: int64 }
         closingBalanceMinor: { type: [integer, "null"], format: int64 }
@@ -4591,6 +5379,10 @@ components:
       type: object
       required: [from, to, incomeMinor, purchasesMinor, refundsMinor, debtPaymentsMinor, debtPrincipalMinor, debtInterestMinor, debtOtherMinor, debtUnallocatedMinor, outflowsMinor]
       properties:
+        installmentPrincipalRepaidMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
         from: { type: string, format: date }
         to: { type: string, format: date }
         incomeMinor: { type: integer, format: int64, minimum: 0 }
@@ -4619,6 +5411,16 @@ components:
       type: object
       required: [currency, liquidBalanceMinor, overdueObligationsMinor, upcomingObligationsMinor, obligationsThroughMinor, availableAfterObligationsMinor, scheduledPayments]
       properties:
+        cardRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashCardRequirement'
+        coverageIncomplete:
+          type: boolean
+        coverageReasons:
+          type: array
+          items:
+            type: string
         currency: { type: string, minLength: 3, maxLength: 3 }
         liquidBalanceMinor: { type: [integer, "null"], format: int64 }
         overdueObligationsMinor: { type: integer, format: int64, minimum: 0 }
@@ -4761,6 +5563,8 @@ components:
       type: object
       required: [id, name, kind, currency, totalMinor, paidMinor, remainingMinor, status, createdAt, payments]
       properties:
+        managedInstallment:
+          type: boolean
         id: { type: string, format: uuid }
         name: { type: string }
         kind: { type: string, enum: [loan, installment, other_fixed] }

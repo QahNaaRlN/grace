@@ -121,6 +121,12 @@ func periodSummary(ctx context.Context, db periodQuerier, from, to time.Time) (P
 	}
 	rows.Close()
 
+	if err := installmentHistoryCoverage(ctx, db, from, to, byCurrency); err != nil {
+		return PeriodSummary{}, err
+	}
+	if err := addInstallmentSummary(ctx, db, from, to, byCurrency); err != nil {
+		return PeriodSummary{}, err
+	}
 	rows, err = db.Query(ctx, `
 		SELECT p.currency, e.category_id::text, COALESCE(c.name, 'Без категории'),
 			COALESCE(SUM(p.amount_minor) FILTER (WHERE e.kind = 'purchase'), 0)::bigint,
@@ -301,15 +307,15 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 	rows, err = tx.Query(ctx, `
 		SELECT o.currency, sp.id::text, o.id::text, o.name, sp.due_on::text,
 			sp.amount_minor,
-			COALESCE(SUM(s.amount_minor), 0)::bigint AS paid_minor,
-			(sp.amount_minor - COALESCE(SUM(s.amount_minor), 0))::bigint AS remaining_minor
+			(COALESCE(SUM(s.amount_minor), 0)+COALESCE((SELECT sum(x.amount_minor) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.payment_id=sp.id AND x.active AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<=$2::date),0))::bigint AS paid_minor,
+			(sp.amount_minor - (COALESCE(SUM(s.amount_minor), 0)+COALESCE((SELECT sum(x.amount_minor) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.payment_id=sp.id AND x.active AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<=$2::date),0)))::bigint AS remaining_minor
 		FROM scheduled_payments sp
 		JOIN obligations o ON o.id = sp.obligation_id
 		LEFT JOIN scheduled_payment_settlements s ON s.scheduled_payment_id = sp.id
-		WHERE sp.due_on <= $1::date AND sp.plan_active
+		WHERE sp.due_on <= $1::date AND sp.plan_active AND NOT EXISTS(SELECT 1 FROM installment_plans i WHERE i.obligation_id=o.id AND (i.mode='credit_card' OR i.observed_on>$2::date))
 		GROUP BY o.currency, sp.id, o.id, o.name, sp.due_on, sp.amount_minor
-		HAVING sp.amount_minor - COALESCE(SUM(s.amount_minor), 0) > 0
-		ORDER BY o.currency, sp.due_on, sp.position, sp.id`, through)
+		HAVING sp.amount_minor - (COALESCE(SUM(s.amount_minor), 0)+COALESCE((SELECT sum(x.amount_minor) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.payment_id=sp.id AND x.active AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<=$2::date),0)) > 0
+		ORDER BY o.currency, sp.due_on, sp.position, sp.id`, through, asOf)
 	if err != nil {
 		return CashPosition{}, fmt.Errorf("query outstanding obligations: %w", err)
 	}
@@ -347,6 +353,9 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 	}
 	rows.Close()
 
+	if err := addCardRequirements(ctx, tx, asOf, through, byCurrency); err != nil {
+		return CashPosition{}, err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return CashPosition{}, fmt.Errorf("commit cash position snapshot: %w", err)
 	}
@@ -354,7 +363,7 @@ func (repo *Repository) CashPosition(ctx context.Context, asOf, through string) 
 	for _, currency := range sortedKeys(byCurrency) {
 		item := byCurrency[currency]
 		item.ObligationsThroughMinor = item.OverdueObligationsMinor + item.UpcomingObligationsMinor
-		if item.LiquidBalanceMinor != nil {
+		if item.LiquidBalanceMinor != nil && !item.CoverageIncomplete {
 			available := *item.LiquidBalanceMinor - item.ObligationsThroughMinor
 			item.AvailableAfterObligationsMinor = &available
 		}

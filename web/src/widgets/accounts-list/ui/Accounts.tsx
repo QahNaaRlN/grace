@@ -1,3 +1,4 @@
+import { InstallmentLinks } from '@/features/installment/manage'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CreditCard, Pencil, Plus, Scale } from 'lucide-react'
@@ -145,6 +146,7 @@ function AccountSheet({
         </div>
 
         {account.type === 'credit' && <CreditCardPanel account={account} accounts={accounts} />}
+        {account.type === 'installment' && <InstallmentLinks accountId={account.id} />}
 
         <section aria-labelledby="account-sync" className="space-y-2">
           <h3 id="account-sync" className="text-sm font-semibold">

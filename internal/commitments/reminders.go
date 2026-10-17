@@ -144,6 +144,23 @@ func (w *ReminderWorker) process(ctx context.Context, email, today string) error
 	if err != nil {
 		return err
 	}
+	installmentRows, err := tx.Query(ctx, `SELECT sp.id::text,sp.due_on::text,(sp.due_on-$1::date)::int FROM scheduled_payments sp JOIN installment_plans i ON i.obligation_id=sp.obligation_id WHERE i.mode='standalone' AND i.reminders AND sp.plan_active AND sp.due_on-$1::date IN(1,3) AND sp.amount_minor>COALESCE((SELECT sum(x.amount_minor) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.payment_id=sp.id AND x.active AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<=$1::date),0)`, today)
+	if err != nil {
+		return err
+	}
+	for installmentRows.Next() {
+		c := candidate{kind: "installment"}
+		if err = installmentRows.Scan(&c.id, &c.due, &c.lead); err != nil {
+			installmentRows.Close()
+			return err
+		}
+		candidates = append(candidates, c)
+	}
+	err = installmentRows.Err()
+	installmentRows.Close()
+	if err != nil {
+		return err
+	}
 	cards, err := creditCardCandidates(ctx, tx, today)
 	if err != nil {
 		return err
@@ -205,7 +222,7 @@ func (w *ReminderWorker) process(ctx context.Context, email, today string) error
 		return err
 	}
 	defer checkTx.Rollback(context.WithoutCancel(ctx))
-	active, err = reminderStillActive(ctx, checkTx, kind, source, due)
+	active, err = reminderStillActive(ctx, checkTx, kind, source, due, today)
 	if err != nil {
 		return err
 	}
@@ -284,7 +301,12 @@ func creditCardCandidates(ctx context.Context, tx pgx.Tx, today string) ([]cardR
 	return out, nil
 }
 
-func reminderStillActive(ctx context.Context, tx pgx.Tx, kind, source, due string) (bool, error) {
+func reminderStillActive(ctx context.Context, tx pgx.Tx, kind, source, due, today string) (bool, error) {
+	if kind == "installment" {
+		var active bool
+		err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_payments sp JOIN installment_plans i ON i.obligation_id=sp.obligation_id WHERE sp.id::text=$1 AND sp.due_on=$2::date AND sp.plan_active AND i.mode='standalone' AND i.reminders AND sp.amount_minor>COALESCE((SELECT sum(x.amount_minor) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.payment_id=sp.id AND x.active AND COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date)<=$3::date),0))`, source, due, today).Scan(&active)
+		return active, err
+	}
 	if kind == "credit_card" {
 		var reminders bool
 		err := tx.QueryRow(ctx, `SELECT reminders FROM credit_card_settings WHERE account_id::text=$1 FOR UPDATE`, source).Scan(&reminders)
@@ -294,7 +316,7 @@ func reminderStillActive(ctx context.Context, tx pgx.Tx, kind, source, due strin
 		if err != nil {
 			return false, err
 		}
-		dates, err := creditcards.DueDates(ctx, tx, source, creditcards.Today())
+		dates, err := creditcards.DueDates(ctx, tx, source, mustReminderDay(today))
 		if err != nil {
 			return false, err
 		}
@@ -327,3 +349,5 @@ func reminderStillActive(ctx context.Context, tx pgx.Tx, kind, source, due strin
 	}
 	return amount > paid, err
 }
+
+func mustReminderDay(today string) time.Time { day, _ := creditcards.ParseDay(today); return day }

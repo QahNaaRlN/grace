@@ -34,6 +34,10 @@ export function CardSnapshotDialog({
   const [key] = useState(createIdempotencyKey)
   const record = useRecordCardSnapshot(accountId, key)
   const [form, setForm] = useState({
+    installmentsIncluded: false,
+    minimumInGrace: false,
+    confirmAllOperations: false,
+    periodFrom: '',
     takenOn: today(),
     debt: '',
     available: '',
@@ -58,6 +62,10 @@ export function CardSnapshotDialog({
     setPending(true)
     setError('')
     const result = await record.mutateAsync({
+      installmentsIncluded: form.installmentsIncluded,
+      minimumInGrace: form.minimumInGrace,
+      confirmAllOperations: form.confirmAllOperations,
+      periodFrom: form.periodFrom || null,
       takenOn: form.takenOn,
       debtMinor,
       availableMinor: optional(form.available),
@@ -134,6 +142,47 @@ export function CardSnapshotDialog({
               />
             </Field>
           </div>
+          <label className="flex min-h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={form.installmentsIncluded}
+              onChange={(e) => set({ installmentsIncluded: e.target.checked })}
+            />{' '}
+            Общая сумма для грейса уже включает рассрочки
+          </label>
+          {form.installmentsIncluded && (
+            <div className="space-y-3">
+              <Field label="Начало расчётного периода">
+                <Input
+                  required
+                  type="date"
+                  value={form.periodFrom}
+                  onChange={(e) => set({ periodFrom: e.target.value })}
+                />
+              </Field>
+              <label className="flex min-h-11 items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.minimumInGrace}
+                  onChange={(e) => set({ minimumInGrace: e.target.checked })}
+                />{' '}
+                Минимальный платёж входит в сумму для грейса
+              </label>
+              <label className="flex min-h-11 items-center gap-2">
+                <input
+                  type="checkbox"
+                  required
+                  checked={form.confirmAllOperations}
+                  onChange={(e) => set({ confirmAllOperations: e.target.checked })}
+                />{' '}
+                Подтверждаю: сумма на конец даты учитывает все внесённые операции
+              </label>
+              <p className="text-sm text-muted-foreground">
+                Укажите оставшуюся общую сумму из банка. После новых операций потребуется обновить
+                подтверждение.
+              </p>
+            </div>
+          )}
           {error && (
             <Notice tone="danger" title="Данные не сохранены">
               {error}

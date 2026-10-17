@@ -14,6 +14,9 @@ const obligationKindLabels: Record<Obligation['kind'], string> = {
 }
 
 export function Obligations({ items, events }: { items: Obligation[]; events: FinancialEvent[] }) {
+  const legacy = items.filter((item) => !item.managedInstallment)
+  if (items.length > 0 && legacy.length === 0) return null
+  items = legacy
   const usedEventIDs = new Set(
     items.flatMap((item) =>
       item.payments.flatMap((payment) =>

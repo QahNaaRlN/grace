@@ -111,6 +111,8 @@ Owner-only deployment на `graceapp.ru`, ручной release, backup и rollba
     migrations/           PostgreSQL-миграции
     docs/                 архитектурные решения
 
+Рассрочки и BNPL: [инструкция владельцу](docs/installments-user-guide.md).
+
 Правила разработки зафиксированы в [docs/architecture.md](docs/architecture.md).
 
 ## Процесс разработки

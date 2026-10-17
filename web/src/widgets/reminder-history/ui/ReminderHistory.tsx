@@ -6,6 +6,7 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { dateText } from '@/shared/lib/date'
 
 const reminderSourceLabels = {
+  installment: 'Рассрочка',
   subscription: 'Подписка',
   loan: 'Кредит',
   credit_card: 'Кредитная карта',

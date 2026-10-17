@@ -4,6 +4,114 @@
  */
 
 export interface paths {
+    "/api/v1/installment-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInstallmentPlans"];
+        put?: never;
+        post: operations["createInstallmentPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/installment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getInstallmentPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/installment-plans/{planId}/schedule-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createInstallmentDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/installment-plans/{planId}/schedule-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateInstallmentDraft"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/installment-plans/{planId}/schedule-drafts/{draftId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["applyInstallmentDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/financial-events/{eventId}/installment-allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getInstallmentAllocation"];
+        put: operations["setInstallmentAllocation"];
+        post?: never;
+        delete: operations["removeInstallmentAllocation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payment-reminders": {
         parameters: {
             query?: never;
@@ -1599,6 +1707,162 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        InstallmentRow: {
+            /** Format: date */
+            dueOn: string;
+            amountMinor: number;
+        };
+        InstallmentPayment: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            /** Format: date */
+            dueOn: string;
+            amountMinor: number;
+            paidMinor: number;
+            remainingMinor: number;
+        };
+        InstallmentPlan: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            obligationId: string;
+            name: string;
+            /** @enum {string} */
+            mode: "standalone" | "credit_card";
+            provider: string;
+            contractNumber: string;
+            currency: string;
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            purchaseEventId: string | null;
+            /** Format: date */
+            openedOn: string;
+            /** Format: date */
+            observedOn: string;
+            principalMinor: number;
+            initialRemainingMinor: number;
+            paidMinor: number;
+            remainingMinor: number;
+            accountDebtMinor: number | null;
+            differenceMinor: number | null;
+            historical: boolean;
+            reminders: boolean;
+            revision: number;
+            payments: components["schemas"]["InstallmentPayment"][];
+            drafts: components["schemas"]["InstallmentScheduleDraft"][];
+        };
+        CreateInstallmentPlan: {
+            name: string;
+            /** @enum {string} */
+            mode: "standalone" | "credit_card";
+            provider: string;
+            contractNumber?: string;
+            currency: string;
+            /** Format: uuid */
+            accountId?: string;
+            /** Format: uuid */
+            purchaseEventId?: string;
+            purchase?: {
+                /** Format: uuid */
+                categoryId: string;
+                merchant?: string;
+                description?: string;
+            };
+            /** Format: date */
+            openedOn: string;
+            /** Format: date */
+            observedOn?: string;
+            principalMinor: number;
+            initialRemainingMinor?: number;
+            historical?: boolean;
+            reminders?: boolean;
+            payments: components["schemas"]["InstallmentRow"][];
+            firstPayment?: {
+                /** Format: uuid */
+                sourceAccountId: string;
+                amountMinor: number;
+                /** Format: date */
+                on: string;
+            };
+        };
+        InstallmentAllocation: {
+            /** Format: uuid */
+            paymentId: string;
+            amountMinor: number;
+        };
+        InstallmentAllocationInput: {
+            revision: number;
+            reason: string;
+            items: components["schemas"]["InstallmentAllocation"][];
+        };
+        InstallmentAllocationView: {
+            /** Format: uuid */
+            accountId: string;
+            currency: string;
+            /** Format: uuid */
+            eventId: string;
+            revision: number;
+            creditMinor: number;
+            unallocatedMinor: number;
+            items: components["schemas"]["InstallmentAllocation"][];
+            history: {
+                previous: unknown;
+                current: unknown;
+                reason: string;
+                /** Format: date-time */
+                changedAt: string;
+            }[];
+        };
+        InstallmentScheduleDraft: {
+            /** Format: uuid */
+            id: string;
+            revision: number;
+            planRevision: number;
+            payments: components["schemas"]["InstallmentRow"][];
+            applied: boolean;
+        };
+        InstallmentDraftInput: {
+            revision: number;
+            payments?: components["schemas"]["InstallmentRow"][];
+        };
+        ApplyInstallmentDraft: {
+            revision: number;
+            planRevision: number;
+        };
+        CardPaymentRequirement: {
+            /** @enum {string} */
+            source: "bank_confirmed" | "unknown";
+            /** @enum {string} */
+            status: "current" | "unknown" | "needs_confirmation";
+            /** Format: uuid */
+            snapshotId: string | null;
+            /** Format: date */
+            takenOn: string | null;
+            /** Format: date */
+            periodFrom: string | null;
+            graceAmountMinor: number | null;
+            /** Format: date */
+            graceDueOn: string | null;
+            minimumMinor: number | null;
+            /** Format: date */
+            minimumDueOn: string | null;
+            minimumInGrace: boolean;
+            reason: string;
+        };
+        CashCardRequirement: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: uuid */
+            snapshotId: string | null;
+            /** Format: date */
+            dueOn: string;
+            amountMinor: number;
+            /** @enum {string} */
+            source: "bank_confirmed";
+        };
         CreditCardTermsInput: {
             id?: string;
             /** Format: date */
@@ -1645,6 +1909,11 @@ export interface components {
             revision: number;
         };
         CreditCardSnapshotInput: {
+            installmentsIncluded?: boolean;
+            minimumInGrace?: boolean;
+            /** Format: date */
+            periodFrom?: string | null;
+            confirmAllOperations?: boolean;
             id?: string;
             /** Format: date */
             takenOn: string;
@@ -1659,6 +1928,10 @@ export interface components {
             note: string;
         };
         CreditCardSnapshot: {
+            installmentsIncluded?: boolean;
+            minimumInGrace?: boolean;
+            /** Format: date */
+            periodFrom?: string | null;
             /** Format: uuid */
             id: string;
             /** Format: date */
@@ -1711,9 +1984,10 @@ export interface components {
             minimumDueOn: string | null;
             minimumIsUpperBound: boolean;
             overdueMinimumMinor: number;
-            unknown: ("terms" | "limit" | "grace_model" | "minimum_rule" | "interest" | "history" | "statement_day" | "debt")[];
+            unknown: ("terms" | "limit" | "grace_model" | "minimum_rule" | "interest" | "history" | "statement_day" | "debt" | "installment_requirement")[];
         };
         CreditCard: {
+            paymentRequirement?: components["schemas"]["CardPaymentRequirement"];
             /** Format: uuid */
             accountId: string;
             currency: string;
@@ -1730,7 +2004,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            sourceKind: "subscription" | "loan" | "credit_card";
+            sourceKind: "subscription" | "loan" | "credit_card" | "installment";
             /** Format: uuid */
             sourceId: string;
             /** Format: date */
@@ -2966,6 +3240,7 @@ export interface components {
             netExpenseMinor: number;
         };
         CurrencyPeriodSummary: {
+            installmentPrincipalRepaidMinor?: number;
             currency: string;
             /** Format: int64 */
             openingBalanceMinor: number | null;
@@ -3032,6 +3307,7 @@ export interface components {
             series: components["schemas"]["StatisticsBucket"][];
         };
         StatisticsBucket: {
+            installmentPrincipalRepaidMinor?: number;
             /** Format: date */
             from: string;
             /** Format: date */
@@ -3090,6 +3366,9 @@ export interface components {
             daysUntilDue: number;
         };
         CurrencyCashPosition: {
+            cardRequirements?: components["schemas"]["CashCardRequirement"][];
+            coverageIncomplete?: boolean;
+            coverageReasons?: string[];
             currency: string;
             /** Format: int64 */
             liquidBalanceMinor: number | null;
@@ -3243,6 +3522,7 @@ export interface components {
             settlements: components["schemas"]["ScheduledPaymentSettlement"][];
         };
         Obligation: {
+            managedInstallment?: boolean;
             /** Format: uuid */
             id: string;
             name: string;
@@ -3490,6 +3770,303 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listInstallmentPlans: {
+        parameters: {
+            query?: {
+                on?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["InstallmentPlan"][];
+                        /** Format: date */
+                        on: string;
+                    };
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createInstallmentPlan: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInstallmentPlan"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentPlan"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getInstallmentPlan: {
+        parameters: {
+            query?: {
+                on?: string;
+            };
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentPlan"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createInstallmentDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallmentDraftInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentScheduleDraft"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateInstallmentDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                planId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallmentDraftInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentScheduleDraft"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    applyInstallmentDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                planId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyInstallmentDraft"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentPlan"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getInstallmentAllocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentAllocationView"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    setInstallmentAllocation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallmentAllocationInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentAllocationView"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    removeInstallmentAllocation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallmentAllocationInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped deterministic result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentAllocationView"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
     listPaymentReminders: {
         parameters: {
             query?: never;

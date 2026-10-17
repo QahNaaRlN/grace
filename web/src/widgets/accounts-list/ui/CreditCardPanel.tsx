@@ -13,6 +13,7 @@ import {
   CardTermsDialog,
   useCardReminders,
 } from '@/features/credit-card/manage'
+import { InstallmentLinks } from '@/features/installment/manage'
 import { RepayCardDialog } from '@/features/credit-card/repay'
 import type { Account } from '@/shared/api'
 import { dateText } from '@/shared/lib/date'
@@ -86,6 +87,17 @@ export function CreditCardPanel({ account, accounts }: { account: Account; accou
         )}
       </dl>
       <GraceBlock data={data} money={money} />
+      <InstallmentLinks accountId={account.id} />
+      {data.paymentRequirement && (
+        <Notice
+          tone={data.paymentRequirement.source === 'bank_confirmed' ? 'info' : 'warning'}
+          title="Платёж по карте с рассрочками"
+        >
+          {data.paymentRequirement.reason}
+          {data.paymentRequirement.takenOn &&
+            ` Снимок на ${dateText(data.paymentRequirement.takenOn)}.`}
+        </Notice>
+      )}
       {data.bankComparison && data.bankComparison.differenceMinor !== 0 && (
         <Notice tone="warning" title="Долг в банке и в Grace расходится">
           На {dateText(data.bankComparison.takenOn)}: в банке{' '}
@@ -104,7 +116,7 @@ export function CreditCardPanel({ account, accounts }: { account: Account; accou
       <Label className="flex items-center gap-2 font-normal">
         <Checkbox
           checked={data.reminders}
-          disabled={reminders.isPending || !active}
+          disabled={reminders.isPending || (!active && !data.paymentRequirement)}
           onCheckedChange={(checked) => void reminders.mutateAsync(checked)}
         />
         Напоминать письмом за 3 и 1 день до платежа

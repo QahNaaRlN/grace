@@ -85,6 +85,10 @@ export function PeriodAnalytics() {
                 </span>
                 <span className="text-muted-foreground">Возвраты</span>
                 <span className="text-right">{formatMoney(item.refundsMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Тело рассрочек погашено (справочно)</span>
+                <span className="text-right">
+                  {formatMoney(item.installmentPrincipalRepaidMinor ?? 0, item.currency)}
+                </span>
                 <span className="text-muted-foreground">Платежи по обязательствам</span>
                 <span className="text-right">
                   {formatMoney(item.debtPaymentsMinor, item.currency)}
@@ -187,6 +191,22 @@ export function PeriodAnalytics() {
                   {formatMoney(item.obligationsThroughMinor, item.currency)}
                 </span>
               </div>
+              {item.coverageIncomplete && (
+                <p className="break-words text-sm text-muted-foreground">
+                  {item.coverageReasons?.join(' ')}
+                </p>
+              )}
+              {item.cardRequirements?.map((requirement) => (
+                <div
+                  key={requirement.accountId}
+                  className="flex flex-wrap justify-between gap-2 border-t pt-3 text-sm"
+                >
+                  <span>
+                    {requirement.accountName} · {requirement.dueOn} · общее требование банка
+                  </span>
+                  <span>{formatMoney(requirement.amountMinor, item.currency)}</span>
+                </div>
+              ))}
               {item.scheduledPayments.length > 0 && (
                 <div className="space-y-1 border-t pt-3 text-sm">
                   {item.scheduledPayments.map((payment) => (

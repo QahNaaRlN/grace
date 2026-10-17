@@ -29,16 +29,17 @@ type ScheduledPayment struct {
 }
 
 type Obligation struct {
-	ID             string             `json:"id"`
-	Name           string             `json:"name"`
-	Kind           string             `json:"kind"`
-	Currency       string             `json:"currency"`
-	TotalMinor     int64              `json:"totalMinor"`
-	PaidMinor      int64              `json:"paidMinor"`
-	RemainingMinor int64              `json:"remainingMinor"`
-	Status         string             `json:"status"`
-	CreatedAt      time.Time          `json:"createdAt"`
-	Payments       []ScheduledPayment `json:"payments"`
+	ManagedInstallment bool               `json:"managedInstallment,omitempty"`
+	ID                 string             `json:"id"`
+	Name               string             `json:"name"`
+	Kind               string             `json:"kind"`
+	Currency           string             `json:"currency"`
+	TotalMinor         int64              `json:"totalMinor"`
+	PaidMinor          int64              `json:"paidMinor"`
+	RemainingMinor     int64              `json:"remainingMinor"`
+	Status             string             `json:"status"`
+	CreatedAt          time.Time          `json:"createdAt"`
+	Payments           []ScheduledPayment `json:"payments"`
 }
 
 type createPaymentRequest struct {
