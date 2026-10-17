@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
@@ -153,5 +153,36 @@ describe('SPEC-0030 charts', () => {
       '/analytics',
     )
     expect(screen.queryByRole('group')).not.toBeInTheDocument()
+  })
+})
+
+describe('SPEC-0053 loan payments', () => {
+  it('splits debt payments into principal, cost of credit and unallocated', () => {
+    wrap(
+      <StatisticsCharts
+        item={{
+          ...item,
+          summary: {
+            ...item.summary,
+            debtPrincipalMinor: 2000,
+            debtInterestMinor: 700,
+            debtOtherMinor: 0,
+            debtUnallocatedMinor: 300,
+          },
+        }}
+      />,
+    )
+    const card = screen
+      .getByText('Платежи по кредитам')
+      .closest('[data-slot="card"]') as HTMLElement
+    expect(within(card).getByText('Основной долг').nextSibling).toHaveTextContent(/20,00/)
+    expect(within(card).getByText('Проценты').nextSibling).toHaveTextContent(/7,00/)
+    expect(within(card).getByText('Не распределено').nextSibling).toHaveTextContent(/3,00/)
+  })
+  it('hides the card when there were no debt payments', () => {
+    wrap(
+      <StatisticsCharts item={{ ...item, summary: { ...item.summary, debtPaymentsMinor: 0 } }} />,
+    )
+    expect(screen.queryByText('Платежи по кредитам')).not.toBeInTheDocument()
   })
 })

@@ -183,17 +183,45 @@ export function EqualForm({
   )
 }
 
+export type PasteColumns = {
+  amountColumn: number
+  principalColumn?: number
+  interestColumn?: number
+  otherColumn?: number
+}
+
+const columnOptions = [1, 2, 3, 4, 5, 6]
+
 export function PasteForm({
   idPrefix,
   busy,
+  withParts = false,
   onParse,
 }: {
   idPrefix: string
   busy: boolean
-  onParse: (text: string, amountColumn: number) => void
+  withParts?: boolean
+  onParse: (text: string, columns: PasteColumns) => void
 }) {
   const [text, setText] = useState('')
   const [column, setColumn] = useState('1')
+  // SPEC-0053: banks order principal, interest and other charges differently.
+  const [principal, setPrincipal] = useState('')
+  const [interest, setInterest] = useState('')
+  const [other, setOther] = useState('')
+  const [error, setError] = useState('')
+  function parse() {
+    if ((principal === '') !== (interest === ''))
+      return setError('Укажите обе колонки: основной долг и проценты.')
+    setError('')
+    onParse(text, {
+      amountColumn: Number(column),
+      ...(principal
+        ? { principalColumn: Number(principal), interestColumn: Number(interest) }
+        : {}),
+      ...(principal && other ? { otherColumn: Number(other) } : {}),
+    })
+  }
   return (
     <div className="space-y-4 rounded-xl border p-4">
       <div className="grid gap-2">
@@ -215,19 +243,46 @@ export function PasteForm({
       <div className="grid gap-2 sm:max-w-xs">
         <Label htmlFor={`${idPrefix}-column`}>Сумма платежа — колонка после даты</Label>
         <ChoiceSelect id={`${idPrefix}-column`} value={column} onValueChange={setColumn}>
-          {[1, 2, 3, 4, 5, 6].map((n) => (
+          {columnOptions.map((n) => (
             <option key={n} value={String(n)}>
               {n === 1 ? 'Первая (обычно «Сумма платежа»)' : `${n}-я`}
             </option>
           ))}
         </ChoiceSelect>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        disabled={busy || !text.trim()}
-        onClick={() => onParse(text, Number(column))}
-      >
+      {withParts && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {(
+            [
+              ['principal', 'Основной долг — колонка', principal, setPrincipal],
+              ['interest', 'Проценты — колонка', interest, setInterest],
+              ['other', 'Прочее — колонка', other, setOther],
+            ] as const
+          ).map(([name, label, value, set]) => (
+            <div className="grid gap-2" key={name}>
+              <Label htmlFor={`${idPrefix}-${name}-column`}>{label}</Label>
+              <ChoiceSelect id={`${idPrefix}-${name}-column`} value={value} onValueChange={set}>
+                <option value="">Нет в таблице</option>
+                {columnOptions.map((n) => (
+                  <option key={n} value={String(n)}>
+                    {n}-я
+                  </option>
+                ))}
+              </ChoiceSelect>
+            </div>
+          ))}
+          <p className="text-sm text-muted-foreground sm:col-span-3">
+            Номера считаются среди денежных колонок после даты. Без колонки «Прочее» Grace запишет в
+            него разницу между платежом, телом и процентами.
+          </p>
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <Button type="button" variant="outline" disabled={busy || !text.trim()} onClick={parse}>
         {busy ? 'Распознаём…' : 'Распознать график'}
       </Button>
     </div>

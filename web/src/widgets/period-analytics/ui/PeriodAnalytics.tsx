@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { BarChart3, WalletCards } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { cashPositionQueries, periodSummaryQueries } from '@/entities/analytics-report'
 import { browserMonthEnd, browserMonthPeriod } from '@/shared/lib/date'
 import { dueSoonText } from '@/shared/lib/finance-display'
@@ -89,6 +89,22 @@ export function PeriodAnalytics() {
                 <span className="text-right">
                   {formatMoney(item.debtPaymentsMinor, item.currency)}
                 </span>
+                {item.debtPaymentsMinor > 0 &&
+                  (
+                    [
+                      ['основной долг', item.debtPrincipalMinor],
+                      ['проценты', item.debtInterestMinor],
+                      ['комиссии и прочее', item.debtOtherMinor],
+                      ['не распределено', item.debtUnallocatedMinor],
+                    ] as const
+                  )
+                    .filter(([, value]) => value > 0)
+                    .map(([label, value]) => (
+                      <Fragment key={label}>
+                        <span className="pl-3 text-muted-foreground">в т. ч. {label}</span>
+                        <span className="text-right">{formatMoney(value, item.currency)}</span>
+                      </Fragment>
+                    ))}
                 <span className="text-muted-foreground">Внешний денежный поток</span>
                 <span className="text-right font-medium">
                   {formatMoney(item.netExternalCashFlowMinor, item.currency)}

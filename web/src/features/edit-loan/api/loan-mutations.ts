@@ -1,9 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { cashPositionQueries } from '@/entities/analytics-report'
-import { loanQueries, obligationQueries } from '@/entities/obligation'
+import {
+  cashPositionQueries,
+  periodSummaryQueries,
+  statisticsQueries,
+} from '@/entities/analytics-report'
+import { loanAllocationQueries, loanQueries, obligationQueries } from '@/entities/obligation'
 import { apiClient } from '@/shared/api'
 import type { components, paths } from '@/shared/api/generated/schema'
+import { createIdempotencyKey } from '@/shared/lib/idempotency'
 
 type Draft = components['schemas']['PaymentScheduleDraft']
 type LoanUpdate =
@@ -11,6 +16,9 @@ type LoanUpdate =
 type DraftUpdate =
   paths['/api/v1/loans/{obligationId}/schedule-drafts/{draftId}']['patch']['requestBody']['content']['application/json']
 type Callbacks<T> = { onSuccess?: (data: T) => void; onError?: (error: Error) => void }
+type Calculation = components['schemas']['PaymentSchedulePartsCalculation']
+type SnapshotInput = components['schemas']['LoanDebtSnapshotInput']
+type PrepaymentInput = components['schemas']['CreateLoanPrepayment']
 
 function useLoanRefresh(obligationId: string) {
   const queryClient = useQueryClient()
@@ -127,6 +135,93 @@ export function useApplyLoanSchedule(obligationId: string, callbacks: Callbacks<
       refresh()
       void queryClient.invalidateQueries({ queryKey: obligationQueries.all() })
       void queryClient.invalidateQueries({ queryKey: cashPositionQueries.all() })
+    },
+    onError: callbacks.onError,
+  })
+}
+
+/** SPEC-0053: Grace fills principal and interest of a saved draft by the repayment type. */
+export function useCalculateScheduleParts(
+  obligationId: string,
+  callbacks: Callbacks<Calculation> = {},
+) {
+  const refresh = useLoanRefresh(obligationId)
+  return useMutation({
+    mutationFn: async (draft: Draft) => {
+      const { data, error } = await apiClient.POST(
+        '/api/v1/loans/{obligationId}/schedule-drafts/{draftId}/calculate-parts',
+        {
+          params: { path: { obligationId, draftId: draft.id } },
+          body: { revision: draft.revision },
+        },
+      )
+      if (error) throw new Error(error.message)
+      return data!
+    },
+    onSuccess: (result) => {
+      callbacks.onSuccess?.(result)
+      refresh()
+    },
+    onError: callbacks.onError,
+  })
+}
+
+// Debt figures feed the loan card, the operation card and the statistics.
+function useDebtRefresh(obligationId: string) {
+  const queryClient = useQueryClient()
+  const refresh = useLoanRefresh(obligationId)
+  return () => {
+    refresh()
+    for (const queryKey of [
+      loanAllocationQueries.all(),
+      statisticsQueries.all(),
+      periodSummaryQueries.all(),
+    ])
+      void queryClient.invalidateQueries({ queryKey })
+  }
+}
+
+/** SPEC-0053: saves the outstanding debt the owner copied from the bank. */
+export function useCreateLoanSnapshot(obligationId: string, callbacks: Callbacks<void> = {}) {
+  const refresh = useDebtRefresh(obligationId)
+  return useMutation({
+    mutationFn: async (prepare: () => SnapshotInput) => {
+      const { error } = await apiClient.POST('/api/v1/loans/{obligationId}/debt-snapshots', {
+        params: {
+          path: { obligationId },
+          header: { 'Idempotency-Key': createIdempotencyKey() },
+        },
+        body: prepare(),
+      })
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      callbacks.onSuccess?.()
+      refresh()
+    },
+    onError: callbacks.onError,
+  })
+}
+
+/** SPEC-0053: links a debt payment to the loan as an early repayment. */
+export function useCreateLoanPrepayment(obligationId: string, callbacks: Callbacks<void> = {}) {
+  const queryClient = useQueryClient()
+  const refresh = useDebtRefresh(obligationId)
+  return useMutation({
+    mutationFn: async (prepare: () => PrepaymentInput) => {
+      const { error } = await apiClient.POST('/api/v1/loans/{obligationId}/prepayments', {
+        params: {
+          path: { obligationId },
+          header: { 'Idempotency-Key': createIdempotencyKey() },
+        },
+        body: prepare(),
+      })
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      callbacks.onSuccess?.()
+      refresh()
+      void queryClient.invalidateQueries({ queryKey: obligationQueries.all() })
     },
     onError: callbacks.onError,
   })

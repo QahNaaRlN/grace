@@ -61,7 +61,10 @@ export function CreateObligationForm() {
       return
     }
     // Go validates the rows and computes the total that the API must match.
-    const checked = await previewSchedule({ mode: 'rows', payments: rowsForPreview(rows) })
+    const checked = await previewSchedule({
+      mode: 'rows',
+      payments: rowsForPreview(rows, values.kind === 'loan'),
+    })
     if (!checked.ok || checked.preview.rejectedLines.length > 0) {
       const lines = checked.ok ? checked.preview.rejectedLines : checked.rejectedLines
       setScheduleError(
@@ -145,6 +148,7 @@ export function CreateObligationForm() {
               }}
               currency={currency}
               idPrefix="obligation-schedule"
+              withParts={kind === 'loan'}
             />
             {scheduleError && (
               <p role="alert" className="text-sm text-destructive">

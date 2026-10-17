@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { parseMinor } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { previewSchedule, type RejectedScheduleLine } from '../api/preview-schedule'
 import { replaceUnlocked, rowKey, rowsFromPayments, type ScheduleRow } from '../model/schedule-rows'
 import { EqualForm, PasteForm, RejectedLines } from './ScheduleForms'
@@ -26,14 +27,18 @@ export function ScheduleBuilder({
   currency,
   idPrefix,
   initialMode = 'equal',
+  withParts = false,
 }: {
   rows: ScheduleRow[]
   onChange: (rows: ScheduleRow[]) => void
   currency: string
   idPrefix: string
   initialMode?: Mode
+  // SPEC-0053: loan rows may carry principal, interest and other charges.
+  withParts?: boolean
 }) {
   const [mode, setMode] = useState<Mode>(initialMode)
+  const [showParts, setShowParts] = useState(() => withParts && rows.some((row) => row.parts))
   const [expanded, setExpanded] = useState(false)
   const [message, setMessage] = useState('')
   const [rejected, setRejected] = useState<RejectedScheduleLine[]>([])
@@ -124,9 +129,11 @@ export function ScheduleBuilder({
         <PasteForm
           idPrefix={idPrefix}
           busy={busy}
-          onParse={(text, amountColumn) =>
-            void generate(() => previewSchedule({ mode: 'paste', text, amountColumn }))
-          }
+          withParts={withParts}
+          onParse={(text, columns) => {
+            if (columns.principalColumn) setShowParts(true)
+            void generate(() => previewSchedule({ mode: 'paste', text, ...columns }))
+          }}
         />
       )}
 
@@ -138,6 +145,12 @@ export function ScheduleBuilder({
       {rejected.length > 0 && <RejectedLines lines={rejected} />}
 
       <section aria-label="График платежей" className="space-y-2">
+        {withParts && (
+          <label className="flex min-h-11 items-center gap-3 text-sm">
+            <Checkbox checked={showParts} onCheckedChange={(v) => setShowParts(v === true)} />
+            <span>Указать тело и проценты</span>
+          </label>
+        )}
         {summary && (
           <p role="status" className="text-sm text-muted-foreground">
             {summary}
@@ -184,6 +197,11 @@ export function ScheduleBuilder({
                   }}
                   onFillDown={index < rows.length - 1 ? () => fillDown(index) : undefined}
                   onRemove={() => onChange(rows.filter((other) => other.key !== row.key))}
+                  onParts={
+                    showParts
+                      ? (parts) => update(row.key, { parts, partsSource: 'bank' })
+                      : undefined
+                  }
                 />
               )
             })}

@@ -3,7 +3,7 @@ import { ArrowDownToLine, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
-import { type ScheduleRow } from '../model/schedule-rows'
+import { type RowParts, type ScheduleRow } from '../model/schedule-rows'
 
 export function ScheduleLine({
   row,
@@ -15,6 +15,7 @@ export function ScheduleLine({
   onAmountKey,
   onFillDown,
   onRemove,
+  onParts,
 }: {
   row: ScheduleRow
   number: number
@@ -25,7 +26,10 @@ export function ScheduleLine({
   onAmountKey: (event: KeyboardEvent<HTMLInputElement>) => void
   onFillDown?: () => void
   onRemove: () => void
+  // SPEC-0053: shown for loan rows; editing marks the parts as the bank's.
+  onParts?: (parts: RowParts) => void
 }) {
+  const parts = row.parts ?? { principal: '', interest: '', other: '' }
   const paid = row.locked ? ' · есть оплата' : ''
   return (
     <>
@@ -70,6 +74,32 @@ export function ScheduleLine({
       >
         <Trash2 aria-hidden="true" />
       </Button>
+      {onParts && (
+        <div className="col-span-4 grid grid-cols-3 gap-2 pb-2">
+          {(
+            [
+              ['principal', 'Тело'],
+              ['interest', 'Проценты'],
+              ['other', 'Прочее'],
+            ] as const
+          ).map(([name, label]) => (
+            <MoneyInput
+              key={name}
+              id={`${idPrefix}-${name}-${number}`}
+              aria-label={`${label}, платёж ${number}`}
+              placeholder={label}
+              currency={currency}
+              value={parts[name]}
+              onChange={(event) => onParts({ ...parts, [name]: event.target.value })}
+            />
+          ))}
+          {row.partsSource === 'calculated' && (
+            <p className="col-span-3 text-xs text-muted-foreground">
+              Рассчитано Grace — сверьте с графиком банка
+            </p>
+          )}
+        </div>
+      )}
     </>
   )
 }

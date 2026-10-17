@@ -62,7 +62,14 @@ export function Obligations({ items, events }: { items: Obligation[]; events: Fi
                   </p>
                 )}
               </div>
-              {item.kind === 'loan' && <LoanPanel obligationId={item.id} />}
+              {item.kind === 'loan' && (
+                <LoanPanel
+                  obligationId={item.id}
+                  currency={item.currency}
+                  events={events}
+                  usedEventIDs={usedEventIDs}
+                />
+              )}
               <ObligationSchedule obligation={item} events={events} usedEventIDs={usedEventIDs} />
             </article>
           ))

@@ -1,21 +1,44 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { rowKey, ScheduleBuilder, type ScheduleRow } from '@/entities/payment-schedule'
+import {
+  partsFromPayment,
+  partsPayload,
+  rowKey,
+  ScheduleBuilder,
+  type ScheduleRow,
+} from '@/entities/payment-schedule'
 import type { components } from '@/shared/api/generated/schema'
-import { minorToInput, parseMinor } from '@/shared/lib/money'
+import { formatMoney, minorToInput, parseMinor } from '@/shared/lib/money'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { MoneyInput } from '@/shared/ui/money-input'
 import { Label } from '@/shared/ui/label'
 import { Checkbox } from '@/shared/ui/checkbox'
-import { useSaveLoanDetails, useSaveScheduleDraft } from '../api/loan-mutations'
+import { ChoiceSelect } from '@/shared/ui/choice-select'
+import { Notice } from '@/shared/ui/status'
+import {
+  useCalculateScheduleParts,
+  useSaveLoanDetails,
+  useSaveScheduleDraft,
+} from '../api/loan-mutations'
 
 export type Draft = components['schemas']['PaymentScheduleDraft']
 
 export type Loan = components['schemas']['LoanDetails']
+type RepaymentType = NonNullable<Loan['repaymentType']>
+export type Calculation = components['schemas']['PaymentSchedulePartsCalculation']
+
+const warningText: Record<string, string> = {
+  payment_below_interest: 'платёж меньше процентов — части не заполнены',
+  principal_exhausted: 'основной долг уже погашен — части не заполнены',
+  not_differentiated: 'сумма не похожа на дифференцированный платёж',
+}
 
 export function LoanForm({ initial, obligationId }: { initial: Loan; obligationId: string }) {
   const [reminders, setReminders] = useState(initial.reminders)
+  const [repaymentType, setRepaymentType] = useState<RepaymentType>(
+    initial.repaymentType ?? 'unknown',
+  )
   const save = useSaveLoanDetails(obligationId, {
     onSuccess: () => toast.success('Сведения о кредите сохранены'),
     onError: (e) => toast.error(e.message),
@@ -37,6 +60,7 @@ export function LoanForm({ initial, obligationId }: { initial: Loan; obligationI
         agreementOn: String(form.get('date')) || null,
         principalMinor: amount,
         annualRateBasisPoints: basis,
+        repaymentType,
         reminders,
         revision: initial.revision,
       }
@@ -84,9 +108,21 @@ export function LoanForm({ initial, obligationId }: { initial: Loan; obligationI
           </div>
         ))}
       </div>
+      <div className="grid gap-2 sm:max-w-xs">
+        <Label htmlFor={`${obligationId}-repayment`}>Вид погашения</Label>
+        <ChoiceSelect
+          id={`${obligationId}-repayment`}
+          value={repaymentType}
+          onValueChange={(value) => setRepaymentType(value as RepaymentType)}
+        >
+          <option value="annuity">Аннуитетный — равные платежи</option>
+          <option value="differentiated">Дифференцированный — равное тело</option>
+          <option value="unknown">Не указан</option>
+        </ChoiceSelect>
+      </div>
       <p className="text-xs text-muted-foreground">
-        Ставка и сумма выдачи — справочные данные. График задаётся по договору; Grace не
-        рассчитывает условия банка автоматически.
+        График задаёт банк. Вид погашения, ставка, сумма выдачи и дата договора нужны только для
+        расчёта тела и процентов в копии графика — результат сверьте с графиком банка.
       </p>
       <label className="flex min-h-11 items-start gap-3 text-sm">
         <Checkbox checked={reminders} onCheckedChange={(v) => setReminders(v === true)} />
@@ -104,11 +140,16 @@ export function ScheduleEditor({
   obligationId,
   onSaved,
   onApply,
+  calculation,
+  onCalculated,
 }: {
   draft: Draft
   obligationId: string
   onSaved: (d: Draft) => void
   onApply: () => void
+  // Kept by the parent: a saved calculation bumps the revision and remounts the editor.
+  calculation: Calculation | null
+  onCalculated: (c: Calculation | null) => void
 }) {
   // SPEC-0037: the same three ways to fill a schedule as a new obligation; paid rows stay locked.
   const [rows, setRows] = useState<ScheduleRow[]>(() =>
@@ -119,11 +160,21 @@ export function ScheduleEditor({
       locked: p.paidMinor > 0,
       sourceId: p.sourceId,
       paidMinor: p.paidMinor,
+      ...partsFromPayment(p),
     })),
   )
+  const calculate = useCalculateScheduleParts(obligationId, {
+    onSuccess: (result) => {
+      onCalculated(result)
+      onSaved(result.draft)
+      toast.success('Тело и проценты рассчитаны. Сверьте их с графиком банка.')
+    },
+    onError: (e) => toast.error(e.message),
+  })
   const [dirty, setDirty] = useState(false)
   const save = useSaveScheduleDraft(obligationId, draft.id, {
     onSuccess: (d) => {
+      onCalculated(null)
       onSaved(d)
       toast.success('Черновик сохранён')
     },
@@ -134,11 +185,14 @@ export function ScheduleEditor({
       const amountMinor = parseMinor(p.amount)
       if (amountMinor === null || amountMinor <= 0)
         throw new Error('Укажите положительную сумму каждого платежа.')
+      const parts = partsPayload(p)
       return {
         sourceId: p.sourceId ?? '',
         dueOn: p.dueOn,
         paidMinor: p.paidMinor ?? 0,
         amountMinor,
+        ...parts,
+        ...('principalMinor' in parts ? { partsSource: p.partsSource ?? 'bank' } : {}),
       }
     })
     return { revision: draft.revision, payments }
@@ -154,10 +208,20 @@ export function ScheduleEditor({
         currency="RUB"
         idPrefix={`draft-${draft.id}`}
         initialMode="manual"
+        withParts
       />
+      {calculation && <CalculationNotes calculation={calculation} />}
       <div className="flex flex-wrap gap-2">
         <Button disabled={!dirty || save.isPending} onClick={() => save.mutate(prepare)}>
           Сохранить черновик
+        </Button>
+        <Button
+          variant="outline"
+          className="h-auto min-h-11 max-w-full whitespace-normal py-2"
+          disabled={dirty || save.isPending || calculate.isPending}
+          onClick={() => calculate.mutate(draft)}
+        >
+          Рассчитать тело и проценты
         </Button>
         <Button
           variant="outline"
@@ -174,5 +238,31 @@ export function ScheduleEditor({
         </p>
       )}
     </div>
+  )
+}
+
+// SPEC-0053: what Grace could not split and how far the calculated principal is
+// from the issued amount; the owner decides before applying the copy.
+function CalculationNotes({ calculation }: { calculation: Calculation }) {
+  const warnings = calculation.rows
+    .map((row, index) => ({ number: index + 1, warning: row.warning }))
+    .filter((row) => row.warning)
+  if (warnings.length === 0 && calculation.principalDifferenceMinor === 0) return null
+  return (
+    <Notice tone="warning" title="Проверьте расчёт">
+      <ul className="space-y-1">
+        {calculation.principalDifferenceMinor !== 0 && (
+          <li>
+            Тело по расчёту отличается от суммы выдачи на{' '}
+            {formatMoney(calculation.principalDifferenceMinor, 'RUB')}.
+          </li>
+        )}
+        {warnings.map((row) => (
+          <li key={row.number}>
+            Платёж {row.number}: {warningText[row.warning!] ?? row.warning}
+          </li>
+        ))}
+      </ul>
+    </Notice>
   )
 }
