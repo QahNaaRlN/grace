@@ -126,6 +126,7 @@ func lockState(ctx context.Context, tx pgx.Tx, id string) (eventState, error) {
 func links(ctx context.Context, tx pgx.Tx, id, kind string) ([]string, error) {
 	var found []string
 	checks := []struct{ label, query string }{
+		{"рассрочка", `SELECT EXISTS(SELECT 1 FROM installment_plans WHERE purchase_event_id=$1) OR EXISTS(SELECT 1 FROM installment_payment_allocations WHERE event_id=$1 AND active)`},
 		{"чек", `SELECT EXISTS (SELECT 1 FROM receipts WHERE purchase_event_id=$1)`},
 		{"оплата графика обязательства", `SELECT EXISTS (SELECT 1 FROM scheduled_payment_settlements WHERE financial_event_id=$1)`},
 		{"досрочное погашение кредита", `SELECT EXISTS (SELECT 1 FROM loan_prepayments WHERE financial_event_id=$1)`},

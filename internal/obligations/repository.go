@@ -246,13 +246,14 @@ func (repo *Repository) CreateSettlement(ctx context.Context, command Settlement
 
 const obligationQuery = `
 	SELECT
-		o.id::text, o.name, o.kind, o.currency, o.total_minor, o.created_at,
+		o.id::text, o.name, o.kind, o.currency, o.total_minor, o.created_at,EXISTS(SELECT 1 FROM installment_plans i WHERE i.obligation_id=o.id),
 		sp.id::text, sp.position, sp.due_on::text, sp.amount_minor,
 		sp.principal_minor, sp.interest_minor, sp.other_minor, sp.parts_source,
-		s.id::text, s.financial_event_id::text, s.amount_minor, s.created_at
+		s.id::text, s.financial_event_id::text, s.amount_minor, s.created_at,s.occurred_on::text
 	FROM obligations o
 	JOIN scheduled_payments sp ON sp.obligation_id = o.id AND sp.plan_active
-	LEFT JOIN scheduled_payment_settlements s ON s.scheduled_payment_id = sp.id
+	LEFT JOIN (SELECT id,financial_event_id,scheduled_payment_id,amount_minor,created_at,NULL::date AS occurred_on FROM scheduled_payment_settlements
+ UNION ALL SELECT x.id,x.event_id,x.payment_id,x.amount_minor,x.created_at,COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yekaterinburg')::date) FROM installment_payment_allocations x JOIN financial_events e ON e.id=x.event_id WHERE x.active) s ON s.scheduled_payment_id=sp.id
 	`
 
 func loadObligation(ctx context.Context, db queryer, id, asOf string) (Obligation, error) {
@@ -283,12 +284,13 @@ func collectObligations(rows pgx.Rows, asOf string) ([]Obligation, error) {
 		var settlementID, eventID *string
 		var settlementAmount *int64
 		var settlementCreatedAt *time.Time
+		var settlementOn *string
 		if err := rows.Scan(
 			&obligation.ID, &obligation.Name, &obligation.Kind, &obligation.Currency,
-			&obligation.TotalMinor, &obligation.CreatedAt, &payment.ID,
+			&obligation.TotalMinor, &obligation.CreatedAt, &obligation.ManagedInstallment, &payment.ID,
 			&payment.Position, &payment.DueOn, &payment.AmountMinor,
 			&payment.PrincipalMinor, &payment.InterestMinor, &payment.OtherMinor, &payment.PartsSource,
-			&settlementID, &eventID, &settlementAmount, &settlementCreatedAt,
+			&settlementID, &eventID, &settlementAmount, &settlementCreatedAt, &settlementOn,
 		); err != nil {
 			return nil, fmt.Errorf("scan obligation: %w", err)
 		}
@@ -306,7 +308,7 @@ func collectObligations(rows pgx.Rows, asOf string) ([]Obligation, error) {
 			pi = len(items[oi].Payments) - 1
 			paymentIndex[payment.ID] = pi
 		}
-		if settlementID != nil && eventID != nil && settlementAmount != nil && settlementCreatedAt != nil {
+		if settlementID != nil && eventID != nil && settlementAmount != nil && settlementCreatedAt != nil && (settlementOn == nil || *settlementOn <= asOf) {
 			items[oi].Payments[pi].Settlements = append(items[oi].Payments[pi].Settlements, Settlement{
 				ID: *settlementID, ScheduledPaymentID: payment.ID,
 				FinancialEventID: *eventID, AmountMinor: *settlementAmount,

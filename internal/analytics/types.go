@@ -29,13 +29,14 @@ type IncomeRelativePeriod struct {
 }
 
 type CurrencyPeriodSummary struct {
-	Currency                    string                   `json:"currency"`
-	OpeningBalanceMinor         *int64                   `json:"openingBalanceMinor"`
-	ClosingBalanceMinor         *int64                   `json:"closingBalanceMinor"`
-	IncomeMinor                 int64                    `json:"incomeMinor"`
-	PurchasesMinor              int64                    `json:"purchasesMinor"`
-	RefundsMinor                int64                    `json:"refundsMinor"`
-	DebtPaymentsMinor           int64                    `json:"debtPaymentsMinor"`
+	InstallmentPrincipalRepaidMinor int64  `json:"installmentPrincipalRepaidMinor"`
+	Currency                        string `json:"currency"`
+	OpeningBalanceMinor             *int64 `json:"openingBalanceMinor"`
+	ClosingBalanceMinor             *int64 `json:"closingBalanceMinor"`
+	IncomeMinor                     int64  `json:"incomeMinor"`
+	PurchasesMinor                  int64  `json:"purchasesMinor"`
+	RefundsMinor                    int64  `json:"refundsMinor"`
+	DebtPaymentsMinor               int64  `json:"debtPaymentsMinor"`
 	DebtSplit
 	NetExternalCashFlowMinor    int64                    `json:"netExternalCashFlowMinor"`
 	InternalTransferVolumeMinor int64                    `json:"internalTransferVolumeMinor"`
@@ -57,6 +58,8 @@ type CashPosition struct {
 }
 
 type CurrencyCashPosition struct {
+	CoverageIncomplete             bool                   `json:"coverageIncomplete"`
+	CoverageReasons                []string               `json:"coverageReasons,omitempty"`
 	Currency                       string                 `json:"currency"`
 	LiquidBalanceMinor             *int64                 `json:"liquidBalanceMinor"`
 	OverdueObligationsMinor        int64                  `json:"overdueObligationsMinor"`

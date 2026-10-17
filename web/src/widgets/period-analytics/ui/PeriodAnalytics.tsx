@@ -85,6 +85,10 @@ export function PeriodAnalytics() {
                 </span>
                 <span className="text-muted-foreground">Возвраты</span>
                 <span className="text-right">{formatMoney(item.refundsMinor, item.currency)}</span>
+                <span className="text-muted-foreground">Тело рассрочек погашено (справочно)</span>
+                <span className="text-right">
+                  {formatMoney(item.installmentPrincipalRepaidMinor ?? 0, item.currency)}
+                </span>
                 <span className="text-muted-foreground">Платежи по обязательствам</span>
                 <span className="text-right">
                   {formatMoney(item.debtPaymentsMinor, item.currency)}
@@ -167,6 +171,11 @@ export function PeriodAnalytics() {
                 <h3 className="font-semibold">{item.currency}</h3>
                 <Badge variant="outline">
                   Доступно {formatMoney(item.availableAfterObligationsMinor, item.currency)}
+                  {item.coverageIncomplete && (
+                    <span className="block text-sm text-muted-foreground">
+                      {item.coverageReasons?.join(' ')}
+                    </span>
+                  )}
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">

@@ -14,6 +14,7 @@ export const graceModelLabels: Record<GraceModel, string> = {
 
 /** What Grace cannot compute yet and why; shown instead of zeros. */
 export const unknownLabels: Record<CreditCardStatus['unknown'][number], string> = {
+  installment_requirement: 'Для карты с рассрочками обновите общее требование банка.',
   terms: 'Условия карты не заданы.',
   limit: 'Лимит неизвестен.',
   grace_model: 'Правило льготного периода неизвестно.',

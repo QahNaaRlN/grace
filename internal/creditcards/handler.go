@@ -15,6 +15,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/QahNaaRlN/grace/internal/financialevents"
+	"github.com/QahNaaRlN/grace/internal/installments"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/go-chi/chi/v5"
@@ -29,6 +31,7 @@ const localDay = `COALESCE(e.occurred_date,(e.occurred_at AT TIME ZONE 'Asia/Yek
 const documentQuota = 50 << 20
 
 var errNotCredit = errors.New("account is not a credit card")
+var errSnapshotConflict = errors.New("snapshot idempotency conflict")
 
 type TermsVersion struct {
 	ID                  string  `json:"id"`
@@ -51,15 +54,19 @@ type TermsVersion struct {
 }
 
 type Snapshot struct {
-	ID               string  `json:"id"`
-	TakenOn          string  `json:"takenOn"`
-	DebtMinor        int64   `json:"debtMinor"`
-	AvailableMinor   *int64  `json:"availableMinor"`
-	GraceAmountMinor *int64  `json:"graceAmountMinor"`
-	GraceDueOn       *string `json:"graceDueOn"`
-	MinimumMinor     *int64  `json:"minimumMinor"`
-	MinimumDueOn     *string `json:"minimumDueOn"`
-	Note             string  `json:"note"`
+	InstallmentsIncluded bool    `json:"installmentsIncluded"`
+	MinimumInGrace       bool    `json:"minimumInGrace"`
+	PeriodFrom           *string `json:"periodFrom"`
+	ConfirmAllOperations bool    `json:"confirmAllOperations,omitempty"`
+	ID                   string  `json:"id"`
+	TakenOn              string  `json:"takenOn"`
+	DebtMinor            int64   `json:"debtMinor"`
+	AvailableMinor       *int64  `json:"availableMinor"`
+	GraceAmountMinor     *int64  `json:"graceAmountMinor"`
+	GraceDueOn           *string `json:"graceDueOn"`
+	MinimumMinor         *int64  `json:"minimumMinor"`
+	MinimumDueOn         *string `json:"minimumDueOn"`
+	Note                 string  `json:"note"`
 }
 
 type Document struct {
@@ -96,15 +103,16 @@ type Comparison struct {
 }
 
 type Card struct {
-	AccountID      string         `json:"accountId"`
-	Currency       string         `json:"currency"`
-	Reminders      bool           `json:"reminders"`
-	ActiveTermsID  *string        `json:"activeTermsId"`
-	Terms          []TermsVersion `json:"terms"`
-	Snapshots      []Snapshot     `json:"snapshots"`
-	Documents      []Document     `json:"documents"`
-	Status         StatusView     `json:"status"`
-	BankComparison *Comparison    `json:"bankComparison"`
+	PaymentRequirement *installments.Requirement `json:"paymentRequirement,omitempty"`
+	AccountID          string                    `json:"accountId"`
+	Currency           string                    `json:"currency"`
+	Reminders          bool                      `json:"reminders"`
+	ActiveTermsID      *string                   `json:"activeTermsId"`
+	Terms              []TermsVersion            `json:"terms"`
+	Snapshots          []Snapshot                `json:"snapshots"`
+	Documents          []Document                `json:"documents"`
+	Status             StatusView                `json:"status"`
+	BankComparison     *Comparison               `json:"bankComparison"`
 }
 
 type Handler struct{ pool *database.TenantPool }
@@ -213,6 +221,25 @@ func Load(ctx context.Context, tx pgx.Tx, accountID string, on time.Time) (Card,
 		view.DebtMinor, view.AvailableMinor = nil, nil
 		view.Unknown = append([]string{UnknownDebt}, view.Unknown...)
 	}
+	card.PaymentRequirement, err = installments.CardRequirement(ctx, tx, accountID, FormatDay(on))
+	if err != nil {
+		return card, err
+	}
+	if req := card.PaymentRequirement; req != nil {
+		view.GraceAmountMinor = req.GraceAmountMinor
+		view.GraceDueOn = req.GraceDueOn
+		view.MinimumMinor = req.MinimumMinor
+		view.MinimumDueOn = req.MinimumDueOn
+		view.GraceLost = false
+		view.GraceEstimate = false
+		view.GraceAtRisk = false
+		if req.Source != "bank_confirmed" {
+			view.Unknown = append(view.Unknown, "installment_requirement")
+		} else if req.GraceAmountMinor != nil && req.GraceDueOn != nil {
+			due, _ := ParseDay(*req.GraceDueOn)
+			view.GraceAtRisk = *req.GraceAmountMinor > 0 && daysBetween(on, due) < 3
+		}
+	}
 	card.Status = view
 	return card, nil
 }
@@ -281,7 +308,7 @@ func loadTerms(ctx context.Context, tx pgx.Tx, accountID string) ([]TermsVersion
 }
 
 func loadSnapshots(ctx context.Context, tx pgx.Tx, accountID string) ([]Snapshot, error) {
-	rows, err := tx.Query(ctx, `SELECT id::text,taken_on::text,debt_minor,available_minor,grace_amount_minor,grace_due_on::text,minimum_minor,minimum_due_on::text,note
+	rows, err := tx.Query(ctx, `SELECT id::text,taken_on::text,debt_minor,available_minor,grace_amount_minor,grace_due_on::text,minimum_minor,minimum_due_on::text,note,installments_included,minimum_in_grace,period_from::text
 		FROM credit_card_snapshots WHERE account_id::text=$1 ORDER BY taken_on DESC,created_at DESC LIMIT 24`, accountID)
 	if err != nil {
 		return nil, err
@@ -290,7 +317,7 @@ func loadSnapshots(ctx context.Context, tx pgx.Tx, accountID string) ([]Snapshot
 	out := []Snapshot{}
 	for rows.Next() {
 		var s Snapshot
-		if err := rows.Scan(&s.ID, &s.TakenOn, &s.DebtMinor, &s.AvailableMinor, &s.GraceAmountMinor, &s.GraceDueOn, &s.MinimumMinor, &s.MinimumDueOn, &s.Note); err != nil {
+		if err := rows.Scan(&s.ID, &s.TakenOn, &s.DebtMinor, &s.AvailableMinor, &s.GraceAmountMinor, &s.GraceDueOn, &s.MinimumMinor, &s.MinimumDueOn, &s.Note, &s.InstallmentsIncluded, &s.MinimumInGrace, &s.PeriodFrom); err != nil {
 			return nil, err
 		}
 		out = append(out, s)
@@ -407,15 +434,30 @@ func (h *Handler) CreateSnapshot(w http.ResponseWriter, r *http.Request) {
 	if !web.DecodeJSON(w, r, &s) {
 		return
 	}
-	if !validDay(s.TakenOn) || (s.GraceDueOn != nil && !validDay(*s.GraceDueOn)) || (s.MinimumDueOn != nil && !validDay(*s.MinimumDueOn)) ||
+	if s.TakenOn > FormatDay(Today()) || (s.InstallmentsIncluded && (!s.ConfirmAllOperations || s.PeriodFrom == nil || !validDay(*s.PeriodFrom) || *s.PeriodFrom > s.TakenOn || s.GraceAmountMinor == nil || s.GraceDueOn == nil || *s.GraceDueOn < s.TakenOn)) || (s.MinimumMinor == nil) != (s.MinimumDueOn == nil) ||
+		!validDay(s.TakenOn) || (s.GraceDueOn != nil && !validDay(*s.GraceDueOn)) || (s.MinimumDueOn != nil && !validDay(*s.MinimumDueOn)) ||
 		!validText(s.Note, 500) || negative(s.AvailableMinor) || negative(s.GraceAmountMinor) || negative(s.MinimumMinor) {
 		invalid(w)
 		return
 	}
+	payload, _ := json.Marshal([]any{chi.URLParam(r, "accountId"), s})
+	digest := sha256.Sum256(payload)
+	requestHash := hex.EncodeToString(digest[:])
 	h.write(w, r, func(ctx context.Context, tx pgx.Tx, accountID string) (int, error) {
-		tag, err := tx.Exec(ctx, `INSERT INTO credit_card_snapshots(account_id,taken_on,debt_minor,available_minor,grace_amount_minor,grace_due_on,minimum_minor,minimum_due_on,note,creation_key)
-			VALUES($1::uuid,$2::date,$3,$4,$5,$6::date,$7,$8::date,$9,$10) ON CONFLICT(owner_id,creation_key) DO NOTHING`,
-			accountID, s.TakenOn, s.DebtMinor, s.AvailableMinor, s.GraceAmountMinor, s.GraceDueOn, s.MinimumMinor, s.MinimumDueOn, s.Note, key)
+		var previous string
+		lookupErr := tx.QueryRow(ctx, `SELECT installment_request_hash FROM credit_card_snapshots WHERE creation_key=$1`, key).Scan(&previous)
+		if lookupErr == nil {
+			if previous != requestHash {
+				return 0, errSnapshotConflict
+			}
+			return 200, nil
+		}
+		if !errors.Is(lookupErr, pgx.ErrNoRows) {
+			return 0, lookupErr
+		}
+		tag, err := tx.Exec(ctx, `INSERT INTO credit_card_snapshots(account_id,taken_on,debt_minor,available_minor,grace_amount_minor,grace_due_on,minimum_minor,minimum_due_on,note,creation_key,installments_included,minimum_in_grace,period_from,confirmed_through,installment_request_hash)
+			VALUES($1::uuid,$2::date,$3,$4,$5,$6::date,$7,$8::date,$9,$10,$11,$12,$13::date,CASE WHEN $11 THEN now() ELSE NULL END,$14) ON CONFLICT(owner_id,creation_key) DO NOTHING`,
+			accountID, s.TakenOn, s.DebtMinor, s.AvailableMinor, s.GraceAmountMinor, s.GraceDueOn, s.MinimumMinor, s.MinimumDueOn, s.Note, key, s.InstallmentsIncluded, s.MinimumInGrace, s.PeriodFrom, requestHash)
 		if err != nil {
 			return 0, err
 		}
@@ -529,6 +571,10 @@ func (h *Handler) write(w http.ResponseWriter, r *http.Request, change func(cont
 		return
 	}
 	defer tx.Rollback(ctx)
+	if err = financialevents.LockOwner(ctx, tx); err != nil {
+		failure(w, err)
+		return
+	}
 	if err = lockCard(ctx, tx, accountID); err != nil {
 		failure(w, err)
 		return
@@ -605,6 +651,8 @@ func invalid(w http.ResponseWriter) {
 func failure(w http.ResponseWriter, err error) {
 	var db *pgconn.PgError
 	switch {
+	case errors.Is(err, errSnapshotConflict):
+		web.WriteError(w, 409, "idempotency_conflict", "Этот ключ уже использован для других данных банка.")
 	case errors.Is(err, errNotCredit):
 		web.WriteError(w, 422, "not_credit_card", "Условия карты доступны только для кредитного счёта.")
 	case errors.Is(err, pgx.ErrNoRows):

@@ -32,12 +32,13 @@ type StatisticsCategory struct {
 	ShareBasisPoints int64 `json:"shareBasisPoints"`
 }
 type StatisticsBucket struct {
-	From              string `json:"from"`
-	To                string `json:"to"`
-	IncomeMinor       int64  `json:"incomeMinor"`
-	PurchasesMinor    int64  `json:"purchasesMinor"`
-	RefundsMinor      int64  `json:"refundsMinor"`
-	DebtPaymentsMinor int64  `json:"debtPaymentsMinor"`
+	InstallmentPrincipalRepaidMinor int64  `json:"installmentPrincipalRepaidMinor"`
+	From                            string `json:"from"`
+	To                              string `json:"to"`
+	IncomeMinor                     int64  `json:"incomeMinor"`
+	PurchasesMinor                  int64  `json:"purchasesMinor"`
+	RefundsMinor                    int64  `json:"refundsMinor"`
+	DebtPaymentsMinor               int64  `json:"debtPaymentsMinor"`
 	DebtSplit
 	OutflowsMinor int64 `json:"outflowsMinor"`
 }
@@ -206,6 +207,9 @@ func statisticsSnapshot(ctx context.Context, db periodQuerier, from, to time.Tim
 				series[i].DebtSplit = split
 			}
 		}
+	}
+	if err := addInstallmentBuckets(ctx, db, from, to, granularity, &result); err != nil {
+		return Statistics{}, err
 	}
 	return result, nil
 }

@@ -20,3 +20,19 @@ func TestAssistantEndpointIsUnavailableWithoutExplicitOptInAndKey(t *testing.T) 
 		}
 	}
 }
+
+func TestInstallmentPutPreflightOnlyAllowsConfiguredOrigin(t *testing.T) {
+	server := New(config.Config{CORSOrigins: []string{"http://localhost:5174"}}, nil)
+	for _, origin := range []string{"http://localhost:5174", "https://other.invalid"} {
+		request := httptest.NewRequest(http.MethodOptions, "/api/v1/installment-plans/plan/schedule-drafts/draft", nil)
+		request.Header.Set("Origin", origin)
+		request.Header.Set("Access-Control-Request-Method", "PUT")
+		request.Header.Set("Access-Control-Request-Headers", "Content-Type, Idempotency-Key, X-CSRF-Token")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+		allowed := response.Header().Get("Access-Control-Allow-Methods") == "PUT" && response.Header().Get("Access-Control-Allow-Origin") == origin
+		if allowed != (origin == "http://localhost:5174") {
+			t.Fatalf("unexpected CORS preflight for %s: %v", origin, response.Header())
+		}
+	}
+}

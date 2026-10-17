@@ -52,7 +52,8 @@ export function StatisticsCharts({
           <SeriesChart item={item} />
         </CardContent>
       </Card>
-      {item.summary.debtPaymentsMinor > 0 && <DebtSplitCard item={item} />}
+      {(item.summary.debtPaymentsMinor > 0 ||
+        (item.summary.installmentPrincipalRepaidMinor ?? 0) > 0) && <DebtSplitCard item={item} />}
       <Card className="xl:col-span-2">
         <CardHeader>
           <CardTitle>Доходы и расходы</CardTitle>
@@ -75,6 +76,7 @@ function DebtSplitCard({ item }: { item: StatisticsCurrency }) {
   const s = item.summary
   const rows: [string, number][] = [
     ['Основной долг', s.debtPrincipalMinor],
+    ['Тело рассрочек (справочно)', s.installmentPrincipalRepaidMinor ?? 0],
     ['Проценты', s.debtInterestMinor],
     ['Комиссии и прочее', s.debtOtherMinor],
     ['Не распределено', s.debtUnallocatedMinor],

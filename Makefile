@@ -24,6 +24,7 @@ test-jev-eval:
 	./scripts/test-jev-evaluation.sh
 
 test-integration:
+	./scripts/test-installments.sh
 	./scripts/test-commitments.sh
 	./scripts/test-ux-refinement.sh
 	./scripts/test-password-authentication.sh

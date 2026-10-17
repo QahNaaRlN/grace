@@ -14,6 +14,7 @@ import (
 	"github.com/QahNaaRlN/grace/internal/creditcards"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/imports"
+	"github.com/QahNaaRlN/grace/internal/installments"
 	"github.com/QahNaaRlN/grace/internal/loans"
 	"github.com/QahNaaRlN/grace/internal/obligations"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
@@ -31,7 +32,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   cfg.CORSOrigins,
-		AllowedMethods:   []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Idempotency-Key", "X-CSRF-Token"},
 		AllowCredentials: true,
 	}))
@@ -146,6 +147,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		commitments.NewHandler(pool).Routes(router)
 		creditcards.NewHandler(pool).Routes(router)
 		loans.NewHandler(pool).Routes(router)
+		installments.NewHandler(pool).Routes(router)
 		router.Post("/accounts", accountsHandler.Create)
 		router.Patch("/accounts/{accountId}", accountsHandler.Update)
 		router.Post("/accounts/{accountId}/payment-instruments", accountsHandler.AddCard)

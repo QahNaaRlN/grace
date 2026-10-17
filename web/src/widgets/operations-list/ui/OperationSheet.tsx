@@ -13,6 +13,7 @@ import {
 import { Money } from '@/shared/ui/money'
 import { Notice, StatusBadge } from '@/shared/ui/status'
 import { OperationActions, OperationHistory } from '@/features/edit-operation'
+import { InstallmentAllocationSection, InstallmentLinks } from '@/features/installment/manage'
 import { LoanAllocationSection } from '@/features/loan-allocation'
 import {
   kindLabels,
@@ -121,6 +122,10 @@ export function OperationSheet({
         {event.kind === 'debt_payment' && !event.voidedAt && (
           <LoanAllocationSection eventId={event.id} />
         )}
+        {event.kind === 'internal_transfer' && !event.voidedAt && (
+          <InstallmentAllocationSection eventId={event.id} />
+        )}
+        {event.kind === 'purchase' && <InstallmentLinks purchaseEventId={event.id} />}
         <OperationHistory event={event} accounts={accounts} categories={categories} />
         {receipt && <ReceiptDetails receipt={receipt} />}
         {event.kind === 'purchase' && !receipt && !event.voidedAt && (

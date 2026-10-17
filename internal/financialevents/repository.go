@@ -255,6 +255,13 @@ func resolveCommand(ctx context.Context, tx pgx.Tx, command Command) (*string, *
 		}, nil
 
 	case "refund":
+		var installment bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM installment_plans WHERE purchase_event_id::text=$1)`, command.OriginalEventID).Scan(&installment); err != nil {
+			return nil, nil, nil, err
+		}
+		if installment {
+			return nil, nil, nil, fmt.Errorf("%w: refund requires installment revision", ErrInvalid)
+		}
 		var categoryID *string
 		var accountID, accountName, currency string
 		var purchaseAmount int64

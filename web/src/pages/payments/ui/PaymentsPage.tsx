@@ -1,3 +1,4 @@
+import { InstallmentsBoard } from '@/widgets/installments-board'
 import { CreateObligationForm } from '@/features/create-obligation'
 import { ReminderHistory } from '@/widgets/reminder-history'
 import { Disclosure } from '@/shared/ui/disclosure'
@@ -11,9 +12,14 @@ export function PaymentsPage() {
       description="Обязательства и ближайшие платежи."
       accountAction="when-empty"
     >
-      {({ obligations, events }) => (
+      {({ obligations, events, accounts, categories }) => (
         <div className="space-y-6">
           <ReminderHistory />
+          <InstallmentsBoard
+            accounts={accounts.data ?? []}
+            categories={categories.data ?? []}
+            events={events.data ?? []}
+          />
           <Disclosure
             className="rounded-2xl border bg-card p-5"
             triggerClassName="min-h-11 rounded-xl px-3 py-2 hover:bg-accent"
