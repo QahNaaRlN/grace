@@ -126,7 +126,7 @@ func addCardRequirements(ctx context.Context, tx pgx.Tx, on, through string, ite
 			item.CoverageReasons = append(item.CoverageReasons, "Требования карты «"+c.name+"» не подтверждены на весь период.")
 		}
 		if complete && due <= through && amount > 0 {
-			item.ScheduledPayments = append(item.ScheduledPayments, CashScheduledPayment{ScheduledPaymentID: "card:" + c.id, ObligationID: "card:" + c.id, ObligationName: c.name, DueOn: due, AmountMinor: amount, RemainingMinor: amount, Timing: "upcoming"})
+			item.CardRequirements = append(item.CardRequirements, CashCardRequirement{AccountID: c.id, AccountName: c.name, SnapshotID: req.SnapshotID, DueOn: due, AmountMinor: amount, Source: "bank_confirmed"})
 			item.UpcomingObligationsMinor += amount
 		}
 	}

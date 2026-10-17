@@ -382,7 +382,7 @@ func TestCardRequirementsAndNoDuplicateDebt(t *testing.T) {
 		t.Fatal(e)
 	}
 	p := position.Currencies[0]
-	if p.ObligationsThroughMinor != 500000 || p.CoverageIncomplete || p.AvailableAfterObligationsMinor == nil || *p.AvailableAfterObligationsMinor != 1500000 {
+	if p.ObligationsThroughMinor != 500000 || len(p.CardRequirements) != 1 || p.CardRequirements[0].AccountID != account.ID || len(p.ScheduledPayments) != 0 || p.CoverageIncomplete || p.AvailableAfterObligationsMinor == nil || *p.AvailableAfterObligationsMinor != 1500000 {
 		t.Fatalf("double card requirement %+v", p)
 	}
 	position, e = analytics.NewRepository(f.pool).CashPosition(f.ctx, "2026-10-01", "2026-11-30")

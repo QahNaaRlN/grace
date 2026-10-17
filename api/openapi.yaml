@@ -3597,6 +3597,37 @@ components:
           type: boolean
         reason:
           type: string
+    CashCardRequirement:
+      type: object
+      required:
+      - accountId
+      - accountName
+      - snapshotId
+      - dueOn
+      - amountMinor
+      - source
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        accountName:
+          type: string
+        snapshotId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        dueOn:
+          type: string
+          format: date
+        amountMinor:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        source:
+          type: string
+          enum:
+          - bank_confirmed
     CreditCardTermsInput:
       type: object
       additionalProperties: false
@@ -5380,6 +5411,10 @@ components:
       type: object
       required: [currency, liquidBalanceMinor, overdueObligationsMinor, upcomingObligationsMinor, obligationsThroughMinor, availableAfterObligationsMinor, scheduledPayments]
       properties:
+        cardRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashCardRequirement'
         coverageIncomplete:
           type: boolean
         coverageReasons:

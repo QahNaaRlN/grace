@@ -171,11 +171,6 @@ export function PeriodAnalytics() {
                 <h3 className="font-semibold">{item.currency}</h3>
                 <Badge variant="outline">
                   Доступно {formatMoney(item.availableAfterObligationsMinor, item.currency)}
-                  {item.coverageIncomplete && (
-                    <span className="block text-sm text-muted-foreground">
-                      {item.coverageReasons?.join(' ')}
-                    </span>
-                  )}
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -196,6 +191,22 @@ export function PeriodAnalytics() {
                   {formatMoney(item.obligationsThroughMinor, item.currency)}
                 </span>
               </div>
+              {item.coverageIncomplete && (
+                <p className="break-words text-sm text-muted-foreground">
+                  {item.coverageReasons?.join(' ')}
+                </p>
+              )}
+              {item.cardRequirements?.map((requirement) => (
+                <div
+                  key={requirement.accountId}
+                  className="flex flex-wrap justify-between gap-2 border-t pt-3 text-sm"
+                >
+                  <span>
+                    {requirement.accountName} · {requirement.dueOn} · общее требование банка
+                  </span>
+                  <span>{formatMoney(requirement.amountMinor, item.currency)}</span>
+                </div>
+              ))}
               {item.scheduledPayments.length > 0 && (
                 <div className="space-y-1 border-t pt-3 text-sm">
                   {item.scheduledPayments.map((payment) => (

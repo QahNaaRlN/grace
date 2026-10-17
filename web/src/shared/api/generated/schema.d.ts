@@ -1851,6 +1851,18 @@ export interface components {
             minimumInGrace: boolean;
             reason: string;
         };
+        CashCardRequirement: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: uuid */
+            snapshotId: string | null;
+            /** Format: date */
+            dueOn: string;
+            amountMinor: number;
+            /** @enum {string} */
+            source: "bank_confirmed";
+        };
         CreditCardTermsInput: {
             id?: string;
             /** Format: date */
@@ -3354,6 +3366,7 @@ export interface components {
             daysUntilDue: number;
         };
         CurrencyCashPosition: {
+            cardRequirements?: components["schemas"]["CashCardRequirement"][];
             coverageIncomplete?: boolean;
             coverageReasons?: string[];
             currency: string;

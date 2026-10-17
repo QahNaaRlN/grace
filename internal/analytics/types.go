@@ -57,7 +57,17 @@ type CashPosition struct {
 	Currencies []CurrencyCashPosition `json:"currencies"`
 }
 
+type CashCardRequirement struct {
+	AccountID   string  `json:"accountId"`
+	AccountName string  `json:"accountName"`
+	SnapshotID  *string `json:"snapshotId"`
+	DueOn       string  `json:"dueOn"`
+	AmountMinor int64   `json:"amountMinor"`
+	Source      string  `json:"source"`
+}
+
 type CurrencyCashPosition struct {
+	CardRequirements               []CashCardRequirement  `json:"cardRequirements,omitempty"`
 	CoverageIncomplete             bool                   `json:"coverageIncomplete"`
 	CoverageReasons                []string               `json:"coverageReasons,omitempty"`
 	Currency                       string                 `json:"currency"`
