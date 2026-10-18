@@ -182,3 +182,22 @@ Owner принимает или изменяет:
    данных;
 5. разделение evaluation, read-only routing и AI-originated writes на разные
    спецификации.
+
+
+## Уточнение фактов о capabilities — 2026-10-18
+
+Исходное утверждение выше «не принимает изображения» отражает момент принятия
+решения, а не текущую границу внешнего API. По актуальной первичной документации
+[TypeSafe Images](https://docs.typesafe.ai/images) Jev 1.13/1.14 имеют
+экспериментальный image input, а Box — Jev 1.14. Эти возможности обозначены
+провайдером как не готовые к production и требуют opt-in. Это уточнение факта
+не разрешает включать их в Grace, отправлять личные изображения или менять
+принятые privacy/confirmation gates.
+
+[draft SPEC-0055](../specs/0055-bank-statement-pdf-import.md) рассматривает только
+текстовый input: LLM предлагает структуру банковской выписки; Jev может выбирать
+из найденных spans и проверять узкие интерпретации после отдельного измерения.
+[Pre-parsed value extraction](https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook)
+и [SDE cascade](https://docs.typesafe.ai/cookbooks/sde_cascade) показывают эти разные
+роли, но их demo thresholds/качество не являются acceptance evidence Grace.
+Финансовая арифметика, source validation и подтверждение записи остаются в Grace.
