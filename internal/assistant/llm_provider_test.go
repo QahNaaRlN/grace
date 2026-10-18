@@ -37,6 +37,17 @@ func TestOpenRouterPinsPrivacyRouteAndParsesExactCost(t *testing.T) {
 		if len(route.Only) != 1 || route.Only[0] != "fixture" || route.Fallback || !route.ZDR || route.Policy != "deny" || !route.Require {
 			t.Error("unsafe route", route)
 		}
+		if calls.Load() == 1 && input["reasoning"] != nil {
+			t.Error("legacy reasoning settings changed")
+		}
+		if calls.Load() == 2 {
+			var reasoning struct {
+				Enabled *bool `json:"enabled"`
+			}
+			if json.Unmarshal(input["reasoning"], &reasoning) != nil || reasoning.Enabled == nil || *reasoning.Enabled {
+				t.Error("statement reasoning was not explicitly disabled")
+			}
+		}
 		if input["tools"] != nil || input["plugins"] != nil {
 			t.Error("external tools leaked")
 		}
@@ -51,6 +62,10 @@ func TestOpenRouterPinsPrivacyRouteAndParsesExactCost(t *testing.T) {
 	out, err := p.Complete(context.Background(), LLMRequest{Policy: policy, Messages: []LLMMessage{{Role: "user", Content: "Synthetic input"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
 	if err != nil || out.CostMicros != 51 || out.PromptTokens != 100 || calls.Load() != 1 {
 		t.Fatal(out, err, calls.Load())
+	}
+	_, err = p.Complete(context.Background(), LLMRequest{DisableReasoning: true, Policy: policy, Messages: []LLMMessage{{Role: "user", Content: "Synthetic input"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
+	if err != nil || calls.Load() != 2 {
+		t.Fatal(err, calls.Load())
 	}
 }
 func TestOpenRouterNeverRetriesOrReflectsPrivateError(t *testing.T) {

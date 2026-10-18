@@ -326,10 +326,34 @@ Production Compose запускает versioned `grace-pdf-extractor:sha-<commit
 root, UID 10001, 512 MiB memory/swap, 1 CPU, 16 PIDs и private tmpfs 16 MiB.
 API получает read-only mount Unix socket и ждёт helper healthcheck.
 Delivery публикует helper image с тем же exact SHA, что API/Web. Deploy проверяет
-наличие socket и non-root helper, statement AI остаётся явно `false`.
+наличие socket и non-root helper. Statement AI по умолчанию `false`;
+защищённый `statement.env` хранит явный opt-in владельца и pinned policy.
 
 После релиза владелец проверяет PDF upload и ручной review в «Импортах».
 Сетевой LLM extraction и Jev qualification не включаются командой deployment.
 Существующие analysis/receipt settings сохраняются. Откат на образ до SPEC-0055
 отказывается, если уже есть bank-statement source/original/evidence: требуется
 совместимый forward fix. Database down и удаление sources не выполняются.
+
+
+### Активация Statement AI — 2026-10-19
+
+По прямому поручению владельца подготовлен `statement_action=enable` в workflow
+Deploy production. `preserve` (default) сохраняет существующий runtime choice;
+`disable` выключает statement inference без вызовов модели. Перед enable
+`statement-ai.sh` запускает `grace-statement-admin -mode=qualify` на двух
+поставляемых synthetic PDF. Весь верхний plan ≤$0.032 резервируется в прежнем
+usage ledger; неизвестная стоимость не освобождается как бесплатная.
+
+После успешного smoke и проверки endpoint metadata атомарно записывается
+`/opt/grace/shared/secrets/statement.env` (0600) и выполняется обычный deploy
+того же SHA с backup/readiness. Флаг/policy переживают следующие релизы.
+Существующие analysis/receipt не меняются, global kill switch сохраняется.
+Failed smoke не меняет настройку; failed rollout восстанавливает прежний файл
+и snapshotted runtime. Повтор enable при уже включённой действующей policy
+не делает новых платных calls. Host lock исключает конкурентную активацию.
+
+Полный synthetic report хранится приватно на VPS; CI получает только итог/дату,
+без ключа, budget/usage values и provider payload. Read-only
+`inspect_statement_only=true` также не экспортирует runtime values.
+Актуальные даты/фактический enabled status: [activation evidence](specs/0055-activation-evidence.md).

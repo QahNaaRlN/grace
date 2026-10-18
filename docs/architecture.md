@@ -128,7 +128,8 @@ TypeSafe получает текст запроса, язык и reference time;
 
 По accepted SPEC-0026 локально реализованы OpenRouter: объяснения месячных итогов,
 история разговоров и временные черновики фото чеков. В ветке SPEC-0033 эта работа
-объединена с password mode и общим UI; production AI пока выключен. Доступность
+объединена с password mode и общим UI. Production global AI/key readiness
+проверена 2026-10-19; отдельный Statement AI activation in progress. Доступность
 определяет сервер по policy/провайдеру/бюджету. Расчёты Go и факты отделены от
 интерпретаций модели. Передача итогов и фото требует отдельных согласий;
 запись расхода или привязка чека требует явного preview/confirmation, а не ответа
@@ -138,14 +139,15 @@ LLM. [Гайд пользователя](ai-user-guide.md), [специфика�
 и переименование owner_id; DB trigger не допускает чужую категорию в событии.
 Переименование сохраняет id/ссылки, не меняет суммы/проводки/историю времени.
 
-## Банковские PDF — SPEC-0055, implementation candidate
+## Банковские PDF — SPEC-0055, integrated 2026-10-19
 
-Ветка `codex/bank-statement-pdf-import` добавляет `internal/statementdata` для
+PR #64 (`b51b74f`, production 2026-10-19) добавил `internal/statementdata` для
 чистых grounding/decimal/date/coverage проверок и `internal/pdfextract` для
 локального Unix-socket транспорта. Отдельный `cmd/pdf-extractor` запускает
 проверенную версию Poppler в контейнере без сети и credentials. Финансовый API
 не разбирает PDF внутри своего процесса. Локальный opt-in overlay:
-`compose.pdf-extractor.yaml`; это не production rollout.
+`compose.pdf-extractor.yaml`. Production использует отдельный sandbox в
+`deployments/production/compose.yaml` и exact-SHA GHCR helper image.
 
 `internal/statementextract` зависит от `imports` и получает Reasoner через
 interface. Composition root подключает существующий OpenRouter transport из

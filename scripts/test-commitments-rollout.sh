@@ -24,7 +24,7 @@ ln -s "$test_root/previous" "$test_root/current"
 cat > "$test_root/mock-bin/docker" <<'EOF'
 #!/bin/sh
 case "$*" in
- inspect*) printf 'GRACE_AUTH_MODE=password\nGRACE_AI_ENABLED=%s\nGRACE_AI_ANALYSIS_POLICY=old-analysis\nGRACE_AI_RECEIPT_POLICY=old-receipt\n' "$PREVIOUS_AI" ;;
+ inspect*) printf 'GRACE_AUTH_MODE=password\nGRACE_AI_ENABLED=%s\nGRACE_AI_ANALYSIS_POLICY=old-analysis\nGRACE_AI_RECEIPT_POLICY=old-receipt\nGRACE_STATEMENT_AI_ENABLED=true\nGRACE_STATEMENT_AI_POLICY=old-statement\n' "$PREVIOUS_AI" ;;
  *'ps -q api'*) printf 'previous-api\n' ;;
  *'pull --policy'*)
    test "$GRACE_AI_ENABLED" = true
@@ -35,7 +35,7 @@ case "$*" in
  *'to_regclass'*) printf '%s\n' "$HAS_STATEMENT_SCHEMA" ;;
  *'FROM statement_sources'*) printf '%s\n' "$HAS_STATEMENT_DATA" ;;
  *'up -d --no-deps api web caddy'*)
-   printf '%s\n%s\n%s\n' "$GRACE_AI_ENABLED" "$GRACE_AI_ANALYSIS_POLICY" "$GRACE_AI_RECEIPT_POLICY" > "$ROLLBACK_STATE_FILE" ;;
+   printf '%s\n%s\n%s\n%s\n%s\n' "$GRACE_AI_ENABLED" "$GRACE_AI_ANALYSIS_POLICY" "$GRACE_AI_RECEIPT_POLICY" "$GRACE_STATEMENT_AI_ENABLED" "$GRACE_STATEMENT_AI_POLICY" > "$ROLLBACK_STATE_FILE" ;;
  *'pg_dump'*) printf 'synthetic dump' ;;
  *'pg_restore --list'*) cat >/dev/null ;;
  *'exec -T api /bin/sh'*) touch "$UID_CHECK_FILE" ;;
@@ -52,6 +52,8 @@ for PREVIOUS_AI in false true; do
  test "$(sed -n '1p' "$ROLLBACK_STATE_FILE")" = "$PREVIOUS_AI"
  test "$(sed -n '2p' "$ROLLBACK_STATE_FILE")" = old-analysis
  test "$(sed -n '3p' "$ROLLBACK_STATE_FILE")" = old-receipt
+ test "$(sed -n '4p' "$ROLLBACK_STATE_FILE")" = true
+ test "$(sed -n '5p' "$ROLLBACK_STATE_FILE")" = old-statement
  test "$(readlink "$test_root/current")" = "$test_root/previous"
 done
 rm "$ROLLBACK_STATE_FILE"

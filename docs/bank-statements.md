@@ -1,8 +1,9 @@
 # Банковская выписка: загрузка, проверка и подтверждение
 
-Статус: implementation candidate SPEC-0055, ветка
-`codex/bank-statement-pdf-import`. Владелец разрешил production deployment 2026-10-19 для ручной проверки;
-фактический release фиксируется отдельно в evidence. Statement AI остаётся выключенным.
+Актуализация: 2026-10-19. SPEC-0055 интегрирована PR #64 (`b51b74f`) и
+развёрнута 2026-10-19 02:37:31 +05:00 (deploy `39168570754`). Ручная загрузка и
+review доступны в production. Включение Statement AI поручено владельцем
+2026-10-19; [актуальные статусы и evidence](specs/0055-activation-evidence.md).
 Поддерживается текстовый PDF одного дебетового RUB-счёта. OCR/сканы,
 зашифрованные документы и кредитные условия в этот срез не входят.
 Новый банк не требует обязательного parser-профиля, но успешное извлечение для
@@ -92,3 +93,24 @@ make test
 helper, fake provider и disposable PostgreSQL. Live model и Jev evaluation
 не запускаются этими командами. [Evidence](specs/0055-evidence.md) фиксирует
 границы выполненных проверок и следующий qualification gate.
+
+
+## Управление Statement AI
+
+Default остаётся выключенным; production opt-in хранится отдельно в защищённом
+`/opt/grace/shared/secrets/statement.env` (400/600, operator/root). Release
+загружает флаг и pinned policy, не меняя receipt/analysis. Rollback восстанавливает
+снятые с прежнего API флаг/policy. Global AI kill switch сохраняется.
+
+В Deploy production появился явный `statement_action=enable|disable|preserve`.
+Enable сначала выполняет небольшой live smoke только на двух поставляемых
+synthetic PDF, в общем budget ledger, до 4 calls/$0.032, без скрытого retry и
+без создания imports/events. Неуспех оставляет настройку выключенной. Неизвестный
+расход фиксируется uncertain и блокирует новые calls. Report с usage хранится
+приватно на VPS; CI получает только итог и дату, без budget/usage values.
+Успешная повторная enable-команда не повторяет платный smoke. Disable не требует
+модели/оплаты, исходные финансовые записи сохраняются.
+
+Это проверка активации, не полная AC12 и не доказательство качества всех банков.
+Реальная выписка передаётся только по отдельному document-specific consent.
+Jev/cascade не включаются автоматически.

@@ -6,10 +6,11 @@
   «да, утверждаю». Принятая спецификация интегрирована PR #62, main `4a6f1e7`.
 - Implementation branch: `codex/bank-statement-pdf-import`.
 - Implementation commit: `8e37465ae4bd88b8b12cc3b81b1913c4cf243b9d`.
-- Статус: `implementing`, offline implementation candidate. Это executor evidence,
-  не owner acceptance и не `verified`/`integrated`.
-- Production остаётся `a89a855`; deployment, live inference и импорт личных
-  операций не выполнялись.
+- Статус кода: `integrated`, PR #64, `b51b74f`, post-merge CI `39167930999` PASS.
+  Это executor evidence, не owner functional acceptance; AC12 остаётся открытым.
+- Production: `b51b74f`, deploy `39168570754`, healthy 2026-10-19 02:37:31 +05:00
+  (2026-10-18 21:37:31 UTC). Private inference и импорт личных операций агентом
+  не выполнялись. [Актуальная активация](0055-activation-evidence.md).
 
 ## Реализованный путь
 
@@ -119,3 +120,15 @@ exact-SHA helper image, production sandbox/socket/healthcheck и non-root smoke.
 Deployment regression проверяет отказ rollback на старый image с сохранёнными
 PDF sources и разрешённый rollback на совместимый image. Фактические CI/main/
 Delivery/deploy run IDs фиксируются после выпуска; пока это release candidate.
+
+
+## Подтверждённый выпуск — 2026-10-19
+
+PR #64: main `b51b74f`, CI `39167930999` PASS, Delivery `39168461596` PASS,
+Deploy production `39168570754` PASS. Backup проверен и зашифрованная off-site
+копия загружена; migrations 27/28 применены. Helper non-root/socket smoke,
+API readiness и публичный auth smoke прошли. HTTPS `/`, `/login`, `/api/meta` =200;
+`/api/auth/me`, `/api/v1/accounts`, unauthenticated POST PDF =401. Опубликованный
+imports chunk содержит PDF UI и upload route. Statement AI на этом выпуске был
+false; более ранние разделы описывают offline этап и не отменяют этот release.
+Owner функциональную проверку обещал выполнить на месте; результат ещё не получен.

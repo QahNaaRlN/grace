@@ -1,15 +1,17 @@
 # Spec-first процесс Grace
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
-— `implementing`, технический вариант явно утверждён владельцем 2026-10-19:
+— `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:
 локальный текст/страницы → AI-предложение с source spans → Go validation →
 сохраняемый review и подтверждаемый импорт. LLM — для структуры, Jev — кандидат
 для узких выборов/проверок после измерения. Доступный остаток не подменяет book
 balance. [Технический контракт](0055-technical-contract.md), включая новый provider tag,
-принят. Offline-контур реализован в `codex/bank-statement-pdf-import`: локальный helper,
-ручной review, statement consent/budget и fake-provider integration.
-[Evidence](0055-evidence.md) отделяет выполненные проверки от AC12: live model
-qualification, private inference и production release не выполнены.
+принят. Production release `b51b74f`, deploy `39168570754`, подтверждён
+2026-10-19 02:37:31 +05:00: helper и ручной PDF review доступны. Statement AI
+activation in progress по поручению владельца 2026-10-19.
+[Implementation evidence](0055-evidence.md), [активация и актуальные статусы](0055-activation-evidence.md).
+Полная AC12 qualification, Jev comparison и owner functional acceptance остаются
+открытыми; private inference не выполнялся.
 
 Принята прямым поручением владельца 2026-10-17 «Приступай к разработке», статус `integrated` (PR #60, merge `a89a855`; локальные post-merge gates пройдены 2026-10-18; main CI run 39056633511 attempt 2 и Delivery run 39151285103 пройдены; production release `a89a855` подтверждён Deploy production run 39151600396, 2026-10-18; [evidence](0054-evidence.md)):
 [SPEC-0054 — рассрочки и BNPL](0054-installments-bnpl.md)
