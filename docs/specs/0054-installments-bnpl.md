@@ -1,12 +1,13 @@
 # SPEC-0054: рассрочки и BNPL — покупка, долг и график погашения
 
-- Статус: verified (локальные gates; интеграция ожидается)
+- Статус: integrated (локальные post-merge gates пройдены; production не выпущен)
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-17
 - Acceptance owner: владелец Grace
 - Acceptance record: 2026-10-17, прямое поручение владельца «Приступай к разработке»
   после передачи draft PR #59. Принят предложенный консервативный v1;
   поставщик задаётся вручную, банковские правила не предполагаются.
+- Merge: PR #60, `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`, 2026-10-17
 - Implementation branch: `codex/installments-bnpl`
 - Implementation commit: `248d060` и последующие коммиты ветки; [evidence](0054-evidence.md)
 - Ветка спецификации: `codex/installments-bnpl-spec`

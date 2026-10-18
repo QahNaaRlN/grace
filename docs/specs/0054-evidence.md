@@ -2,8 +2,9 @@
 
 Дата: 2026-10-17. Основание — [принятая SPEC-0054](0054-installments-bnpl.md),
 PR #59, `main` `7bae8eb`. Владелец поручил разработку после передачи draft.
-Ветка: `codex/installments-bnpl`. Статус: `verified` локально; код ещё
-не интегрирован в `main` и не выпущен в production.
+Ветка: `codex/installments-bnpl`. Статус: `integrated`; код влит в `main` через PR #60
+(`a89a855a8074e4bd0fc957f72b2cb6ab807624fc`, 2026-10-17),
+локальные post-merge gates пройдены 2026-10-18. Production-выпуск не подтверждён.
 
 ## Результат
 
@@ -107,5 +108,39 @@ Chromium, локальные Vite/API/PostgreSQL, development owner, ширин�
   отдельного scope. Старые графики и покупки автоматически не мигрируют.
 - Банковское требование обновляется вручную после операций. Разные даты
   грейса/минимума и неподтверждённое включение не дают точного общего итога.
-- Production release остаётся `95c5fa8`. Merge, CI и deployment этой
-  реализации ещё не подтверждены; локальная verified не означает integrated.
+- Последний успешный Deploy production — `95c5fa8` (run 39034114035).
+  Merge SPEC-0054 подтверждён PR #60; успешные CI и deployment
+  этой реализации не подтверждены. Merge не означает production-выпуск.
+
+## Post-merge verification — 2026-10-18
+
+Проверяемый `main`: `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`.
+Изменения продукта при проверке не вносились.
+
+- `make test` — exit 0: Go, 85 web-файлов / 327 тестов, ESLint,
+  Steiger, Prettier, генерация OpenAPI types, TypeScript/Vite build,
+  Jev datasets v1 (49) / v2 (72). Основной JS chunk 390.04 kB.
+- `git diff --check` — exit 0; рабочая копия `main` чистая.
+- `make test-production` — exit 0: rollout reminders, production bundle,
+  off-site backup с синтетическим S3, шифрование/отказы/восстановление.
+- `go vet ./cmd/... ./internal/...` — exit 0.
+- `make test-integration` — exit 0: все 14 наборов, включая installments,
+  commitments/creditcards/loans, UX, password auth, AI drafts, imports,
+  ownership, financial events, receipts, obligations, analytics и assistant.
+  Отказы down-миграций с финансовыми данными — ожидаемые негативные проверки.
+- [CI run 39056633511](https://github.com/QahNaaRlN/grace/actions/runs/39056633511):
+  quality job не стартовал из-за failed account payments или spending limit;
+  integration и builds пропущены. Это не результат тестов продукта.
+- [Delivery run 39056638931](https://github.com/QahNaaRlN/grace/actions/runs/39056638931):
+  failure; публикация images пропущена.
+- Последний успешный [Deploy production run 39034114035](https://github.com/QahNaaRlN/grace/actions/runs/39034114035)
+  относится к `95c5fa8`; live runtime VPS в этой проверке не инспектировался.
+
+Статус `integrated` опирается на достижимость implementation из `main`
+и завершённые локальные post-merge gates согласно `docs/specs/README.md`.
+Он не означает успешный GitHub CI или production deployment.
+
+Следующий gate: восстановить GitHub Actions и получить успешные CI/Delivery
+для выбранного release SHA.
+Production deployment выполняется отдельно; новые банковские правила,
+платные API и изменения финансовых данных в этот пакет не входят.
