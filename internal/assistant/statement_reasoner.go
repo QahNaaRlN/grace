@@ -51,10 +51,13 @@ func (r *StatementReasoner) Complete(ctx context.Context, approved statementextr
 		messages = append(messages, LLMMessage{Role: m["role"], Content: m["content"]})
 	}
 	out, e := r.Provider.Complete(ctx, LLMRequest{DisableReasoning: true, Policy: policy, Messages: messages, Schema: statementextract.RequestSchema(chunk), InputTokenUpperBound: statementextract.InputBound, MaxOutputTokens: statementextract.OutputBound})
-	if e != nil {
+	if e != nil && !out.BillingKnown {
 		return proposal, nil, e
 	}
 	billing := &statementextract.Billing{GenerationID: out.ID, CostMicros: out.CostMicros, InputTokens: out.PromptTokens, OutputTokens: out.CompletionTokens}
+	if e != nil {
+		return proposal, billing, e
+	}
 	dec := json.NewDecoder(bytes.NewReader(out.Content))
 	dec.DisallowUnknownFields()
 	if e = dec.Decode(&proposal); e != nil {

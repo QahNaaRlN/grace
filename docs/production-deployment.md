@@ -357,3 +357,13 @@ Failed smoke не меняет настройку; failed rollout восстан
 без ключа, budget/usage values и provider payload. Read-only
 `inspect_statement_only=true` также не экспортирует runtime values.
 Актуальные даты/фактический enabled status: [activation evidence](specs/0055-activation-evidence.md).
+
+Фактический срез 2026-10-19: `1ada384` deployed/internal healthy
+(run `39172255492`), последующий activation step FAIL, statement flag false.
+Последний synthetic candidate probe `39174108946`: columns PASS, cards provider
+FAIL; readiness `39174447002` требует billing review. Не повторять платный
+qualifier и не обнулять uncertain reservation. Для сверки нужен generation ID,
+authoritative metadata и соответствие конкретному запуску; данные остаются
+приватно на VPS. После сверки cards smoke всё ещё обязан пройти. Временный
+workflow для paid candidate probes не включается в основной release workflow;
+`inspect_statement_only` остаётся read-only.

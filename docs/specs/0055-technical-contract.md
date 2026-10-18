@@ -6,7 +6,7 @@
 - Functional spec: [SPEC-0055](0055-bank-statement-pdf-import.md)
 - Baseline: main `a98e304`, ветка спецификации `codex/spec-0055-bank-pdf-import`
 - Application implementation: integrated PR #64 (`b51b74f`); production manual path deployed 2026-10-19; private inference: not_run
-- Statement AI activation: in_progress по прямому поручению владельца 2026-10-19; [актуальное evidence](0055-activation-evidence.md)
+- Statement AI activation: disabled / BLOCKED (billing review, cards smoke), 2026-10-19; [актуальное evidence](0055-activation-evidence.md)
 
 ## Принятое архитектурное решение
 
@@ -192,7 +192,7 @@ offline implementation, но не включает AI в production и не от
 reference внешнему API без document-specific consent.
 
 
-## Offline implementation — 2026-10-19
+## Исторический offline этап — 2026-10-19
 
 Код `8e37465` реализует принятый bounded путь в отдельной implementation branch.
 [Evidence](0055-evidence.md) содержит AC matrix, команды и ограничения.
@@ -200,4 +200,7 @@ Final local reference preflight: 5 страниц, 1661 span, 16 calls в пла
 max messages+schema 8963 bytes, reservation ceiling 128000 micros ($0.128),
 providerCalls=0. Исходный PDF смонтирован read-only, preflight/helper без сети.
 Это не actual provider usage и не benchmark точности/latency. Реальная модель,
-Jev comparison, private inference и production activation не выполнялись.
+Jev comparison, private inference и production activation на этом offline этапе
+не выполнялись. Позже выполнены synthetic probes: columns PASS, cards FAIL;
+production `1ada384`, Statement AI false. Текущее состояние и блокировка
+учёта расхода отражены в [activation evidence](0055-activation-evidence.md).

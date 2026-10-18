@@ -41,7 +41,7 @@ func fail(code string) {
 	os.Exit(1)
 }
 func main() {
-	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), or summary")
+	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), summary, or diagnostic")
 	flag.Parse()
 	if *mode == "diagnostic" {
 		var report statementqualification.Report

@@ -127,6 +127,10 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
 			}
 			if e != nil || billing == nil {
+				var detail interface{ ProtocolReason() string }
+				if errors.As(e, &detail) {
+					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
+				}
 				return report, errors.New("qualification_provider_failed")
 			}
 			if total > report.MaximumMicros {
