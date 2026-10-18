@@ -109,8 +109,8 @@ Chromium, локальные Vite/API/PostgreSQL, development owner, ширин�
 - Банковское требование обновляется вручную после операций. Разные даты
   грейса/минимума и неподтверждённое включение не дают точного общего итога.
 - Последний успешный Deploy production — `95c5fa8` (run 39034114035).
-  Merge SPEC-0054 подтверждён PR #60; успешные CI и deployment
-  этой реализации не подтверждены. Merge не означает production-выпуск.
+  Merge SPEC-0054 подтверждён PR #60; CI/Delivery этой реализации
+  прошли 2026-10-18. Production deployment SPEC-0054 не выполнялся.
 
 ## Post-merge verification — 2026-10-18
 
@@ -128,11 +128,15 @@ Chromium, локальные Vite/API/PostgreSQL, development owner, ширин�
   commitments/creditcards/loans, UX, password auth, AI drafts, imports,
   ownership, financial events, receipts, obligations, analytics и assistant.
   Отказы down-миграций с финансовыми данными — ожидаемые негативные проверки.
-- [CI run 39056633511](https://github.com/QahNaaRlN/grace/actions/runs/39056633511):
-  quality job не стартовал из-за failed account payments или spending limit;
-  integration и builds пропущены. Это не результат тестов продукта.
+- [CI run 39056633511](https://github.com/QahNaaRlN/grace/actions/runs/39056633511),
+  attempt 2 — **success** 2026-10-18: quality, PostgreSQL integration и обе
+  image builds. В attempt 1 quality job не стартовал из-за failed account
+  payments/spending limit; этот исторический отказ не был падением тестов.
 - [Delivery run 39056638931](https://github.com/QahNaaRlN/grace/actions/runs/39056638931):
-  failure; публикация images пропущена.
+  исторический failure; публикация images была пропущена.
+- Новый [Delivery run 39151285103](https://github.com/QahNaaRlN/grace/actions/runs/39151285103) —
+  **success**: API/Web images `sha-a89a855a8074e4bd0fc957f72b2cb6ab807624fc`
+  опубликованы штатным workflow после успешного main CI.
 - Последний успешный [Deploy production run 39034114035](https://github.com/QahNaaRlN/grace/actions/runs/39034114035)
   относится к `95c5fa8`; live runtime VPS в этой проверке не инспектировался.
 
@@ -140,7 +144,8 @@ Chromium, локальные Vite/API/PostgreSQL, development owner, ширин�
 и завершённые локальные post-merge gates согласно `docs/specs/README.md`.
 Он не означает успешный GitHub CI или production deployment.
 
-Следующий gate: восстановить GitHub Actions и получить успешные CI/Delivery
-для выбранного release SHA.
+GitHub Actions снова выполняет jobs; успешный main CI подтверждён attempt 2.
+CI и Delivery release SHA `a89a855` прошли. Следующий gate — отдельный
+production release с pre-deploy backup, миграцией 000026 и smoke-проверками.
 Production deployment выполняется отдельно; новые банковские правила,
 платные API и изменения финансовых данных в этот пакет не входят.
