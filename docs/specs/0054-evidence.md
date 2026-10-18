@@ -2,8 +2,9 @@
 
 Дата: 2026-10-17. Основание — [принятая SPEC-0054](0054-installments-bnpl.md),
 PR #59, `main` `7bae8eb`. Владелец поручил разработку после передачи draft.
-Ветка: `codex/installments-bnpl`. Статус: `verified` локально; код ещё
-не интегрирован в `main` и не выпущен в production.
+Ветка: `codex/installments-bnpl`. Статус: `integrated`; код влит в `main` через PR #60
+(`a89a855a8074e4bd0fc957f72b2cb6ab807624fc`, 2026-10-17),
+локальные post-merge gates пройдены 2026-10-18. Production release `a89a855` подтверждён 2026-10-18 (см. ниже).
 
 ## Результат
 
@@ -107,5 +108,67 @@ Chromium, локальные Vite/API/PostgreSQL, development owner, ширин�
   отдельного scope. Старые графики и покупки автоматически не мигрируют.
 - Банковское требование обновляется вручную после операций. Разные даты
   грейса/минимума и неподтверждённое включение не дают точного общего итога.
-- Production release остаётся `95c5fa8`. Merge, CI и deployment этой
-  реализации ещё не подтверждены; локальная verified не означает integrated.
+- Production release `a89a855` выполнен 2026-10-18, run 39151600396.
+  Предыдущий release — `95c5fa8` (run 39034114035). Merge SPEC-0054
+  подтверждён PR #60; CI/Delivery и deployment этой реализации прошли.
+
+## Post-merge verification — 2026-10-18
+
+Проверяемый `main`: `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`.
+Изменения продукта при проверке не вносились.
+
+- `make test` — exit 0: Go, 85 web-файлов / 327 тестов, ESLint,
+  Steiger, Prettier, генерация OpenAPI types, TypeScript/Vite build,
+  Jev datasets v1 (49) / v2 (72). Основной JS chunk 390.04 kB.
+- `git diff --check` — exit 0; рабочая копия `main` чистая.
+- `make test-production` — exit 0: rollout reminders, production bundle,
+  off-site backup с синтетическим S3, шифрование/отказы/восстановление.
+- `go vet ./cmd/... ./internal/...` — exit 0.
+- `make test-integration` — exit 0: все 14 наборов, включая installments,
+  commitments/creditcards/loans, UX, password auth, AI drafts, imports,
+  ownership, financial events, receipts, obligations, analytics и assistant.
+  Отказы down-миграций с финансовыми данными — ожидаемые негативные проверки.
+- [CI run 39056633511](https://github.com/QahNaaRlN/grace/actions/runs/39056633511),
+  attempt 2 — **success** 2026-10-18: quality, PostgreSQL integration и обе
+  image builds. В attempt 1 quality job не стартовал из-за failed account
+  payments/spending limit; этот исторический отказ не был падением тестов.
+- [Delivery run 39056638931](https://github.com/QahNaaRlN/grace/actions/runs/39056638931):
+  исторический failure; публикация images была пропущена.
+- Новый [Delivery run 39151285103](https://github.com/QahNaaRlN/grace/actions/runs/39151285103) —
+  **success**: API/Web images `sha-a89a855a8074e4bd0fc957f72b2cb6ab807624fc`
+  опубликованы штатным workflow после успешного main CI.
+- На этапе локальных post-merge gates последний успешный
+  [Deploy production run 39034114035](https://github.com/QahNaaRlN/grace/actions/runs/39034114035)
+  относился к `95c5fa8`; затем отдельно выполнен выпуск ниже.
+
+Статус `integrated` опирается на достижимость implementation из `main`
+и завершённые локальные post-merge gates согласно `docs/specs/README.md`.
+Он не означает успешный GitHub CI или production deployment.
+
+GitHub Actions снова выполняет jobs; успешный main CI подтверждён attempt 2.
+CI и Delivery release SHA `a89a855` прошли. Production deployment выполнен
+отдельно по явному подтверждению владельца; результат ниже. Новые банковские
+правила и изменение существующих финансовых событий в этот пакет не входят.
+
+
+## Production release — 2026-10-18
+
+Владелец явно подтвердил выпуск `a89a855` в текущем чате. Штатный
+[Deploy production run 39151600396](https://github.com/QahNaaRlN/grace/actions/runs/39151600396)
+завершился **success**. Выпущен точный SHA
+`a89a855a8074e4bd0fc957f72b2cb6ab807624fc`; все шаги workflow прошли,
+включая readiness внутри VPS и внешний public-entrypoint smoke.
+
+- До миграции проверен `pg_restore --list` для backup
+  `/opt/grace/backups/pre-release-20261018T175335Z-sha-a89a855a8074e4bd0fc957f72b2cb6ab807624fc.dump`.
+- Off-site upload зашифрованной `.dump.age` копии подтверждён deploy log;
+  SHA-256 `656ce761a00c7a5af9c3feaea86b51cdebf426826c0d55561ac5e50ad41ad475`.
+- Миграция `26/u installments` выполнена успешно (163.7 ms).
+- `scripts/check-public-entrypoint.sh https://graceapp.ru` независимо повторён
+  после workflow — exit 0: `/`, `/login`, `/api/meta` → 200;
+  `/api/auth/me`, `/api/v1/accounts` без сессии → 401; Basic challenge нет.
+- `/api/meta` вернул `{"service":"grace","version":"0.6.0-dev"}`;
+  публичный Web загрузил entry asset `index-9WJAxJMo.js`, соответствующий сборке.
+- Production финансовые операции от имени владельца не создавались.
+  Проверка форм BNPL/карты с реальной сессией владельца здесь не заявляется;
+  исходное browser evidence использует синтетические данные.

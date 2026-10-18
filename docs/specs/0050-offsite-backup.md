@@ -1,6 +1,6 @@
 # SPEC-0050: зашифрованная копия backup вне VPS
 
-- Статус: verified
+- Статус: integrated
 - Автор: Claude Code по поручению владельца
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace
