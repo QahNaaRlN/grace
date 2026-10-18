@@ -40,6 +40,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	./scripts/test-restore-readiness.sh
 	./scripts/test-commitments-rollout.sh
 	./scripts/test-production-deployment.sh
 	./scripts/test-offsite-backup.sh

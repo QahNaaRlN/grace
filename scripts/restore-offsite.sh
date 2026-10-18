@@ -82,15 +82,16 @@ docker exec -w /work "$tools" sha256sum -c "$object.sha256"
 docker exec "$tools" age -d -i /work/identity -o /work/backup.dump "/work/$object"
 
 postgres="$(docker run -d -e POSTGRES_USER=grace -e POSTGRES_PASSWORD=restore-drill -e POSTGRES_DB=grace "$postgres_image")"
+# The entrypoint's temporary init server accepts Unix sockets before the
+# target database exists. Only the final server listens on TCP; test the
+# actual database, with one bounded readiness loop instead of a timed sleep.
 tries=0
-until docker exec "$postgres" pg_isready -U grace -d grace >/dev/null 2>&1; do
+until docker exec -e PGPASSWORD=restore-drill "$postgres" \
+  psql -h 127.0.0.1 -U grace -d grace -Atq -c 'SELECT 1' >/dev/null 2>&1; do
   tries=$((tries + 1))
   [ "$tries" -lt 60 ] || { echo "PostgreSQL did not start" >&2; exit 1; }
   sleep 1
 done
-# The init entrypoint restarts the server once; wait for the final instance.
-sleep 2
-until docker exec "$postgres" pg_isready -U grace -d grace >/dev/null 2>&1; do sleep 1; done
 docker exec "$postgres" psql -U grace -d grace -v ON_ERROR_STOP=1 -q \
   -c 'CREATE ROLE grace_financial NOLOGIN;'
 docker exec "$tools" cat /work/backup.dump |
