@@ -278,7 +278,7 @@ until "$release_dir/check-public-entrypoint.sh" "https://$domain:$https_port" \
   sleep 2
 done
 
-if [ -n "$previous_dir" ]; then
+if [ -n "$previous_dir" ] && [ "$previous_dir" != "$release_dir" ]; then
   ln -sfn "$previous_dir" "$previous_link"
 fi
 ln -sfn "$release_dir" "$current_link"
