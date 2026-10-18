@@ -45,6 +45,7 @@ export function RecordReview({
   onOpen: (id: string) => void
   disabled: boolean
 }) {
+  const selectionLimit = batch.format === 'bank_statement_pdf' ? 100 : MAX_FILTER_SELECTION
   const records = useQuery(importBatchQueries.records(batchId, view))
   const counts = batch.counts ?? {}
   const total = batch.total ?? 0
@@ -189,15 +190,16 @@ export function RecordReview({
             <Button
               variant="ghost"
               aria-pressed={false}
-              disabled={disabled || matching > MAX_FILTER_SELECTION}
+              disabled={disabled || matching > selectionLimit}
               onClick={() => onSelection({ mode: 'filter', total: matching })}
             >
               Выбрать все по фильтру ({matching})
             </Button>
           )}
-          {matching > MAX_FILTER_SELECTION && selection.mode === 'ids' && (
+          {matching > selectionLimit && selection.mode === 'ids' && (
             <span className="text-muted-foreground">
-              За раз — не больше 1 000 строк: сузьте фильтр поиском или статусом.
+              За раз — не больше {selectionLimit.toLocaleString('ru-RU')} строк: сузьте фильтр
+              поиском или статусом.
             </span>
           )}
         </div>

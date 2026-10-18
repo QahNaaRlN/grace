@@ -1,0 +1,28 @@
+# Opt-in local helper. It has no API credentials, TCP network or Docker socket.
+# Production activation is a separate release decision.
+services:
+  pdf-extractor:
+    build:
+      context: .
+      dockerfile: Dockerfile.pdf-extractor
+    network_mode: none
+    read_only: true
+    user: '10001:10001'
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1.0
+    pids_limit: 16
+    tmpfs:
+      - /tmp:size=16777216,mode=700,uid=10001,gid=10001,noexec,nosuid,nodev
+    volumes:
+      - grace-pdf-socket:/run/grace-pdf
+    stop_grace_period: 6s
+  api:
+    environment:
+      GRACE_PDF_EXTRACTOR_SOCKET: /run/grace-pdf/extractor.sock
+    volumes:
+      - grace-pdf-socket:/run/grace-pdf:ro
+volumes:
+  grace-pdf-socket:

@@ -76,7 +76,8 @@ func planHash(p Preview) string {
 		Changes                      []Change
 		Blockers                     []string
 		NewEvents, Links, Exclusions int
-	}{p.BatchID, p.Revision, p.Lines, p.Changes, p.Blockers, p.NewEvents, p.Links, p.Exclusions})
+		StatementRevision            int64
+	}{p.BatchID, p.Revision, p.Lines, p.Changes, p.Blockers, p.NewEvents, p.Links, p.Exclusions, p.StatementRevision})
 }
 func resolved(rec Record, c Candidate, records map[string]Record) bool {
 	d := rec.Decision
@@ -108,7 +109,17 @@ func resolved(rec Record, c Candidate, records map[string]Record) bool {
 	return false
 }
 func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report importreview.Report, ids []string) (Preview, error) {
+	if batch.Format != nil && *batch.Format == "bank_statement_pdf" && len(ids) > 100 {
+		return Preview{}, fault("statement_confirmation_limit", 422)
+	}
+
 	p := Preview{BatchID: batch.ID, Revision: batch.Revision, Lines: []Line{}, Changes: []Change{}, Blockers: []string{}}
+	statementBlockers, statementWarnings, sourceRevision, err := r.statementPlanGuards(ctx, tx, batch.ID)
+	if err != nil {
+		return p, err
+	}
+	p.StatementRevision = sourceRevision
+	p.Blockers = append(p.Blockers, statementBlockers...)
 	records := map[string]Record{}
 	selected := map[string]bool{}
 	ids = append([]string(nil), ids...)
@@ -135,6 +146,12 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 	for _, id := range ids {
 		rec := records[id]
 		line := Line{RecordID: id, SourceSheet: rec.Source.Sheet, SourceRow: rec.Source.Row, Decision: rec.Decision, SourceDate: rec.Source.Normalized.Date, Blockers: []string{}, Warnings: []string{}, Postings: []Change{}, Candidates: []Candidate{}}
+		if rec.Source.PDF != nil {
+			ordinal := rec.Source.PDF.Ordinal
+			line.PDFOrdinal = &ordinal
+			line.SourceKind = "bank_statement_pdf"
+		}
+		line.Warnings = append(line.Warnings, statementWarnings...)
 		if rec.Published {
 			line.Blockers = append(line.Blockers, "already_published")
 		}
@@ -181,7 +198,49 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 			if !ok || canon.ID == id || canon.Decision.Action != "create" && canon.Decision.Action != "link_existing" || !canon.Published && !selected[canon.ID] {
 				line.Blockers = append(line.Blockers, "canonical_not_confirmed")
 			}
-			if ok && (canon.Source.Normalized.Kind != n.Kind || canon.Source.Normalized.Currency != n.Currency) {
+			if ok && rec.Source.PDF != nil {
+				var posts []financialevents.Posting
+				if canon.EventID != nil {
+					event, e := financialevents.LoadInTx(ctx, tx, *canon.EventID)
+					if e != nil {
+						return p, e
+					}
+					if event.VoidedAt != nil {
+						line.Blockers = append(line.Blockers, "statement_event_voided")
+					}
+					if n.Funding != nil && n.Funding.Kind == "borrowed" && event.Kind == "income_received" {
+						line.Blockers = append(line.Blockers, "borrowed_is_not_income")
+					}
+					posts = event.Postings
+				} else if canon.Decision.Action == "link_existing" {
+					event, e := financialevents.LoadInTx(ctx, tx, canon.Decision.EventID)
+					if e != nil {
+						return p, e
+					}
+					if event.VoidedAt != nil {
+						line.Blockers = append(line.Blockers, "statement_event_voided")
+					}
+					if n.Funding != nil && n.Funding.Kind == "borrowed" && event.Kind == "income_received" {
+						line.Blockers = append(line.Blockers, "borrowed_is_not_income")
+					}
+					posts = event.Postings
+				} else if canon.Decision.Fields != nil {
+					if n.Funding != nil && n.Funding.Kind == "borrowed" && canon.Decision.Fields.Kind == "income_received" {
+						line.Blockers = append(line.Blockers, "borrowed_is_not_income")
+					}
+					cmd, e := command(canon.Decision.Fields, "preview:"+canon.ID)
+					if e == nil {
+						posts, e = financialevents.ValidateInTx(ctx, tx, cmd)
+					}
+					if e != nil {
+						line.Blockers = append(line.Blockers, "invalid_canonical_event")
+					}
+				}
+				if !statementPostingsMatch(rec.Source.PDF.AccountID, rec.Source.PDF.Row, posts) {
+					line.Blockers = append(line.Blockers, "statement_posting_mismatch")
+				}
+			}
+			if ok && rec.Source.PDF == nil && (canon.Source.Normalized.Kind != n.Kind || canon.Source.Normalized.Currency != n.Currency) {
 				line.Blockers = append(line.Blockers, "incompatible_duplicate")
 			}
 		case "link_existing":
@@ -193,7 +252,18 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 				}
 				line.Blockers = append(line.Blockers, "event_not_found")
 			} else {
-				if n.Kind == "" || e.Kind != n.Kind {
+				if rec.Source.PDF != nil {
+					if e.VoidedAt != nil {
+						line.Blockers = append(line.Blockers, "statement_event_voided")
+					}
+					if n.Funding != nil && n.Funding.Kind == "borrowed" && e.Kind == "income_received" {
+						line.Blockers = append(line.Blockers, "borrowed_is_not_income")
+					}
+					if !statementPostingsMatch(rec.Source.PDF.AccountID, rec.Source.PDF.Row, e.Postings) {
+						line.Blockers = append(line.Blockers, "statement_posting_mismatch")
+					}
+				}
+				if rec.Source.PDF == nil && (n.Kind == "" || e.Kind != n.Kind) {
 					line.Blockers = append(line.Blockers, "incompatible_kind")
 				}
 				for _, post := range e.Postings {
@@ -208,7 +278,7 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 		case "create":
 			p.NewEvents++
 			f := d.Fields
-			if n.Kind == "" || n.Kind == "unresolved_requirement" {
+			if rec.Source.PDF == nil && (n.Kind == "" || n.Kind == "unresolved_requirement") {
 				line.Blockers = append(line.Blockers, "unsupported_semantics")
 			}
 			if d.Reason == "" {
@@ -237,6 +307,9 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 				} else if err != nil {
 					return p, err
 				} else {
+					if rec.Source.PDF != nil && !statementPostingsMatch(rec.Source.PDF.AccountID, rec.Source.PDF.Row, postings) {
+						line.Blockers = append(line.Blockers, "statement_posting_mismatch")
+					}
 					for _, post := range postings {
 						if post.Currency != f.Currency {
 							line.Blockers = append(line.Blockers, "currency_mismatch")
@@ -460,6 +533,9 @@ func (r *Repository) Confirm(ctx context.Context, batch, key string, input Confi
 			outcome.Event = &event
 		}
 		result.Outcomes = append(result.Outcomes, outcome)
+	}
+	if err = r.statementAfterConfirm(ctx, tx, batch); err != nil {
+		return result, err
 	}
 	// Only the in-flight receipt can be updated; readers cannot mutate confirmations.
 	receipt, _ := json.Marshal(result)

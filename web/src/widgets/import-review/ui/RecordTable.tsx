@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react'
 
+import { importSourceLabel } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Money } from '@/shared/ui/money'
@@ -107,7 +108,7 @@ export function RecordTable({
                   <label className="grid size-11 cursor-pointer place-items-center">
                     <Checkbox
                       className="size-5"
-                      aria-label={`Выбрать строку ${row.source.row}`}
+                      aria-label={`Выбрать строку ${row.source.pdf?.ordinal ?? row.source.row}`}
                       disabled={!selectable(row) || disabled || selection.mode === 'filter'}
                       checked={selection.mode === 'filter' ? selectable(row) : ids.includes(row.id)}
                       onCheckedChange={(checked) =>
@@ -123,11 +124,11 @@ export function RecordTable({
                   <button
                     type="button"
                     data-row
-                    aria-label={`${row.source.sheet}, строка ${row.source.row}`}
+                    aria-label={importSourceLabel(row.source)}
                     onClick={() => onOpen(row.id)}
                     className="min-h-11 rounded-lg px-1 text-left font-medium underline-offset-4 hover:underline"
                   >
-                    <span aria-hidden="true">{row.source.row}</span>
+                    <span aria-hidden="true">{row.source.pdf?.ordinal ?? row.source.row}</span>
                     <span
                       aria-hidden="true"
                       className="block text-xs font-normal text-muted-foreground lg:hidden"

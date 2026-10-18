@@ -32,10 +32,15 @@ type Config struct {
 	AIAnalysisPolicy        string
 	AIReceiptPolicy         string
 	AIPhotoDir              string
+	PDFExtractorSocket      string
+	StatementAIEnabled      bool
+	StatementAIPolicy       string
 }
 
 func Load() (Config, error) {
 	cfg := Config{
+		StatementAIEnabled:   os.Getenv("GRACE_STATEMENT_AI_ENABLED") == "true",
+		StatementAIPolicy:    os.Getenv("GRACE_STATEMENT_AI_POLICY"),
 		SMTPHost:             strings.TrimSpace(os.Getenv("GRACE_SMTP_HOST")),
 		SMTPPort:             valueOrDefault("GRACE_SMTP_PORT", "587"),
 		SMTPUsername:         strings.TrimSpace(os.Getenv("GRACE_SMTP_USERNAME")),
@@ -55,6 +60,11 @@ func Load() (Config, error) {
 		AIAnalysisPolicy:     os.Getenv("GRACE_AI_ANALYSIS_POLICY"),
 		AIReceiptPolicy:      os.Getenv("GRACE_AI_RECEIPT_POLICY"),
 		AIPhotoDir:           os.Getenv("GRACE_AI_PHOTO_DIR"),
+		PDFExtractorSocket:   strings.TrimSpace(os.Getenv("GRACE_PDF_EXTRACTOR_SOCKET")),
+	}
+	statementValue := valueOrDefault("GRACE_STATEMENT_AI_ENABLED", "false")
+	if statementValue != "true" && statementValue != "false" {
+		return Config{}, fmt.Errorf("GRACE_STATEMENT_AI_ENABLED must be true or false")
 	}
 	aiEnabledValue := valueOrDefault("GRACE_AI_ENABLED", "false")
 	if aiEnabledValue != "true" && aiEnabledValue != "false" {

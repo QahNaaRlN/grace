@@ -18,3 +18,9 @@ export function importErrorText(error: unknown) {
     ? error.message
     : 'Не удалось выполнить действие. Обновите страницу и повторите.'
 }
+
+export function importSourceLabel(
+  source: import('@/shared/api/generated/schema').components['schemas']['ImportSourceRecord'],
+) {
+  return source.pdf ? `PDF, строка ${source.pdf.ordinal}` : `${source.sheet}, строка ${source.row}`
+}

@@ -194,7 +194,7 @@ Owner принимает или изменяет:
 не разрешает включать их в Grace, отправлять личные изображения или менять
 принятые privacy/confirmation gates.
 
-[draft SPEC-0055](../specs/0055-bank-statement-pdf-import.md) рассматривает только
+[accepted SPEC-0055](../specs/0055-bank-statement-pdf-import.md) рассматривает только
 текстовый input: LLM предлагает структуру банковской выписки; Jev может выбирать
 из найденных spans и проверять узкие интерпретации после отдельного измерения.
 [Pre-parsed value extraction](https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook)

@@ -5,7 +5,7 @@
 - Основание: «да, утверждаю» — явное утверждение конкретного технического варианта владельцем; архитектура принята ранее
 - Functional spec: [SPEC-0055](0055-bank-statement-pdf-import.md)
 - Baseline: main `a98e304`, ветка спецификации `codex/spec-0055-bank-pdf-import`
-- Application implementation: not_started; private inference: not_run
+- Application implementation: in_progress (`codex/bank-statement-pdf-import`); private inference: not_run
 
 ## Принятое архитектурное решение
 
@@ -189,3 +189,14 @@ Gemini 2.5 Flash через **google-vertex/eu**, новый statement-purpose/c
 bounded chunk plan и default retention выше. Принятие контракта открывает
 offline implementation, но не включает AI в production и не отправляет личный
 reference внешнему API без document-specific consent.
+
+
+## Offline implementation — 2026-10-19
+
+Код `8e37465` реализует принятый bounded путь в отдельной implementation branch.
+[Evidence](0055-evidence.md) содержит AC matrix, команды и ограничения.
+Final local reference preflight: 5 страниц, 1661 span, 16 calls в плане,
+max messages+schema 8963 bytes, reservation ceiling 128000 micros ($0.128),
+providerCalls=0. Исходный PDF смонтирован read-only, preflight/helper без сети.
+Это не actual provider usage и не benchmark точности/latency. Реальная модель,
+Jev comparison, private inference и production activation не выполнялись.

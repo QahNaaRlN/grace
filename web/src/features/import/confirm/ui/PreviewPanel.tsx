@@ -59,7 +59,10 @@ export function PreviewPanel({
         {preview.lines.map((line) => (
           <div key={line.recordId} className="space-y-2 rounded-md border p-3">
             <p className="font-semibold">
-              {line.sourceSheet}, строка {line.sourceRow}: {actionNames[line.decision.action]}
+              {line.pdfOrdinal
+                ? `PDF, строка ${line.pdfOrdinal}`
+                : `${line.sourceSheet}, строка ${line.sourceRow}`}
+              : {actionNames[line.decision.action]}
             </p>
             <p>{line.decision.reason}</p>
             {line.decision.action === 'create' && (

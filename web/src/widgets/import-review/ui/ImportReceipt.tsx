@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { importLabels } from '@/entities/import-batch'
-import type { ImportReceipt as Receipt } from '@/features/confirm-import'
+import type { ImportReceipt as Receipt } from '@/features/import/confirm'
 import { eventTimeText } from '@/shared/lib/date'
 import { formatMoney } from '@/shared/lib/money'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'

@@ -91,11 +91,13 @@ function HistoryRow({
         <span className="min-w-0">
           <strong className="block truncate">{batch.fileName ?? batch.source.sourceId}</strong>
           <span className="block truncate text-sm text-muted-foreground">
-            {batch.format === 'csv'
-              ? 'Таблица CSV'
-              : batch.format === 'json'
-                ? 'Снимок JSON'
-                : 'Файл'}
+            {batch.format === 'bank_statement_pdf'
+              ? 'PDF-выписка'
+              : batch.format === 'csv'
+                ? 'Таблица CSV'
+                : batch.format === 'json'
+                  ? 'Снимок JSON'
+                  : 'Файл'}
             {batch.fileName && batch.fileName !== batch.source.sourceId
               ? ` · ${batch.source.sourceId}`
               : ''}{' '}

@@ -10,10 +10,8 @@
   "payloadSha256": "04bc602f47cb8d9489b79c733a02c2bc7c64bc455b12b7bcb22d71a6bb8a3aa4",
   "records": [
     {
+      "sourceKind": "spreadsheet",
       "id": "a5062b5c7109ee672c836b978ee108f6680d3d489a7c7937a07a28db3175839f",
-      "sheetId": 1,
-      "sheet": "Операции",
-      "row": 5,
       "domain": "transaction",
       "originalId": "main-a",
       "raw": {
@@ -136,13 +134,14 @@
           "coordinate": "Операции!K5",
           "message": "Debt target and principal/interest allocation require evidence."
         }
-      ]
-    },
-    {
-      "id": "0fa002b19a46612d44b463ca2d7ec16d59fac4cdf53561d818112e0e9bf12d1c",
+      ],
       "sheetId": 1,
       "sheet": "Операции",
-      "row": 6,
+      "row": 5
+    },
+    {
+      "sourceKind": "spreadsheet",
+      "id": "0fa002b19a46612d44b463ca2d7ec16d59fac4cdf53561d818112e0e9bf12d1c",
       "domain": "transaction",
       "originalId": "main-b",
       "raw": {
@@ -265,13 +264,14 @@
           "coordinate": "Операции!K6",
           "message": "Debt target and principal/interest allocation require evidence."
         }
-      ]
-    },
-    {
-      "id": "7d0e69ebf54cb83961188e18e5fedf5336d7c7708a06aecec0a892a3d177a934",
+      ],
       "sheetId": 1,
       "sheet": "Операции",
-      "row": 7,
+      "row": 6
+    },
+    {
+      "sourceKind": "spreadsheet",
+      "id": "7d0e69ebf54cb83961188e18e5fedf5336d7c7708a06aecec0a892a3d177a934",
       "domain": "transaction",
       "originalId": "main-c",
       "raw": {
@@ -388,13 +388,14 @@
           "coordinate": "Операции!A7",
           "message": "Only a calendar date is known; no event time is invented."
         }
-      ]
-    },
-    {
-      "id": "36eeb8bbe7613c42bbb04317b62ac830c4d572d393070a6f0efda3af17d4002f",
+      ],
       "sheetId": 1,
       "sheet": "Операции",
-      "row": 305,
+      "row": 7
+    },
+    {
+      "sourceKind": "spreadsheet",
+      "id": "36eeb8bbe7613c42bbb04317b62ac830c4d572d393070a6f0efda3af17d4002f",
       "domain": "transaction",
       "originalId": "legacy-a",
       "raw": {
@@ -529,13 +530,14 @@
           "coordinate": "Операции!A305",
           "message": "Possible overlap requires individual confirmation; records are not merged."
         }
-      ]
-    },
-    {
-      "id": "b83edc8546a15a651183bb32bea394b310ce0ba8628f47eb784096246d31e4d5",
+      ],
       "sheetId": 1,
       "sheet": "Операции",
-      "row": 306,
+      "row": 305
+    },
+    {
+      "sourceKind": "spreadsheet",
+      "id": "b83edc8546a15a651183bb32bea394b310ce0ba8628f47eb784096246d31e4d5",
       "domain": "transaction",
       "originalId": "legacy-b",
       "raw": {
@@ -670,13 +672,14 @@
           "coordinate": "Операции!A306",
           "message": "Possible overlap requires individual confirmation; records are not merged."
         }
-      ]
-    },
-    {
-      "id": "20cf6288ba80859c63be4d1f30ff92ce8b9acafde4729ccb2fcdae715ffb8a60",
+      ],
       "sheetId": 1,
       "sheet": "Операции",
-      "row": 307,
+      "row": 306
+    },
+    {
+      "sourceKind": "spreadsheet",
+      "id": "20cf6288ba80859c63be4d1f30ff92ce8b9acafde4729ccb2fcdae715ffb8a60",
       "domain": "transaction",
       "originalId": "legacy-c",
       "raw": {
@@ -811,7 +814,10 @@
           "coordinate": "Операции!A307",
           "message": "Possible overlap requires individual confirmation; records are not merged."
         }
-      ]
+      ],
+      "sheetId": 1,
+      "sheet": "Операции",
+      "row": 307
     }
   ],
   "candidates": [

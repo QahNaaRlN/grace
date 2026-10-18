@@ -87,6 +87,8 @@ jobs:
         include:
           - service: api
             dockerfile: Dockerfile
+          - service: pdf-extractor
+            dockerfile: Dockerfile.pdf-extractor
           - service: web
             dockerfile: web/Dockerfile
     steps:

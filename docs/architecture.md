@@ -98,7 +98,7 @@ Web следует mobile-first подходу: базовые стили и и�
   и не ветвится по `pathname`. `widgets` — самостоятельные блоки экрана, которые
   читают данные и собирают фичи (например, `ledger-screen` — общий каркас
   денежных страниц). `features` — пользовательские действия с записью; фичи
-  входа сгруппированы в `features/auth`. `entities` — доменные объекты из
+  входа сгруппированы в `features/auth`, импорта — в `features/import`. `entities` — доменные объекты из
   OpenAPI, их `queryOptions`, подписи и управляемые компоненты (график платежей).
   `shared` — транспорт API, UI kit, утилиты и конфиг без знания о домене.
 - Срез открыт наружу только через `index.ts` (тестовые фейки — через
@@ -137,6 +137,30 @@ LLM. [Гайд пользователя](ai-user-guide.md), [специфика�
 Категории бывают общими (read-only) и личными расходными. RLS ограничивает чтение
 и переименование owner_id; DB trigger не допускает чужую категорию в событии.
 Переименование сохраняет id/ссылки, не меняет суммы/проводки/историю времени.
+
+## Банковские PDF — SPEC-0055, implementation candidate
+
+Ветка `codex/bank-statement-pdf-import` добавляет `internal/statementdata` для
+чистых grounding/decimal/date/coverage проверок и `internal/pdfextract` для
+локального Unix-socket транспорта. Отдельный `cmd/pdf-extractor` запускает
+проверенную версию Poppler в контейнере без сети и credentials. Финансовый API
+не разбирает PDF внутри своего процесса. Локальный opt-in overlay:
+`compose.pdf-extractor.yaml`; это не production rollout.
+
+`internal/statementextract` зависит от `imports` и получает Reasoner через
+interface. Composition root подключает существующий OpenRouter transport из
+`assistant`; `imports` и финансовые модули не зависят от модели. Statement имеет
+собственные document-scoped consent, plan и attempts, но использует общий budget
+ledger. AI выключен по умолчанию. Ответ модели содержит span IDs, а значения
+копирует и проверяет Go. Ручной draft использует те же проверки без inference.
+
+PDF source — отдельный вариант, без вымышленных sheet/row. `imports` сохраняет
+решения и matching по Posting; общий preview/confirmation остаётся единственным
+writer. PDF reconciliation отдельно показывает обороты, book balances, available
+balance, source coverage и financial representation. Legacy `/month` для PDF
+возвращает явный 422; JSON/CSV month-review сохраняется. Оригинал/full layout и
+consent plan очищаются по retention, минимальные fragments/provenance остаются.
+[Гайд](bank-statements.md), [состояние проверок](specs/0055-evidence.md).
 
 ## Проверяемое финансовое ядро
 

@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -17,10 +18,12 @@ import (
 	"github.com/QahNaaRlN/grace/internal/installments"
 	"github.com/QahNaaRlN/grace/internal/loans"
 	"github.com/QahNaaRlN/grace/internal/obligations"
+	"github.com/QahNaaRlN/grace/internal/pdfextract"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/web"
 	"github.com/QahNaaRlN/grace/internal/receiptdrafts"
 	"github.com/QahNaaRlN/grace/internal/receipts"
+	"github.com/QahNaaRlN/grace/internal/statementextract"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -134,7 +137,23 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	})
 	router.Route("/api/imports", func(router chi.Router) {
 		router.Use(authHandler.Require)
-		imports.NewHandler(imports.NewRepository(pool)).Routes(router)
+		repository := imports.NewRepository(pool)
+		if cfg.PDFExtractorSocket != "" {
+			if extractor, e := pdfextract.NewClient(cfg.PDFExtractorSocket); e == nil {
+				repository.SetPDFExtractor(extractor)
+			}
+		}
+		imports.NewHandler(repository).Routes(router)
+		var reasoner statementextract.Reasoner
+		if cfg.AIEnabled && cfg.StatementAIEnabled {
+			var policy assistant.ModelPolicy
+			if e := json.Unmarshal([]byte(cfg.StatementAIPolicy), &policy); e == nil {
+				if provider, e := assistant.NewOpenRouterProvider(cfg.OpenRouterAPIKey, nil); e == nil {
+					reasoner = &assistant.StatementReasoner{Verifier: assistant.NewPolicyVerifier(), Policy: policy, Provider: provider}
+				}
+			}
+		}
+		statementextract.NewHandler(statementextract.NewService(pool, repository, reasoner)).Routes(router)
 	})
 	router.Route("/api/assistant", func(router chi.Router) {
 		router.Use(authHandler.Require)

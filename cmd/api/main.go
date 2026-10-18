@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/QahNaaRlN/grace/internal/imports"
 	"github.com/QahNaaRlN/grace/internal/platform/config"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/platform/httpserver"
@@ -28,6 +29,7 @@ func main() {
 	}
 	defer pool.Close()
 
+	go imports.RunStatementCleanup(ctx, pool)
 	server := httpserver.New(cfg, pool)
 	go func() {
 		log.Printf("Grace API listening on :%s", cfg.Port)

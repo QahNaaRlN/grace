@@ -4,6 +4,150 @@
  */
 
 export interface paths {
+    "/api/imports/statements/{statementId}/extraction-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewStatementExtraction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/extraction-consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["consentStatementExtraction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/extractions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStatementExtractions"];
+        put?: never;
+        post: operations["extractBankStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/extractions/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStatementExtraction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadBankStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBankStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["editBankStatement"];
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/manual-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createBankStatementManualDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["downloadBankStatementOriginal"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteBankStatementOriginal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/batches/{batchId}/statement/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBankStatementReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/installment-plans": {
         parameters: {
             query?: never;
@@ -1707,6 +1851,244 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        StatementDocument: {
+            id: string;
+            fileName: string;
+            sha256: string;
+            sizeBytes: number;
+            contentType: string;
+        };
+        StatementUploadResult: {
+            statement: components["schemas"]["BankStatement"];
+            document: components["schemas"]["StatementDocument"];
+            batchId: string | null;
+        };
+        StatementModelPolicy: {
+            model: string;
+            provider: string;
+            providerName: string;
+            inputMicrosPerMillion: number;
+            outputMicrosPerMillion: number;
+        };
+        StatementRedactedSpan: {
+            id: string;
+            page: number;
+            x: number;
+            y: number;
+            text: string;
+        };
+        StatementChunk: {
+            index: number;
+            context: components["schemas"]["StatementRedactedSpan"][];
+            spans: components["schemas"]["StatementRedactedSpan"][];
+        };
+        StatementPlan: {
+            documentHash: string;
+            promptVersion: string;
+            schemaHash: string;
+            redactionVersion: string;
+            policy: components["schemas"]["StatementModelPolicy"];
+            chunks: components["schemas"]["StatementChunk"][];
+            maximumMicros: number;
+        };
+        StatementExtractionPreview: {
+            id: string;
+            statementId: string;
+            sourceRevision: number;
+            hash: string;
+            plan: components["schemas"]["StatementPlan"];
+            expiresAt: string;
+        };
+        StatementPreviewInput: {
+            expectedRevision: number;
+            visibleSpanIds?: string[];
+        };
+        StatementConsentInput: {
+            expectedRevision: number;
+            previewId: string;
+            previewHash: string;
+        };
+        StatementExtractionInput: {
+            expectedRevision: number;
+            previewId: string;
+            previewHash: string;
+            consentId: string;
+        };
+        StatementConsent: {
+            id: string;
+            previewId: string;
+        };
+        StatementExtractionAttempt: {
+            policy?: components["schemas"]["StatementModelPolicy"];
+            promptVersion?: string;
+            schemaHash?: string;
+            redactionVersion?: string;
+            id: string;
+            statementId: string;
+            status: string;
+            errorCode: string | null;
+            batchId: string | null;
+        };
+        StatementSpan: {
+            id: string;
+            page: number;
+            block: number;
+            line: number;
+            word: number;
+            box: {
+                xMin: number;
+                yMin: number;
+                xMax: number;
+                yMax: number;
+            };
+            text: string;
+        };
+        StatementLayout: {
+            extractor: string;
+            pages: {
+                number: number;
+                width: number;
+                height: number;
+            }[];
+            spans: components["schemas"]["StatementSpan"][];
+        };
+        StatementEvidence: {
+            role: string;
+            spans: components["schemas"]["StatementSpan"][];
+            literal: string;
+        };
+        StatementMoney: {
+            /** Format: int64 */
+            amountMinor: number;
+            currency: string;
+        };
+        StatementLocalDate: {
+            local: string;
+            precision: string;
+            utc?: string;
+            timeZone?: string;
+        };
+        StatementRow: {
+            ordinal: number;
+            operationDate: components["schemas"]["StatementLocalDate"] | null;
+            bookingDate: components["schemas"]["StatementLocalDate"] | null;
+            accountAmount: components["schemas"]["StatementMoney"] | null;
+            transactionAmount: components["schemas"]["StatementMoney"] | null;
+            direction: string;
+            description: string;
+            evidence: components["schemas"]["StatementEvidence"][];
+            issues: string[];
+        };
+        StatementHeader: {
+            openingBookDate: components["schemas"]["StatementLocalDate"] | null;
+            closingBookDate: components["schemas"]["StatementLocalDate"] | null;
+            openingBookBalance: components["schemas"]["StatementMoney"] | null;
+            closingBookBalance: components["schemas"]["StatementMoney"] | null;
+            availableBalanceObserved: components["schemas"]["StatementMoney"] | null;
+            debitTurnover: components["schemas"]["StatementMoney"] | null;
+            creditTurnover: components["schemas"]["StatementMoney"] | null;
+            evidence: components["schemas"]["StatementEvidence"][];
+        };
+        StatementCheck: {
+            status: string;
+            reasons: string[];
+        };
+        StatementReconciliation: {
+            financialCoverage?: components["schemas"]["StatementCheck"];
+            turnoverCheck: components["schemas"]["StatementCheck"];
+            bookBalanceCheck: components["schemas"]["StatementCheck"];
+            rowCoverage: components["schemas"]["StatementCheck"];
+            ledgerBalanceCheck: components["schemas"]["StatementCheck"];
+            debitMinor: number | null;
+            creditMinor: number | null;
+            blockers: string[];
+            warnings: string[];
+        };
+        StatementReview: {
+            rows: components["schemas"]["StatementRow"][];
+            header: components["schemas"]["StatementHeader"];
+            reconciliation: components["schemas"]["StatementReconciliation"];
+        };
+        StatementRowMapping: {
+            operationDate: string[];
+            bookingDate: string[];
+            accountAmount: string[];
+            accountCurrency: string[];
+            transactionAmount: string[];
+            transactionCurrency: string[];
+            description: string[];
+            directionEvidence: string[];
+            direction: string;
+        };
+        StatementProposal: {
+            rows: components["schemas"]["StatementRowMapping"][];
+            header: {
+                openingBookDate: string[];
+                closingBookDate: string[];
+                openingBookBalance: string[];
+                closingBookBalance: string[];
+                availableBalanceObserved: string[];
+                debitTurnover: string[];
+                creditTurnover: string[];
+                currency: string[];
+                labels: {
+                    [key: string]: string[];
+                };
+            };
+            service: {
+                spans: string[];
+                reason: string;
+            }[];
+        };
+        BankStatement: {
+            sizeBytes: number;
+            publishedRows: number;
+            excludedRows: number;
+            id: string;
+            documentId: string;
+            accountId: string;
+            batchId: string | null;
+            revision: number;
+            fileName: string;
+            sha256: string;
+            status: string;
+            /** @enum {string} */
+            retention: "delete_after_confirmation" | "keep";
+            expiresAt: string;
+            deletedAt: string | null;
+            createdAt: string;
+            rolesConfirmed: boolean;
+            reviewedPages: number[];
+            pageCount: number;
+            review: components["schemas"]["StatementReview"] | null;
+            layout?: components["schemas"]["StatementLayout"];
+        };
+        StatementEdit: {
+            expectedRevision: number;
+            accountId: string;
+            /** @enum {string} */
+            retention: "delete_after_confirmation" | "keep";
+            rolesConfirmed: boolean;
+            reviewedPages: number[];
+            reason: string;
+        };
+        StatementManualDraft: {
+            expectedRevision: number;
+            proposal: components["schemas"]["StatementProposal"];
+            reason: string;
+        };
+        StatementDelete: {
+            expectedRevision: number;
+        };
+        ImportPDFSource: {
+            proposalOrigin?: string;
+            attemptId?: string;
+            statementId: string;
+            documentId: string;
+            accountId: string;
+            ordinal: number;
+            row: components["schemas"]["StatementRow"];
+        };
         InstallmentRow: {
             /** Format: date */
             dueOn: string;
@@ -2597,11 +2979,14 @@ export interface components {
             };
         };
         ImportSourceRecord: {
+            /** @enum {string} */
+            sourceKind?: "spreadsheet" | "bank_statement_pdf";
+            pdf?: components["schemas"]["ImportPDFSource"];
             id: string;
             /** Format: int64 */
-            sheetId: number;
-            sheet: string;
-            row: number;
+            sheetId?: number;
+            sheet?: string;
+            row?: number;
             domain: string;
             originalId?: string;
             raw: {
@@ -2667,6 +3052,7 @@ export interface components {
             };
         };
         ImportBatch: {
+            statementId?: string;
             /** Format: uuid */
             id: string;
             source: components["schemas"]["ImportMetadata"];
@@ -2685,7 +3071,7 @@ export interface components {
             };
             fileName: string | null;
             /** @enum {string|null} */
-            format: "json" | "csv" | null;
+            format: "json" | "csv" | "bank_statement_pdf" | null;
             /**
              * Format: date
              * @description Earliest operation date among transaction rows.
@@ -2760,8 +3146,10 @@ export interface components {
             deltaMinor: number;
         };
         ImportLine: {
-            sourceSheet: string;
-            sourceRow: number;
+            pdfOrdinal?: number;
+            sourceKind?: string;
+            sourceSheet?: string;
+            sourceRow?: number;
             /** Format: uuid */
             recordId: string;
             decision: components["schemas"]["ImportDecision"];
@@ -2772,6 +3160,7 @@ export interface components {
             postings: components["schemas"]["ImportChange"][];
         };
         ImportPreview: {
+            statementRevision?: number;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -3770,6 +4159,740 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    previewStatementExtraction: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementPreviewInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped statement state. No financial write. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementExtractionPreview"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+            /** @description Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains available. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    consentStatementExtraction: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementConsentInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped statement state. No financial write. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementConsent"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listStatementExtractions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recent durable attempts; interrupted work never resumes inference. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["StatementExtractionAttempt"][];
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Owner-scoped resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    extractBankStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementExtractionInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped statement state. No financial write. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementExtractionAttempt"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            /** @description Extraction is busy; Retry-After is returned. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            500: components["responses"]["InternalError"];
+            /** @description Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains available. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getStatementExtraction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+                attemptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped statement state. No financial write. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementExtractionAttempt"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    uploadBankStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    accountId: string;
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementUploadResult"];
+                };
+            };
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementUploadResult"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Upload or mapping exceeds the explicit byte limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            /** @description Extraction is busy; Retry-After is returned. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            500: components["responses"]["InternalError"];
+            /** @description Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains available. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getBankStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    editBankStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementEdit"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    createBankStatementManualDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementManualDraft"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Upload or mapping exceeds the explicit byte limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    downloadBankStatementOriginal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private original, attachment; no-store and nosniff. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Owner-scoped resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Original deleted or expired; minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteBankStatementOriginal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementDelete"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Original or complete local state was deleted. Minimal evidence remains. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getBankStatementReconciliation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementReconciliation"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
     listInstallmentPlans: {
         parameters: {
             query?: {

@@ -1,14 +1,14 @@
 # SPEC-0055: банковские PDF разных форматов — AI-черновик и подтверждаемый импорт
 
-- Статус: accepted
+- Статус: implementing
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-18
 - Acceptance owner: владелец Grace
 - Acceptance record: 2026-10-19 владелец явно утвердил предложенный технический вариант: «да, утверждаю»; архитектурное разделение принято ранее в этом чате
 - Согласованное направление: текстовый PDF одного дебетового счёта; 2026-10-18 владелец предоставил образец Т-Банка и потребовал учитывать различия банков через LLM или Jev
 - Specification branch: `codex/spec-0055-bank-pdf-import`
-- Implementation branch: отсутствует
-- Implementation commit: отсутствует
+- Implementation branch: `codex/bank-statement-pdf-import`
+- Implementation commit: `8e37465` ([offline evidence](0055-evidence.md)); model qualification NOT_RUN
 - Baseline: main `a98e304` после PR #61; production `a89a855`
 - Этапы roadmap: 2 «Источники/подтверждение», первый срез этапа 5 «Банковские PDF»
 - Готовность к реализации: READY — функциональный scope и [технический контракт](0055-technical-contract.md) приняты; отдельные live-data consent и production gates сохранены
@@ -178,7 +178,8 @@ PDF → локальные текст/страницы/spans → минимиз�
 
 - Основной предлагаемый adapter — существующий server-side OpenRouter transport
   с явно выбранными model/endpoint, schema/prompt revisions и минимальным входом.
-  Provider/model ещё не выбраны; live calls в этой проработке не выполнялись.
+  Конкретные model/provider приняты в [техническом контракте](0055-technical-contract.md):
+  Gemini 2.5 Flash, google-vertex/eu. Live calls не выполнялись.
 - Jev — кандидат для выбора между найденными span IDs (`Choice` с `none`) и
   точечной проверки утверждений о роли/группировке (`Noul`), либо routing в manual
   review. Он не обязан вызываться после каждого LLM ответа. Включение зависит от
@@ -311,7 +312,8 @@ Extraction in-flight привязана к source revision: delete/expiry отм
 
 ## API и OpenAPI
 
-Проект API под `/api/imports`; сейчас endpoints не реализованы.
+API под `/api/imports` реализован в implementation branch;
+[offline evidence и оставшиеся qualification gates](0055-evidence.md).
 
 | Метод/путь | Контракт |
 | --- | --- |
@@ -416,7 +418,7 @@ blockers/totals; исходные суммы и совпавшие две кол
 
 ## Критерии приёмки
 
-| AC | Исполняемое доказательство будущей реализации |
+| AC | Требуемое исполняемое доказательство |
 | --- | --- |
 | AC1 Heterogeneous layout/grounding | Реальный reference + минимум два структурно отличающихся синтетических layout. Page/span IDs для каждого поля, переносы/повтор заголовка, unsupported text; fabricated span/число отклонены |
 | AC2 No pre-confirm write | Upload/extraction/edit/reload/preview не меняют events/postings/receipts/settlements/остатки; attempts/draft/decisions сохраняются |
