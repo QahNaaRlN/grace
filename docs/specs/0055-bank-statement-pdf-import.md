@@ -1,17 +1,17 @@
 # SPEC-0055: банковские PDF разных форматов — AI-черновик и подтверждаемый импорт
 
-- Статус: draft
+- Статус: accepted
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-18
 - Acceptance owner: владелец Grace
-- Acceptance record: архитектурное разделение принято владельцем 2026-10-18: «Принимаю такое разделение. Взять в работу»; итоговый технический контракт пока candidate
+- Acceptance record: 2026-10-19 владелец явно утвердил предложенный технический вариант: «да, утверждаю»; архитектурное разделение принято ранее в этом чате
 - Согласованное направление: текстовый PDF одного дебетового счёта; 2026-10-18 владелец предоставил образец Т-Банка и потребовал учитывать различия банков через LLM или Jev
 - Specification branch: `codex/spec-0055-bank-pdf-import`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 - Baseline: main `a98e304` после PR #61; production `a89a855`
 - Этапы roadmap: 2 «Источники/подтверждение», первый срез этапа 5 «Банковские PDF»
-- Готовность к реализации: NOT_READY — архитектура принята; конкретный provider/technical contract на review: [qualification](0055-technical-contract.md)
+- Готовность к реализации: READY — функциональный scope и [технический контракт](0055-technical-contract.md) приняты; отдельные live-data consent и production gates сохранены
 
 ## Проблема и пользовательский результат
 
@@ -451,10 +451,10 @@ web/browser — AC10; отдельный opt-in bounded model run — AC12.
 backup/restore и post-merge repeat. Платные API и реальные финансовые события
 не нужны обычным offline CI suites. Raw sample/PII не попадают в Git.
 
-## Открытые решения
+## Принятые решения и остающаяся проверка
 
-Архитектурное разделение принято владельцем. Локальная qualification и конкретные
-предложения D2/D3 вынесены в [технический контракт](0055-technical-contract.md):
+Владелец 2026-10-19 утвердил технический вариант D1–D4. Локальная qualification
+и решения D2/D3 вынесены в [технический контракт](0055-technical-contract.md):
 Poppler Alpine проверен на reference, публичные metadata модели сверены,
 старый generic provider tag не проходит verifier. Это не model quality PASS.
 
@@ -466,9 +466,10 @@ Poppler Alpine проверен на reference, публичные metadata мо
 | D3 Limits/budget | 10 MiB/50 pages/5 000 rows/8 MiB text/50 000 candidates; local 30 s/512 MiB/1 process; AI caps на весь attempt в рамках оставшегося общего бюджета | Chunk/token/call/cost/timeout policy и VPS resource bounds проверить на fixtures; не копировать cookbook thresholds. Проверить реальный остаток/endpoint без скрытых платных probes |
 | D4 Retention/сверка | Default delete_after_confirmation, review TTL 7 дней, keep явно; turnover/book balance/coverage раздельно; ledger balance not_evaluated | Явное принятие этих defaults и критериев manual review; признать retention старых backups |
 
-Следующий шаг — review обновлённого scope, подготовка синтетических fixtures и
-закрытие D1–D4. Application code/DDL/OpenAPI/provider config/real-data API calls
-не начинаются до принятия соответствующей спецификации и политики данных.
+Следующий шаг — интеграция accepted specification, затем offline implementation
+и синтетические fixtures в отдельном worktree. Model quality/пределы/cancellation
+подтверждаются реализационными AC. Принятие не включает AI в production и не
+разрешает передачу личного reference без document-specific consent.
 
 ## Внешние первичные источники — проверено 2026-10-18
 

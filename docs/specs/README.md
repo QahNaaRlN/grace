@@ -1,12 +1,12 @@
 # Spec-first процесс Grace
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
-— `draft`, уточнён по образцу Т-Банка и поручению владельца 2026-10-18:
+— `accepted`, технический вариант явно утверждён владельцем 2026-10-19:
 локальный текст/страницы → AI-предложение с source spans → Go validation →
 сохраняемый review и подтверждаемый импорт. LLM — для структуры, Jev — кандидат
 для узких выборов/проверок после измерения. Доступный остаток не подменяет book
-balance. Архитектурное разделение принято 2026-10-18; [технический контракт](0055-technical-contract.md)
-и новый provider tag вынесены на review. Код не начат.
+balance. [Технический контракт](0055-technical-contract.md), включая новый provider tag,
+принят. Код не начат; live-data consent и production release остаются отдельными gates.
 
 Принята прямым поручением владельца 2026-10-17 «Приступай к разработке», статус `integrated` (PR #60, merge `a89a855`; локальные post-merge gates пройдены 2026-10-18; main CI run 39056633511 attempt 2 и Delivery run 39151285103 пройдены; production release `a89a855` подтверждён Deploy production run 39151600396, 2026-10-18; [evidence](0054-evidence.md)):
 [SPEC-0054 — рассрочки и BNPL](0054-installments-bnpl.md)

@@ -1,8 +1,8 @@
 # SPEC-0055 — технический контракт и qualification
 
 - Дата: 2026-10-18
-- Статус: candidate; архитектурное разделение принято владельцем
-- Основание: «Принимаю такое разделение. Взять в работу» в текущем чате
+- Статус: accepted, 2026-10-19
+- Основание: «да, утверждаю» — явное утверждение конкретного технического варианта владельцем; архитектура принята ранее
 - Functional spec: [SPEC-0055](0055-bank-statement-pdf-import.md)
 - Baseline: main `a98e304`, ветка спецификации `codex/spec-0055-bank-pdf-import`
 - Application implementation: not_started; private inference: not_run
@@ -182,11 +182,10 @@ full page text/raw provider payload не становятся скрытым а�
    real-reference consent; Jev только если измерено преимущество.
 5. После acceptance evidence — отдельные main/CI/Delivery и production decision.
 
-## Решение, ожидающее владельца
+## Решение владельца — 2026-10-19
 
-Архитектурное разделение уже принято и не запрашивается повторно. На review
-выносится конкретный технический вариант: Poppler 25.04.0-r0 на Alpine 3.22,
+Владелец явно утвердил конкретный технический вариант: Poppler 25.04.0-r0 на Alpine 3.22,
 Gemini 2.5 Flash через **google-vertex/eu**, новый statement-purpose/consent,
-bounded chunk plan и default retention выше. Принятие этого контракта открывает
+bounded chunk plan и default retention выше. Принятие контракта открывает
 offline implementation, но не включает AI в production и не отправляет личный
 reference внешнему API без document-specific consent.
