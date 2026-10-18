@@ -30,6 +30,8 @@ rollback_auth_mode="locked"
 rollback_ai_enabled="false"
 rollback_analysis_policy=""
 rollback_receipt_policy=""
+rollback_statement_enabled="false"
+rollback_statement_policy=""
 ai_configured="false"
 
 if [ ! -f "$release_env" ]; then
@@ -82,6 +84,21 @@ if [ -f "$ai_env" ]; then
   ai_configured="true"
 fi
 
+# Independent statement activation survives releases without changing receipt/analysis.
+statement_env="$grace_root/shared/secrets/statement.env"
+if [ -f "$statement_env" ]; then
+  case "$(stat -c '%a' "$statement_env")" in 400|600) ;; *) echo "Statement environment must have mode 400 or 600" >&2; exit 1 ;; esac
+  statement_owner="$(stat -c '%u' "$statement_env")"
+  if [ "$statement_owner" != "$(id -u)" ] && [ "$statement_owner" != "0" ]; then echo "Statement environment must belong to operator or root" >&2; exit 1; fi
+  set -a
+  . "$statement_env"
+  set +a
+fi
+case "${GRACE_STATEMENT_AI_ENABLED:-false}" in true|false) ;; *) echo "Invalid statement enable setting" >&2; exit 1 ;; esac
+if [ "${GRACE_STATEMENT_AI_ENABLED:-false}" = true ] && { [ "$ai_configured" != true ] || [ "${GRACE_AI_ENABLED:-false}" != true ] || [ -z "${GRACE_STATEMENT_AI_POLICY:-}" ]; }; then
+  echo "Statement activation requires configured global AI and pinned statement policy" >&2; exit 1
+fi
+
 postgres_password_file="$(sed -n 's/^GRACE_SECRETS_DIR=//p' "$release_env")/postgres_password"
 if [ ! -r "$postgres_password_file" ]; then
   echo "PostgreSQL password file is not readable" >&2
@@ -115,6 +132,9 @@ if [ -L "$current_link" ]; then
     case "$previous_ai" in true) rollback_ai_enabled="true" ;; false|'') rollback_ai_enabled="false" ;; *) echo "Cannot snapshot previous AI setting" >&2; exit 1 ;; esac
     rollback_analysis_policy="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_AI_ANALYSIS_POLICY=//p')"
     rollback_receipt_policy="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_AI_RECEIPT_POLICY=//p')"
+    previous_statement="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_STATEMENT_AI_ENABLED=//p')"
+    case "$previous_statement" in true) rollback_statement_enabled=true ;; false|'') rollback_statement_enabled=false ;; *) echo "Cannot snapshot statement setting" >&2; exit 1 ;; esac
+    rollback_statement_policy="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$previous_api" | sed -n 's/^GRACE_STATEMENT_AI_POLICY=//p')"
   else
     echo "cannot snapshot previous authentication mode: API container is missing" >&2
     exit 1
@@ -151,6 +171,9 @@ rollback_application() {
     GRACE_AI_ANALYSIS_POLICY="$rollback_analysis_policy"
     GRACE_AI_RECEIPT_POLICY="$rollback_receipt_policy"
     export GRACE_AI_ENABLED GRACE_AI_ANALYSIS_POLICY GRACE_AI_RECEIPT_POLICY
+    GRACE_STATEMENT_AI_ENABLED="$rollback_statement_enabled"
+    GRACE_STATEMENT_AI_POLICY="$rollback_statement_policy"
+    export GRACE_STATEMENT_AI_ENABLED GRACE_STATEMENT_AI_POLICY
     if [ "$ai_configured" = "true" ] && [ -f "$previous_dir/compose.ai.yaml" ]; then
       docker compose --project-name "$compose_project" --env-file "$previous_dir/release.env" \
         -f "$previous_dir/compose.yaml" -f "$previous_dir/compose.ai.yaml" up -d --no-deps api web caddy || return 1
@@ -227,7 +250,7 @@ compose_release run --rm migrate
 compose_release up -d api web caddy
 # The PDF helper has no credentials/network; API receives only its private socket.
 compose_release exec -T pdf-extractor /bin/sh -ec 'test "$(id -u)" = 10001 && test -S /run/grace-pdf/extractor.sock'
-compose_release exec -T api /bin/sh -ec 'test -S /run/grace-pdf/extractor.sock && test "$GRACE_STATEMENT_AI_ENABLED" = false'
+compose_release exec -T api /bin/sh -ec 'test -S /run/grace-pdf/extractor.sock; case "$GRACE_STATEMENT_AI_ENABLED" in false) ;; true) exec grace-statement-admin -mode=check ;; *) exit 1 ;; esac'
 if [ "$ai_configured" = "true" ] && [ "${GRACE_AI_ENABLED:-false}" = "true" ]; then
   compose_release exec -T api /bin/sh -ec 'test "$(id -u)" = 10001 && test -r /run/secrets/openrouter_api_key && test -w /var/lib/grace/temporary-receipt-photos'
 fi
@@ -255,7 +278,7 @@ until "$release_dir/check-public-entrypoint.sh" "https://$domain:$https_port" \
   sleep 2
 done
 
-if [ -n "$previous_dir" ]; then
+if [ -n "$previous_dir" ] && [ "$previous_dir" != "$release_dir" ]; then
   ln -sfn "$previous_dir" "$previous_link"
 fi
 ln -sfn "$release_dir" "$current_link"

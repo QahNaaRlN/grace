@@ -26,6 +26,7 @@ POSTGRES_PASSWORD=test-postgres-password GRACE_SECRETS_DIR="$secrets" docker com
   --env-file "$bundle/release.env" -f "$bundle/compose.yaml" config --quiet
 
 sh -n "$bundle/deploy.sh"
+sh -n "$bundle/statement-ai.sh"
 sh -n "$bundle/backup.sh"
 sh -n "$bundle/restore-drill.sh"
 sh -n "$bundle/offsite-upload.sh"

@@ -8,6 +8,18 @@ on:
         required: false
         type: string
 
+      statement_action:
+        description: Preserve current statement AI state, or explicitly enable/disable
+        required: false
+        default: preserve
+        type: choice
+        options: [preserve, enable, disable]
+      inspect_statement_only:
+        description: Check statement AI readiness without emitting secrets or budget values
+        required: false
+        default: false
+        type: boolean
+
 permissions:
   actions: read
   contents: read
@@ -18,7 +30,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  inspect-statement:
+    if: ${{ inputs.inspect_statement_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Check readiness without exporting runtime values
+        run: |
+          ssh grace-deploy@195.133.195.190 'bash -s' <<'REMOTE'
+          set -eu
+          api=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=api)
+          postgres=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=postgres)
+          test -n "$api" && test -n "$postgres"
+          docker exec "$api" /bin/sh -ec 'test "${GRACE_AI_ENABLED:-false}" = true && test -r /run/secrets/openrouter_api_key'
+          ready=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT grace_ai_remaining() >= 16000 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain');")
+          test "$ready" = t
+          echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'
+          REMOTE
+
   deploy:
+    if: ${{ !inputs.inspect_statement_only }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -107,6 +148,16 @@ jobs:
         run: |
           ssh grace-deploy@195.133.195.190 \
             "/opt/grace/releases/$RELEASE_SHA/deploy.sh $RELEASE_SHA"
+
+      - name: Apply explicit Statement AI activation after synthetic qualification
+        if: ${{ inputs.statement_action == 'enable' || inputs.statement_action == 'disable' }}
+        env:
+          STATEMENT_ACTION: ${{ inputs.statement_action }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          case "$STATEMENT_ACTION" in enable|disable) ;; *) exit 1 ;; esac
+          ssh grace-deploy@195.133.195.190 \
+            "/opt/grace/releases/$RELEASE_SHA/statement-ai.sh $STATEMENT_ACTION"
 
       - name: Verify public authentication and application
         run: ./scripts/check-public-entrypoint.sh https://graceapp.ru

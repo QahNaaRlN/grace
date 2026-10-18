@@ -3,9 +3,9 @@ set -eu
 repo_root="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 test_root="$(mktemp -d)"
 trap 'rm -rf "$test_root"' EXIT INT TERM
-mkdir -p "$test_root/previous" "$test_root/next" "$test_root/shared/secrets" "$test_root/mock-bin"
+mkdir -p "$test_root/older" "$test_root/next" "$test_root/shared/secrets" "$test_root/mock-bin"
 cp "$repo_root/deployments/production/deploy.sh" "$test_root/next/deploy.sh"
-for release in previous next; do
+for release in older next; do
  cp "$repo_root/deployments/production/compose.yaml" "$test_root/$release/compose.yaml"
  cp "$repo_root/deployments/production/compose.ai.yaml" "$test_root/$release/compose.ai.yaml"
  cat > "$test_root/$release/release.env" <<EOF
@@ -20,11 +20,11 @@ printf "GRACE_AI_ENABLED=true\nGRACE_AI_ANALYSIS_POLICY='new-analysis'\nGRACE_AI
 chmod 0600 "$test_root/shared/secrets/ai.env"
 printf '#!/bin/sh\nexit 0\n' > "$test_root/next/check-public-entrypoint.sh"
 chmod 0755 "$test_root/next/check-public-entrypoint.sh"
-ln -s "$test_root/previous" "$test_root/current"
+ln -s "$test_root/older" "$test_root/current"
 cat > "$test_root/mock-bin/docker" <<'EOF'
 #!/bin/sh
 case "$*" in
- inspect*) printf 'GRACE_AUTH_MODE=password\nGRACE_AI_ENABLED=%s\nGRACE_AI_ANALYSIS_POLICY=old-analysis\nGRACE_AI_RECEIPT_POLICY=old-receipt\n' "$PREVIOUS_AI" ;;
+ inspect*) printf 'GRACE_AUTH_MODE=password\nGRACE_AI_ENABLED=%s\nGRACE_AI_ANALYSIS_POLICY=old-analysis\nGRACE_AI_RECEIPT_POLICY=old-receipt\nGRACE_STATEMENT_AI_ENABLED=true\nGRACE_STATEMENT_AI_POLICY=old-statement\n' "$PREVIOUS_AI" ;;
  *'ps -q api'*) printf 'previous-api\n' ;;
  *'pull --policy'*)
    test "$GRACE_AI_ENABLED" = true
@@ -35,7 +35,7 @@ case "$*" in
  *'to_regclass'*) printf '%s\n' "$HAS_STATEMENT_SCHEMA" ;;
  *'FROM statement_sources'*) printf '%s\n' "$HAS_STATEMENT_DATA" ;;
  *'up -d --no-deps api web caddy'*)
-   printf '%s\n%s\n%s\n' "$GRACE_AI_ENABLED" "$GRACE_AI_ANALYSIS_POLICY" "$GRACE_AI_RECEIPT_POLICY" > "$ROLLBACK_STATE_FILE" ;;
+   printf '%s\n%s\n%s\n%s\n%s\n' "$GRACE_AI_ENABLED" "$GRACE_AI_ANALYSIS_POLICY" "$GRACE_AI_RECEIPT_POLICY" "$GRACE_STATEMENT_AI_ENABLED" "$GRACE_STATEMENT_AI_POLICY" > "$ROLLBACK_STATE_FILE" ;;
  *'pg_dump'*) printf 'synthetic dump' ;;
  *'pg_restore --list'*) cat >/dev/null ;;
  *'exec -T api /bin/sh'*) touch "$UID_CHECK_FILE" ;;
@@ -52,7 +52,9 @@ for PREVIOUS_AI in false true; do
  test "$(sed -n '1p' "$ROLLBACK_STATE_FILE")" = "$PREVIOUS_AI"
  test "$(sed -n '2p' "$ROLLBACK_STATE_FILE")" = old-analysis
  test "$(sed -n '3p' "$ROLLBACK_STATE_FILE")" = old-receipt
- test "$(readlink "$test_root/current")" = "$test_root/previous"
+ test "$(sed -n '4p' "$ROLLBACK_STATE_FILE")" = true
+ test "$(sed -n '5p' "$ROLLBACK_STATE_FILE")" = old-statement
+ test "$(readlink "$test_root/current")" = "$test_root/older"
 done
 rm "$ROLLBACK_STATE_FILE"
 export HAS_HISTORY=t
@@ -60,8 +62,8 @@ if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$t
 grep -q 'Rollback refused' "$test_root/output"
 test ! -e "$ROLLBACK_STATE_FILE"
 # A previous image without PDF support must not hide retained source evidence.
-mkdir -p "$test_root/next/migrations" "$test_root/previous/migrations"
-touch "$test_root/next/migrations/000027_bank_statement_sources.up.sql" "$test_root/previous/migrations/000018_commitments.up.sql"
+mkdir -p "$test_root/next/migrations" "$test_root/older/migrations"
+touch "$test_root/next/migrations/000027_bank_statement_sources.up.sql" "$test_root/older/migrations/000018_commitments.up.sql"
 export HAS_STATEMENT_SCHEMA=t HAS_STATEMENT_DATA=t
 if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
 grep -q 'previous image cannot review retained PDF sources' "$test_root/output"
@@ -71,7 +73,7 @@ if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$t
 test -f "$ROLLBACK_STATE_FILE"
 rm "$ROLLBACK_STATE_FILE"
 # Compatible previous PDF image is allowed to roll back with retained evidence.
-touch "$test_root/previous/migrations/000027_bank_statement_sources.up.sql"
+touch "$test_root/older/migrations/000027_bank_statement_sources.up.sql"
 export HAS_STATEMENT_DATA=t
 if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
 test -f "$ROLLBACK_STATE_FILE"
@@ -79,6 +81,11 @@ export FAIL_RELEASE=false
 sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1
 test -f "$UID_CHECK_FILE"
 test "$(readlink "$test_root/current")" = "$test_root/next"
+# Activation redeploys the same SHA: retain the actual previous release link.
+touch "$test_root/next/migrations/000018_commitments.up.sql"
+sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1
+test "$(readlink "$test_root/previous")" = "$test_root/older"
+
 chmod 0644 "$test_root/shared/secrets/ai.env"
 if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
 grep -q 'AI environment must have mode' "$test_root/output"

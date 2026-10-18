@@ -4,6 +4,7 @@ package statementextract
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -86,6 +87,29 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	if reasoner.calls.Load() != 0 {
 		t.Fatal("inference before consent")
 	}
+	// Model/transport settings are consent-bound: an old but hash-valid preview
+	// must fail before reservation or inference after a deployment revision.
+	obsolete := preview.Plan
+	obsolete.PromptVersion = "statement-span-mapping.v1"
+	obsoleteJSON, _ := json.Marshal(obsolete)
+	obsoleteHash := Hash(obsolete)
+	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3 WHERE id=$1", preview.ID, obsoleteJSON, obsoleteHash); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = service.Consent(ctx, source.ID, "obsolete-consent", ConsentInput{source.Revision, preview.ID, obsoleteHash}); e == nil {
+		t.Fatal("old settings consent accepted")
+	}
+	if _, e = service.Extract(ctx, source.ID, "obsolete-extraction", ExtractionInput{source.Revision, preview.ID, obsoleteHash, "00000000-0000-0000-0000-000000000000"}); e == nil {
+		t.Fatal("old settings extraction accepted")
+	}
+	if reasoner.calls.Load() != 0 {
+		t.Fatal("old settings caused paid call")
+	}
+	currentJSON, _ := json.Marshal(preview.Plan)
+	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3 WHERE id=$1", preview.ID, currentJSON, preview.Hash); e != nil {
+		t.Fatal(e)
+	}
+
 	in := ExtractionInput{ExpectedRevision: source.Revision, PreviewID: preview.ID, PreviewHash: preview.Hash, ConsentID: "00000000-0000-0000-0000-000000000000"}
 	if _, e = service.Extract(ctx, source.ID, "no-consent", in); e == nil {
 		t.Fatal("missing consent accepted")

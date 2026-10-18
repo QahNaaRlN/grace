@@ -81,7 +81,8 @@ services:
         condition: service_healthy
     environment:
       GRACE_PDF_EXTRACTOR_SOCKET: /run/grace-pdf/extractor.sock
-      GRACE_STATEMENT_AI_ENABLED: 'false'
+      GRACE_STATEMENT_AI_ENABLED: ${GRACE_STATEMENT_AI_ENABLED:-false}
+      GRACE_STATEMENT_AI_POLICY: ${GRACE_STATEMENT_AI_POLICY:-}
       APP_PORT: '8080'
       APP_ENV: production
       GRACE_AUTH_MODE: ${GRACE_AUTH_MODE:-locked}

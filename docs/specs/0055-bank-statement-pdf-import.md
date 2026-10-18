@@ -1,6 +1,6 @@
 # SPEC-0055: банковские PDF разных форматов — AI-черновик и подтверждаемый импорт
 
-- Статус: implementing
+- Статус: integrated (код в main и post-merge gates пройдены; полная model qualification и owner functional acceptance не завершены)
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-18
 - Acceptance owner: владелец Grace
@@ -9,9 +9,11 @@
 - Specification branch: `codex/spec-0055-bank-pdf-import`
 - Implementation branch: `codex/bank-statement-pdf-import`
 - Implementation commit: `8e37465` ([offline evidence](0055-evidence.md)); model qualification NOT_RUN
+- Integration: PR #64, merge `b51b74f`, CI main `39167930999` PASS; production deploy `39168570754`, 2026-10-19 02:37:31 +05:00
+- Statement AI: activation in progress по прямому поручению владельца 2026-10-19; [activation evidence](0055-activation-evidence.md)
 - Baseline: main `a98e304` после PR #61; production `a89a855`
 - Этапы roadmap: 2 «Источники/подтверждение», первый срез этапа 5 «Банковские PDF»
-- Готовность к реализации: READY — функциональный scope и [технический контракт](0055-technical-contract.md) приняты; отдельные live-data consent и production gates сохранены
+- Реализация: integrated/deployed manual path; отдельное Statement AI enable поручено 2026-10-19, activation in progress. Полная qualification и owner functional acceptance ещё открыты.
 
 ## Проблема и пользовательский результат
 

@@ -50,7 +50,7 @@ func (r *StatementReasoner) Complete(ctx context.Context, approved statementextr
 	for _, m := range statementextract.Messages(chunk) {
 		messages = append(messages, LLMMessage{Role: m["role"], Content: m["content"]})
 	}
-	out, e := r.Provider.Complete(ctx, LLMRequest{Policy: policy, Messages: messages, Schema: statementextract.ProposalSchema, InputTokenUpperBound: statementextract.InputBound, MaxOutputTokens: statementextract.OutputBound})
+	out, e := r.Provider.Complete(ctx, LLMRequest{DisableReasoning: true, Policy: policy, Messages: messages, Schema: statementextract.ProposalSchema, InputTokenUpperBound: statementextract.InputBound, MaxOutputTokens: statementextract.OutputBound})
 	if e != nil {
 		return proposal, nil, e
 	}

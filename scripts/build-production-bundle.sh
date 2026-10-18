@@ -20,6 +20,7 @@ cp "$repo_root/deployments/production/compose.yaml" "$output/compose.yaml"
 cp "$repo_root/deployments/production/compose.ai.yaml" "$output/compose.ai.yaml"
 cp "$repo_root/deployments/production/Caddyfile" "$output/Caddyfile"
 cp "$repo_root/deployments/production/deploy.sh" "$output/deploy.sh"
+cp "$repo_root/deployments/production/statement-ai.sh" "$output/statement-ai.sh"
 cp "$repo_root/scripts/check-public-entrypoint.sh" "$output/check-public-entrypoint.sh"
 cp "$repo_root/deployments/production/backup.sh" "$output/backup.sh"
 cp "$repo_root/deployments/production/restore-drill.sh" "$output/restore-drill.sh"
@@ -45,5 +46,5 @@ done
 cp "$repo_root"/deployments/production/migrations/000002_reference_categories.* \
   "$output/migrations/"
 
-chmod 0755 "$output/deploy.sh" "$output/check-public-entrypoint.sh" "$output/backup.sh" "$output/restore-drill.sh" "$output/offsite-upload.sh" "$output/backup-failure-mail.sh" \
+chmod 0755 "$output/statement-ai.sh" "$output/deploy.sh" "$output/check-public-entrypoint.sh" "$output/backup.sh" "$output/restore-drill.sh" "$output/offsite-upload.sh" "$output/backup-failure-mail.sh" \
   "$output/install-firewall.sh"

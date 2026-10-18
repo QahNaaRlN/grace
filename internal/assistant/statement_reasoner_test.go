@@ -29,7 +29,7 @@ func TestStatementReasonerUsesTextOnlyBoundedTransportAndRetainsBillingOnBadJSON
 	if e == nil || billing == nil || billing.CostMicros != 10 {
 		t.Fatal("malformed output became free", billing, e)
 	}
-	if p.request.Policy.Vision || p.request.InputTokenUpperBound != 10000 || p.request.MaxOutputTokens != 2000 || len(p.request.Messages) != 2 || !json.Valid(p.request.Schema) {
+	if !p.request.DisableReasoning || p.request.Policy.Vision || p.request.InputTokenUpperBound != 10000 || p.request.MaxOutputTokens != 2000 || len(p.request.Messages) != 2 || !json.Valid(p.request.Schema) {
 		t.Fatal(p.request)
 	}
 	r.Policy.Provider = "google-vertex"

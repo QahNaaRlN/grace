@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	PromptVersion    = "statement-span-mapping.v1"
+	PromptVersion    = "statement-span-mapping.v2.no-thinking"
 	RedactionVersion = "statement-allowlist.v1"
 	MaxCalls         = 32
 	InputBound       = 10000

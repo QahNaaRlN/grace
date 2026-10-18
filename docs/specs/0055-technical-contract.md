@@ -5,7 +5,8 @@
 - Основание: «да, утверждаю» — явное утверждение конкретного технического варианта владельцем; архитектура принята ранее
 - Functional spec: [SPEC-0055](0055-bank-statement-pdf-import.md)
 - Baseline: main `a98e304`, ветка спецификации `codex/spec-0055-bank-pdf-import`
-- Application implementation: in_progress (`codex/bank-statement-pdf-import`); private inference: not_run
+- Application implementation: integrated PR #64 (`b51b74f`); production manual path deployed 2026-10-19; private inference: not_run
+- Statement AI activation: in_progress по прямому поручению владельца 2026-10-19; [актуальное evidence](0055-activation-evidence.md)
 
 ## Принятое архитектурное решение
 
