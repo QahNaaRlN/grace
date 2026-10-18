@@ -1,6 +1,6 @@
 # SPEC-0052: разделение кода Web по маршрутам
 
-- Статус: verified
+- Статус: integrated
 - Автор: Claude (по поручению сессии SPEC-0051)
 - Дата: 2026-10-16
 - Acceptance owner: владелец Grace

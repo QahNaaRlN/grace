@@ -6,7 +6,9 @@ SPEC-0001–0018, SPEC-0020–0024 и SPEC-0026–0054. Последний по�
 `95c5fa8` (Deploy production run 39034114035, 2026-10-17): он содержит всё
 до SPEC-0053 включительно. SPEC-0019 остаётся draft; SPEC-0054 интегрирована с локальными post-merge gates; выпуск ещё не выполнен; номер 0025
 не использован. Наличие кода в `main` не заменяет процессный статус:
-SPEC-0050–0052 пока `verified`, SPEC-0053 и SPEC-0054 — `integrated`.
+SPEC-0050–0054 имеют статус `integrated`; для 0050–0052/0054 локальные
+post-merge gates записаны 2026-10-18. Унаследованные замечания ShellCheck
+сохранены в evidence SPEC-0050.
 
 Документ разделяет реализованные этапы и целевое развитие из [видения](vision.md).
 Требования к целевому продукту уточнены по анализу действующей финансовой
@@ -31,15 +33,14 @@ SPEC-0050–0052 пока `verified`, SPEC-0053 и SPEC-0054 — `integrated`.
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
 | Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Интегрирована: PR #57, merge `95c5fa8`, CI run 39032209158, в production с `95c5fa8` ([evidence](specs/0053-evidence.md)) |
 | Рассрочки и BNPL | SPEC-0054 влита PR #60 (`a89a855`): покупка/долг/переводы и ручное подтверждение карточного грейса | Локальные post-merge gates пройдены; восстановить CI и выполнить выпуск |
-| CI и статусы | CI, Delivery и Deploy release `95c5fa8` успешны; PR #60 влит как `a89a855` | CI `a89a855` run 39056633511 не начал jobs из-за оплаты/лимита GitHub Actions; Delivery run 39056638931 завершился failure без публикации images. Восстановить Actions и повторить gates; отдельные post-merge evidence SPEC-0050–0052 не заменять предположениями |
+| CI и статусы | CI, Delivery и Deploy release `95c5fa8` успешны; PR #60 влит как `a89a855` | CI `a89a855` run 39056633511 не начал jobs из-за оплаты/лимита GitHub Actions; Delivery run 39056638931 завершился failure без публикации images. Восстановить Actions и повторить gates; локальные post-merge evidence SPEC-0050–0052 записаны 2026-10-18 |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Реализованные этапы
 
 Код перечисленных спецификаций достижим из `main`. SPEC-0001–0049 из таблицы
-и SPEC-0053–0054 имеют статус `integrated`; SPEC-0050–0052 остаются `verified`
-по реестру, хотя уже влиты и выпущены. SPEC-0054 прошла локальные post-merge gates
-и ещё не выпущена. Статусы не повышаются без соответствующего
+и SPEC-0050–0054 имеют статус `integrated`. SPEC-0054 прошла локальные
+post-merge gates и ещё не выпущена. Статусы не повышаются без соответствующего
 post-merge evidence. Это не означает реализацию всего продуктового видения.
 Колонка «Production» — первый документированный release, который содержит этап;
 «—» означает, что выпуск не подтверждён или неприменим.
@@ -93,9 +94,9 @@ post-merge evidence. Это не означает реализацию всег�
 | 0047 | Валюта списком, категория подписки, вёрстка графика | `e623775` | [Scope](specs/0047-subscription-form-and-schedule-layout.md) | [Evidence](specs/0047-evidence.md) |
 | 0048 | Архитектура Web по Feature-Sliced Design без изменения поведения | `822b8f8` | [Scope](specs/0048-frontend-fsd-architecture.md) | [Evidence](specs/0048-evidence.md) |
 | 0049 | Обновление счетов, операций и статистики после подтверждения фото чека | `822b8f8` | [Scope](specs/0049-receipt-confirmation-refresh.md) | [Evidence](specs/0049-evidence.md) |
-| 0050 | Зашифрованный off-site backup и проверенное восстановление; статус `verified` | `822b8f8`, production-проверки на `fc19d32` | [Scope](specs/0050-offsite-backup.md) | [Evidence](specs/0050-evidence.md) |
-| 0051 | Версии условий карт, долг, грейс, минимум, снимки банка и погашение переводом; статус `verified` | `95c5fa8` | [Scope](specs/0051-credit-cards.md) | [Evidence](specs/0051-evidence.md) |
-| 0052 | Разделение Web по маршрутам, восстановление после ошибки чанка; статус `verified` | `95c5fa8` | [Scope](specs/0052-route-code-splitting.md) | [Evidence](specs/0052-evidence.md) |
+| 0050 | Зашифрованный off-site backup и проверенное восстановление; статус `integrated` | `822b8f8`, production-проверки на `fc19d32` | [Scope](specs/0050-offsite-backup.md) | [Evidence](specs/0050-evidence.md) |
+| 0051 | Версии условий карт, долг, грейс, минимум, снимки банка и погашение переводом; статус `integrated` | `95c5fa8` | [Scope](specs/0051-credit-cards.md) | [Evidence](specs/0051-evidence.md) |
+| 0052 | Разделение Web по маршрутам, восстановление после ошибки чанка; статус `integrated` | `95c5fa8` | [Scope](specs/0052-route-code-splitting.md) | [Evidence](specs/0052-evidence.md) |
 | 0053 | Тело/проценты кредита, досрочные погашения, снимки долга и разбивка статистики | `95c5fa8` | [Scope](specs/0053-loan-principal-interest.md) | [Evidence](specs/0053-evidence.md) |
 | 0054 | Рассрочки/BNPL, связь покупки и долга, распределение переводов, общее банковское требование карты | — | [Scope](specs/0054-installments-bnpl.md) | [Evidence](specs/0054-evidence.md) |
 
@@ -270,8 +271,8 @@ Origin. Спецификации извлечения определяют со�
 этапом 8 после данных и детерминированных расчётов.
 
 Параллельные эксплуатационные шаги без новой предметной спецификации —
-восстановить GitHub Actions, проверить интерфейс release `95c5fa8`, записать
-post-merge evidence SPEC-0050–0052, подтвердить фактическую конфигурацию
+восстановить GitHub Actions, проверить интерфейс release `95c5fa8`, сохранять
+post-merge evidence актуальными, подтвердить фактическую конфигурацию
 ИИ/SMTP/password mode по runbook. Отсутствие evidence не доказывает, что
 возможность выключена; нельзя объявлять включение состоявшимся без проверки.
 

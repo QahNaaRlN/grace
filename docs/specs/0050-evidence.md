@@ -2,7 +2,7 @@
 
 Дата: 2026-10-16. Спецификация: [accepted SPEC-0050](0050-offsite-backup.md).
 Ветка: `codex/offsite-backup` от `main` `cb4a432`, implementation commit — см. git log ветки.
-Статус: `verified`. Все критерии AC1–AC8 проверены локально и в production
+Статус: `integrated`. Все критерии AC1–AC8 проверены локально и в production
 (см. «Production-проверки»).
 
 ## Что сделано
@@ -136,3 +136,31 @@ Deploy `822b8f8` (run 38876154732) прошёл, релиз здоров. Pre-re
 Ничего обязательного. Закрытый ключ `age` и ключ читателя хранятся у владельца
 (менеджер паролей и офлайн-копия). Restore drill стоит повторять после крупных
 изменений схемы или раз в несколько месяцев.
+
+
+## Post-merge verification — 2026-10-18
+
+Проверяемый `main`: `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`.
+Интеграция: PR #52–#54; финальный merge `4785143`.
+Implementation достижим из `main`; код продукта при проверке не менялся.
+
+- `make test` — exit 0: Go, 327 Web-тестов, ESLint, Steiger, Prettier,
+  OpenAPI generation, TypeScript/Vite build и Jev datasets.
+- `make test-integration` — exit 0: все 14 наборов.
+- `make test-production` — exit 0.
+- `go vet ./cmd/... ./internal/...` и `git diff --check` — exit 0.
+
+Локальные post-merge gates закрыты, статус `integrated`. Это дополнение
+не заменяет исторические production- и браузерные проверки выше и не
+объявляет новую live проверку VPS или интерфейса владельцем.
+
+ShellCheck v0.10.0 (`-s sh`) для `backup.sh`, `offsite-upload.sh`,
+`backup-failure-mail.sh`, `restore-offsite.sh`, `test-offsite-backup.sh` — exit 0.
+Более широкий прогон восьми скриптов — **FAIL (exit 1)**: 6 замечаний
+в `deploy.sh`, одно в `build-production-bundle.sh`, три в
+`test-production-deployment.sh` (SC1007/SC1090/SC2016). Все три файла побайтно
+совпадают с `4785143` (`git diff --exit-code 4785143 a89a855 -- <files>` — 0).
+Этот результат сохраняется как унаследованные замечания; он не объявляется
+успешной общей shell-проверкой. Пять профильных backup-скриптов прошли отдельно.
+Повторный `make test-production` проверил синтетические upload/restore,
+ошибки и защиту ключей. Production bucket и ключи владельца не использовались.

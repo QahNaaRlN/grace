@@ -2,7 +2,7 @@
 
 Дата: 2026-10-16. Спецификация: [accepted SPEC-0051](0051-credit-cards.md).
 Ветка: `codex/credit-cards` от `main` `4785143`.
-Статус: `verified`. Unit-, web- и интеграционные проверки пройдены, интерфейс
+Статус: `integrated`. Unit-, web- и интеграционные проверки пройдены, интерфейс
 проверен в браузере на синтетических данных.
 
 ## Что сделано
@@ -115,3 +115,24 @@ success, все шаги, включая проверенный pre-deploy backu
 готовности и внешний authenticated smoke. После выпуска
 `https://graceapp.ru/health` — 200, API без сессии — 401. Проверка интерфейса
 владельцем после выпуска ещё не выполнена.
+
+
+## Post-merge verification — 2026-10-18
+
+Проверяемый `main`: `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`.
+Интеграция: PR #55, merge `28259e2`.
+Implementation достижим из `main`; код продукта при проверке не менялся.
+
+- `make test` — exit 0: Go, 327 Web-тестов, ESLint, Steiger, Prettier,
+  OpenAPI generation, TypeScript/Vite build и Jev datasets.
+- `make test-integration` — exit 0: все 14 наборов.
+- `make test-production` — exit 0.
+- `go vet ./cmd/... ./internal/...` и `git diff --check` — exit 0.
+
+Локальные post-merge gates закрыты, статус `integrated`. Это дополнение
+не заменяет исторические production- и браузерные проверки выше и не
+объявляет новую live проверку VPS или интерфейса владельцем.
+
+`test-commitments.sh` повторно проверил `internal/creditcards`,
+`internal/loans` и `internal/commitments`, включая отказ down-миграции 000024.
+Новые банковские тарифы не проверялись; существующие ограничения сохраняются.

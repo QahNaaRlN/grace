@@ -2,7 +2,8 @@
 
 Дата: 2026-10-16. Спецификация: [accepted SPEC-0052](0052-route-code-splitting.md).
 Ветка: `codex/route-code-splitting` от `main` `4785143`.
-Статус: `verified` локально (Windows).
+Статус: `integrated` (локальные post-merge gates 2026-10-18; исходная
+реализация проверялась на Windows).
 
 ## Размеры чанков
 
@@ -78,3 +79,25 @@ success, все шаги, включая проверенный pre-deploy backu
 готовности и внешний authenticated smoke. После выпуска
 `https://graceapp.ru/health` — 200, API без сессии — 401. Проверка интерфейса
 владельцем после выпуска ещё не выполнена.
+
+
+## Post-merge verification — 2026-10-18
+
+Проверяемый `main`: `a89a855a8074e4bd0fc957f72b2cb6ab807624fc`.
+Интеграция: PR #56, merge `1879889`.
+Implementation достижим из `main`; код продукта при проверке не менялся.
+
+- `make test` — exit 0: Go, 327 Web-тестов, ESLint, Steiger, Prettier,
+  OpenAPI generation, TypeScript/Vite build и Jev datasets.
+- `make test-integration` — exit 0: все 14 наборов.
+- `make test-production` — exit 0.
+- `go vet ./cmd/... ./internal/...` и `git diff --check` — exit 0.
+
+Локальные post-merge gates закрыты, статус `integrated`. Это дополнение
+не заменяет исторические production- и браузерные проверки выше и не
+объявляет новую live проверку VPS или интерфейса владельцем.
+
+Основной JS chunk текущей сборки — 390.04 kB (gzip 122.75 kB), предупреждения
+о чанке больше 500 kB нет. Router/lazyPage tests входят в 327 Web-тестов.
+Ручной обход маршрутов и сценарий устаревшего чанка остаются evidence
+предыдущего раздела; повторный browser smoke здесь не заявляется.
