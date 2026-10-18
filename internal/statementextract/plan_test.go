@@ -118,3 +118,29 @@ func TestCurrentPlanContractRejectsPreviousConsentSettings(t *testing.T) {
 		}
 	}
 }
+
+func TestContextHeadingInMainSpansStillRequiresCoverage(t *testing.T) {
+	d := testDocument("19.10.2026", "-12.34", "RUB", "Operation")
+	plan, e := BuildPlan(d, testPolicy(), nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	p := statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{"span-0"}, AccountAmount: statementdata.Selection{"span-1"}, AccountCurrency: statementdata.Selection{"span-2"}}}}
+	merged, e := MergeProposals(plan, []statementdata.Proposal{p})
+	if e != nil {
+		t.Fatal(e)
+	}
+	r, e := statementdata.ValidateProposal(d, merged, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "incomplete" {
+		t.Fatal("context header silently hidden", r, e)
+	}
+	p.Service = []statementdata.ServiceMapping{{Spans: statementdata.Selection{"span-3"}, Reason: "Unused printed column heading"}}
+	merged, e = MergeProposals(plan, []statementdata.Proposal{p})
+	if e != nil {
+		t.Fatal(e)
+	}
+	r, e = statementdata.ValidateProposal(d, merged, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "matched" || len(r.Reconciliation.Blockers) != 0 {
+		t.Fatal("explicit coverage not preserved", r, e)
+	}
+}
