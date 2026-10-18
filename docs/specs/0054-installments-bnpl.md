@@ -1,6 +1,6 @@
 # SPEC-0054: рассрочки и BNPL — покупка, долг и график погашения
 
-- Статус: integrated (локальные post-merge gates пройдены; production не выпущен)
+- Статус: integrated (post-merge gates пройдены; production `a89a855`, 2026-10-18)
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-17
 - Acceptance owner: владелец Grace
