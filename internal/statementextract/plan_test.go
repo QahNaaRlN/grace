@@ -97,3 +97,24 @@ func TestMergeRejectsFabricatedSpansAndConflictingTotals(t *testing.T) {
 		t.Fatal("partial response")
 	}
 }
+
+func TestCurrentPlanContractRejectsPreviousConsentSettings(t *testing.T) {
+	p, e := BuildPlan(testDocument("19.10.2026"), testPolicy(), nil)
+	if e != nil || !currentPlanContract(p) {
+		t.Fatal(p, e)
+	}
+	for _, field := range []string{"prompt", "schema", "redaction"} {
+		old := p
+		switch field {
+		case "prompt":
+			old.PromptVersion = "statement-span-mapping.v1"
+		case "schema":
+			old.SchemaHash = "obsolete"
+		case "redaction":
+			old.RedactionVersion = "obsolete"
+		}
+		if currentPlanContract(old) {
+			t.Fatal("old consent accepted", field)
+		}
+	}
+}

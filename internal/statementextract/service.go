@@ -129,10 +129,15 @@ func loadPreview(ctx context.Context, tx pgx.Tx, id, statement string) (Preview,
 	if e = json.Unmarshal(encoded, &out.Plan); e != nil {
 		return out, e
 	}
-	if Hash(out.Plan) != out.Hash {
+	if Hash(out.Plan) != out.Hash || !currentPlanContract(out.Plan) {
 		return out, fault("preview_changed", 409)
 	}
 	return out, nil
+}
+
+// Old consent cannot authorize new prompt/schema/redaction or inference settings.
+func currentPlanContract(p Plan) bool {
+	return p.PromptVersion == PromptVersion && p.RedactionVersion == RedactionVersion && p.SchemaHash == Hash(json.RawMessage(ProposalSchema))
 }
 func (s *Service) Consent(ctx context.Context, id, key string, in ConsentInput) (Consent, error) {
 	var out Consent
