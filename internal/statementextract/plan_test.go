@@ -144,3 +144,25 @@ func TestContextHeadingInMainSpansStillRequiresCoverage(t *testing.T) {
 		t.Fatal("explicit coverage not preserved", r, e)
 	}
 }
+
+func TestMoneySchemaExcludesHeadingDateAndCurrencyButKeepsOpaqueInteger(t *testing.T) {
+	c := Chunk{Spans: []RedactedSpan{{ID: "heading", Text: "Available"}, {ID: "currency", Text: "RUB"}, {ID: "date", Text: "19.10.2026"}, {ID: "amount", Text: "7777.00"}, {ID: "integer", Text: "[text_integer]"}}}
+	var schema struct {
+		Defs map[string]struct {
+			Items struct {
+				Enum []string `json:"enum"`
+			} `json:"items"`
+		} `json:"$defs"`
+	}
+	if e := json.Unmarshal(RequestSchema(c), &schema); e != nil {
+		t.Fatal(e)
+	}
+	got := strings.Join(schema.Defs["moneySelection"].Items.Enum, ",")
+	if got != "amount,integer" {
+		t.Fatal("monetary role allowed label/date/currency or lost minimized integer", got)
+	}
+	raw, _ := json.Marshal(Messages(c))
+	if InputBytes(c) != len(raw)+len(RequestSchema(c)) {
+		t.Fatal("dynamic schema escaped input bound")
+	}
+}

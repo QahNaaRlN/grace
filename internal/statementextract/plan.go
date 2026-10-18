@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	PromptVersion    = "statement-span-mapping.v4.explicit-field-boundaries"
+	PromptVersion    = "statement-span-mapping.v5.typed-money-candidates"
 	RedactionVersion = "statement-allowlist.v1"
 	MaxCalls         = 32
 	InputBound       = 10000
@@ -113,7 +113,7 @@ func Messages(c Chunk) []map[string]string {
 
 func InputBytes(c Chunk) int {
 	raw, _ := json.Marshal(Messages(c))
-	return len(raw) + len(ProposalSchema)
+	return len(raw) + len(RequestSchema(c))
 }
 func BuildPlan(d statementdata.Document, policy Policy, visibleIDs []string) (Plan, error) {
 	p := Plan{DocumentHash: d.Hash(), PromptVersion: PromptVersion, SchemaHash: Hash(json.RawMessage(ProposalSchema)), RedactionVersion: RedactionVersion, Policy: policy, Chunks: []Chunk{}}
