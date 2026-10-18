@@ -18,6 +18,9 @@ var ProposalSchema = func() json.RawMessage {
 	moneyRef := map[string]any{"$ref": "#/$defs/moneySelection"}
 	row["accountAmount"] = moneyRef
 	row["transactionAmount"] = moneyRef
+	currencySelection := map[string]any{"type": "array", "minItems": 0, "maxItems": 1, "items": map[string]any{"type": "string"}, "description": "Exactly ONE printed currency token, such as RUB or USD. Reuse one reference if repeated; never select all occurrences. Use [] if unknown."}
+	row["accountCurrency"] = currencySelection
+	row["transactionCurrency"] = currencySelection
 	row["direction"] = map[string]any{"type": "string", "enum": []string{"", "debit", "credit"}}
 	headerKeys := []string{"openingBookBalance", "closingBookBalance", "availableBalanceObserved", "debitTurnover", "creditTurnover"}
 	labels := map[string]any{}
@@ -28,11 +31,11 @@ var ProposalSchema = func() json.RawMessage {
 	}
 	header["openingBookDate"] = selection
 	header["closingBookDate"] = selection
-	header["currency"] = selection
+	header["currency"] = currencySelection
 	header["labels"] = object(labels, headerKeys)
 	allHeader := append(append([]string{}, headerKeys...), "currency", "labels", "openingBookDate", "closingBookDate")
 	schema := object(map[string]any{"rows": map[string]any{"type": "array", "items": object(row, rowKeys)}, "header": object(header, allHeader), "service": map[string]any{"type": "array", "items": object(map[string]any{"spans": selection, "reason": map[string]any{"type": "string"}}, []string{"spans", "reason"})}}, []string{"rows", "header", "service"})
-	schema["$defs"] = map[string]any{"moneySelection": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Only the printed number/sign span IDs. Exclude all labels, headings and currencies. Use [] if absent. Redacted integer fragments may be opaque placeholders; Go validates their actual source text."}}
+	schema["$defs"] = map[string]any{"moneySelection": map[string]any{"type": "array", "minItems": 0, "items": map[string]any{"type": "string"}, "description": "Only the printed number/sign span IDs. Exclude all labels, headings and currencies. Use [] if absent. Redacted integer fragments may be opaque placeholders; Go validates their actual source text."}}
 	raw, _ := json.Marshal(schema)
 	return raw
 }()

@@ -166,3 +166,23 @@ func TestMoneySchemaExcludesHeadingDateAndCurrencyButKeepsOpaqueInteger(t *testi
 		t.Fatal("dynamic schema escaped input bound")
 	}
 }
+
+func TestServiceOrderIsCanonicalButFinancialOrderAndDuplicatesStillFail(t *testing.T) {
+	d := testDocument("19.10.2026", "-12.34", "RUB", "Operation", "Synthetic heading")
+	p := statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{"span-0"}, AccountAmount: statementdata.Selection{"span-1"}, AccountCurrency: statementdata.Selection{"span-2"}}}, Service: []statementdata.ServiceMapping{{Spans: statementdata.Selection{"span-4", "span-3"}, Reason: "Explicit unused headings"}}}
+	r, e := statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "matched" || len(r.Reconciliation.Blockers) > 0 {
+		t.Fatal("service set not canonicalized", r, e)
+	}
+	p.Service[0].Spans = statementdata.Selection{"span-4", "span-4", "span-3"}
+	r, e = statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e == nil && len(r.Reconciliation.Blockers) == 0 {
+		t.Fatal("duplicate service reference accepted")
+	}
+	p.Service[0].Spans = statementdata.Selection{"span-4", "span-3"}
+	p.Rows[0].AccountAmount = statementdata.Selection{"span-1", "span-0"}
+	r, e = statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e == nil && len(r.Rows[0].Issues) == 0 {
+		t.Fatal("financial field ordering relaxed")
+	}
+}
