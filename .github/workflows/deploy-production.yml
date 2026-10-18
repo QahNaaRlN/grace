@@ -61,7 +61,7 @@ jobs:
           # Emit only fixed error/scorer codes from our synthetic report, never usage.
           report=$(find /opt/grace/shared -maxdepth 1 -name 'statement-qualification-*.json' -type f | sort | tail -n 1)
           if [ -n "$report" ]; then
-            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
+            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"validation":\[[a-zA-Z0-9_":,.-]*\]|"coverage":\[[a-zA-Z0-9_":,.-]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
           fi
           ready=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT grace_ai_remaining() >= 16000 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain');")
           test "$ready" = t
@@ -93,7 +93,7 @@ jobs:
           umask 077
           report="/opt/grace/shared/statement-qualification-$(date -u +%Y%m%dT%H%M%SZ)-candidate-$run_id.json"
           if ! docker exec "$api" "$candidate" -mode=qualify > "$report"; then
-            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
+            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"validation":\[[a-zA-Z0-9_":,.-]*\]|"coverage":\[[a-zA-Z0-9_":,.-]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
             exit 1
           fi
           docker exec -i "$api" "$candidate" -mode=summary < "$report"

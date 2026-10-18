@@ -20,13 +20,15 @@ type Sample struct {
 	Document statementdata.Document
 }
 type Result struct {
-	Name      string   `json:"name"`
-	Rows      int      `json:"rows"`
-	Checks    int      `json:"checks"`
-	Correct   int      `json:"correct"`
-	Passed    bool     `json:"passed"`
-	Codes     []string `json:"codes"`
-	LatencyMS int64    `json:"latencyMs"`
+	Name       string   `json:"name"`
+	Rows       int      `json:"rows"`
+	Checks     int      `json:"checks"`
+	Correct    int      `json:"correct"`
+	Passed     bool     `json:"passed"`
+	Codes      []string `json:"codes"`
+	Validation []string `json:"validation"`
+	Coverage   []string `json:"coverage"`
+	LatencyMS  int64    `json:"latencyMs"`
 }
 type Call struct {
 	GenerationID string `json:"generationId"`
@@ -152,7 +154,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 // Score checks source values and separate clocks/FX/balances, never a model's
 // self-reported confidence. It is a small activation smoke, not full AC12.
 func Score(name string, r statementdata.Review) Result {
-	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}}
+	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}, Validation: r.Reconciliation.Blockers, Coverage: r.Reconciliation.RowCoverage.Reasons}
 	check := func(ok bool, code string) {
 		out.Checks++
 		if ok {
