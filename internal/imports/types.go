@@ -55,6 +55,7 @@ type Decision struct {
 	Resolutions       []Resolution `json:"resolutions,omitempty"`
 }
 type Batch struct {
+	StatementID  *string `json:"statementId,omitempty"`
 	created      bool
 	ID           string                `json:"id"`
 	Source       importreview.Metadata `json:"source"`
@@ -113,9 +114,11 @@ type Change struct {
 	AccountName string `json:"accountName"`
 }
 type Line struct {
+	PDFOrdinal  *int               `json:"pdfOrdinal,omitempty"`
+	SourceKind  string             `json:"sourceKind,omitempty"`
 	RecordID    string             `json:"recordId"`
-	SourceSheet string             `json:"sourceSheet"`
-	SourceRow   int                `json:"sourceRow"`
+	SourceSheet string             `json:"sourceSheet,omitempty"`
+	SourceRow   int                `json:"sourceRow,omitempty"`
 	Decision    Decision           `json:"decision"`
 	SourceDate  *importreview.Date `json:"sourceDate,omitempty"`
 	Candidates  []Candidate        `json:"candidates"`
@@ -124,17 +127,18 @@ type Line struct {
 	Postings    []Change           `json:"postings"`
 }
 type Preview struct {
-	ID         string    `json:"id"`
-	BatchID    string    `json:"batchId"`
-	Revision   int64     `json:"revision"`
-	Hash       string    `json:"hash"`
-	ExpiresAt  time.Time `json:"expiresAt"`
-	Lines      []Line    `json:"lines"`
-	Changes    []Change  `json:"changes"`
-	Blockers   []string  `json:"blockers"`
-	NewEvents  int       `json:"newEvents"`
-	Links      int       `json:"links"`
-	Exclusions int       `json:"exclusions"`
+	StatementRevision int64     `json:"statementRevision,omitempty"`
+	ID                string    `json:"id"`
+	BatchID           string    `json:"batchId"`
+	Revision          int64     `json:"revision"`
+	Hash              string    `json:"hash"`
+	ExpiresAt         time.Time `json:"expiresAt"`
+	Lines             []Line    `json:"lines"`
+	Changes           []Change  `json:"changes"`
+	Blockers          []string  `json:"blockers"`
+	NewEvents         int       `json:"newEvents"`
+	Links             int       `json:"links"`
+	Exclusions        int       `json:"exclusions"`
 }
 type Outcome struct {
 	RecordID string                 `json:"recordId"`

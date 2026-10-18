@@ -17,6 +17,7 @@ type Handler struct{ repo *Repository }
 
 func NewHandler(repo *Repository) *Handler { return &Handler{repo} }
 func (h *Handler) Routes(r chi.Router) {
+	h.statementRoutes(r)
 	r.Post("/batches", h.Upload)
 	r.Post("/csv", h.UploadCSV)
 	r.Get("/batches", h.Batches)
@@ -33,7 +34,11 @@ func (h *Handler) Routes(r chi.Router) {
 func respond(w http.ResponseWriter, value any, err error) {
 	if err != nil {
 		f := asFault(err)
-		web.WriteError(w, f.Status, f.Code, "Не удалось выполнить действие импорта. Проверьте данные и обновите черновик.")
+		message := "Не удалось выполнить действие импорта. Проверьте данные и обновите черновик."
+		if f.Code == "statement_confirmation_limit" {
+			message = "Для PDF выберите не больше 100 строк за одно подтверждение."
+		}
+		web.WriteError(w, f.Status, f.Code, message)
 		return
 	}
 	web.WriteJSON(w, 200, value)

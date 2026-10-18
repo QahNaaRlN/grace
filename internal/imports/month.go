@@ -260,6 +260,10 @@ func (r *Repository) Month(ctx context.Context, batchID, month string) (MonthRep
 	if err != nil {
 		return MonthReport{}, err
 	}
+	if batch.Format != nil && *batch.Format == "bank_statement_pdf" {
+		return MonthReport{}, fault("statement_month_report_not_applicable", 422)
+	}
+
 	rows, err := tx.Query(ctx, recordSQL+"WHERE r.batch_id=$1 AND r.domain='transaction' ORDER BY r.id", batchID)
 	if err != nil {
 		return MonthReport{}, err

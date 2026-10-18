@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
+import { StatementFieldEvidence } from '@/entities/bank-statement'
 import { accountQueries } from '@/entities/account'
 import { categoryQueries } from '@/entities/category'
 import { financialEventQueries } from '@/entities/financial-event'
-import { importErrorText, importLabels } from '@/entities/import-batch'
+import { importErrorText, importSourceLabel, importLabels } from '@/entities/import-batch'
 import type { components } from '@/shared/api/generated/schema'
 import { eventTimeText } from '@/shared/lib/date'
 import { minorToInput } from '@/shared/lib/money'
@@ -56,6 +57,7 @@ export function ReviewForm({
 }) {
   const [action, setAction] = useState<Decision['action']>(record.decision.action)
   const [fields, setFields] = useState<Fields>(() => initialFields(record))
+  const [kindConfirmed, setKindConfirmed] = useState(!record.source.pdf)
   const [reason, setReason] = useState(record.decision.reason || '')
   const [eventId, setEventId] = useState(
     record.decision.action === 'link_existing' ? record.decision.eventId : '',
@@ -88,6 +90,8 @@ export function ReviewForm({
             : action === 'duplicate_of'
               ? { action, canonicalRecordId, ...common }
               : { action, ...common }
+      if (action === 'create' && !kindConfirmed)
+        throw new Error('Явно подтвердите финансовый вид операции PDF.')
       if (
         action === 'create' &&
         !(Number.isSafeInteger(fields.amountMinor) && fields.amountMinor > 0)
@@ -104,11 +108,19 @@ export function ReviewForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Проверка: {record.source.sheet}, строка {record.source.row}
-        </CardTitle>
+        <CardTitle>Проверка: {importSourceLabel(record.source)}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {record.source.pdf && (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {record.source.pdf.proposalOrigin === 'model'
+                ? 'Группировка предложена моделью; значения скопированы из банковского источника.'
+                : 'Группировка подготовлена вручную; исходные значения сохранены отдельно от решений.'}
+            </p>
+            <StatementFieldEvidence row={record.source.pdf.row} />
+          </>
+        )}
         <Disclosure
           triggerClassName="cursor-pointer py-3"
           title={<>Исходные значения и нормализация</>}
@@ -214,9 +226,7 @@ export function ReviewForm({
               <div key={c.id} className="space-y-2 rounded-md border p-3">
                 <p className="font-medium">
                   Возможное совпадение:{' '}
-                  {c.source
-                    ? `${c.source.sheet}, строка ${c.source.row}`
-                    : 'запись финансового журнала'}
+                  {c.source ? importSourceLabel(c.source) : 'запись финансового журнала'}
                 </p>
                 <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-all text-xs">
                   {JSON.stringify(c.source?.normalized || c.event, null, 2)}
@@ -241,6 +251,16 @@ export function ReviewForm({
               <p role="alert" className="text-destructive">
                 {error}
               </p>
+            )}
+            {record.source.pdf && action === 'create' && (
+              <label className="flex min-h-11 items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={kindConfirmed}
+                  onChange={(e) => setKindConfirmed(e.target.checked)}
+                />
+                Подтверждаю выбранный финансовый вид операции
+              </label>
             )}
             <Button type="submit" disabled={pending}>
               Сохранить решение

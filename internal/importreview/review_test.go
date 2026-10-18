@@ -327,3 +327,33 @@ func TestGoldenReport(t *testing.T) {
 		}
 	}
 }
+
+func TestSourceVariantRetainsSpreadsheetZeroCoordinates(t *testing.T) {
+	r := Record{SheetID: 0, Sheet: "Synthetic", Row: 1}
+	raw, e := json.Marshal(r)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var fields map[string]json.RawMessage
+	if e = json.Unmarshal(raw, &fields); e != nil {
+		t.Fatal(e)
+	}
+	if string(fields["sheetId"]) != "0" || string(fields["sourceKind"]) != `"spreadsheet"` {
+		t.Fatal(string(raw))
+	}
+	r.SourceKind = "bank_statement_pdf"
+	r.PDF = &PDFSource{Ordinal: 1}
+	raw, e = json.Marshal(r)
+	if e != nil {
+		t.Fatal(e)
+	}
+	fields = nil
+	if e = json.Unmarshal(raw, &fields); e != nil {
+		t.Fatal(e)
+	}
+	for _, key := range []string{"sheetId", "sheet", "row"} {
+		if _, exists := fields[key]; exists {
+			t.Fatal("fabricated spreadsheet coordinate", string(raw))
+		}
+	}
+}

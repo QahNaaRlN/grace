@@ -8,6 +8,611 @@ servers:
 security:
   - SessionCookie: []
 paths:
+  /api/imports/statements/{statementId}/extraction-previews:
+    post:
+      operationId: previewStatementExtraction
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200':
+          description: Owner-scoped statement state. No financial write.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementExtractionPreview'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
+            available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementPreviewInput'
+  /api/imports/statements/{statementId}/extraction-consents:
+    post:
+      operationId: consentStatementExtraction
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped statement state. No financial write.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementConsent'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementConsentInput'
+  /api/imports/statements/{statementId}/extractions:
+    get:
+      operationId: listStatementExtractions
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Recent durable attempts; interrupted work never resumes inference.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StatementExtractionAttempt'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Owner-scoped resource not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: extractBankStatement
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped statement state. No financial write.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementExtractionAttempt'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Extraction is busy; Retry-After is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
+            available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementExtractionInput'
+  /api/imports/statements/{statementId}/extractions/{attemptId}:
+    get:
+      operationId: getStatementExtraction
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: attemptId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Owner-scoped statement state. No financial write.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementExtractionAttempt'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/imports/statements/pdf:
+    post:
+      operationId: uploadBankStatement
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementUploadResult'
+        '201':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementUploadResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Upload or mapping exceeds the explicit byte limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Extraction is busy; Retry-After is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
+            available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - accountId
+              - file
+              properties:
+                accountId:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+  /api/imports/statements/{statementId}:
+    get:
+      operationId: getBankStatement
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: editBankStatement
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementEdit'
+  /api/imports/statements/{statementId}/manual-drafts:
+    post:
+      operationId: createBankStatementManualDraft
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Upload or mapping exceeds the explicit byte limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementManualDraft'
+  /api/imports/statements/{statementId}/original:
+    get:
+      operationId: downloadBankStatementOriginal
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Private original, attachment; no-store and nosniff.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '410':
+          description: Original deleted or expired; minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Owner-scoped resource not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteBankStatementOriginal
+      parameters:
+      - name: statementId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Original or complete local state was deleted. Minimal evidence remains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementDelete'
+  /api/imports/batches/{batchId}/statement/reconciliation:
+    get:
+      operationId: getBankStatementReconciliation
+      parameters:
+      - name: batchId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementReconciliation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/v1/installment-plans:
     get:
       operationId: listInstallmentPlans
@@ -3167,6 +3772,784 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    StatementDocument:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - fileName
+      - sha256
+      - sizeBytes
+      - contentType
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        sha256:
+          type: string
+        sizeBytes:
+          type: integer
+        contentType:
+          type: string
+    StatementUploadResult:
+      type: object
+      additionalProperties: false
+      required:
+      - statement
+      - document
+      - batchId
+      properties:
+        statement:
+          $ref: '#/components/schemas/BankStatement'
+        document:
+          $ref: '#/components/schemas/StatementDocument'
+        batchId:
+          type:
+          - string
+          - 'null'
+    StatementModelPolicy:
+      type: object
+      additionalProperties: false
+      required:
+      - model
+      - provider
+      - providerName
+      - inputMicrosPerMillion
+      - outputMicrosPerMillion
+      properties:
+        model:
+          type: string
+        provider:
+          type: string
+        providerName:
+          type: string
+        inputMicrosPerMillion:
+          type: integer
+        outputMicrosPerMillion:
+          type: integer
+    StatementRedactedSpan:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - page
+      - x
+      - y
+      - text
+      properties:
+        id:
+          type: string
+        page:
+          type: integer
+        x:
+          type: integer
+        y:
+          type: integer
+        text:
+          type: string
+    StatementChunk:
+      type: object
+      additionalProperties: false
+      required:
+      - index
+      - context
+      - spans
+      properties:
+        index:
+          type: integer
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementRedactedSpan'
+        spans:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementRedactedSpan'
+    StatementPlan:
+      type: object
+      additionalProperties: false
+      required:
+      - documentHash
+      - promptVersion
+      - schemaHash
+      - redactionVersion
+      - policy
+      - chunks
+      - maximumMicros
+      properties:
+        documentHash:
+          type: string
+        promptVersion:
+          type: string
+        schemaHash:
+          type: string
+        redactionVersion:
+          type: string
+        policy:
+          $ref: '#/components/schemas/StatementModelPolicy'
+        chunks:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementChunk'
+        maximumMicros:
+          type: integer
+    StatementExtractionPreview:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - statementId
+      - sourceRevision
+      - hash
+      - plan
+      - expiresAt
+      properties:
+        id:
+          type: string
+        statementId:
+          type: string
+        sourceRevision:
+          type: integer
+        hash:
+          type: string
+        plan:
+          $ref: '#/components/schemas/StatementPlan'
+        expiresAt:
+          type: string
+    StatementPreviewInput:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      properties:
+        expectedRevision:
+          type: integer
+        visibleSpanIds:
+          type: array
+          items:
+            type: string
+    StatementConsentInput:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - previewId
+      - previewHash
+      properties:
+        expectedRevision:
+          type: integer
+        previewId:
+          type: string
+        previewHash:
+          type: string
+    StatementExtractionInput:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - previewId
+      - previewHash
+      - consentId
+      properties:
+        expectedRevision:
+          type: integer
+        previewId:
+          type: string
+        previewHash:
+          type: string
+        consentId:
+          type: string
+    StatementConsent:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - previewId
+      properties:
+        id:
+          type: string
+        previewId:
+          type: string
+    StatementExtractionAttempt:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - statementId
+      - status
+      - errorCode
+      - batchId
+      properties:
+        policy:
+          $ref: '#/components/schemas/StatementModelPolicy'
+        promptVersion:
+          type: string
+        schemaHash:
+          type: string
+        redactionVersion:
+          type: string
+        id:
+          type: string
+        statementId:
+          type: string
+        status:
+          type: string
+        errorCode:
+          type:
+          - string
+          - 'null'
+        batchId:
+          type:
+          - string
+          - 'null'
+    StatementSpan:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - page
+      - block
+      - line
+      - word
+      - box
+      - text
+      properties:
+        id:
+          type: string
+        page:
+          type: integer
+        block:
+          type: integer
+        line:
+          type: integer
+        word:
+          type: integer
+        box:
+          type: object
+          additionalProperties: false
+          required:
+          - xMin
+          - yMin
+          - xMax
+          - yMax
+          properties:
+            xMin:
+              type: number
+            yMin:
+              type: number
+            xMax:
+              type: number
+            yMax:
+              type: number
+        text:
+          type: string
+    StatementLayout:
+      type: object
+      additionalProperties: false
+      required:
+      - extractor
+      - pages
+      - spans
+      properties:
+        extractor:
+          type: string
+        pages:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - number
+            - width
+            - height
+            properties:
+              number:
+                type: integer
+              width:
+                type: number
+              height:
+                type: number
+        spans:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementSpan'
+    StatementEvidence:
+      type: object
+      additionalProperties: false
+      required:
+      - role
+      - spans
+      - literal
+      properties:
+        role:
+          type: string
+        spans:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementSpan'
+        literal:
+          type: string
+    StatementMoney:
+      type: object
+      additionalProperties: false
+      required:
+      - amountMinor
+      - currency
+      properties:
+        amountMinor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    StatementLocalDate:
+      type: object
+      additionalProperties: false
+      required:
+      - local
+      - precision
+      properties:
+        local:
+          type: string
+        precision:
+          type: string
+        utc:
+          type: string
+        timeZone:
+          type: string
+    StatementRow:
+      type: object
+      additionalProperties: false
+      required:
+      - ordinal
+      - operationDate
+      - bookingDate
+      - accountAmount
+      - transactionAmount
+      - direction
+      - description
+      - evidence
+      - issues
+      properties:
+        ordinal:
+          type: integer
+        operationDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        bookingDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        accountAmount:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        transactionAmount:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        direction:
+          type: string
+        description:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementEvidence'
+        issues:
+          type: array
+          items:
+            type: string
+    StatementHeader:
+      type: object
+      additionalProperties: false
+      required:
+      - openingBookBalance
+      - closingBookBalance
+      - availableBalanceObserved
+      - debitTurnover
+      - creditTurnover
+      - evidence
+      - openingBookDate
+      - closingBookDate
+      properties:
+        openingBookDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        closingBookDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        openingBookBalance:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        closingBookBalance:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        availableBalanceObserved:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        debitTurnover:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        creditTurnover:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementEvidence'
+    StatementCheck:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - reasons
+      properties:
+        status:
+          type: string
+        reasons:
+          type: array
+          items:
+            type: string
+    StatementReconciliation:
+      type: object
+      additionalProperties: false
+      required:
+      - turnoverCheck
+      - bookBalanceCheck
+      - rowCoverage
+      - ledgerBalanceCheck
+      - debitMinor
+      - creditMinor
+      - blockers
+      - warnings
+      properties:
+        financialCoverage:
+          $ref: '#/components/schemas/StatementCheck'
+        turnoverCheck:
+          $ref: '#/components/schemas/StatementCheck'
+        bookBalanceCheck:
+          $ref: '#/components/schemas/StatementCheck'
+        rowCoverage:
+          $ref: '#/components/schemas/StatementCheck'
+        ledgerBalanceCheck:
+          $ref: '#/components/schemas/StatementCheck'
+        debitMinor:
+          anyOf:
+          - type: integer
+          - type: 'null'
+        creditMinor:
+          anyOf:
+          - type: integer
+          - type: 'null'
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+    StatementReview:
+      type: object
+      additionalProperties: false
+      required:
+      - rows
+      - header
+      - reconciliation
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementRow'
+        header:
+          $ref: '#/components/schemas/StatementHeader'
+        reconciliation:
+          $ref: '#/components/schemas/StatementReconciliation'
+    StatementRowMapping:
+      type: object
+      additionalProperties: false
+      required:
+      - operationDate
+      - bookingDate
+      - accountAmount
+      - accountCurrency
+      - transactionAmount
+      - transactionCurrency
+      - description
+      - directionEvidence
+      - direction
+      properties:
+        operationDate:
+          type: array
+          items:
+            type: string
+        bookingDate:
+          type: array
+          items:
+            type: string
+        accountAmount:
+          type: array
+          items:
+            type: string
+        accountCurrency:
+          type: array
+          items:
+            type: string
+        transactionAmount:
+          type: array
+          items:
+            type: string
+        transactionCurrency:
+          type: array
+          items:
+            type: string
+        description:
+          type: array
+          items:
+            type: string
+        directionEvidence:
+          type: array
+          items:
+            type: string
+        direction:
+          type: string
+    StatementProposal:
+      type: object
+      additionalProperties: false
+      required:
+      - rows
+      - header
+      - service
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementRowMapping'
+        header:
+          type: object
+          additionalProperties: false
+          required:
+          - openingBookBalance
+          - closingBookBalance
+          - availableBalanceObserved
+          - debitTurnover
+          - creditTurnover
+          - currency
+          - labels
+          - openingBookDate
+          - closingBookDate
+          properties:
+            openingBookDate:
+              type: array
+              items:
+                type: string
+            closingBookDate:
+              type: array
+              items:
+                type: string
+            openingBookBalance:
+              type: array
+              items:
+                type: string
+            closingBookBalance:
+              type: array
+              items:
+                type: string
+            availableBalanceObserved:
+              type: array
+              items:
+                type: string
+            debitTurnover:
+              type: array
+              items:
+                type: string
+            creditTurnover:
+              type: array
+              items:
+                type: string
+            currency:
+              type: array
+              items:
+                type: string
+            labels:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+        service:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - spans
+            - reason
+            properties:
+              spans:
+                type: array
+                items:
+                  type: string
+              reason:
+                type: string
+    BankStatement:
+      type: object
+      additionalProperties: false
+      required:
+      - sizeBytes
+      - publishedRows
+      - excludedRows
+      - id
+      - documentId
+      - accountId
+      - batchId
+      - revision
+      - fileName
+      - sha256
+      - status
+      - retention
+      - expiresAt
+      - deletedAt
+      - createdAt
+      - rolesConfirmed
+      - reviewedPages
+      - pageCount
+      - review
+      properties:
+        sizeBytes:
+          type: integer
+        publishedRows:
+          type: integer
+        excludedRows:
+          type: integer
+        id:
+          type: string
+        documentId:
+          type: string
+        accountId:
+          type: string
+        batchId:
+          anyOf:
+          - type: string
+          - type: 'null'
+        revision:
+          type: integer
+        fileName:
+          type: string
+        sha256:
+          type: string
+        status:
+          type: string
+        retention:
+          type: string
+          enum:
+          - delete_after_confirmation
+          - keep
+        expiresAt:
+          type: string
+        deletedAt:
+          anyOf:
+          - type: string
+          - type: 'null'
+        createdAt:
+          type: string
+        rolesConfirmed:
+          type: boolean
+        reviewedPages:
+          type: array
+          items:
+            type: integer
+        pageCount:
+          type: integer
+        review:
+          anyOf:
+          - $ref: '#/components/schemas/StatementReview'
+          - type: 'null'
+        layout:
+          $ref: '#/components/schemas/StatementLayout'
+    StatementEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - accountId
+      - retention
+      - rolesConfirmed
+      - reviewedPages
+      - reason
+      properties:
+        expectedRevision:
+          type: integer
+        accountId:
+          type: string
+        retention:
+          type: string
+          enum:
+          - delete_after_confirmation
+          - keep
+        rolesConfirmed:
+          type: boolean
+        reviewedPages:
+          type: array
+          items:
+            type: integer
+        reason:
+          type: string
+    StatementManualDraft:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - proposal
+      - reason
+      properties:
+        expectedRevision:
+          type: integer
+        proposal:
+          $ref: '#/components/schemas/StatementProposal'
+        reason:
+          type: string
+    StatementDelete:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      properties:
+        expectedRevision:
+          type: integer
+    ImportPDFSource:
+      type: object
+      additionalProperties: false
+      required:
+      - statementId
+      - documentId
+      - accountId
+      - ordinal
+      - row
+      properties:
+        proposalOrigin:
+          type: string
+        attemptId:
+          type: string
+        statementId:
+          type: string
+        documentId:
+          type: string
+        accountId:
+          type: string
+        ordinal:
+          type: integer
+        row:
+          $ref: '#/components/schemas/StatementRow'
     InstallmentRow:
       type: object
       required:
@@ -4405,8 +5788,13 @@ components:
     "ImportSourceRecord":
       "type": "object"
       "additionalProperties": false
-      "required": ["id","sheetId","sheet","row","domain","raw","normalized","issues"]
+      "required": ["id","domain","raw","normalized","issues"]
       "properties":
+        sourceKind:
+          type: string
+          enum: [spreadsheet, bank_statement_pdf]
+        pdf:
+          $ref: '#/components/schemas/ImportPDFSource'
         "id":
           "type": "string"
         "sheetId":
@@ -4552,6 +5940,8 @@ components:
       "additionalProperties": false
       "required": ["id","source","payloadHash","revision","status","createdAt","counts","domainCounts","fileName","format","periodFrom","periodTo","total","reviewed","needsReview","lastConfirmation"]
       "properties":
+        statementId:
+          type: string
         "id":
           "type": "string"
           "format": "uuid"
@@ -4578,7 +5968,7 @@ components:
           "additionalProperties":
             "type": "integer"
         "fileName": { "type": ["string","null"], "maxLength": 255 }
-        "format": { "type": ["string","null"], "enum": ["json","csv",null] }
+        "format": { "type": ["string","null"], "enum": ["json","csv","bank_statement_pdf",null] }
         "periodFrom": { "type": ["string","null"], "format": "date", "description": "Earliest operation date among transaction rows." }
         "periodTo": { "type": ["string","null"], "format": "date" }
         "total": { "type": "integer", "minimum": 0, "description": "Transaction rows." }
@@ -4693,8 +6083,12 @@ components:
     "ImportLine":
       "type": "object"
       "additionalProperties": false
-      "required": ["recordId","sourceSheet","sourceRow","decision","candidates","blockers","warnings","postings"]
+      "required": ["recordId","decision","candidates","blockers","warnings","postings"]
       "properties":
+        pdfOrdinal:
+          type: integer
+        sourceKind:
+          type: string
         "sourceSheet": { "type": "string" }
         "sourceRow": { "type": "integer" }
         "recordId":
@@ -4725,6 +6119,8 @@ components:
       "additionalProperties": false
       "required": ["id","batchId","revision","hash","expiresAt","lines","changes","blockers","newEvents","links","exclusions"]
       "properties":
+        statementRevision:
+          type: integer
         "id":
           "type": "string"
           "format": "uuid"

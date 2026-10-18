@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   importBatchQueries,
   importErrorText,
+  importSourceLabel,
   nextUnresolvedRecord,
   useImportRefresh,
 } from '@/entities/import-batch'
@@ -14,9 +15,9 @@ import {
   useConfirmImport,
   type ImportPreview,
   type ImportReceipt as Receipt,
-} from '@/features/confirm-import'
-import { ReviewForm } from '@/features/review-import-record'
-import { NewDraftCard } from '@/features/upload-import'
+} from '@/features/import/confirm'
+import { ReviewForm } from '@/features/import/review-record'
+import { NewDraftCard } from '@/features/import/upload'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -182,7 +183,9 @@ export function ImportReview() {
               Следующая нерешённая
             </Button>
           </div>
-          <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
+          {batch.data.format !== 'bank_statement_pdf' && (
+            <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
+          )}
           <RecordReview
             batchId={batchId}
             batch={batch.data}
@@ -222,9 +225,7 @@ export function ImportReview() {
               >
                 <DialogHeader>
                   <DialogTitle>
-                    {detail.data
-                      ? `${detail.data.source.sheet}, строка ${detail.data.source.row}`
-                      : 'Строка'}
+                    {detail.data ? importSourceLabel(detail.data.source) : 'Строка'}
                   </DialogTitle>
                   <DialogDescription>
                     Решение сохраняется в черновике; финансовый журнал меняется только после

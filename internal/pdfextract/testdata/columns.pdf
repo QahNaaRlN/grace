@@ -1,0 +1,62 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 2 /Kids [4 0 R 6 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 800] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 614 >>
+stream
+BT /F1 10 Tf 30 760 Td (SYNTHETIC BANK - COLUMNS) Tj ET
+BT /F1 10 Tf 30 735 Td (Available balance RUB 7777.00) Tj ET
+BT /F1 10 Tf 30 710 Td (Debit turnover RUB 1234.56) Tj ET
+BT /F1 10 Tf 30 690 Td (Credit turnover RUB 2000.00) Tj ET
+BT /F1 10 Tf 30 660 Td (Operation) Tj ET
+BT /F1 10 Tf 180 660 Td (Booking) Tj ET
+BT /F1 10 Tf 330 660 Td (Account RUB) Tj ET
+BT /F1 10 Tf 450 660 Td (Original USD) Tj ET
+BT /F1 10 Tf 30 640 Td (19.10.2026) Tj ET
+BT /F1 10 Tf 180 640 Td (20.10.2026) Tj ET
+BT /F1 10 Tf 330 640 Td (-1234.56) Tj ET
+BT /F1 10 Tf 450 640 Td (-15.00) Tj ET
+BT /F1 10 Tf 30 620 Td (SYNTHETIC SHOP) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 800] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 376 >>
+stream
+BT /F1 10 Tf 30 760 Td (SYNTHETIC BANK - COLUMNS PAGE 2) Tj ET
+BT /F1 10 Tf 30 710 Td (Operation) Tj ET
+BT /F1 10 Tf 180 710 Td (Booking) Tj ET
+BT /F1 10 Tf 330 710 Td (Account RUB) Tj ET
+BT /F1 10 Tf 30 690 Td (21.10.2026) Tj ET
+BT /F1 10 Tf 180 690 Td (22.10.2026) Tj ET
+BT /F1 10 Tf 330 690 Td (+2000.00) Tj ET
+BT /F1 10 Tf 30 670 Td (OWN TRANSFER - REVIEW SEMANTICS) Tj ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000000317 00000 n 
+0000000982 00000 n 
+0000001108 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+1535
+%%EOF

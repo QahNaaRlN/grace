@@ -17,11 +17,14 @@ import (
 )
 
 type Repository struct {
-	pool *database.TenantPool
-	now  func() time.Time
+	pool      *database.TenantPool
+	now       func() time.Time
+	extractor PDFExtractor
 }
 
-func NewRepository(p *pgxpool.Pool) *Repository { return &Repository{database.ForUsers(p), time.Now} }
+func NewRepository(p *pgxpool.Pool) *Repository {
+	return &Repository{pool: database.ForUsers(p), now: time.Now}
+}
 func (r *Repository) begin(ctx context.Context, write bool) (pgx.Tx, error) {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -112,7 +115,7 @@ func (r *Repository) uploadReport(ctx context.Context, raw []byte, key string, r
 		}
 		for _, rec := range report.Records {
 			source, _ := json.Marshal(rec)
-			_, err = tx.Exec(ctx, "INSERT INTO import_records(batch_id,snapshot_record_id,domain,source,raw_hash,questions) VALUES($1,$2,$3,$4,$5,$6)", id, rec.ID, rec.Domain, source, digest(rec.Raw), len(rec.Issues)+involved[rec.ID])
+			_, err = tx.Exec(ctx, "INSERT INTO import_records(batch_id,snapshot_record_id,domain,source,raw_hash,questions) VALUES($1,$2,$3,$4,$5,$6)", id, rec.ID, rec.Domain, source, sourceFingerprint(rec), len(rec.Issues)+involved[rec.ID])
 			if err != nil {
 				return b, err
 			}
@@ -151,11 +154,11 @@ func loadBatch(ctx context.Context, tx pgx.Tx, id string, lock bool) (Batch, imp
 func loadBatchHeader(ctx context.Context, tx pgx.Tx, id string, lock bool) (Batch, error) {
 	var b Batch
 	var source, domains []byte
-	query := "SELECT id::text,payload_hash,revision,status,created_at,report->'source',COALESCE(report->'domainCounts','{}'),file_name,format FROM import_batches WHERE id=$1"
+	query := "SELECT id::text,payload_hash,revision,status,created_at,report->'source',COALESCE(report->'domainCounts','{}'),file_name,format,(SELECT s.id::text FROM statement_sources s WHERE s.batch_id=import_batches.id) FROM import_batches WHERE id=$1"
 	if lock {
 		query += " FOR UPDATE"
 	}
-	err := tx.QueryRow(ctx, query, id).Scan(&b.ID, &b.PayloadHash, &b.Revision, &b.Status, &b.CreatedAt, &source, &domains, &b.FileName, &b.Format)
+	err := tx.QueryRow(ctx, query, id).Scan(&b.ID, &b.PayloadHash, &b.Revision, &b.Status, &b.CreatedAt, &source, &domains, &b.FileName, &b.Format, &b.StatementID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return b, ErrNotFound
 	}
@@ -368,6 +371,9 @@ func (r *Repository) Edit(ctx context.Context, batch, id, key string, input Edit
 }
 
 func candidates(ctx context.Context, tx pgx.Tx, batch string, report importreview.Report, rec Record) ([]Candidate, error) {
+	if rec.Source.PDF != nil {
+		return statementCandidates(ctx, tx, batch, rec)
+	}
 	result := []Candidate{}
 	seen := map[string]bool{}
 	for _, c := range report.Candidates {
@@ -469,7 +475,7 @@ func candidates(ctx context.Context, tx pgx.Tx, batch string, report importrevie
 		}
 	}
 	// Exact raw evidence already published in another snapshot is never a new fact silently.
-	rows, err := tx.Query(ctx, `SELECT DISTINCT p.event_id::text FROM import_records r JOIN import_provenance p ON p.record_id=r.id AND p.owner_id=r.owner_id WHERE r.batch_id<>$1 AND r.raw_hash=$2 AND p.event_id IS NOT NULL`, batch, digest(rec.Source.Raw))
+	rows, err := tx.Query(ctx, `SELECT DISTINCT p.event_id::text FROM import_records r JOIN import_provenance p ON p.record_id=r.id AND p.owner_id=r.owner_id WHERE r.batch_id<>$1 AND r.raw_hash=$2 AND p.event_id IS NOT NULL`, batch, sourceFingerprint(rec.Source))
 	if err != nil {
 		return nil, err
 	}

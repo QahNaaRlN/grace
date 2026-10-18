@@ -4,4 +4,4 @@ export {
   useImportRefresh,
   type ImportRecordsView,
 } from './api'
-export { importErrorText, importLabels } from './model/labels'
+export { importErrorText, importLabels, importSourceLabel } from './model/labels'

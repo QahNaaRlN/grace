@@ -26,11 +26,11 @@ type RecordQuery struct {
 }
 
 var sortColumns = map[string]string{
-	"row":     "r.source->>'sheet', (r.source->>'row')::int, r.id",
-	"date":    "r.source->'normalized'->'date'->>'local' NULLS LAST, (r.source->>'row')::int, r.id",
-	"-date":   "r.source->'normalized'->'date'->>'local' DESC NULLS LAST, (r.source->>'row')::int, r.id",
-	"amount":  "(r.source->'normalized'->>'amountMinor')::bigint NULLS LAST, (r.source->>'row')::int, r.id",
-	"-amount": "(r.source->'normalized'->>'amountMinor')::bigint DESC NULLS LAST, (r.source->>'row')::int, r.id",
+	"row":     "r.source->>'sheet', COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id",
+	"date":    "r.source->'normalized'->'date'->>'local' NULLS LAST, COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id",
+	"-date":   "r.source->'normalized'->'date'->>'local' DESC NULLS LAST, COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id",
+	"amount":  "(r.source->'normalized'->>'amountMinor')::bigint NULLS LAST, COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id",
+	"-amount": "(r.source->'normalized'->>'amountMinor')::bigint DESC NULLS LAST, COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id",
 }
 
 var statuses = map[string]bool{"": true, "needs_review": true, "unresolved": true, "create": true, "link_existing": true, "duplicate_of": true, "exclude": true, "published": true}
@@ -170,8 +170,8 @@ func (r *Repository) NextUnresolved(ctx context.Context, batch, after string) (N
 	rec, err := readRecord(tx.QueryRow(ctx, recordSQL+`
 		LEFT JOIN import_records a ON a.id::text = $2 AND a.batch_id = $1
 		WHERE `+open+` AND r.id::text <> $2
-		ORDER BY CASE WHEN a.id IS NOT NULL AND (r.source->>'sheet', (r.source->>'row')::int, r.id::text) > (a.source->>'sheet', (a.source->>'row')::int, a.id::text) THEN 0 ELSE 1 END,
-			r.source->>'sheet', (r.source->>'row')::int, r.id
+		ORDER BY CASE WHEN a.id IS NOT NULL AND (COALESCE(r.source->>'sheet',''), COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id::text) > (COALESCE(a.source->>'sheet',''), COALESCE((a.source->'pdf'->>'ordinal')::int,(a.source->>'row')::int), a.id::text) THEN 0 ELSE 1 END,
+			r.source->>'sheet', COALESCE((r.source->'pdf'->>'ordinal')::int,(r.source->>'row')::int), r.id
 		LIMIT 1`, batch, after))
 	if errors.Is(err, ErrNotFound) {
 		return result, nil
