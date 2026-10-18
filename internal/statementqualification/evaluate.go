@@ -37,7 +37,12 @@ type Call struct {
 	CostMicros   int64  `json:"costMicros"`
 	LatencyMS    int64  `json:"latencyMs"`
 }
+type Trace struct {
+	Name  string                   `json:"name"`
+	Parts []statementdata.Proposal `json:"parts"`
+}
 type Report struct {
+	Traces        []Trace                 `json:"traces,omitempty"`
 	Version       string                  `json:"version"`
 	Time          time.Time               `json:"time"`
 	Policy        statementextract.Policy `json:"policy"`
@@ -104,6 +109,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		}
 	}()
 	for i, sample := range samples {
+		report.Traces = append(report.Traces, Trace{Name: sample.Name, Parts: []statementdata.Proposal{}})
 		started := time.Now()
 		parts := []statementdata.Proposal{}
 		for _, chunk := range plans[i].Chunks {
@@ -127,9 +133,11 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				return report, errors.New("qualification_cost_overrun")
 			}
 			parts = append(parts, part)
+			report.Traces[len(report.Traces)-1].Parts = append(report.Traces[len(report.Traces)-1].Parts, part)
 		}
 		proposal, e := statementextract.MergeProposals(plans[i], parts)
 		if e != nil {
+			report.Results = append(report.Results, Result{Name: sample.Name, Codes: []string{e.Error()}, Validation: []string{e.Error()}})
 			return report, errors.New("qualification_merge_failed")
 		}
 		pages := []int{}
