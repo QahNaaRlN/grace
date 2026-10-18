@@ -108,3 +108,14 @@ PDF/text/images/личные строки/суммы/идентификатор�
    в чат и одобрение архитектуры этот consent не заменяют.
 
 [Гайд владельца и локального оператора](../bank-statements.md).
+
+
+## Owner release instruction — 2026-10-19
+
+Владелец явно поручил «Выполнить деплой, я проверю на месте». Это разрешение
+включает integration/release для ручной проверки; AC12 и statement AI activation
+не объявляются выполненными. Production wiring добавлено в этот PR: публикация
+exact-SHA helper image, production sandbox/socket/healthcheck и non-root smoke.
+Deployment regression проверяет отказ rollback на старый image с сохранёнными
+PDF sources и разрешённый rollback на совместимый image. Фактические CI/main/
+Delivery/deploy run IDs фиксируются после выпуска; пока это release candidate.

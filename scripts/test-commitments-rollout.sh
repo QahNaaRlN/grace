@@ -32,6 +32,8 @@ case "$*" in
    test "$FAIL_RELEASE" = false ;;
  *'information_schema.columns'*) printf 't\n' ;;
  *'NOT plan_active'*) printf '%s\n' "$HAS_HISTORY" ;;
+ *'to_regclass'*) printf '%s\n' "$HAS_STATEMENT_SCHEMA" ;;
+ *'FROM statement_sources'*) printf '%s\n' "$HAS_STATEMENT_DATA" ;;
  *'up -d --no-deps api web caddy'*)
    printf '%s\n%s\n%s\n' "$GRACE_AI_ENABLED" "$GRACE_AI_ANALYSIS_POLICY" "$GRACE_AI_RECEIPT_POLICY" > "$ROLLBACK_STATE_FILE" ;;
  *'pg_dump'*) printf 'synthetic dump' ;;
@@ -57,6 +59,22 @@ export HAS_HISTORY=t
 if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
 grep -q 'Rollback refused' "$test_root/output"
 test ! -e "$ROLLBACK_STATE_FILE"
+# A previous image without PDF support must not hide retained source evidence.
+mkdir -p "$test_root/next/migrations" "$test_root/previous/migrations"
+touch "$test_root/next/migrations/000027_bank_statement_sources.up.sql" "$test_root/previous/migrations/000018_commitments.up.sql"
+export HAS_STATEMENT_SCHEMA=t HAS_STATEMENT_DATA=t
+if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
+grep -q 'previous image cannot review retained PDF sources' "$test_root/output"
+test ! -e "$ROLLBACK_STATE_FILE"
+export HAS_STATEMENT_DATA=f
+if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
+test -f "$ROLLBACK_STATE_FILE"
+rm "$ROLLBACK_STATE_FILE"
+# Compatible previous PDF image is allowed to roll back with retained evidence.
+touch "$test_root/previous/migrations/000027_bank_statement_sources.up.sql"
+export HAS_STATEMENT_DATA=t
+if sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1; then exit 1; fi
+test -f "$ROLLBACK_STATE_FILE"
 export FAIL_RELEASE=false
 sh "$test_root/next/deploy.sh" 0000000000000000000000000000000000000000 > "$test_root/output" 2>&1
 test -f "$UID_CHECK_FILE"

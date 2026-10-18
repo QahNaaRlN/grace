@@ -142,7 +142,7 @@ Workflow проверяет successful CI push run, передаёт exact bundl
 
 Deploy выполняет:
 
-1. pull exact API/Web images;
+1. pull exact API/Web/PDF-helper images;
 2. verified pre-deploy `pg_dump`, включая пустую database первого release;
 3. production migrations;
 4. API/Web/Caddy rollout;
@@ -317,3 +317,19 @@ docker compose --project-name grace-production --env-file release.env \
 
 
 Для Telegram deploy.sh дополнительно загружает защищённый /opt/grace/shared/secrets/telegram.env; см. docs/authentication.md. API имеет исходящий HTTPS-доступ через edge, PostgreSQL остаётся на внутренней backend network.
+
+
+## PDF statements — SPEC-0055
+
+Production Compose запускает versioned `grace-pdf-extractor:sha-<commit>` вместе
+с API. Helper не имеет сети, secrets, host ports или Docker socket; read-only
+root, UID 10001, 512 MiB memory/swap, 1 CPU, 16 PIDs и private tmpfs 16 MiB.
+API получает read-only mount Unix socket и ждёт helper healthcheck.
+Delivery публикует helper image с тем же exact SHA, что API/Web. Deploy проверяет
+наличие socket и non-root helper, statement AI остаётся явно `false`.
+
+После релиза владелец проверяет PDF upload и ручной review в «Импортах».
+Сетевой LLM extraction и Jev qualification не включаются командой deployment.
+Существующие analysis/receipt settings сохраняются. Откат на образ до SPEC-0055
+отказывается, если уже есть bank-statement source/original/evidence: требуется
+совместимый forward fix. Database down и удаление sources не выполняются.

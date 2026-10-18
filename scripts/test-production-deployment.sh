@@ -97,6 +97,19 @@ published_ports="$(POSTGRES_PASSWORD=test-postgres-password GRACE_SECRETS_DIR="$
       if (!apiNetworks.some(name => config.networks[name]?.internal !== true)) {
         throw new Error("Production API cannot reach Telegram token/JWKS endpoints");
       }
+      const helper = config.services["pdf-extractor"];
+      if (!helper || helper.network_mode !== "none" || helper.read_only !== true ||
+          helper.user !== "10001:10001" || Number(helper.mem_limit) !== 536870912 ||
+          Number(helper.memswap_limit) !== 536870912 || Number(helper.cpus) !== 1 || helper.pids_limit !== 16 ||
+          helper.secrets?.length || helper.ports?.length || helper.environment ||
+          !helper.cap_drop.includes("ALL") || !helper.security_opt.includes("no-new-privileges:true")) {
+        throw new Error("Production PDF helper sandbox changed");
+      }
+      if (config.services.api.environment.GRACE_STATEMENT_AI_ENABLED !== "false" ||
+          config.services.api.environment.GRACE_PDF_EXTRACTOR_SOCKET !== "/run/grace-pdf/extractor.sock" ||
+          !config.services.api.volumes.some(v => v.target === "/run/grace-pdf" && v.read_only)) {
+        throw new Error("Production PDF socket or statement AI default changed");
+      }
       for (const [name, service] of Object.entries(config.services)) {
         if (service.ports) process.stdout.write(`${name}\n`);
       }

@@ -133,6 +133,16 @@ rollback_application() {
         fi
       fi
     fi
+    if [ -f "$release_dir/migrations/000027_bank_statement_sources.up.sql" ] && [ ! -f "$previous_dir/migrations/000027_bank_statement_sources.up.sql" ]; then
+      has_statement_sources="$(compose_release exec -T postgres psql -U grace -d grace -Atc "SELECT to_regclass('public.statement_sources') IS NOT NULL;")" || return 1
+      if [ "$has_statement_sources" = "t" ]; then
+        has_statement_data="$(compose_release exec -T postgres psql -U grace -d grace -Atc "SELECT EXISTS(SELECT 1 FROM statement_sources) OR EXISTS(SELECT 1 FROM documents WHERE kind='bank_statement');")" || return 1
+        if [ "$has_statement_data" = "t" ]; then
+          echo "Rollback refused: previous image cannot review retained PDF sources. Keep schema and use a compatible release." >&2
+          return 1
+        fi
+      fi
+    fi
     echo "rolling application containers back to $previous_dir" >&2
     # Restore the mode actually used by the previous image, not a new operator override.
     GRACE_AUTH_MODE="$rollback_auth_mode"
@@ -166,7 +176,7 @@ trap on_failure EXIT HUP INT TERM
 mkdir -p "$backups_dir"
 chmod 0700 "$backups_dir"
 
-compose_release pull --policy missing postgres api web caddy
+compose_release pull --policy missing postgres pdf-extractor api web caddy
 compose_release up -d postgres
 
 attempt=0
@@ -215,6 +225,9 @@ fi
 
 compose_release run --rm migrate
 compose_release up -d api web caddy
+# The PDF helper has no credentials/network; API receives only its private socket.
+compose_release exec -T pdf-extractor /bin/sh -ec 'test "$(id -u)" = 10001 && test -S /run/grace-pdf/extractor.sock'
+compose_release exec -T api /bin/sh -ec 'test -S /run/grace-pdf/extractor.sock && test "$GRACE_STATEMENT_AI_ENABLED" = false'
 if [ "$ai_configured" = "true" ] && [ "${GRACE_AI_ENABLED:-false}" = "true" ]; then
   compose_release exec -T api /bin/sh -ec 'test "$(id -u)" = 10001 && test -r /run/secrets/openrouter_api_key && test -w /var/lib/grace/temporary-receipt-photos'
 fi
