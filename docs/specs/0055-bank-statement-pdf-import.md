@@ -4,14 +4,14 @@
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-18
 - Acceptance owner: владелец Grace
-- Acceptance record: отсутствует; итоговая спецификация ещё не принята
+- Acceptance record: архитектурное разделение принято владельцем 2026-10-18: «Принимаю такое разделение. Взять в работу»; итоговый технический контракт пока candidate
 - Согласованное направление: текстовый PDF одного дебетового счёта; 2026-10-18 владелец предоставил образец Т-Банка и потребовал учитывать различия банков через LLM или Jev
 - Specification branch: `codex/spec-0055-bank-pdf-import`
 - Implementation branch: отсутствует
 - Implementation commit: отсутствует
 - Baseline: main `a98e304` после PR #61; production `a89a855`
 - Этапы roadmap: 2 «Источники/подтверждение», первый срез этапа 5 «Банковские PDF»
-- Готовность к реализации: NOT_READY — решения D1–D4 и принятие итогового scope остаются открытыми
+- Готовность к реализации: NOT_READY — архитектура принята; конкретный provider/technical contract на review: [qualification](0055-technical-contract.md)
 
 ## Проблема и пользовательский результат
 
@@ -452,6 +452,12 @@ backup/restore и post-merge repeat. Платные API и реальные фи
 не нужны обычным offline CI suites. Raw sample/PII не попадают в Git.
 
 ## Открытые решения
+
+Архитектурное разделение принято владельцем. Локальная qualification и конкретные
+предложения D2/D3 вынесены в [технический контракт](0055-technical-contract.md):
+Poppler Alpine проверен на reference, публичные metadata модели сверены,
+старый generic provider tag не проходит verifier. Это не model quality PASS.
+
 
 | Решение | Предложение | Осталось |
 | --- | --- | --- |
