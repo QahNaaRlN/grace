@@ -1,11 +1,11 @@
 # Spec-first процесс Grace
 
-[SPEC-0055 — текстовая PDF-выписка дебетового счёта](0055-bank-statement-pdf-import.md)
-— `draft`, 2026-10-18: выбран первый срез источников/банковских PDF — один счёт,
-сохраняемый черновик, происхождение полей, matching и подтверждение через
-существующий import pipeline. Класс входа согласован; банк/образец, extractor
-и численные лимиты/retention остаются открытыми. Реализация не начата;
-production `a89a855` не меняется.
+[SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
+— `draft`, уточнён по образцу Т-Банка и поручению владельца 2026-10-18:
+локальный текст/страницы → AI-предложение с source spans → Go validation →
+сохраняемый review и подтверждаемый импорт. LLM — для структуры, Jev — кандидат
+для узких выборов/проверок после измерения. Доступный остаток не подменяет book
+balance. Provider/consent/budget/limits и acceptance ещё открыты; код не начат.
 
 Принята прямым поручением владельца 2026-10-17 «Приступай к разработке», статус `integrated` (PR #60, merge `a89a855`; локальные post-merge gates пройдены 2026-10-18; main CI run 39056633511 attempt 2 и Delivery run 39151285103 пройдены; production release `a89a855` подтверждён Deploy production run 39151600396, 2026-10-18; [evidence](0054-evidence.md)):
 [SPEC-0054 — рассрочки и BNPL](0054-installments-bnpl.md)
