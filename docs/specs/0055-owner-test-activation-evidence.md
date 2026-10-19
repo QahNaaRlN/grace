@@ -22,7 +22,7 @@ JSON и несовместимые profile/fixture/check/call/billing evidence.
 Production API/OpenAPI/финансовые правила не менялись. Публичный `/api/meta`
 показывает доступность сервиса; факт включения подтверждается отдельно через
 runtime `grace-statement-admin -mode=check`, image SHA и deployment checks.
-Новый report называется activation smoke, не qualified registry entry.
+Новый report называется activation smoke, не qualified registry entry. После enable workflow отдельно проверяет actual container Config.Image на exact release tag, runtime flag и fresh policy; только затем public smoke.
 
 ## Acceptance criteria → executable evidence
 

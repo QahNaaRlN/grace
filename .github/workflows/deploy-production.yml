@@ -166,6 +166,22 @@ jobs:
           ssh grace-deploy@195.133.195.190 \
             "/opt/grace/releases/$RELEASE_SHA/statement-ai.sh $STATEMENT_ACTION"
 
+      - name: Verify enabled Statement AI in exact runtime image
+        if: ${{ inputs.statement_action == 'enable' }}
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          ssh grace-deploy@195.133.195.190 'bash -s' -- "$RELEASE_SHA" <<'REMOTE'
+          set -eu
+          expected_sha="$1"
+          api=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=api)
+          test -n "$api"
+          image=$(docker inspect --format '{{.Config.Image}}' "$api")
+          test "$image" = "ghcr.io/qahnaarln/grace-api:sha-$expected_sha"
+          docker exec "$api" /bin/sh -ec 'test "$GRACE_STATEMENT_AI_ENABLED" = true; exec grace-statement-admin -mode=check'
+          echo 'Exact release image and enabled Statement AI runtime verified.'
+          REMOTE
+
       - name: Verify public authentication and application
         run: ./scripts/check-public-entrypoint.sh https://graceapp.ru
 
