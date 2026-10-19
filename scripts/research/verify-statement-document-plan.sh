@@ -45,7 +45,9 @@ out=Path(sys.argv[1]);variants=[]
 for name in ('v7','v8','current'):
  log=(out/(name+'.log')).read_text();count=len(re.findall(r'--- PASS: TestStatementDocumentLayouts/(?:columns|cards)/',log));assert count==28 and '\nFAIL' not in log
  variants.append({'prompt':name,'structuralCases':count,'passed':True})
-paths=['internal/statementextract/plan.go','internal/statementextract/aliases.go','internal/statementextract/document_layout_integration_test.go','Dockerfile.pdf-extractor','scripts/research/verify-statement-document-plan.sh','internal/pdfextract/testdata/columns.pdf','internal/pdfextract/testdata/cards.pdf']
-report={'plannerVersion':'statement-document-atom.v1','variants':variants,'providerCalls':0,'databaseWrites':0,'goVersion':subprocess.check_output(['go','version'],text=True).strip(),'popplerVersion':Path(sys.argv[2]).read_text().splitlines()[0],'sourceHashes':{p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in paths}}
+paths=['internal/statementextract/plan.go','internal/statementextract/aliases.go','internal/statementextract/schema.go','internal/statementextract/lexical.go','internal/statementextract/document_layout_integration_test.go','Dockerfile.pdf-extractor','scripts/research/verify-statement-document-plan.sh','internal/pdfextract/testdata/columns.pdf','internal/pdfextract/testdata/cards.pdf']
+source=Path('internal/statementextract/plan.go').read_text()
+profile={key:re.search(key+r'\s*=\s*"([^"]+)"',source).group(1) for key in ('PlannerVersion','AliasVersion','PromptVersion','RedactionVersion')}
+report={'currentProductionProfile':profile,'variants':variants,'providerCalls':0,'databaseWrites':0,'goVersion':subprocess.check_output(['go','version'],text=True).strip(),'popplerVersion':Path(sys.argv[2]).read_text().splitlines()[0],'sourceHashes':{p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in paths}}
 (out/'summary.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'passed':True,'structuralCases':sum(v['structuralCases'] for v in variants),'providerCalls':0,'databaseWrites':0}))
 PY

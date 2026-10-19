@@ -58,7 +58,7 @@ func TestPlanRedactionBoundsAndFullCoverage(t *testing.T) {
 	}
 	for _, chunk := range privatePlan.Chunks {
 		for _, span := range chunk.Spans {
-			if !strings.HasPrefix(span.Text, "[text_") {
+			if !strings.HasPrefix(span.Text, "[number_") || span.LexicalClass != ClassNumericFragment {
 				t.Fatal("numeric account fragments revealed", span.ID)
 			}
 		}
@@ -146,7 +146,7 @@ func TestContextHeadingInMainSpansStillRequiresCoverage(t *testing.T) {
 }
 
 func TestMoneySchemaExcludesHeadingDateAndCurrencyButKeepsOpaqueInteger(t *testing.T) {
-	c := Chunk{Spans: []RedactedSpan{{ID: "heading", Text: "Available"}, {ID: "currency", Text: "RUB"}, {ID: "date", Text: "19.10.2026"}, {ID: "amount", Text: "7777.00"}, {ID: "integer", Text: "[text_integer]"}}}
+	c := Chunk{Spans: []RedactedSpan{{ID: "heading", Text: "Available"}, {ID: "currency", Text: "RUB"}, {ID: "date", Text: "19.10.2026"}, {ID: "amount", Text: "7777.00", LexicalClass: ClassNumericFragment}, {ID: "integer", Text: "[number_integer]", LexicalClass: ClassNumericFragment}}}
 	var schema struct {
 		Defs map[string]struct {
 			Items struct {

@@ -48,7 +48,7 @@ func main() {
 	if *mode == "diagnostic" {
 		var report statementqualification.Report
 		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 262145))
-		if decoder.Decode(&report) != nil || report.Version != statementqualification.ReportVersion && report.Version != "statement.synthetic.v1" {
+		if decoder.Decode(&report) != nil || report.Version != statementqualification.ReportVersion && report.Version != "statement.synthetic.v1" && report.Version != "statement.synthetic.v2.document-alias" {
 			fail("invalid_qualification_report")
 		}
 		_ = json.NewEncoder(os.Stdout).Encode(safeDiagnostic(report))

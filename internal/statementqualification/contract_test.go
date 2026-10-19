@@ -21,7 +21,7 @@ func validReportFixture() Report {
 	r := Report{Version: ReportVersion, Time: now, Policy: policy, Profile: CurrentProfile(), MaximumMicros: 140000, ActualMicros: &actual, Passed: true}
 	for i, name := range []string{"columns", "cards"} {
 		r.Corpus = append(r.Corpus, CaseEvidence{name, FixtureHash(name), strings.Repeat("a", 64), strings.Repeat("b", 64), 1000})
-		checks := 17 + i
+		checks := 19 + i
 		r.Results = append(r.Results, Result{Name: name, Rows: 2, Checks: checks, Correct: checks, Passed: true})
 		r.Calls = append(r.Calls, Call{GenerationID: name + "-synthetic", InputTokens: 25000, OutputTokens: 3000, CostMicros: 50})
 		r.Traces = append(r.Traces, Trace{Name: name, Parts: []statementdata.Proposal{{}}})
@@ -36,6 +36,7 @@ func TestActivationReportRejectsLegacyIncompleteChangedEvidence(t *testing.T) {
 	}
 	cases := map[string]func(*Report){
 		"old_version":          func(r *Report) { r.Version = "statement.synthetic.v1" },
+		"scorer_version":       func(r *Report) { r.Profile.Scorer = "old" },
 		"profile":              func(r *Report) { r.Profile.Output = 2000 },
 		"fixture":              func(r *Report) { r.Corpus[1].FixtureHash = r.Corpus[0].FixtureHash },
 		"plan_hash":            func(r *Report) { r.Corpus[0].PlanHash = "" },
@@ -74,7 +75,8 @@ func TestDecodeReportRejectsAmbiguousInput(t *testing.T) {
 	if e != nil || ValidateReport(r, time.Now()) != nil {
 		t.Fatal(e)
 	}
-	for _, raw := range []string{`{"passed":false,"passed":true}`, `{"passed":false,"Passed":true}`, `{"profile":{"Input":1,"Input":2}}`, `{"unknown":1}`, `{} {}`, strings.Repeat(" ", 524289)} {
+	for _, raw := range []string{`{"passed":false,"passed":true}`, `{"passed":false,"Passed":true}`, `{"scorer_version":func(r *Report){r.Profile.Scorer="old"},
+ "profile":{"Input":1,"Input":2}}`, `{"unknown":1}`, `{} {}`, strings.Repeat(" ", 524289)} {
 		if _, e := DecodeReport(strings.NewReader(raw)); e == nil {
 			t.Fatal("ambiguous report accepted")
 		}

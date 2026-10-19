@@ -20,7 +20,7 @@ def references(value):
 
 def safe_view(report):
     if not isinstance(report, dict) or report.get("version") not in (
-            "statement.synthetic.v1", "statement.synthetic.v2.document-alias"):
+            "statement.synthetic.v1", "statement.synthetic.v2.document-alias", "statement.synthetic.v3.lexical-records"):
         raise ValueError("unsupported_synthetic_report")
     traces = []
     for trace in report.get("traces", [])[:2]:

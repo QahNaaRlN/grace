@@ -1,0 +1,40 @@
+{
+  "currentProductionProfile": {
+    "PlannerVersion": "statement-document-atom.v2.lexical-grounding",
+    "AliasVersion": "statement-alias.source-order-base36.v2",
+    "PromptVersion": "statement-span-mapping.v10.lexical-records",
+    "RedactionVersion": "statement-allowlist.v3.lexical-placeholders"
+  },
+  "variants": [
+    {
+      "prompt": "v7",
+      "structuralCases": 28,
+      "passed": true
+    },
+    {
+      "prompt": "v8",
+      "structuralCases": 28,
+      "passed": true
+    },
+    {
+      "prompt": "current",
+      "structuralCases": 28,
+      "passed": true
+    }
+  ],
+  "providerCalls": 0,
+  "databaseWrites": 0,
+  "goVersion": "go version go1.27.2 linux/amd64",
+  "popplerVersion": "pdftotext version 25.04.0",
+  "sourceHashes": {
+    "internal/statementextract/plan.go": "2918a7ab2b1c27938ab19dfa46e22d2c82f9af745bc9ef6c3858e2394687cd79",
+    "internal/statementextract/aliases.go": "8948a9833cf0a5ccc7757664d6b5610f8311b9f28561c69d54a31a41df46a59d",
+    "internal/statementextract/schema.go": "000763493446237c731f305e7491ed4f57d776a6c149e6897f3bf679fce91600",
+    "internal/statementextract/lexical.go": "ea95713b11a6e1c03e46e32bc9e74c2806ea357e876ea0c7d301fe0237ba812f",
+    "internal/statementextract/document_layout_integration_test.go": "6fa015812c827568306c7bed95bcffa46cc5e33d096fbea4972a98cab8793722",
+    "Dockerfile.pdf-extractor": "e17066f027214aa74d6e010486ef6f3edfb57b273f31ae1e67ee8e965fde5879",
+    "scripts/research/verify-statement-document-plan.sh": "7b1102b6c37037f0b0d4da37a757b40939fd1413068fcc938e0d8d3bce37814d",
+    "internal/pdfextract/testdata/columns.pdf": "097c3d35d4dd9787457b13f61bd524ff83c18d969ce50b93f7c8cecfeb569c8c",
+    "internal/pdfextract/testdata/cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6"
+  }
+}

@@ -1876,6 +1876,11 @@ export interface components {
             x: number;
             y: number;
             text: string;
+            /**
+             * @description Server-derived token shape before redaction; never a financial role or value.
+             * @enum {string}
+             */
+            lexicalClass: "numeric_fragment" | "other";
         };
         StatementChunk: {
             index: number;
