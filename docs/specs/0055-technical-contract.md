@@ -6,7 +6,7 @@
 - Functional spec: [SPEC-0055](0055-bank-statement-pdf-import.md)
 - Baseline: main `a98e304`, ветка спецификации `codex/spec-0055-bank-pdf-import`
 - Application implementation: integrated PR #64 (`b51b74f`); production manual path deployed 2026-10-19; private inference: not_run
-- Statement AI activation: disabled / BLOCKED (billing review, cards smoke), 2026-10-19; [актуальное evidence](0055-activation-evidence.md)
+- Statement AI activation: disabled / BLOCKED (расход сверён; cards smoke pending), 2026-10-19; [актуальное evidence](0055-activation-evidence.md)
 
 ## Принятое архитектурное решение
 

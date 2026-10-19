@@ -3,8 +3,8 @@
 Текущая сверка 2026-10-19: production global AI/key prerequisites проверены
 без экспорта configuration/budget/usage values. SPEC-0055 уже в production
 (текущий runtime `1ada384`); Statement AI false. Synthetic cards probe завершился
-ошибкой с unknown billing: общий ledger остановил новые платные calls до точной
-сверки generation ID. Columns PASS не является общей qualification.
+ошибкой с unknown billing. Точный расход сверён 2026-10-19
+(run `39217226634`), блокировка снята. Columns PASS не является общей qualification.
 [Фактические статусы/даты и qualification](specs/0055-activation-evidence.md).
 Нижние записи 2026-10-09/10 сохранены как исторические evidence, а не runtime status.
 

@@ -70,6 +70,6 @@ Grace продолжает работать: операции, графики, �
 [Гайд выписок](bank-statements.md) описывает source spans, ручное сопоставление,
 AI preview и раздельные consent/финансовое подтверждение. Включение Statement AI
 поручено владельцем, но пока выключено: synthetic cards smoke не пройден,
-учёт расхода требует сверки. [Статус активации](specs/0055-activation-evidence.md)
+расход уже сверён, качество cards ещё нужно подтвердить. [Статус активации](specs/0055-activation-evidence.md)
 фиксируется по факту. Модель не создаёт Posting; available balance не выдаётся
 за closing, отсутствие book balances показано явно. Jev/cascade не включены.
