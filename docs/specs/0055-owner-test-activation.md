@@ -2,7 +2,7 @@
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: **accepted**, 2026-10-19; прямой ответ владельца «Утвердить реализацию, один smoke и включение при PASS».
-- Implementation: **in_progress**. Разрешён ровно один smoke по указанным ниже границам; повтор после FAIL требует нового решения.
+- Implementation: **deployed**, PR #71 / production `711a13d`, 2026-10-19. Разрешённый smoke `39248364426` завершился columns quality FAIL, cards NOT_RUN; flag false. Это разрешение использовано. Новый S1.1 и его отдельный smoke приняты в [S1.1 contract](0055-s11-lexical-grounding.md).
 - Основание: цель владельца — «Достигнуть включения Statement AI для моих собственных тестов в production среде»; [accepted S1](0055-record-atomic-planning.md), [S1 implementation](0055-s1-evidence.md), [existing activation gate](0055-activation-evidence.md).
 - Baseline: main `8ed8e80a591c0696fd79e91de7a1d91ed9979917`, integrated PR #70. S1 не менял старый qualification cap; два новых plans сейчас получают `qualification_cap_exceeded` до reservation/call.
 

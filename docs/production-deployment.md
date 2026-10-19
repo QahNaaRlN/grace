@@ -342,12 +342,17 @@ Delivery публикует helper image с тем же exact SHA, что API/We
 Deploy production. `preserve` (default) сохраняет существующий runtime choice;
 `disable` выключает statement inference без вызовов модели. Перед enable
 `statement-ai.sh` запускает `grace-statement-admin -mode=qualify` на двух
-поставляемых synthetic PDF. Весь верхний plan ≤$0.032 резервируется в прежнем
-usage ledger; неизвестная стоимость не освобождается как бесплатная.
+поставляемых synthetic PDF. По отдельно [принятому owner-test контракту](specs/0055-owner-test-activation.md)
+это ровно один smoke, ≤2 calls / ≤$0.14 aggregate provider ceiling,
+120 s/call и 300 s/run. Весь plan резервируется в прежнем usage ledger;
+allowance/fees не повышаются, неизвестная стоимость не освобождается как бесплатная.
+Новый платный run после FAIL требует отдельного решения. Protected report v2
+связан с exact fixtures и текущим S1 profile; summary не принимает старый или
+неполный report. Два synthetic PASS разрешают owner testing, не полную qualification.
 
 После успешного smoke и проверки endpoint metadata атомарно записывается
 `/opt/grace/shared/secrets/statement.env` (0600) и выполняется обычный deploy
-того же SHA с backup/readiness. Флаг/policy переживают следующие релизы.
+того же SHA с backup/readiness. Workflow дополнительно сверяет actual API image tag с exact release SHA, runtime enabled flag и current policy; затем выполняет public/auth smoke. Флаг/policy переживают следующие релизы.
 Существующие analysis/receipt не меняются, global kill switch сохраняется.
 Failed smoke не меняет настройку; failed rollout восстанавливает прежний файл
 и snapshotted runtime. Повтор enable при уже включённой действующей policy

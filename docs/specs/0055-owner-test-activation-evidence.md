@@ -52,3 +52,26 @@ production cost/remaining не публикуются.
 При PASS возможен ранний owner-test release по явно принятому amendment.
 S2, S3/S4, AC12/Jev и draft SPEC-0056 не получают qualification/acceptance от
 этого двухисходного smoke. Исторические FAIL и их protected audit сохраняются.
+
+## Live outcome — 2026-10-19
+
+PR #71 integrated main `711a13d2d01e5182169a85cc8972f8c91a10a660`.
+PR CI `39246083667`, main CI `39247242557`, Delivery `39248213380` PASS.
+Post-merge `make test` / `go vet` / `git diff --check` PASS, primary clean.
+Aggregate readiness `39248103923` PASS. Deploy `39248364426` internal health
+PASS 2026-10-19 11:58:36 UTC / 16:58:36 +05:00; activation step FAIL 11:58:41 UTC.
+
+OA7: **FAIL on columns quality** (`row_count`, `turnover`, `blockers`), cards
+**NOT_RUN**. Protected audit retained; no paid retry. OA8: **NOT_ACHIEVED**,
+Statement AI false. Public standalone smoke after failure PASS: `/`, `/login`,
+`/api/meta` 200; protected routes 401. Read-only `39248740781` PASS confirms no
+uncertain usage blocker; safe locator diagnosis `39249075304` PASS.
+
+[Sanitized refs](../research/statement-quality/owner-smoke-2026-10-19-locators.json)
+show 3 rows instead of 2; extra money selection contains three nonnumeric words
+and a minus sign from a description. Both legitimate descriptions bind other
+records/page headings. No original values or billing metadata are published.
+Go rejected the proposal; all financial guards remain. Independent S1.1
+[contract](0055-s11-lexical-grounding.md) strengthens lexical eligibility and
+description scoring; its separately approved new run is not a retry under this
+exhausted authorization. Full qualification/owner functional acceptance pending.

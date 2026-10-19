@@ -53,6 +53,7 @@ jobs:
           postgres=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=postgres)
           test -n "$api" && test -n "$postgres"
           docker exec "$api" /bin/sh -ec 'test "${GRACE_AI_ENABLED:-false}" = true && test -r /run/secrets/openrouter_api_key'
+          docker exec "$api" /bin/sh -ec 'case "${GRACE_STATEMENT_AI_ENABLED:-false}" in true) echo statement_ai_runtime_enabled ;; false) echo statement_ai_runtime_disabled ;; *) exit 1 ;; esac'
           # Emit only fixed error/scorer codes from our synthetic report, never usage.
           report=$(find /opt/grace/shared -maxdepth 1 -name 'statement-qualification-*.json' -type f | sort | tail -n 1)
           if [ -n "$report" ]; then

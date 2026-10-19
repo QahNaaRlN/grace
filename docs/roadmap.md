@@ -1,17 +1,16 @@
 # Roadmap Grace
 
 Актуализация: 2026-10-19 (Asia/Yekaterinburg; UTC указан отдельно в evidence).
-В `main` интегрирована SPEC-0055: PR #64, merge `b51b74f`, post-merge CI
-[39167930999](https://github.com/QahNaaRlN/grace/actions/runs/39167930999) PASS.
-Production `1ada384` развёрнут с internal health PASS 2026-10-19 03:28:08 +05:00
-(2026-10-18 22:28:08 UTC), [run 39172255492](https://github.com/QahNaaRlN/grace/actions/runs/39172255492).
-Механизм активации интегрирован PR #65. Ручной PDF import доступен; последующий
-AI activation step FAIL, флаг остался false. Columns synthetic smoke прошёл
-на кандидате v7, cards — нет. Расход provider failure точно сверён 2026-10-19 12:38:04 +05:00
-(run `39217226634`); v7 cards оставил четыре непокрытых фрагмента, v8 дал регрессию и отклонён.
-Quality gate FAIL, Statement AI activation BLOCKED.
-Исправления и [подробное evidence](specs/0055-activation-evidence.md) ведутся
-в `codex/statement-ai-activation`.
+В `main` интегрированы SPEC-0055, S1 (PR #70) и owner-test activation adapter
+(PR #71). Production `711a13d`: main CI `39247242557` и Delivery `39248213380`
+PASS; deploy `39248364426` internal health PASS 2026-10-19 16:58:36 +05:00.
+Единственный разрешённый S1 smoke завершился columns quality FAIL: 3 rows вместо
+2, text-as-money и неверные record descriptions; cards NOT_RUN, Statement AI false.
+Post-failure readiness `39248740781` PASS: unknown usage не блокирует.
+[Audit](specs/0055-owner-test-activation-evidence.md) сохраняет этот FAIL.
+[S1.1](specs/0055-s11-lexical-grounding.md) отдельно принят владельцем:
+lexical monetary eligibility, source-order aliases, stronger description scorer
+и один новый smoke ≤2 calls / $0.14 aggregate. Implementation not_started.
 Полная AC12 qualification, сравнение Jev/cascade и owner functional acceptance
 не завершены. SPEC-0019 остаётся draft; номер 0025 не использован.
 Унаследованные замечания ShellCheck сохранены в evidence SPEC-0050.
@@ -33,13 +32,13 @@ SPEC-0054 ранее выпущена как `a89a855` (run `39151600396`, 2026-
 
 | Направление | Сделано | Осталось / зависимость |
 | --- | --- | --- |
-| Выпуск `main` | `1ada384`: SPEC-0055 и механизм активации, deploy/internal health PASS 2026-10-19 | Activation FAIL; public post-enable smoke skipped; owner UI check pending |
+| Выпуск `main` | `711a13d`: S1/activation adapter, CI/Delivery/deploy/internal health PASS 2026-10-19 | Columns smoke FAIL; AI false; принят S1.1 и один новый smoke; owner UI check pending |
 | ИИ (OpenRouter) | Global/key prerequisites подтверждены; отдельные statement consent/flag/policy и bounded qualifier реализованы | Statement AI false; unknown billing сверён run `39217226634`. Нужны оба synthetic cases PASS; AC12/Jev/cascade открыты |
 | Напоминания | Durable outbox за 3 и 1 день, verified email, общий лимит | Подтвердить production SMTP и сверить reservations с облачным счётом |
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
 | Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Интегрирована: PR #57, merge `95c5fa8`, CI run 39032209158, в production с `95c5fa8` ([evidence](specs/0053-evidence.md)) |
 | Рассрочки и BNPL | SPEC-0054 влита PR #60 (`a89a855`): покупка/долг/переводы и ручное подтверждение карточного грейса | Post-merge gates, main CI, Delivery и production release `a89a855` пройдены; остаётся owner UI smoke |
-| CI и статусы | PR #65, main CI `39171530255` и Delivery `39172115986` PASS; deploy/internal health `1ada384` PASS | Run `39172255492` итог FAIL из-за activation, последующий public smoke skipped; отдельный read-only public smoke 2026-10-19 PASS |
+| CI и статусы | PR #71, main CI `39247242557`, Delivery `39248213380`, deploy/internal health `711a13d` PASS | Run `39248364426` activation FAIL; standalone public/auth smoke PASS; S1.1 ещё не реализован |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Реализованные этапы
@@ -105,7 +104,7 @@ post-merge evidence. Это не означает реализацию всег�
 | 0052 | Разделение Web по маршрутам, восстановление после ошибки чанка; статус `integrated` | `95c5fa8` | [Scope](specs/0052-route-code-splitting.md) | [Evidence](specs/0052-evidence.md) |
 | 0053 | Тело/проценты кредита, досрочные погашения, снимки долга и разбивка статистики | `95c5fa8` | [Scope](specs/0053-loan-principal-interest.md) | [Evidence](specs/0053-evidence.md) |
 | 0054 | Рассрочки/BNPL, связь покупки и долга, распределение переводов, общее банковское требование карты | `a89a855` | [Scope](specs/0054-installments-bnpl.md) | [Evidence](specs/0054-evidence.md) |
-| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `b51b74f` (manual path; AI false) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation BLOCKED](specs/0055-activation-evidence.md) |
+| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `711a13d` (manual + S1; AI false) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation quality FAIL](specs/0055-activation-evidence.md) |
 
 Ранние записи evidence могут предшествовать итоговой интеграции; итоговый
 статус этапа подтверждают строка статуса спецификации и дополнение в её
@@ -343,3 +342,13 @@ $0.14 total, прежний shared budget), включение только пр
 [Implementation evidence](specs/0055-owner-test-activation-evidence.md) отделяет
 offline проверки от предстоящих release/runtime gates. Production AI в этом
 snapshot не включён; full qualification S2–S5 и AC12 остаются отдельными.
+
+## S1 live outcome и S1.1 — 2026-10-19
+
+Один разрешённый S1 smoke `39248364426` использован и остановлен после
+columns quality FAIL; cards NOT_RUN, никакого повтора до PASS.
+Read-only locators `39249075304` и network-none [offline evidence](research/statement-quality/owner-smoke-candidate-offline.json)
+доказали permissive money eligibility и wrong description bindings. Владелец
+ответил «Утвердить S1.1, один smoke и включение при PASS» на точный
+[contract](specs/0055-s11-lexical-grounding.md); прежний shared budget/fees и
+полные quality/confirmation gates сохраняются. Цель owner-test enable активна.
