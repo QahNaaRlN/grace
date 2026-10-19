@@ -73,6 +73,14 @@ record packing, 24-case corpus manifest (2 existing / 22 planned) и этапы
 planner → coverage protocol → corpus → bounded evaluation → registry.
 Дополнительный model-selection код не реализован; статус этого контракта draft.
 
+Follow-up 2026-10-19: [S1 candidate](0055-record-atomic-planning.md) после
+[280 offline cases](../research/statement-quality/atoms.md) предлагает один
+whole-document call с aliases и bounds 100000/16000 вместо 10000/2000.
+Его theoretical provider ceiling — 70000 micros/call при прежней pinned policy.
+Старые per-run/campaign envelopes этого draft нельзя считать утверждённым
+бюджетом нового profile; до SPEC-0056 acceptance их нужно пересчитать по
+принятому planner и preflight corpus. Реестр моделей и paid runs не разрешены.
+
 ## Реестр и qualification
 
 Реестр — защищённая операторская конфигурация с неизменяемыми версиями;

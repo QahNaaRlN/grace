@@ -1,0 +1,116 @@
+{
+  "providerCalls": 0,
+  "databaseWrites": 0,
+  "results": [
+    {
+      "prompt": "v7",
+      "algorithm": "gap",
+      "cases": 28,
+      "accepted": 24,
+      "refused": 4,
+      "acceptedCoreSplit": 2,
+      "acceptedFullRecordSplit": 2,
+      "geometricRecordSplit": 4,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v7",
+      "algorithm": "blocks",
+      "cases": 28,
+      "accepted": 24,
+      "refused": 4,
+      "acceptedCoreSplit": 4,
+      "acceptedFullRecordSplit": 12,
+      "geometricRecordSplit": 27,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v7",
+      "algorithm": "document",
+      "cases": 28,
+      "accepted": 7,
+      "refused": 21,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": false
+    },
+    {
+      "prompt": "v7",
+      "algorithm": "document_alias",
+      "cases": 28,
+      "accepted": 21,
+      "refused": 7,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v7",
+      "algorithm": "document_alias_90k",
+      "cases": 28,
+      "accepted": 28,
+      "refused": 0,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v8",
+      "algorithm": "gap",
+      "cases": 28,
+      "accepted": 24,
+      "refused": 4,
+      "acceptedCoreSplit": 2,
+      "acceptedFullRecordSplit": 3,
+      "geometricRecordSplit": 4,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v8",
+      "algorithm": "blocks",
+      "cases": 28,
+      "accepted": 24,
+      "refused": 4,
+      "acceptedCoreSplit": 5,
+      "acceptedFullRecordSplit": 17,
+      "geometricRecordSplit": 27,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v8",
+      "algorithm": "document",
+      "cases": 28,
+      "accepted": 0,
+      "refused": 28,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": false
+    },
+    {
+      "prompt": "v8",
+      "algorithm": "document_alias",
+      "cases": 28,
+      "accepted": 20,
+      "refused": 8,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": true
+    },
+    {
+      "prompt": "v8",
+      "algorithm": "document_alias_90k",
+      "cases": 28,
+      "accepted": 28,
+      "refused": 0,
+      "acceptedCoreSplit": 0,
+      "acceptedFullRecordSplit": 0,
+      "geometricRecordSplit": 0,
+      "baselineAccepted": true
+    }
+  ]
+}

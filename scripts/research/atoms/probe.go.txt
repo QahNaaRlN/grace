@@ -1,0 +1,341 @@
+// Offline prototypes; public synthetic fixtures only. No model or SQL imports.
+package main
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/QahNaaRlN/grace/internal/pdfextract"
+	"github.com/QahNaaRlN/grace/internal/statementdata"
+	"github.com/QahNaaRlN/grace/internal/statementextract"
+)
+
+type result struct {
+	Fixture     string `json:"fixture"`
+	Mutation    string `json:"mutation"`
+	LayoutHash  string `json:"layoutHash"`
+	AtomsHash   string `json:"atomsHash"`
+	Atoms       int    `json:"atoms"`
+	Chunks      int    `json:"chunks"`
+	Bytes       int    `json:"maximumBytes"`
+	CoreSplit   []int  `json:"splitCoreRows"`
+	RecordSplit []int  `json:"splitFullRecordRows"`
+	AtomSplit   []int  `json:"recordSplitAcrossAtoms"`
+	SourceOnce  bool   `json:"sourceExactlyOnce"`
+	Error       string `json:"error,omitempty"`
+}
+
+func idsAtRows(d statementdata.Document, name string, full bool) [][]string {
+	out := [][]string{}
+	for row, anchor := range []string{"19.10.2026", "21.10.2026"} {
+		var base statementdata.Span
+		count := 0
+		for _, s := range d.Spans {
+			if s.Text == anchor {
+				base = s
+				count++
+			}
+		}
+		if count != 1 {
+			panic("nonunique public golden anchor")
+		}
+		ids := []string{}
+		if full {
+			height := 20.0
+			if name == "cards" {
+				height = 80
+				if row == 1 {
+					height = 60
+				}
+			}
+			for _, s := range d.Spans {
+				if s.Page == base.Page && s.Box.YMin >= base.Box.YMin-0.01 && s.Box.YMin <= base.Box.YMin+height+0.01 {
+					ids = append(ids, s.ID)
+				}
+			}
+		} else {
+			texts := [][]string{{"19.10.2026", "20.10.2026", "-1234.56", "-15.00"}, {"21.10.2026", "22.10.2026", "+2000.00"}}[row]
+			if name == "cards" {
+				if row == 0 {
+					texts = append(texts, "10:30", "11:00")
+				} else {
+					texts = append(texts, "12:15", "13:20")
+				}
+			}
+			for _, text := range texts {
+				found := 0
+				for _, s := range d.Spans {
+					if s.Text == text {
+						ids = append(ids, s.ID)
+						found++
+					}
+				}
+				if found != 1 {
+					panic("nonunique public core selector")
+				}
+			}
+		}
+		if len(ids) == 0 {
+			panic("empty golden record")
+		}
+		sort.Strings(ids)
+		out = append(out, ids)
+	}
+	return out
+}
+func splits(groups [][]string, rows [][]string) []int {
+	owner := map[string]int{}
+	for i, g := range groups {
+		for _, id := range g {
+			owner[id] = i + 1
+		}
+	}
+	out := []int{}
+	for i, row := range rows {
+		first := owner[row[0]]
+		bad := first == 0
+		for _, id := range row {
+			if owner[id] != first || owner[id] == 0 {
+				bad = true
+			}
+		}
+		if bad {
+			out = append(out, i+1)
+		}
+	}
+	return out
+}
+
+type limitResult struct {
+	Name   string `json:"name"`
+	Bytes  int    `json:"bytes"`
+	Error  string `json:"error"`
+	Passed bool   `json:"passed"`
+}
+
+func boundaryChecks() []limitResult {
+	policy := statementextract.Policy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000}
+	base := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "synth-span", Page: 1, Block: 1, Line: 1, Word: 1, Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 100, YMax: 6}, Text: "a"}}}
+	plan, e := statementextract.BuildPlan(base, policy, []string{"synth-span"})
+	if e != nil || len(plan.Chunks) != 1 {
+		panic("boundary baseline rejected")
+	}
+	overhead := statementextract.InputBytes(plan.Chunks[0]) - 1
+	out := []limitResult{}
+	for _, delta := range []int{-1, 0, 1} {
+		d := base
+		d.Spans = append([]statementdata.Span{}, base.Spans...)
+		target := statementextract.ResearchByteCap() + delta
+		d.Spans[0].Text = strings.Repeat("a", target-overhead)
+		p, e := statementextract.BuildPlan(d, policy, []string{"synth-span"})
+		code := ""
+		if e != nil {
+			code = e.Error()
+		}
+		passed := (delta <= 0 && e == nil && len(p.Chunks) == 1 && statementextract.InputBytes(p.Chunks[0]) == target) || (delta > 0 && code == "statement_atomic_block_limit")
+		if !passed {
+			panic("exact byte boundary mismatch")
+		}
+		out = append(out, limitResult{Name: fmt.Sprintf("bytes_%d", target), Bytes: target, Error: code, Passed: passed})
+	}
+	if cap := statementextract.ResearchSpanCap(); cap > 0 {
+		if plan.MaximumMicros != 70000 || len(plan.Chunks[0].Context) != 0 {
+			panic("wrong bounded document policy")
+		}
+		d := base
+		d.Spans = nil
+		for i := 0; i <= cap; i++ {
+			d.Spans = append(d.Spans, statementdata.Span{ID: fmt.Sprintf("id-%d", i), Page: 1, Block: 1, Line: 1, Word: i + 1, Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 2, YMax: 6}, Text: "RUB"})
+		}
+		under := d
+		under.Spans = d.Spans[:cap]
+		accepted, e := statementextract.BuildPlan(under, policy, nil)
+		if e != nil || len(accepted.Chunks) != 1 {
+			panic("span cap boundary refused")
+		}
+		out = append(out, limitResult{Name: "spans_2000", Passed: true})
+		_, e = statementextract.BuildPlan(d, policy, nil)
+		if e == nil || e.Error() != "statement_document_span_limit" {
+			panic("span guard did not refuse")
+		}
+		out = append(out, limitResult{Name: "spans_2001", Error: e.Error(), Passed: true})
+	}
+	return out
+}
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	client, e := pdfextract.NewClient("/run/grace-pdf/extractor.sock")
+	if e != nil {
+		panic(e)
+	}
+	results := []result{}
+	fixtures := map[string]string{}
+	for _, name := range []string{"columns", "cards"} {
+		raw, e := os.ReadFile("/fixtures/" + name + ".pdf")
+		if e != nil {
+			panic(e)
+		}
+		sum := sha256.Sum256(raw)
+		fixtures[name] = hex.EncodeToString(sum[:])
+		original, e := client.Extract(ctx, raw)
+		if e != nil {
+			panic(e)
+		}
+		core, full := idsAtRows(original, name, false), idsAtRows(original, name, true)
+		mutations := []string{"prefix_0", "prefix_4", "prefix_8", "prefix_12", "prefix_16", "prefix_24", "prefix_32", "prefix_64", "translate_y_3", "scale_1_5", "wide_gap_in_record", "cross_page_record", "side_by_side_records", "shuffled_input"}
+		for _, mutation := range mutations {
+			d := original
+			d.Pages = append([]statementdata.Page{}, original.Pages...)
+			d.Spans = append([]statementdata.Span{}, original.Spans...)
+			prefix := []statementdata.Span{}
+			padding := 0
+			fmt.Sscanf(mutation, "prefix_%d", &padding)
+			for i := 0; i < padding; i++ {
+				x := float64(1 + i%50*10)
+				prefix = append(prefix, statementdata.Span{ID: fmt.Sprintf("p1-b90000-l1-w%d", i+1), Page: 1, Block: 90000, Line: 1, Word: i + 1, Box: statementdata.Box{XMin: x, YMin: 2, XMax: x + 8, YMax: 7}, Text: "SYNTHETIC"})
+			}
+			d.Spans = append(prefix, d.Spans...)
+			firstIDs := map[string]bool{}
+			for _, id := range full[0] {
+				firstIDs[id] = true
+			}
+			secondIDs := map[string]bool{}
+			for _, id := range full[1] {
+				secondIDs[id] = true
+			}
+			var firstY, secondY float64
+			for _, s := range d.Spans {
+				if s.Text == "19.10.2026" {
+					firstY = s.Box.YMin
+				}
+				if s.Text == "21.10.2026" {
+					secondY = s.Box.YMin
+				}
+			}
+			if mutation == "cross_page_record" {
+				d.Pages = append(d.Pages, statementdata.Page{Number: len(d.Pages) + 1, Width: 600, Height: 800})
+			}
+			for i := range d.Spans {
+				s := &d.Spans[i]
+				switch mutation {
+				case "translate_y_3":
+					s.Box.YMin += 3
+					s.Box.YMax += 3
+				case "scale_1_5":
+					s.Box.XMin *= 1.5
+					s.Box.XMax *= 1.5
+					s.Box.YMin *= 1.5
+					s.Box.YMax *= 1.5
+				case "wide_gap_in_record":
+					if firstIDs[s.ID] && s.Box.YMin > firstY+5 {
+						s.Box.YMin += 35
+						s.Box.YMax += 35
+					}
+				case "cross_page_record":
+					if firstIDs[s.ID] && s.Box.YMin > firstY+5 {
+						s.Page = len(d.Pages)
+						s.Box.YMin -= firstY
+						s.Box.YMax -= firstY
+					}
+				case "side_by_side_records":
+					if secondIDs[s.ID] {
+						s.Page = 1
+						s.Box.XMin += 220
+						s.Box.XMax += 220
+						s.Box.YMin -= secondY - firstY
+						s.Box.YMax -= secondY - firstY
+					}
+				}
+			}
+			if mutation == "translate_y_3" {
+				for i := range d.Pages {
+					d.Pages[i].Height += 3
+				}
+			}
+			if mutation == "scale_1_5" {
+				for i := range d.Pages {
+					d.Pages[i].Width *= 1.5
+					d.Pages[i].Height *= 1.5
+				}
+			}
+			// This is an adversarial synthetic layout, not a bank or new PDF.
+			if mutation == "side_by_side_records" {
+				for i := range d.Pages {
+					d.Pages[i].Width += 220
+				}
+			}
+			if mutation == "shuffled_input" {
+				for l, r := 0, len(d.Spans)-1; l < r; l, r = l+1, r-1 {
+					d.Spans[l], d.Spans[r] = d.Spans[r], d.Spans[l]
+				}
+			}
+			sort.SliceStable(d.Spans, func(i, j int) bool { return d.Spans[i].Page < d.Spans[j].Page })
+			if e := d.Validate(); e != nil {
+				panic(fmt.Sprintf("invalid synthetic mutation %s: %v", mutation, e))
+			}
+			aliases := statementextract.ResearchAliasMap(d)
+			canonicalSeen := map[string]bool{}
+			for _, id := range aliases {
+				if canonicalSeen[id] {
+					panic("alias collision")
+				}
+				canonicalSeen[id] = true
+			}
+			if len(canonicalSeen) != len(d.Spans) {
+				panic("alias is not a bijection")
+			}
+			atoms := statementextract.ResearchAtoms(d)
+			out := result{Fixture: name, Mutation: mutation, LayoutHash: d.Hash(), AtomsHash: statementextract.Hash(atoms), Atoms: len(atoms), CoreSplit: []int{}, RecordSplit: []int{}, AtomSplit: splits(atoms, full)}
+			plan, e := statementextract.BuildPlan(d, statementextract.Policy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000}, nil)
+			if e != nil {
+				out.Error = e.Error()
+				results = append(results, out)
+				continue
+			}
+			groups := [][]string{}
+			seen := map[string]int{}
+			for _, c := range plan.Chunks {
+				g := []string{}
+				for _, s := range c.Spans {
+					id := statementextract.ResearchCanonical(d, s.ID)
+					if id == "" {
+						panic("unknown wire alias")
+					}
+					g = append(g, id)
+					seen[id]++
+				}
+				groups = append(groups, g)
+				if n := statementextract.InputBytes(c); n > out.Bytes {
+					out.Bytes = n
+				}
+			}
+			out.Chunks = len(groups)
+			out.CoreSplit = splits(groups, core)
+			out.RecordSplit = splits(groups, full)
+			out.SourceOnce = len(seen) == len(d.Spans)
+			for _, n := range seen {
+				if n != 1 {
+					out.SourceOnce = false
+				}
+			}
+			if !out.SourceOnce || out.Bytes > statementextract.ResearchByteCap() {
+				panic("source/budget invariant violated")
+			}
+			// Rebuild to catch nondeterministic map iteration in the candidate.
+			repeat, e := statementextract.BuildPlan(d, plan.Policy, nil)
+			if e != nil || statementextract.Hash(plan) != statementextract.Hash(repeat) {
+				panic("nondeterministic candidate plan")
+			}
+			results = append(results, out)
+		}
+	}
+	json.NewEncoder(os.Stdout).Encode(map[string]any{"studyVersion": "statement-atoms.v1", "promptVersion": statementextract.PromptVersion, "extractorVersion": statementdata.ExtractorVersion, "fixtureHashes": fixtures, "inputByteCap": statementextract.ResearchByteCap(), "providerCalls": 0, "databaseWrites": 0, "results": results, "boundaryChecks": boundaryChecks()})
+}

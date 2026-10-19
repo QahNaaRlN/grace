@@ -1,0 +1,14 @@
+{
+  "baselineCommit": "7be572ceaac5819a2031059ef60388dcd0711614",
+  "historicalPromptCommit": "8a83cdcad87cb62e5a8e6b7e5213c3201bd64d37",
+  "popplerVersion": "pdftotext version 25.04.0",
+  "goVersion": "go version go1.27.2 linux/amd64",
+  "fileHashes": {
+    "scripts/research/probe-statement-atoms.sh": "608a2e4abb1014052bc038c72dc55dfc928c998914f90bbe3b75ef2a6f248f0e",
+    "scripts/research/atoms/probe.go.txt": "a37c1985f9c087586e734f742b2e3ef69717c74b23ac4716200fb1224a6fd285",
+    "scripts/research/atoms/groups.go.txt": "6d7e91fda4f27b6ad819acd5e823d6937e5809ea4efe622911e5c0c379f1991d",
+    "Dockerfile.pdf-extractor": "e17066f027214aa74d6e010486ef6f3edfb57b273f31ae1e67ee8e965fde5879"
+  },
+  "providerCalls": 0,
+  "databaseWrites": 0
+}
