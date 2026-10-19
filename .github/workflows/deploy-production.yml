@@ -8,6 +8,11 @@ on:
         required: false
         type: string
 
+      qualify_statement_candidate:
+        description: Fixed synthetic qualifier, without changing app configuration
+        required: false
+        default: false
+        type: boolean
       reconcile_statement_usage:
         description: Reconcile the specifically approved synthetic run, using protected generation IDs
         required: false
@@ -84,6 +89,38 @@ jobs:
           trap 'ssh grace-deploy@195.133.195.190 "rm -f $script"' EXIT
           case "$RECONCILE_MODE" in inspect) flag='' ;; apply) flag='--apply' ;; *) exit 2 ;; esac
           printf '%s' "$RECONCILE_IDS" | ssh grace-deploy@195.133.195.190 "python3 $script $flag"
+
+      - name: Set up Go for explicit synthetic candidate qualification
+        if: ${{ inputs.qualify_statement_candidate }}
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build bounded synthetic qualifier candidate
+        if: ${{ inputs.qualify_statement_candidate }}
+        run: CGO_ENABLED=0 go build -trimpath -o /tmp/grace-statement-candidate ./cmd/statement-admin
+      - name: Qualify candidate on synthetic fixtures without changing app configuration
+        if: ${{ inputs.qualify_statement_candidate }}
+        run: |
+          scp /tmp/grace-statement-candidate "grace-deploy@195.133.195.190:/opt/grace/shared/statement-candidate-$GITHUB_RUN_ID"
+          ssh grace-deploy@195.133.195.190 bash -s "$GITHUB_RUN_ID" <<'REMOTE'
+          set -eu
+          run_id="$1"
+          case "$run_id" in *[!0-9]*|'') exit 2 ;; esac
+          api=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=api)
+          candidate="/tmp/grace-statement-candidate-$run_id"
+          upload="/opt/grace/shared/statement-candidate-$run_id"
+          trap 'docker exec "$api" rm -f "$candidate" >/dev/null 2>&1 || true; rm -f "$upload"' EXIT
+          docker exec -i "$api" /bin/sh -ec 'umask 077; set -C; cat > "$1"; chmod 700 "$1"' sh "$candidate" < "$upload"
+          umask 077
+          report="/opt/grace/shared/statement-qualification-$(date -u +%Y%m%dT%H%M%SZ)-candidate-$run_id.json"
+          if ! docker exec "$api" "$candidate" -mode=qualify > "$report"; then
+            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"validation":\[[a-zA-Z0-9_":,.-]*\]|"coverage":\[[a-zA-Z0-9_":,.-]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
+            docker exec -i "$api" "$candidate" -mode=diagnostic < "$report"
+            exit 1
+          fi
+          docker exec -i "$api" "$candidate" -mode=summary < "$report"
+          REMOTE
 
   deploy:
     if: ${{ !inputs.inspect_statement_only && inputs.reconcile_statement_usage == 'none' }}

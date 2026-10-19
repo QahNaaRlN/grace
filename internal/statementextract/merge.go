@@ -73,7 +73,23 @@ func MergeProposals(plan Plan, parts []statementdata.Proposal) (statementdata.Pr
 				return out, e
 			}
 		}
+		boundValues := map[string]statementdata.Selection{"openingBookBalance": p.Header.OpeningBookBalance, "closingBookBalance": p.Header.ClosingBookBalance, "availableBalanceObserved": p.Header.AvailableBalanceObserved, "debitTurnover": p.Header.DebitTurnover, "creditTurnover": p.Header.CreditTurnover}
 		for role, ids := range p.Header.Labels {
+			value, knownRole := boundValues[role]
+			if !knownRole {
+				return out, errors.New("invalid_header_role")
+			}
+			// An unbound context hint is not a financial field. Validate its
+			// references, but never let it claim coverage or displace a label
+			// attached to an actual value in another chunk.
+			for _, id := range ids {
+				if !allowed[id] {
+					return out, errors.New("proposal_outside_chunk")
+				}
+			}
+			if len(value) == 0 {
+				continue
+			}
 			if e := check(ids); e != nil {
 				return out, e
 			}
