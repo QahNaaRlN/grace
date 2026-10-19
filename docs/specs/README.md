@@ -1,5 +1,13 @@
 # Spec-first процесс Grace
 
+[SPEC-0056 — автоматический выбор модели для банковской выписки](0056-statement-model-selection.md)
+— `draft`, 2026-10-19; направление согласовано владельцем («Хорошо»),
+конкретный контракт ожидает review; implementation `not_started`.
+Предложен выбор из квалифицированных model/endpoint пар до consent, закрепление
+одной policy на attempt и прежний общий бюджет. Это не fallback после отправки
+данных и не обход unknown billing SPEC-0055; платные calls/production changes
+в документационном пакете не выполняются. Ветка основана на draft PR #66.
+
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:
 локальный текст/страницы → AI-предложение с source spans → Go validation →
