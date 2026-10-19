@@ -255,6 +255,15 @@ Origin. Спецификации извлечения определяют со�
 consent, закреплённый маршрут без скрытого fallback. Сверка расхода
 SPEC-0055 завершена; cards quality FAIL сохраняется, Statement AI false.
 Конкретный реестр допущенных моделей и runtime enable ещё не утверждены.
+2026-10-19 владелец принял [проработку устойчивости](research/statement-quality/README.md)
+(«Принимаю», PR #68):
+32 offline probes выявили разрыв record core при добавлении нефинансового
+префикса. Предложены отдельные пакеты planner, явного coverage protocol и
+24-case corpus (2 PDF существуют, 22 planned). Model calls = 0; реализация
+этих изменений not_started, Statement AI false. Следующий шаг — offline
+выбор и проверка геометрического алгоритма по
+[S1 technical candidate](specs/0055-record-atomic-planning.md), затем review
+конкретной технической редакции до product implementation.
 
 Это рекомендуемая последовательность с зависимостями, без обещания сроков.
 Каждый этап может потребовать нескольких технических спецификаций; до кода

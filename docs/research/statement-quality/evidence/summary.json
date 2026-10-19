@@ -1,0 +1,270 @@
+{
+  "providerCalls": 0,
+  "databaseWrites": 0,
+  "results": [
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_0",
+      "chunks": 1,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_4",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_8",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_12",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_16",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_24",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_32",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "columns",
+      "variant": "layout_prefix_64",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_0",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_4",
+      "chunks": 2,
+      "splitCoreRows": [
+        2
+      ],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_8",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_12",
+      "chunks": 2,
+      "splitCoreRows": [
+        1
+      ],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_16",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_24",
+      "chunks": 3,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_32",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v7.explicit-per-row-currency",
+      "name": "cards",
+      "variant": "layout_prefix_64",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_0",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_4",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_8",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_12",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_16",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_24",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_32",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "columns",
+      "variant": "layout_prefix_64",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_0",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_4",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_8",
+      "chunks": 2,
+      "splitCoreRows": [
+        1
+      ],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_12",
+      "chunks": 2,
+      "splitCoreRows": [
+        1
+      ],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_16",
+      "chunks": 2,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_24",
+      "chunks": 3,
+      "splitCoreRows": [],
+      "error": null
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_32",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "prompt": "statement-span-mapping.v8.source-coverage-audit",
+      "name": "cards",
+      "variant": "layout_prefix_64",
+      "chunks": 0,
+      "splitCoreRows": [],
+      "error": "statement_atomic_block_limit"
+    }
+  ]
+}
