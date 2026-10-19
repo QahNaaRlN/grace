@@ -8,17 +8,10 @@ on:
         required: false
         type: string
 
-      qualify_statement_candidate:
-        description: Fixed synthetic qualifier, without changing app configuration
-        required: false
-        default: false
+      inspect_source_only:
+        description: Read-only source locator diagnosis for fixed synthetic fixtures
         type: boolean
-      reconcile_statement_usage:
-        description: Reconcile the specifically approved synthetic run, using protected generation IDs
-        required: false
-        default: none
-        type: choice
-        options: [none, inspect, apply]
+        default: false
       statement_action:
         description: Preserve current statement AI state, or explicitly enable/disable
         required: false
@@ -42,7 +35,7 @@ concurrency:
 
 jobs:
   inspect-statement:
-    if: ${{ inputs.inspect_statement_only || inputs.reconcile_statement_usage != 'none' }}
+    if: ${{ inputs.inspect_statement_only || inputs.inspect_source_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -57,7 +50,7 @@ jobs:
           printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
       - name: Check readiness without exporting runtime values
-        if: ${{ inputs.reconcile_statement_usage == 'none' }}
+        if: ${{ !inputs.inspect_source_only }}
         run: |
           ssh grace-deploy@195.133.195.190 'bash -s' <<'REMOTE'
           set -eu
@@ -77,53 +70,34 @@ jobs:
           echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'
           REMOTE
 
-      - name: Reconcile only the approved synthetic usage with private upstream metadata
-        if: ${{ inputs.reconcile_statement_usage == 'inspect' || inputs.reconcile_statement_usage == 'apply' }}
-        env:
-          RECONCILE_IDS: ${{ secrets.GRACE_STATEMENT_RECONCILE_IDS }}
-          RECONCILE_MODE: ${{ inputs.reconcile_statement_usage }}
-        run: |
-          set -eu
-          script="/opt/grace/shared/statement-reconcile-$GITHUB_RUN_ID.py"
-          scp scripts/ops-reconcile-statement.py "grace-deploy@195.133.195.190:$script"
-          trap 'ssh grace-deploy@195.133.195.190 "rm -f $script"' EXIT
-          case "$RECONCILE_MODE" in inspect) flag='' ;; apply) flag='--apply' ;; *) exit 2 ;; esac
-          printf '%s' "$RECONCILE_IDS" | ssh grace-deploy@195.133.195.190 "python3 $script $flag"
-
-      - name: Set up Go for explicit synthetic candidate qualification
-        if: ${{ inputs.qualify_statement_candidate }}
-        uses: actions/setup-go@v7
+      - uses: actions/setup-go@v7
+        if: ${{ inputs.inspect_source_only }}
         with:
           go-version-file: go.mod
-          cache: true
-      - name: Build bounded synthetic qualifier candidate
-        if: ${{ inputs.qualify_statement_candidate }}
-        run: CGO_ENABLED=0 go build -trimpath -o /tmp/grace-statement-candidate ./cmd/statement-admin
-      - name: Qualify candidate on synthetic fixtures without changing app configuration
-        if: ${{ inputs.qualify_statement_candidate }}
+      - name: Diagnose synthetic coverage without inference
+        if: ${{ inputs.inspect_source_only }}
         run: |
-          scp /tmp/grace-statement-candidate "grace-deploy@195.133.195.190:/opt/grace/shared/statement-candidate-$GITHUB_RUN_ID"
+          CGO_ENABLED=0 go build -trimpath -o /tmp/grace-source-diagnostic ./cmd/statement-source-diagnostic
+          scp /tmp/grace-source-diagnostic grace-deploy@195.133.195.190:/opt/grace/shared/source-diagnostic-$GITHUB_RUN_ID
           ssh grace-deploy@195.133.195.190 bash -s "$GITHUB_RUN_ID" <<'REMOTE'
           set -eu
           run_id="$1"
-          case "$run_id" in *[!0-9]*|'') exit 2 ;; esac
           api=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=api)
-          candidate="/tmp/grace-statement-candidate-$run_id"
-          upload="/opt/grace/shared/statement-candidate-$run_id"
+          candidate="/tmp/source-diagnostic-$run_id"
+          upload="/opt/grace/shared/source-diagnostic-$run_id"
           trap 'docker exec "$api" rm -f "$candidate" >/dev/null 2>&1 || true; rm -f "$upload"' EXIT
-          docker exec -i "$api" /bin/sh -ec 'umask 077; set -C; cat > "$1"; chmod 700 "$1"' sh "$candidate" < "$upload"
-          umask 077
-          report="/opt/grace/shared/statement-qualification-$(date -u +%Y%m%dT%H%M%SZ)-candidate-$run_id.json"
-          if ! docker exec "$api" "$candidate" -mode=qualify > "$report"; then
-            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"validation":\[[a-zA-Z0-9_":,.-]*\]|"coverage":\[[a-zA-Z0-9_":,.-]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
-            docker exec -i "$api" "$candidate" -mode=diagnostic < "$report"
-            exit 1
-          fi
-          docker exec -i "$api" "$candidate" -mode=summary < "$report"
+          # Remove only our empty regular reconciliation lock file. Activation
+          # itself uses a mkdir lock; never remove a directory or another owner.
+          lock=/opt/grace/shared/statement-activation.lock
+          if [ -f "$lock" ] && [ ! -L "$lock" ] && [ ! -s "$lock" ] && [ "$(stat -c %u "$lock")" = "$(id -u)" ]; then rm "$lock"; fi
+          docker exec -i "$api" sh -ec 'umask 077; set -C; cat > "$1"; chmod 700 "$1"' sh "$candidate" < "$upload"
+          report=$(find /opt/grace/shared -maxdepth 1 -name '*candidate-39217497119.json' -type f)
+          test -n "$report"
+          docker exec -i "$api" "$candidate" < "$report"
           REMOTE
 
   deploy:
-    if: ${{ !inputs.inspect_statement_only && inputs.reconcile_statement_usage == 'none' }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.inspect_source_only }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
