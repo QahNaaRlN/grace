@@ -13,7 +13,9 @@
 [S1 technical candidate](0055-record-atomic-planning.md) фиксирует границы
 первого пакета: [offline comparison](../research/statement-quality/atoms.md),
 280 cases, геометрические кандидаты REJECTED. Whole-document/aliases и новые
-caps 90000 bytes / 100000 input / 16000 output требуют принятия; implementation
+caps 90000 bytes / 100000 input / 16000 output приняты владельцем 2026-10-19
+(«Утвердить S1 с новыми лимитами»), theoretical provider ceiling 0.07 USD/call;
+общий бюджет сохраняется, paid campaigns отдельно; implementation
 not_started, модельных вызовов нет. Полная qualification не сводится к smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)

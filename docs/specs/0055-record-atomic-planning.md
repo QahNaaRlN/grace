@@ -1,13 +1,13 @@
 # SPEC-0055 / S1: целый документ и короткие source aliases
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
-- Статус: technical candidate; implementation `not_started`.
+- Статус: accepted, 2026-10-19; implementation `not_started`.
 - Основание: принятая [проработка качества](../research/statement-quality/README.md), revision `c63e7cd3f7ca355ee7470036919b948d0078b73f` / PR #68; поручение продолжить движение к включению Statement AI.
-- Acceptance record этой технической редакции: отсутствует. Принятие исследования не утверждало новые request limits.
+- Acceptance record: владелец выбрал «Утвердить S1 с новыми лимитами (рекомендую)» в ответ на конкретный контракт / PR #69, revision `fa4617f2239bb5c4ca51b82a4a8ff463f16f2191`. Приняты 90000 bytes / 2000 spans / 100000 input / 16000 output и максимум 70000 provider micros/call; общий бюджет сохраняется, платные прогоны требуют отдельного решения.
 - Product baseline: `7be572ceaac5819a2031059ef60388dcd0711614`, PR #66; research base `f3476a3`.
 - Ветка: `codex/statement-record-planning`; product implementation отсутствует.
 
-## Решение для review
+## Принятое решение
 
 Передавать redacted текст всего допустимого документа одним запросом с короткими
 локальными aliases. Целый документ — единственный atom; все source spans
@@ -68,7 +68,7 @@ vector S2, автоматический выбор модели SPEC-0056, но�
    pinned policy и новыми bounds ниже. Не возвращать частичный пригодный plan
    при отказе. Тот же document/visible set/policy/versions даёт тот же plan hash.
 
-## Request bounds и стоимость — предлагается изменить явно
+## Принятые request bounds и стоимость
 
 | Параметр | Текущий product | S1 candidate |
 | --- | --- | --- |
@@ -151,7 +151,7 @@ unknown alias в wire response → `provider_protocol`, без финансов�
 
 ## Persisted plan, consent, API и rollback
 
-Предлагаемые обязательные поля `StatementPlan`: `plannerVersion` =
+Обязательные поля `StatementPlan`: `plannerVersion` =
 `statement-document-atom.v1`, `aliasVersion` = `statement-alias.lex-base36.v1`,
 `atoms` (один список всех canonical IDs), `aliases` (alias→canonical),
 `limits` (`maxInputBytes:90000`, `inputTokens:100000`, `outputTokens:16000`,

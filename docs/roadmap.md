@@ -261,12 +261,14 @@ SPEC-0055 завершена; cards quality FAIL сохраняется, Stateme
 префикса. Предложены отдельные пакеты planner, явного coverage protocol и
 24-case corpus (2 PDF существуют, 22 planned). Model calls = 0; реализация
 этих изменений not_started, Statement AI false. Следующий шаг — offline
-review [конкретного S1 technical candidate](specs/0055-record-atomic-planning.md):
+реализация [принятого S1 контракта](specs/0055-record-atomic-planning.md):
 [280 offline cases](research/statement-quality/atoms.md) отклонили геометрические
-эвристики. Предложен целый документ с короткими aliases и явно новыми caps
+эвристики. Владелец принял целый документ с короткими aliases и новыми caps
 90000 bytes / 100000 input / 16000 output, максимум 2000 spans. Два baseline
 formats и все 56 structural cases этой стратегии помещаются без разрывов;
-model quality не проверялась, product implementation not_started.
+model quality не проверялась, product implementation not_started. Принятие
+зафиксировано 2026-10-19 («Утвердить S1 с новыми лимитами»); paid campaigns
+отдельно, общий бюджет не увеличивается.
 
 Это рекомендуемая последовательность с зависимостями, без обещания сроков.
 Каждый этап может потребовать нескольких технических спецификаций; до кода
