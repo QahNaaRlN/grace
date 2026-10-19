@@ -2,7 +2,7 @@
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Принятый контракт: [S1 document-atom.v1](0055-record-atomic-planning.md), принят прямым ответом владельца «Утвердить S1 с новыми лимитами»; specification PR #69 integrated main `dcd2bb8`.
-- Implementation branch: `codex/statement-document-plan`; локальные проверки выполнены, publication/remote CI pending. До интеграции результат не называется deployed/production accepted.
+- Implementation branch: `codex/statement-document-plan`; локальные проверки выполнены, implementation опубликован в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); live CI/integration status — в PR. До интеграции результат не называется deployed/production accepted.
 - Scope: whole-document plan, aliases, exact limits/consent, pinned text-only transport profile, HTTP/cancellation и существующий Go→review→confirmation path.
 - External LLM calls: **0**. Production/key/flags/allowance не менялись. В fixtures использованы synthetic requests и disposable PostgreSQL.
 
