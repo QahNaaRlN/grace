@@ -98,7 +98,9 @@ account/FX amounts и clocks этих synthetic источников. Прове
 В текущей проработке planner не изменён и product tests не переписаны.
 Границы следующего шага и проверяемый контракт описаны в
 [S1 technical candidate](../../specs/0055-record-atomic-planning.md); точный
-геометрический алгоритм должен пройти offline comparison до принятия этой редакции.
+[Offline comparison](atoms.md) выполнен: геометрические кандидаты отклонены;
+новая техническая редакция S1 предлагает whole-document/aliases с явно
+увеличенными caps. Реализация не начата, принятие этой редакции отсутствует.
 
 ## Второй пакет: явный ответ по каждому source span
 
@@ -207,6 +209,15 @@ model call** и пересмотреть план/лимиты. Не удаля�
 сразу три модели полными campaigns: сначала offline gates и малый screening,
 только затем отдельно разрешённый complete campaign выбранной пары. Эти новые
 campaign ceilings — предложения, разрешения тратить их в этой работе нет.
+
+Follow-up 2026-10-19: [S1 comparison](atoms.md) предлагает другой profile
+(один whole-document call, theoretical ceiling 0.07 USD). Приведённые выше
+198 calls / 1.584 USD относятся к прежнему 0.008 USD/call envelope S0. Для
+нового profile они не являются разрешённым или проверенным budget: если все
+22 text cases действительно укладываются в один call, 66 scheduled attempts
+дают theoretical provider ceiling 4.62 USD, плюс действующие fees. Corpus ещё
+не создан полностью, shared remaining не проверялся этой работой. Требуются
+новый aggregate preflight и отдельное решение по campaign; allowance не растёт.
 
 Частичные shards не дают `qualified`. Campaign report связывает corpus/golden
 hashes, все запланированные attempts (включая failures), route, версии planner/

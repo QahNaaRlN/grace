@@ -1,0 +1,418 @@
+{
+  "boundaryChecks": [
+    {
+      "name": "bytes_8999",
+      "bytes": 8999,
+      "error": "",
+      "passed": true
+    },
+    {
+      "name": "bytes_9000",
+      "bytes": 9000,
+      "error": "",
+      "passed": true
+    },
+    {
+      "name": "bytes_9001",
+      "bytes": 9001,
+      "error": "statement_atomic_block_limit",
+      "passed": true
+    }
+  ],
+  "databaseWrites": 0,
+  "extractorVersion": "poppler-25.04.0/bbox-v1",
+  "fixtureHashes": {
+    "cards": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6",
+    "columns": "097c3d35d4dd9787457b13f61bd524ff83c18d969ce50b93f7c8cecfeb569c8c"
+  },
+  "inputByteCap": 9000,
+  "promptVersion": "statement-span-mapping.v7.explicit-per-row-currency",
+  "providerCalls": 0,
+  "results": [
+    {
+      "fixture": "columns",
+      "mutation": "prefix_0",
+      "layoutHash": "14fedad79043a4f191719c8b26d3f74c5e8e555e0fcc507a90132603005d88a1",
+      "atomsHash": "fc1869352917a52816291eaff6894390674692876c50339e4298232923dfe815",
+      "atoms": 6,
+      "chunks": 1,
+      "maximumBytes": 8940,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_4",
+      "layoutHash": "1b5b05b50e98d77ffb5a2e86d26365ac6c764f90332872095122addda87dcc5b",
+      "atomsHash": "9a75bc3ee9451edbbf1152fe9a2dc377a1053f92f8fc3d8c9fe7cc445e5eecfa",
+      "atoms": 7,
+      "chunks": 2,
+      "maximumBytes": 8636,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_8",
+      "layoutHash": "977996b65b0664225b63979a6c619e1b504ef07f6b78c6809786511b5aea3e33",
+      "atomsHash": "4a82e0a98210a8044947bbecc17d8ba37fbd2ee18807d154b27da2497b2ea5fd",
+      "atoms": 7,
+      "chunks": 2,
+      "maximumBytes": 8932,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_12",
+      "layoutHash": "c90bb58322b1153aeee6afb27584b2e6409bec099c2f539a696b181264bad282",
+      "atomsHash": "d4ce4fa2d057fc1d554382e2e1930b70c42befc362bd984d856a2d371ff63d33",
+      "atoms": 7,
+      "chunks": 2,
+      "maximumBytes": 8902,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_16",
+      "layoutHash": "ac6a91c951cba0e1c39cb69eda2a55a0fbec530523e5149503142449852e13f6",
+      "atomsHash": "c27e48999eb7336d1e8c7cf31042bebfa308ed78c13a7b446b2d2e756974a1eb",
+      "atoms": 7,
+      "chunks": 2,
+      "maximumBytes": 8648,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_24",
+      "layoutHash": "9ff9dfed9975c00e23acd74f87e3b7eeb4edc246df140cd4880e71251073832a",
+      "atomsHash": "313194714e07797b37b7abca38eac92ad209c1f4618c4719133070c8f05b6504",
+      "atoms": 7,
+      "chunks": 2,
+      "maximumBytes": 8943,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_32",
+      "layoutHash": "90046a15b31142e773b68dbe406cb609aa47146667d2fd85570d1d74a4993ae5",
+      "atomsHash": "b9b2f74b063ab4fa40ecb88911eb0c13726fb5c363e8f85aa0bd6766c03fd47d",
+      "atoms": 7,
+      "chunks": 0,
+      "maximumBytes": 0,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": false,
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "fixture": "columns",
+      "mutation": "prefix_64",
+      "layoutHash": "2def723426a40f0a10911a908043074b7ef18945760e98085910ec153463e619",
+      "atomsHash": "887990ae0a168e61f0bec17a216cb6adc0adb41b11ee5af697addd14095051e8",
+      "atoms": 7,
+      "chunks": 0,
+      "maximumBytes": 0,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": false,
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "fixture": "columns",
+      "mutation": "translate_y_3",
+      "layoutHash": "29a1ca54339587ecf9d77df9e1846694ac523a812d08e99be53ca4feb386e65b",
+      "atomsHash": "fc1869352917a52816291eaff6894390674692876c50339e4298232923dfe815",
+      "atoms": 6,
+      "chunks": 1,
+      "maximumBytes": 8940,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "scale_1_5",
+      "layoutHash": "30f25191453845cf65c82ba079070c7edc8b69dda166f82f8be7d329fdf8aac0",
+      "atomsHash": "fc1869352917a52816291eaff6894390674692876c50339e4298232923dfe815",
+      "atoms": 6,
+      "chunks": 1,
+      "maximumBytes": 8957,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "wide_gap_in_record",
+      "layoutHash": "a378536dd22cf9c98f8bb30c94f5bf4d02681de747ef824014244ee56631d02d",
+      "atomsHash": "0c65e679615b53f8c0cb22d831c5e74126decef8801565f02b09489a12f66544",
+      "atoms": 7,
+      "chunks": 1,
+      "maximumBytes": 8940,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [
+        1
+      ],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "cross_page_record",
+      "layoutHash": "d318e02ea2df505c2e578f128a53439f675bfc879ec3662b3f1510ccdb938175",
+      "atomsHash": "fd7002641204d1fbdf5abe101ec9b926580db87a6f6bcecfad4ab9014c59c866",
+      "atoms": 7,
+      "chunks": 1,
+      "maximumBytes": 8938,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [
+        1
+      ],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "side_by_side_records",
+      "layoutHash": "30758988dda72341a0951c4caf0bb7984e23a0d5b1bbb34e2f78c0762f53904b",
+      "atomsHash": "fcecf511a5b78c2376584e9e6ce5b6c6dc09d7fc8ab41a87acb2dbaa26f95241",
+      "atoms": 6,
+      "chunks": 1,
+      "maximumBytes": 8943,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "columns",
+      "mutation": "shuffled_input",
+      "layoutHash": "34a3936a68cb56326618a5e8373654e0f2744e2d4b5838f39e06bd5d5e02c24b",
+      "atomsHash": "fc1869352917a52816291eaff6894390674692876c50339e4298232923dfe815",
+      "atoms": 6,
+      "chunks": 1,
+      "maximumBytes": 8942,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_0",
+      "layoutHash": "ff6f0157ec84d773ed788efd67f4635e111425b5146ee2624e6e45aab538a4e9",
+      "atomsHash": "ee4550f05b64232362ccb92abd9881dcb5f9fb978a171a628ad39f4e5ed895ae",
+      "atoms": 4,
+      "chunks": 2,
+      "maximumBytes": 8497,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_4",
+      "layoutHash": "f5d8dc8977c8f8ae4a179993ffee603ad05038bcafa3cc99374d4336c114910e",
+      "atomsHash": "bae87839ad62fd82c7df8d1158e24f365f56e8a46f70581552867ee95924a590",
+      "atoms": 5,
+      "chunks": 2,
+      "maximumBytes": 8792,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_8",
+      "layoutHash": "312c99ded2eae44786d79908b8acf1def10441f1ec7fd9de84de87ccedfe5893",
+      "atomsHash": "cad7e6503c5171ca073c6b07df2d40ebcbc19f3cae0b4e3e9b8d1793d4281f03",
+      "atoms": 5,
+      "chunks": 2,
+      "maximumBytes": 8451,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_12",
+      "layoutHash": "120ac64de0ddb787d28e41ca9d105513bd42b2924d5108ae56405648f50b3734",
+      "atomsHash": "a909fbc3a528a7ea2d31cffd12880f7d2f2b17b803fa01d6c624be4a77b76705",
+      "atoms": 5,
+      "chunks": 2,
+      "maximumBytes": 8758,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_16",
+      "layoutHash": "a4c480486a09ff2a4392fe3d525809b7915ce563832d74ad310dc099b8c1843a",
+      "atomsHash": "7a1da0b5db8b4e5b4017ec3ff5215435684afa9935c66418e73e7737eaf1c43c",
+      "atoms": 5,
+      "chunks": 3,
+      "maximumBytes": 8253,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_24",
+      "layoutHash": "a8f4d26d4f698b737c2d7be94b1dc5aeebadab62fa1f1a9029adb147318936f6",
+      "atomsHash": "944bbbf46d971a2943448273b79b89d95720b4027d281f500ad9f5a002dd75a7",
+      "atoms": 5,
+      "chunks": 3,
+      "maximumBytes": 8877,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_32",
+      "layoutHash": "a324f517e3fa4c1929abe41a77599beb47628be2483675f0347c0d25287ba034",
+      "atomsHash": "6527d093b0d5018d76f493036ad6ffa1e31c39c484cbd746cd589b8e4e3cd9b1",
+      "atoms": 5,
+      "chunks": 0,
+      "maximumBytes": 0,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": false,
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "fixture": "cards",
+      "mutation": "prefix_64",
+      "layoutHash": "ab31f2cccf3d944f7eb7cab8dc8551c38221fcf55e482cd52db1a5731c6b199b",
+      "atomsHash": "afdc1e01f325e115e6999b15a948dcb0625c35d70dfb0776a9040afaece66d12",
+      "atoms": 5,
+      "chunks": 0,
+      "maximumBytes": 0,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": false,
+      "error": "statement_atomic_block_limit"
+    },
+    {
+      "fixture": "cards",
+      "mutation": "translate_y_3",
+      "layoutHash": "8c77b94a809180b5ba7e277fea262cbfe23d5b3384ab6fa022de4282e94b94f3",
+      "atomsHash": "ee4550f05b64232362ccb92abd9881dcb5f9fb978a171a628ad39f4e5ed895ae",
+      "atoms": 4,
+      "chunks": 2,
+      "maximumBytes": 8497,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "scale_1_5",
+      "layoutHash": "65b7d1fe8e2dd5bf3cb946e0f405ac2bf7b0e7d54e5266311a200c1305a26792",
+      "atomsHash": "ee4550f05b64232362ccb92abd9881dcb5f9fb978a171a628ad39f4e5ed895ae",
+      "atoms": 4,
+      "chunks": 2,
+      "maximumBytes": 8520,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "wide_gap_in_record",
+      "layoutHash": "61a51c213e51411dcf5ece1d8246f2d083823e78533f914d99d5a8d78d4de57b",
+      "atomsHash": "42e297b2be666c45eb2f847ec299829b3d2cfc960d52b0860e52bd9dd1889340",
+      "atoms": 4,
+      "chunks": 2,
+      "maximumBytes": 8228,
+      "splitCoreRows": [
+        1
+      ],
+      "splitFullRecordRows": [
+        1
+      ],
+      "recordSplitAcrossAtoms": [
+        1
+      ],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "cross_page_record",
+      "layoutHash": "a5ab66d97c93d218d03fccfa9c76459ed65b9b0fc9c08eaa48310e06a4581d55",
+      "atomsHash": "e569cb3d272d8560cac398734731681dd5e263593dc9f237db02d05c220265c5",
+      "atoms": 5,
+      "chunks": 2,
+      "maximumBytes": 8950,
+      "splitCoreRows": [
+        1
+      ],
+      "splitFullRecordRows": [
+        1
+      ],
+      "recordSplitAcrossAtoms": [
+        1
+      ],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "side_by_side_records",
+      "layoutHash": "f3b7a78d5a7a846d14036fd9a47b1f04dfeef8f57ede8c17763c239f8a81eb97",
+      "atomsHash": "293365993df1e003941c8fb3b454154787a7ab161b065356e4353583d90b51f8",
+      "atoms": 3,
+      "chunks": 2,
+      "maximumBytes": 8358,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    },
+    {
+      "fixture": "cards",
+      "mutation": "shuffled_input",
+      "layoutHash": "ed567df7ea53477bbed3df46da9a154b0d4fda42e2b5982770fe342cea4dd4c9",
+      "atomsHash": "ee4550f05b64232362ccb92abd9881dcb5f9fb978a171a628ad39f4e5ed895ae",
+      "atoms": 4,
+      "chunks": 2,
+      "maximumBytes": 8500,
+      "splitCoreRows": [],
+      "splitFullRecordRows": [],
+      "recordSplitAcrossAtoms": [],
+      "sourceExactlyOnce": true
+    }
+  ],
+  "studyVersion": "statement-atoms.v1"
+}

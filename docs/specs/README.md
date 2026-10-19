@@ -11,8 +11,10 @@
 принята владельцем («Принимаю»), 32 offline probes, план planner/coverage/corpus;
 модельных вызовов нет, реализация not_started.
 [S1 technical candidate](0055-record-atomic-planning.md) фиксирует границы
-первого пакета и evidence до принятия алгоритма. Полная qualification не
-сводится к одному smoke.
+первого пакета: [offline comparison](../research/statement-quality/atoms.md),
+280 cases, геометрические кандидаты REJECTED. Whole-document/aliases и новые
+caps 90000 bytes / 100000 input / 16000 output требуют принятия; implementation
+not_started, модельных вызовов нет. Полная qualification не сводится к smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:

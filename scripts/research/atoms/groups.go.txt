@@ -1,0 +1,151 @@
+// Offline geometry prototypes only. Appended through a Go build overlay.
+const researchAlgorithm = "ALGORITHM"
+
+type researchBox struct {
+	page   int
+	lo, hi float64
+	spans  []statementdata.Span
+}
+
+func researchGroups(d statementdata.Document, visible map[string]bool) (map[string][]RedactedSpan, []string) {
+	units := []researchBox{}
+	if researchAlgorithm == "document" || strings.HasPrefix(researchAlgorithm, "document_alias") {
+		groups := map[string][]RedactedSpan{"document": {}}
+		for _, span := range d.Spans {
+			groups["document"] = append(groups["document"], redact(span, visible))
+		}
+		return groups, []string{"document"}
+	}
+	if researchAlgorithm == "gap" {
+		// One sample per extractor line avoids weighting the scale by word count.
+		heights := map[int][]float64{}
+		lines := map[string]bool{}
+		for _, s := range d.Spans {
+			k := strings.Join([]string{string(rune(s.Page)), string(rune(s.Block)), string(rune(s.Line))}, ":")
+			if !lines[k] {
+				heights[s.Page] = append(heights[s.Page], s.Box.YMax-s.Box.YMin)
+				lines[k] = true
+			}
+		}
+		scales := map[int]float64{}
+		for page, h := range heights {
+			sort.Float64s(h)
+			scales[page] = h[(len(h)-1)/2]
+		}
+		for _, s := range d.Spans {
+			// Extend down by 1.5 line heights; connected intervals form an atom.
+			units = append(units, researchBox{s.Page, s.Box.YMin, s.Box.YMax + 1.5*scales[s.Page], []statementdata.Span{s}})
+		}
+	} else {
+		byBlock := map[string]int{}
+		for _, s := range d.Spans {
+			k := strings.Join([]string{string(rune(s.Page)), string(rune(s.Block))}, ":")
+			i, ok := byBlock[k]
+			if !ok {
+				byBlock[k] = len(units)
+				units = append(units, researchBox{s.Page, s.Box.YMin, s.Box.YMax, []statementdata.Span{s}})
+				continue
+			}
+			units[i].lo = math.Min(units[i].lo, s.Box.YMin)
+			units[i].hi = math.Max(units[i].hi, s.Box.YMax)
+			units[i].spans = append(units[i].spans, s)
+		}
+	}
+	sort.Slice(units, func(i, j int) bool {
+		a, b := units[i], units[j]
+		if a.page != b.page {
+			return a.page < b.page
+		}
+		if a.lo != b.lo {
+			return a.lo < b.lo
+		}
+		return a.spans[0].ID < b.spans[0].ID
+	})
+	atoms := []researchBox{}
+	for _, u := range units {
+		if len(atoms) == 0 || atoms[len(atoms)-1].page != u.page || u.lo > atoms[len(atoms)-1].hi {
+			atoms = append(atoms, u)
+			continue
+		}
+		a := &atoms[len(atoms)-1]
+		a.hi = math.Max(a.hi, u.hi)
+		a.spans = append(a.spans, u.spans...)
+	}
+	groups := map[string][]RedactedSpan{}
+	keys := []string{}
+	for _, a := range atoms {
+		sort.Slice(a.spans, func(i, j int) bool {
+			x, y := a.spans[i], a.spans[j]
+			if x.Box.YMin != y.Box.YMin {
+				return x.Box.YMin < y.Box.YMin
+			}
+			if x.Box.XMin != y.Box.XMin {
+				return x.Box.XMin < y.Box.XMin
+			}
+			return x.ID < y.ID
+		})
+		key := a.spans[0].ID
+		keys = append(keys, key)
+		for _, s := range a.spans {
+			groups[key] = append(groups[key], redact(s, visible))
+		}
+	}
+	return groups, keys
+}
+
+func ResearchAtoms(d statementdata.Document) [][]string {
+	groups, keys := researchGroups(d, nil)
+	out := [][]string{}
+	for _, key := range keys {
+		ids := []string{}
+		for _, s := range groups[key] {
+			ids = append(ids, s.ID)
+		}
+		out = append(out, ids)
+	}
+	return out
+}
+
+// This private wire map is never sent to a provider; no source text is in reports.
+func ResearchAliasMap(d statementdata.Document) map[string]string {
+	ids := []string{}
+	for _, s := range d.Spans {
+		ids = append(ids, s.ID)
+	}
+	sort.Strings(ids)
+	out := map[string]string{}
+	for i, id := range ids {
+		n := i
+		digits := "0123456789abcdefghijklmnopqrstuvwxyz"
+		alias := ""
+		for {
+			alias = string(digits[n%36]) + alias
+			n /= 36
+			if n == 0 {
+				break
+			}
+		}
+		out["s"+alias] = id
+	}
+	return out
+}
+func ResearchCanonical(d statementdata.Document, id string) string {
+	if !strings.HasPrefix(researchAlgorithm, "document_alias") {
+		return id
+	}
+	return ResearchAliasMap(d)[id]
+}
+
+func ResearchByteCap() int {
+	if researchAlgorithm == "document_alias_90k" {
+		return 90000
+	}
+	return 9000
+}
+
+func ResearchSpanCap() int {
+	if researchAlgorithm == "document_alias_90k" {
+		return 2000
+	}
+	return 0
+}

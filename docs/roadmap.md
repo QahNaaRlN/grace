@@ -261,9 +261,12 @@ SPEC-0055 завершена; cards quality FAIL сохраняется, Stateme
 префикса. Предложены отдельные пакеты planner, явного coverage protocol и
 24-case corpus (2 PDF существуют, 22 planned). Model calls = 0; реализация
 этих изменений not_started, Statement AI false. Следующий шаг — offline
-выбор и проверка геометрического алгоритма по
-[S1 technical candidate](specs/0055-record-atomic-planning.md), затем review
-конкретной технической редакции до product implementation.
+review [конкретного S1 technical candidate](specs/0055-record-atomic-planning.md):
+[280 offline cases](research/statement-quality/atoms.md) отклонили геометрические
+эвристики. Предложен целый документ с короткими aliases и явно новыми caps
+90000 bytes / 100000 input / 16000 output, максимум 2000 spans. Два baseline
+formats и все 56 structural cases этой стратегии помещаются без разрывов;
+model quality не проверялась, product implementation not_started.
 
 Это рекомендуемая последовательность с зависимостями, без обещания сроков.
 Каждый этап может потребовать нескольких технических спецификаций; до кода
