@@ -33,14 +33,14 @@ func TestPlanRedactionBoundsAndFullCoverage(t *testing.T) {
 	}
 	seen := map[string]bool{}
 	for _, c := range p.Chunks {
-		if InputBytes(c) > 9000 {
+		if InputBytes(c) > MaxInputBytes {
 			t.Fatal("oversized call")
 		}
 		for _, s := range c.Spans {
-			seen[s.ID] = true
+			seen[p.Aliases[s.ID]] = true
 		}
 	}
-	if len(seen) != len(d.Spans) || p.MaximumMicros != int64(len(p.Chunks))*8000 {
+	if len(seen) != len(d.Spans) || p.MaximumMicros != int64(len(p.Chunks))*70000 {
 		t.Fatal("truncated plan or wrong aggregate reserve", p)
 	}
 	revealed, e := BuildPlan(d, testPolicy(), []string{"span-3", "span-5", "span-6"})
@@ -66,7 +66,7 @@ func TestPlanRedactionBoundsAndFullCoverage(t *testing.T) {
 	if _, e = BuildPlan(d, testPolicy(), []string{"invented"}); e == nil {
 		t.Fatal("unknown visibility ID")
 	}
-	huge := testDocument(strings.Repeat("x", 10000))
+	huge := testDocument(strings.Repeat("x", MaxInputBytes+1))
 	if _, e = BuildPlan(huge, testPolicy(), []string{"span-0"}); e == nil {
 		t.Fatal("oversized atomic group")
 	}

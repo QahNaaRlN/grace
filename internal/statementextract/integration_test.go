@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -21,13 +22,14 @@ import (
 )
 
 type fakeReasoner struct {
-	calls              atomic.Int32
-	malformed, unknown bool
-	before             func(context.Context)
+	calls                 atomic.Int32
+	malformed, unknown    bool
+	badAlias, omitService bool
+	before                func(context.Context)
 }
 
 func (f *fakeReasoner) CurrentPolicy(context.Context) (Policy, error) { return testPolicy(), nil }
-func (f *fakeReasoner) Complete(ctx context.Context, _ Policy, _ Chunk) (statementdata.Proposal, *Billing, error) {
+func (f *fakeReasoner) Complete(ctx context.Context, _ Policy, chunk Chunk) (statementdata.Proposal, *Billing, error) {
 	f.calls.Add(1)
 	if f.before != nil {
 		f.before(ctx)
@@ -39,7 +41,14 @@ func (f *fakeReasoner) Complete(ctx context.Context, _ Policy, _ Chunk) (stateme
 	if f.malformed {
 		return statementdata.Proposal{}, bill, errors.New("malformed JSON")
 	}
-	return statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{"span-0"}, AccountAmount: statementdata.Selection{"span-1"}, AccountCurrency: statementdata.Selection{"span-2"}}}, Service: []statementdata.ServiceMapping{{Spans: statementdata.Selection{"span-3"}, Reason: "Synthetic untrusted annotation"}}}, bill, nil
+	out := statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{chunk.Spans[0].ID}, AccountAmount: statementdata.Selection{chunk.Spans[1].ID}, AccountCurrency: statementdata.Selection{chunk.Spans[2].ID}}}, Service: []statementdata.ServiceMapping{{Spans: statementdata.Selection{chunk.Spans[3].ID}, Reason: "Synthetic untrusted annotation"}}}
+	if f.badAlias {
+		out.Rows[0].OperationDate = statementdata.Selection{"span-0"}
+	}
+	if f.omitService {
+		out.Service = nil
+	}
+	return out, bill, nil
 }
 
 type fakeExtractor struct{}
@@ -47,6 +56,13 @@ type fakeExtractor struct{}
 func (fakeExtractor) Extract(context.Context, []byte) (statementdata.Document, error) {
 	return testDocument("19.10.2026", "-12.34", "RUB", "UNTRUSTED COMMAND DO NOT EXECUTE"), nil
 }
+
+type boundedFixtureExtractor struct{ document statementdata.Document }
+
+func (f boundedFixtureExtractor) Extract(context.Context, []byte) (statementdata.Document, error) {
+	return f.document, nil
+}
+
 func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	if os.Getenv("TEST_BANK_STATEMENTS") != "true" {
 		t.Skip("dedicated statement fixture database required")
@@ -80,6 +96,91 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
+	// Oversize preflight must stop before any budget reservation or inference.
+	var usageBefore int
+	if e = pool.QueryRow(ctx, "SELECT count(*) FROM ai_usage").Scan(&usageBefore); e != nil {
+		t.Fatal(e)
+	}
+	values := make([]string, MaxPlanSpans+1)
+	for i := range values {
+		values[i] = "RUB"
+	}
+	for _, tc := range []struct {
+		name    string
+		doc     statementdata.Document
+		visible []string
+		code    string
+	}{
+		{"spans", testDocument(values...), nil, "statement_document_span_limit"},
+		{"bytes", testDocument(strings.Repeat("a", MaxInputBytes+1)), []string{"span-0"}, "statement_atomic_block_limit"},
+	} {
+		repo.SetPDFExtractor(boundedFixtureExtractor{tc.doc})
+		large, _, err := repo.UploadStatement(ctx, []byte("%PDF-s1-boundary-"+tc.name), source.AccountID, tc.name+".pdf", "boundary-"+tc.name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = service.Preview(ctx, large.ID, PreviewInput{ExpectedRevision: large.Revision, VisibleSpanIDs: tc.visible})
+		var fault *Fault
+		if !errors.As(err, &fault) || fault.Code != tc.code {
+			t.Fatal("wrong preflight outcome", tc.name, err)
+		}
+	}
+	repo.SetPDFExtractor(fakeExtractor{})
+	var usageAfter int
+	if e = pool.QueryRow(ctx, "SELECT count(*) FROM ai_usage").Scan(&usageAfter); e != nil || usageAfter != usageBefore || reasoner.calls.Load() != 0 {
+		t.Fatal("preflight charged budget", usageAfter, usageBefore, e)
+	}
+	// Deliberately invalid wire references must be billed but never create a
+	// draft; missing classification may save a blocked draft, never a posting.
+	for _, name := range []string{"bad-alias", "missing-coverage"} {
+		t.Run(name, func(t *testing.T) {
+			negative := &fakeReasoner{badAlias: name == "bad-alias", omitService: name == "missing-coverage"}
+			negativeService := NewService(pool, repo, negative)
+			uploaded, _, err := repo.UploadStatement(ctx, []byte("%PDF-s1-negative-"+name), source.AccountID, name+".pdf", "s1-negative-"+name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			np, err := negativeService.Preview(ctx, uploaded.ID, PreviewInput{ExpectedRevision: uploaded.Revision})
+			if err != nil {
+				t.Fatal(err)
+			}
+			nc, err := negativeService.Consent(ctx, uploaded.ID, "s1-negative-consent-"+name, ConsentInput{uploaded.Revision, np.ID, np.Hash})
+			if err != nil {
+				t.Fatal(err)
+			}
+			attempt, err := negativeService.Extract(ctx, uploaded.ID, "s1-negative-attempt-"+name, ExtractionInput{uploaded.Revision, np.ID, np.Hash, nc.ID})
+			if err != nil || negative.calls.Load() != 1 || count() != before {
+				t.Fatal("negative path wrote finance or retried", err)
+			}
+			if name == "bad-alias" {
+				if attempt.Status != "failed" || attempt.BatchID != nil {
+					t.Fatal("canonical wire reference accepted", attempt)
+				}
+			} else {
+				saved, err := repo.Statement(ctx, uploaded.ID)
+				if err != nil || saved.Review == nil {
+					t.Fatal("missing partial review", err)
+				}
+				blocked := false
+				for _, code := range saved.Review.Reconciliation.Blockers {
+					if code == "source_coverage_incomplete" {
+						blocked = true
+					}
+				}
+				if !blocked {
+					t.Fatal("unused spans silently classified", saved.Review)
+				}
+			}
+			var actual int64
+			var status string
+			if err = pool.QueryRow(ctx, "SELECT actual_micros,status FROM ai_usage WHERE id=(SELECT reservation_id FROM statement_extraction_attempts WHERE id=$1)", attempt.ID).Scan(&actual, &status); err != nil || actual != 100 || status != "settled" {
+				t.Fatal("invalid proposal lost known billing", err, status, actual)
+			}
+		})
+	}
+	if e = pool.QueryRow(ctx, "SELECT count(*) FROM ai_usage").Scan(&usageBefore); e != nil {
+		t.Fatal(e)
+	}
 	preview, e := service.Preview(ctx, source.ID, PreviewInput{ExpectedRevision: source.Revision})
 	if e != nil {
 		t.Fatal(e)
@@ -104,6 +205,26 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	}
 	if reasoner.calls.Load() != 0 {
 		t.Fatal("old settings caused paid call")
+	}
+	for index, change := range []func(*Plan){func(p *Plan) { p.Limits.InputTokens++ }, func(p *Plan) { p.Aliases["s0"] = p.Aliases["s1"] }} {
+		encoded, _ := json.Marshal(preview.Plan)
+		var altered Plan
+		_ = json.Unmarshal(encoded, &altered)
+		change(&altered)
+		encoded, _ = json.Marshal(altered)
+		hash := Hash(altered)
+		if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3 WHERE id=$1", preview.ID, encoded, hash); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = service.Consent(ctx, source.ID, fmt.Sprintf("changed-contract-%d", index), ConsentInput{source.Revision, preview.ID, hash}); e == nil {
+			t.Fatal("changed plan consent accepted")
+		}
+		if _, e = service.Extract(ctx, source.ID, fmt.Sprintf("changed-extract-%d", index), ExtractionInput{source.Revision, preview.ID, hash, "00000000-0000-0000-0000-000000000000"}); e == nil {
+			t.Fatal("changed plan invoked extraction")
+		}
+	}
+	if e = pool.QueryRow(ctx, "SELECT count(*) FROM ai_usage").Scan(&usageAfter); e != nil || usageAfter != usageBefore || reasoner.calls.Load() != 0 {
+		t.Fatal("changed contract charged budget", e)
 	}
 	currentJSON, _ := json.Marshal(preview.Plan)
 	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3 WHERE id=$1", preview.ID, currentJSON, preview.Hash); e != nil {
@@ -135,7 +256,7 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	}
 	var reserved, actual int64
 	var status string
-	if e = pool.QueryRow(ctx, "SELECT reserved_micros,actual_micros,status FROM ai_usage WHERE id=(SELECT reservation_id FROM statement_extraction_attempts WHERE id=$1)", attempt.ID).Scan(&reserved, &actual, &status); e != nil || reserved != 8000 || actual != 100 || status != "settled" {
+	if e = pool.QueryRow(ctx, "SELECT reserved_micros,actual_micros,status FROM ai_usage WHERE id=(SELECT reservation_id FROM statement_extraction_attempts WHERE id=$1)", attempt.ID).Scan(&reserved, &actual, &status); e != nil || reserved != 70000 || actual != 100 || status != "settled" {
 		t.Fatal(reserved, actual, status, e)
 	}
 	source, e = repo.Statement(ctx, source.ID)
@@ -233,9 +354,26 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 	reasoner.malformed = true
 	beforeLimit := reasoner.calls.Load()
 	for index := 0; index < MaxCalls; index++ {
+		if index > 0 {
+			lp, e = service.Preview(ctx, limited.ID, PreviewInput{ExpectedRevision: limited.Revision})
+			if e != nil {
+				t.Fatal(e)
+			}
+			lc, e = service.Consent(ctx, limited.ID, fmt.Sprintf("consent-limit-%d", index), ConsentInput{limited.Revision, lp.ID, lp.Hash})
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
 		a, e := service.Extract(ctx, limited.ID, fmt.Sprintf("limit-%d", index), ExtractionInput{limited.Revision, lp.ID, lp.Hash, lc.ID})
 		if e != nil || a.Status != "failed" || a.BatchID != nil {
 			t.Fatal("malformed proposal accepted", index, a, e)
+		}
+		if index == 0 {
+			calls := reasoner.calls.Load()
+			_, retryErr := service.Extract(ctx, limited.ID, "reuse-consent", ExtractionInput{limited.Revision, lp.ID, lp.Hash, lc.ID})
+			if retryErr == nil || reasoner.calls.Load() != calls {
+				t.Fatal("reused preview started another paid call", retryErr)
+			}
 		}
 	}
 	_, e = service.Extract(ctx, limited.ID, "over-limit", ExtractionInput{limited.Revision, lp.ID, lp.Hash, lc.ID})

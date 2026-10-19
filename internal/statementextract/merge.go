@@ -33,7 +33,11 @@ func MergeProposals(plan Plan, parts []statementdata.Proposal) (statementdata.Pr
 	for index, p := range parts {
 		allowed := map[string]bool{}
 		for _, span := range plan.Chunks[index].Spans {
-			allowed[span.ID] = true
+			id := span.ID
+			if plan.PlannerVersion == PlannerVersion {
+				id = plan.Aliases[id]
+			}
+			allowed[id] = true
 		}
 		for id := range contextIDs {
 			allowed[id] = true

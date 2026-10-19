@@ -23,7 +23,10 @@ func (r *StatementReasoner) CurrentPolicy(ctx context.Context) (statementextract
 	if r == nil || r.Provider == nil || r.Policy.Vision || r.Policy.ImageTokenUpperBound != 0 {
 		return statementextract.Policy{}, errors.New("ai_disabled")
 	}
-	p, e := r.Verifier.Current(ctx, r.Policy)
+	if profile, ok := r.Provider.(interface{ StatementDocumentProfile() bool }); !ok || !profile.StatementDocumentProfile() {
+		return statementextract.Policy{}, errors.New("provider_request")
+	}
+	p, e := r.Verifier.CurrentStatement(ctx, r.Policy)
 	if e != nil {
 		return statementextract.Policy{}, e
 	}
@@ -39,10 +42,10 @@ func (r *StatementReasoner) Complete(ctx context.Context, approved statementextr
 	if e != nil {
 		return proposal, nil, e
 	}
-	if statementextract.Hash(p) != statementextract.Hash(approved) || statementextract.InputBytes(chunk) > 9000 {
+	if statementextract.Hash(p) != statementextract.Hash(approved) || statementextract.InputBytes(chunk) > statementextract.MaxInputBytes || chunk.Index != 1 || len(chunk.Context) != 0 || len(chunk.Spans) == 0 || len(chunk.Spans) > statementextract.MaxPlanSpans {
 		return proposal, nil, errors.New("provider_request")
 	}
-	policy, e := r.Verifier.Current(ctx, r.Policy)
+	policy, e := r.Verifier.CurrentStatement(ctx, r.Policy)
 	if e != nil {
 		return proposal, nil, e
 	}

@@ -12,10 +12,16 @@ import (
 type fakeReasoner struct {
 	calls   int
 	billing *statementextract.Billing
+	cheap   bool
 }
 
 func (f *fakeReasoner) CurrentPolicy(context.Context) (statementextract.Policy, error) {
-	return statementextract.Policy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000}, nil
+	inputPrice, outputPrice := int64(300000), int64(2500000)
+	if f.cheap {
+		inputPrice = 1000
+		outputPrice = 1000
+	}
+	return statementextract.Policy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: inputPrice, OutputMicrosPerMillion: outputPrice}, nil
 }
 func (f *fakeReasoner) Complete(context.Context, statementextract.Policy, statementextract.Chunk) (statementdata.Proposal, *statementextract.Billing, error) {
 	f.calls++
@@ -40,7 +46,7 @@ func TestQualificationBillsMalformedAndNeverRetries(t *testing.T) {
 	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "s1", Page: 1, Block: 1, Line: 1, Word: 1, Text: "19.10.2026", Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 100, YMax: 10}}}}
 	for _, known := range []bool{false, true} {
 		t.Run(map[bool]string{false: "unknown_freezes", true: "known_billed"}[known], func(t *testing.T) {
-			reasoner := &fakeReasoner{}
+			reasoner := &fakeReasoner{cheap: true}
 			if known {
 				reasoner.billing = &statementextract.Billing{CostMicros: 42, GenerationID: "synthetic-generation", InputTokens: 20, OutputTokens: 10}
 			}
@@ -89,5 +95,14 @@ func TestScoreCatchesLostClockAndAvailableAsClosing(t *testing.T) {
 	r.Header.ClosingBookBalance = r.Header.AvailableBalanceObserved
 	if Score("columns", r).Passed {
 		t.Fatal("available became closing")
+	}
+}
+
+func TestNewProfileCannotSpendThroughOldQualificationCap(t *testing.T) {
+	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "public", Page: 1, Block: 1, Line: 1, Word: 1, Text: "RUB", Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 20, YMax: 10}}}}
+	reasoner, meter := &fakeReasoner{}, &fakeMeter{}
+	_, e := Run(context.Background(), []Sample{{"columns", d}, {"cards", d}}, reasoner, meter)
+	if e == nil || e.Error() != "qualification_cap_exceeded" || reasoner.calls != 0 || meter.reserves != 0 {
+		t.Fatal("old smoke cap silently raised", e, reasoner.calls, meter.reserves)
 	}
 }

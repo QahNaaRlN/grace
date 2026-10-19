@@ -9,8 +9,8 @@
 - Implementation status: not_started
 - Specification branch: `codex/statement-model-selection`
 - Implementation branch / commit: отсутствуют
-- Review baseline: `7be572c`, draft [PR #66](https://github.com/QahNaaRlN/grace/pull/66), основан на main `1ada384`; собственный diff этой ветки содержит только документацию поверх baseline
-- Baseline CI: historical `12ef5a0`, run `39175297738`, 2026-10-19 — все пять jobs PASS; проверки новой редакции PR #66 отдельны. PR остаётся draft, изменения не считаются integrated/deployed
+- Review baseline: `7be572c`, integrated [PR #66](https://github.com/QahNaaRlN/grace/pull/66), основан на main `1ada384`; собственный diff этой ветки содержит только документацию поверх baseline
+- Baseline CI: historical `12ef5a0`, run `39175297738`, 2026-10-19 — все пять jobs PASS; проверки новой редакции PR #66 отдельны. PR #66 integrated `06169e5`; production всё ещё на `1ada384`, этот draft SPEC-0056 не принят
 - Зависимость: принятые [SPEC-0055](0055-bank-statement-pdf-import.md), [технический контракт](0055-technical-contract.md), существующие statement consent и общий usage ledger
 
 ## Проблема и пользовательский результат

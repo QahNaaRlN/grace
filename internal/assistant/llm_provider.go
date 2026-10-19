@@ -98,9 +98,10 @@ type ReasoningProvider interface {
 	Complete(context.Context, LLMRequest) (LLMResponse, error)
 }
 type OpenRouterProvider struct {
-	apiKey   string
-	endpoint string
-	client   HTTPDoer
+	apiKey            string
+	endpoint          string
+	client            HTTPDoer
+	statementDocument bool
 }
 
 func NewOpenRouterProvider(key string, client HTTPDoer) (*OpenRouterProvider, error) {
@@ -110,7 +111,7 @@ func NewOpenRouterProvider(key string, client HTTPDoer) (*OpenRouterProvider, er
 	if client == nil {
 		client = &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	}
-	return &OpenRouterProvider{key, "https://openrouter.ai/api/v1/chat/completions", client}, nil
+	return &OpenRouterProvider{apiKey: key, endpoint: "https://openrouter.ai/api/v1/chat/completions", client: client}, nil
 }
 
 var decimalCost = regexp.MustCompile(`^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]{1,2})?$`)
@@ -136,11 +137,22 @@ func costMicros(value string) (int64, error) {
 }
 
 func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMResponse, error) {
-	if _, err := in.Policy.ReservationMicros(in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
+	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
 	}
 	if len(in.Messages) == 0 || len(in.Messages) > 12 || !json.Valid(in.Schema) {
 		return LLMResponse{}, errors.New("provider_request")
+	}
+	if p.statementDocument {
+		if !in.DisableReasoning || len(in.Messages) != 2 {
+			return LLMResponse{}, errors.New("provider_request")
+		}
+		for i, message := range in.Messages {
+			role := []string{"system", "user"}[i]
+			if _, ok := message.Content.(string); !ok || message.Role != role {
+				return LLMResponse{}, errors.New("provider_request")
+			}
+		}
 	}
 	encodedMessages, err := json.Marshal(in.Messages)
 	if err != nil || len(encodedMessages) > 12<<20 {
@@ -157,10 +169,14 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 		body["provider"].(map[string]any)["max_price"].(map[string]any)["image"] = json.Number(big.NewRat(in.Policy.InputMicrosPerMillion*int64(in.Policy.ImageTokenUpperBound), 1_000_000_000_000).FloatString(12))
 	}
 	payload, err := json.Marshal(body)
-	if err != nil {
+	if err != nil || (p.statementDocument && len(payload) > statementMaxEnvelopeBytes) {
 		return LLMResponse{}, errors.New("provider_request")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	timeout := 30 * time.Second
+	if p.statementDocument {
+		timeout = statementRequestTimeout()
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint, bytes.NewReader(payload))
 	if err != nil {

@@ -14,13 +14,14 @@ type statementProviderStub struct {
 	content json.RawMessage
 }
 
+func (p *statementProviderStub) StatementDocumentProfile() bool { return true }
 func (p *statementProviderStub) Complete(_ context.Context, in LLMRequest) (LLMResponse, error) {
 	p.request = in
 	return LLMResponse{ID: "synthetic-generation", Content: p.content, CostMicros: 10, PromptTokens: 100, CompletionTokens: 100}, nil
 }
 func TestStatementReasonerUsesTextOnlyBoundedTransportAndRetainsBillingOnBadJSON(t *testing.T) {
 	p := &statementProviderStub{content: json.RawMessage(`{"rows":[],"header":{},"service":[],"amountMinor":1}`)}
-	r := &StatementReasoner{Policy: ModelPolicy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000, VerifiedAt: time.Now().Add(-time.Minute)}, Provider: p}
+	r := &StatementReasoner{Verifier: statementVerifierFixture(t), Policy: ModelPolicy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000, VerifiedAt: time.Now().Add(-time.Minute)}, Provider: p}
 	policy, e := r.CurrentPolicy(context.Background())
 	if e != nil {
 		t.Fatal(e)
@@ -29,7 +30,7 @@ func TestStatementReasonerUsesTextOnlyBoundedTransportAndRetainsBillingOnBadJSON
 	if e == nil || billing == nil || billing.CostMicros != 10 {
 		t.Fatal("malformed output became free", billing, e)
 	}
-	if !p.request.DisableReasoning || p.request.Policy.Vision || p.request.InputTokenUpperBound != 10000 || p.request.MaxOutputTokens != 2000 || len(p.request.Messages) != 2 || !json.Valid(p.request.Schema) {
+	if !p.request.DisableReasoning || p.request.Policy.Vision || p.request.InputTokenUpperBound != 100000 || p.request.MaxOutputTokens != 16000 || len(p.request.Messages) != 2 || !json.Valid(p.request.Schema) {
 		t.Fatal(p.request)
 	}
 	r.Policy.Provider = "google-vertex"

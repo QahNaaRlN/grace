@@ -148,7 +148,7 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 		if cfg.AIEnabled && cfg.StatementAIEnabled {
 			var policy assistant.ModelPolicy
 			if e := json.Unmarshal([]byte(cfg.StatementAIPolicy), &policy); e == nil {
-				if provider, e := assistant.NewOpenRouterProvider(cfg.OpenRouterAPIKey, nil); e == nil {
+				if provider, e := assistant.NewStatementOpenRouterProvider(cfg.OpenRouterAPIKey, nil); e == nil {
 					reasoner = &assistant.StatementReasoner{Verifier: assistant.NewPolicyVerifier(), Policy: policy, Provider: provider}
 				}
 			}

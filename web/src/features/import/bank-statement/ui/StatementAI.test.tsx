@@ -36,7 +36,7 @@ it('prepares visible policy/cost/input first; only explicit consent starts extra
   const user = userEvent.setup()
   expect(post).not.toHaveBeenCalled()
   await user.click(screen.getByRole('button', { name: 'Подготовить AI-распознавание' }))
-  expect(await screen.findByText(/google\/gemini-2.5-flash/)).toHaveTextContent('0.0080')
+  expect(await screen.findByText(/google\/gemini-2.5-flash/)).toHaveTextContent('0.0700')
   expect(post).toHaveBeenCalledTimes(1)
   const send = screen.getByRole('button', { name: 'Передать данные и подготовить черновик' })
   expect(send).toBeDisabled()
