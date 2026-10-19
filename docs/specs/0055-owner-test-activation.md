@@ -80,7 +80,7 @@ remaining, token counts и generation IDs остаются в protected VPS repo
 | OA5 | Shell activation mocks: quality FAIL не включает flag; deploy FAIL восстанавливает конфигурацию; repeat enable не расходует; disable работает |
 | OA6 | `make test`, `make test-integration`, `make test-production`, `go vet ./cmd/... ./internal/...`, `git diff --check`; generated API unchanged unless contract changes |
 | OA7 | Exact implementation SHA: PR/main CI и Delivery PASS; deploy с preserve false; один отдельно разрешённый live smoke обоих cases PASS; protected audit retained, no private output |
-| OA8 | Runtime `statementAI:true` + `policyVerified:true`, exact deployed image SHA и публичный `/api/meta` подтверждают включение; protected routes 401 без session; manual import доступен |
+| OA8 | Runtime `statementAI:true` + `policyVerified:true` и exact deployed image SHA подтверждают включение; публичный `/api/meta` подтверждает доступность сервиса; protected routes 401 без session; manual import доступен |
 
 Completion цели требует OA8 в реальном production. Код, зелёный CI, только
 один case PASS или сохранённый flag без runtime проверки completion не доказывают.

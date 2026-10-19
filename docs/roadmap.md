@@ -332,3 +332,14 @@ Roadmap связывает их с проверяемыми этапами сб�
 evidence, а не только наличием каталога или draft. Исторические решения,
 спецификации и отчёты сохранять; их исходные наблюдения не считать описанием
 текущей версии.
+
+## Statement AI: owner-test release — 2026-10-19
+
+S1 интегрирован PR #70 (`8ed8e80`), main CI `39243697470` и Delivery
+`39244588305` PASS. Владелец отдельно принял
+[owner-test activation amendment](specs/0055-owner-test-activation.md):
+обновить smoke под S1, один запуск columns/cards (≤2 calls / theoretical
+$0.14 total, прежний shared budget), включение только при полном PASS обоих.
+[Implementation evidence](specs/0055-owner-test-activation-evidence.md) отделяет
+offline проверки от предстоящих release/runtime gates. Production AI в этом
+snapshot не включён; full qualification S2–S5 и AC12 остаются отдельными.

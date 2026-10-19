@@ -18,6 +18,7 @@ type Meter interface {
 type Sample struct {
 	Name     string
 	Document statementdata.Document
+	SHA256   string
 }
 type Result struct {
 	Name       string   `json:"name"`
@@ -42,6 +43,9 @@ type Trace struct {
 	Parts []statementdata.Proposal `json:"parts"`
 }
 type Report struct {
+	Digest        string                  `json:"digest"`
+	Profile       Profile                 `json:"profile"`
+	Corpus        []CaseEvidence          `json:"corpus"`
 	Traces        []Trace                 `json:"traces,omitempty"`
 	Version       string                  `json:"version"`
 	Time          time.Time               `json:"time"`
@@ -57,13 +61,16 @@ type Report struct {
 // Run reserves every planned call before inference. It never retries a call;
 // unknown billing settles uncertain and freezes the shared allowance.
 func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reasoner, meter Meter) (report Report, err error) {
+	ctx, cancelRun := context.WithTimeout(ctx, RunTimeout)
+	defer cancelRun()
 	defer func() {
 		if err != nil {
 			report.Passed = false
 			report.Error = err.Error()
 		}
+		report.Digest = reportDigest(report)
 	}()
-	report = Report{Version: "statement.synthetic.v1", Time: time.Now().UTC(), Results: []Result{}, Calls: []Call{}}
+	report = Report{Version: ReportVersion, Profile: CurrentProfile(), Time: time.Now().UTC(), Results: []Result{}, Calls: []Call{}}
 	if len(samples) != 2 || samples[0].Name != "columns" || samples[1].Name != "cards" {
 		return report, errors.New("invalid_qualification_corpus")
 	}
@@ -75,15 +82,19 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 	plans := []statementextract.Plan{}
 	count := 0
 	for _, sample := range samples {
+		if sample.SHA256 != FixtureHash(sample.Name) {
+			return report, errors.New("invalid_qualification_fixture")
+		}
 		plan, e := statementextract.BuildPlan(sample.Document, policy, nil)
 		if e != nil {
 			return report, errors.New("qualification_plan_invalid")
 		}
 		plans = append(plans, plan)
+		report.Corpus = append(report.Corpus, CaseEvidence{sample.Name, sample.SHA256, sample.Document.Hash(), statementextract.Hash(plan), statementextract.InputBytes(plan.Chunks[0])})
 		count += len(plan.Chunks)
 		report.MaximumMicros += plan.MaximumMicros
 	}
-	if count > 4 || report.MaximumMicros > 32000 {
+	if count != MaxSmokeCalls || report.MaximumMicros > MaxSmokeMicros {
 		return report, errors.New("qualification_cap_exceeded")
 	}
 	reservation, err := meter.Reserve(ctx, report.MaximumMicros, policy)
@@ -116,17 +127,17 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 			if ctx.Err() != nil {
 				return report, errors.New("qualification_timeout")
 			}
-			callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			callCtx, cancel := context.WithTimeout(ctx, statementextract.CallTimeoutSeconds*time.Second)
 			callStart := time.Now()
 			part, billing, e := reasoner.Complete(callCtx, policy, chunk)
 			cancel()
-			if billing == nil {
+			if !validBill(billing, policy) {
 				known = false
 			} else {
 				total += billing.CostMicros
 				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
 			}
-			if e != nil || billing == nil {
+			if e != nil || !known {
 				var detail interface{ ProtocolReason() string }
 				if errors.As(e, &detail) {
 					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
