@@ -65,7 +65,9 @@ qualified status только из факта наличия в каталоге
 ## Связанная проработка качества — 2026-10-19
 
 Владелец отдельно поручил проработку устойчивости обоих formats и расширенного
-корпуса. [Design study](../research/statement-quality/README.md) содержит
+корпуса и принял её результат 2026-10-19 («Принимаю», PR #68). Это принятие
+исследования и последовательности пакетов, а не конкретной редакции SPEC-0056,
+реестра моделей или платного campaign. [Design study](../research/statement-quality/README.md) содержит
 32 выполненных offline probes (0 model calls), подтверждённую нестабильность
 record packing, 24-case corpus manifest (2 existing / 22 planned) и этапы
 planner → coverage protocol → corpus → bounded evaluation → registry.

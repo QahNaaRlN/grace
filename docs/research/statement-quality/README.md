@@ -1,7 +1,8 @@
 # Statement AI: проработка устойчивости и расширенного корпуса
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
-- Статус: design candidate; implementation `not_started`.
+- Статус: design study accepted, 2026-10-19; implementation `not_started`.
+- Acceptance record: владелец ответил «Принимаю» на результат проработки / draft PR #68, revision `c63e7cd3f7ca355ee7470036919b948d0078b73f`. Приняты выводы и последовательность S1–S5; конкретные технические редакции и платные campaigns сохраняют свои gates.
 - Основание: владелец поручил «Приступай к проработке» устойчивости обоих layouts и более широкого корпуса.
 - Baseline: `8232976`, draft SPEC-0056 / PR #67; product code `7be572c`, draft PR #66. CI `39218772264` завершён PASS для всех пяти jobs; это не model qualification.
 - Исполнено сейчас: 32 offline planner probes, 0 model calls, 0 database writes; публичные synthetic PDF и layout-only mutations.
@@ -95,6 +96,9 @@ account/FX amounts и clocks этих synthetic источников. Прове
 
 Это изменение технического контракта/plan version для отдельного review.
 В текущей проработке planner не изменён и product tests не переписаны.
+Границы следующего шага и проверяемый контракт описаны в
+[S1 technical candidate](../../specs/0055-record-atomic-planning.md); точный
+геометрический алгоритм должен пройти offline comparison до принятия этой редакции.
 
 ## Второй пакет: явный ответ по каждому source span
 
@@ -213,7 +217,7 @@ Production usage/remaining/token/generation/cost values остаются при�
 
 | Пакет | Результат | Gate |
 | --- | --- | --- |
-| S0: эта проработка | Offline evidence + root-cause distinctions + 24-case manifest + protocol candidates | выполнено как design study; 0 model calls |
+| S0: эта проработка | Offline evidence + root-cause distinctions + 24-case manifest + protocol candidates | accepted владельцем 2026-10-19; 0 model calls |
 | S1: planner/harness | Целые record atoms, безопасный отказ и правдивый multi-chunk integration | техническая редакция accepted; offline evidence до моделей |
 | S2: coverage protocol | Выбранный bounded response format, проверенные aliases/classifications/unresolved | принятые schema/plan/consent изменения; fake-provider guards |
 | S3: corpus | 24 реально созданных fixture, независимые golden expectations, holdout frozen | fixture/render/extractor/scorer review; пока 22 planned |
