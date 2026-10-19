@@ -1,0 +1,33 @@
+{
+  "plannerVersion": "statement-document-atom.v1",
+  "variants": [
+    {
+      "prompt": "v7",
+      "structuralCases": 28,
+      "passed": true
+    },
+    {
+      "prompt": "v8",
+      "structuralCases": 28,
+      "passed": true
+    },
+    {
+      "prompt": "current",
+      "structuralCases": 28,
+      "passed": true
+    }
+  ],
+  "providerCalls": 0,
+  "databaseWrites": 0,
+  "goVersion": "go version go1.27.2 linux/amd64",
+  "popplerVersion": "pdftotext version 25.04.0",
+  "sourceHashes": {
+    "internal/statementextract/plan.go": "a2ed693837740381a73a5328f738866f59c7ae4a4f60c3cc79d6f19a95c1b3bd",
+    "internal/statementextract/aliases.go": "31d996a6c498128b45caa0a3b10ee85b46acca845229d00af2f1d259b0057c1f",
+    "internal/statementextract/document_layout_integration_test.go": "6fa015812c827568306c7bed95bcffa46cc5e33d096fbea4972a98cab8793722",
+    "Dockerfile.pdf-extractor": "e17066f027214aa74d6e010486ef6f3edfb57b273f31ae1e67ee8e965fde5879",
+    "scripts/research/verify-statement-document-plan.sh": "cdd3d67001ffc42055a6e48f6aa6033d109097eaaa1663074d4eb71eb96edfc8",
+    "internal/pdfextract/testdata/columns.pdf": "097c3d35d4dd9787457b13f61bd524ff83c18d969ce50b93f7c8cecfeb569c8c",
+    "internal/pdfextract/testdata/cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6"
+  }
+}

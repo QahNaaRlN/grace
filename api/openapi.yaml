@@ -3866,10 +3866,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StatementRedactedSpan'
+    StatementPlanLimits:
+      type: object
+      additionalProperties: false
+      required: [maxInputBytes, inputTokens, outputTokens, maxSpans, callTimeoutSeconds, attemptTimeoutSeconds]
+      properties:
+        maxInputBytes:
+          type: integer
+          enum: [90000]
+        inputTokens:
+          type: integer
+          enum: [100000]
+        outputTokens:
+          type: integer
+          enum: [16000]
+        maxSpans:
+          type: integer
+          enum: [2000]
+        callTimeoutSeconds:
+          type: integer
+          enum: [120]
+        attemptTimeoutSeconds:
+          type: integer
+          enum: [150]
     StatementPlan:
       type: object
       additionalProperties: false
       required:
+      - plannerVersion
+      - aliasVersion
+      - atoms
+      - aliases
+      - limits
       - documentHash
       - promptVersion
       - schemaHash
@@ -3878,6 +3906,22 @@ components:
       - chunks
       - maximumMicros
       properties:
+        plannerVersion:
+          type: string
+        aliasVersion:
+          type: string
+        atoms:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        aliases:
+          type: object
+          additionalProperties:
+            type: string
+        limits:
+          $ref: '#/components/schemas/StatementPlanLimits'
         documentHash:
           type: string
         promptVersion:

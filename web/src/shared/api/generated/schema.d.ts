@@ -1882,7 +1882,28 @@ export interface components {
             context: components["schemas"]["StatementRedactedSpan"][];
             spans: components["schemas"]["StatementRedactedSpan"][];
         };
+        StatementPlanLimits: {
+            /** @enum {integer} */
+            maxInputBytes: 90000;
+            /** @enum {integer} */
+            inputTokens: 100000;
+            /** @enum {integer} */
+            outputTokens: 16000;
+            /** @enum {integer} */
+            maxSpans: 2000;
+            /** @enum {integer} */
+            callTimeoutSeconds: 120;
+            /** @enum {integer} */
+            attemptTimeoutSeconds: 150;
+        };
         StatementPlan: {
+            plannerVersion: string;
+            aliasVersion: string;
+            atoms: string[][];
+            aliases: {
+                [key: string]: string;
+            };
+            limits: components["schemas"]["StatementPlanLimits"];
             documentHash: string;
             promptVersion: string;
             schemaHash: string;

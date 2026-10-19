@@ -136,6 +136,10 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 			if total > report.MaximumMicros {
 				return report, errors.New("qualification_cost_overrun")
 			}
+			part, e = statementextract.CanonicalProposal(plans[i], part)
+			if e != nil {
+				return report, errors.New("qualification_protocol_failed")
+			}
 			parts = append(parts, part)
 			report.Traces[len(report.Traces)-1].Parts = append(report.Traces[len(report.Traces)-1].Parts, part)
 		}

@@ -260,13 +260,15 @@ SPEC-0055 завершена; cards quality FAIL сохраняется, Stateme
 32 offline probes выявили разрыв record core при добавлении нефинансового
 префикса. Предложены отдельные пакеты planner, явного coverage protocol и
 24-case corpus (2 PDF существуют, 22 planned). Model calls = 0; реализация
-этих изменений not_started, Statement AI false. Следующий шаг — offline
-реализация [принятого S1 контракта](specs/0055-record-atomic-planning.md):
+S2/corpus not_started, Statement AI false. S1 реализован и локально проверен
+в рамках [принятого S1 контракта](specs/0055-record-atomic-planning.md):
 [280 offline cases](research/statement-quality/atoms.md) отклонили геометрические
 эвристики. Владелец принял целый документ с короткими aliases и новыми caps
 90000 bytes / 100000 input / 16000 output, максимум 2000 spans. Два baseline
 formats и все 56 structural cases этой стратегии помещаются без разрывов;
-model quality не проверялась, product implementation not_started. Принятие
+model quality не проверялась. [S1 implementation evidence](specs/0055-s1-evidence.md):
+84 actual-planner layout cases, real HTTP/fake/SQL/confirmation, shared budget
+and cancellation guards; локальные gates PASS, опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Принятие
 зафиксировано 2026-10-19 («Утвердить S1 с новыми лимитами»); paid campaigns
 отдельно, общий бюджет не увеличивается.
 

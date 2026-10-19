@@ -1,0 +1,59 @@
+=== RUN   TestStatementDocumentLayouts
+=== RUN   TestStatementDocumentLayouts/columns/prefix_0
+=== RUN   TestStatementDocumentLayouts/columns/prefix_4
+=== RUN   TestStatementDocumentLayouts/columns/prefix_8
+=== RUN   TestStatementDocumentLayouts/columns/prefix_12
+=== RUN   TestStatementDocumentLayouts/columns/prefix_16
+=== RUN   TestStatementDocumentLayouts/columns/prefix_24
+=== RUN   TestStatementDocumentLayouts/columns/prefix_32
+=== RUN   TestStatementDocumentLayouts/columns/prefix_64
+=== RUN   TestStatementDocumentLayouts/columns/translate
+=== RUN   TestStatementDocumentLayouts/columns/scale
+=== RUN   TestStatementDocumentLayouts/columns/wide_gap
+=== RUN   TestStatementDocumentLayouts/columns/continuation
+=== RUN   TestStatementDocumentLayouts/columns/columns
+=== RUN   TestStatementDocumentLayouts/columns/reordered
+=== RUN   TestStatementDocumentLayouts/cards/prefix_0
+=== RUN   TestStatementDocumentLayouts/cards/prefix_4
+=== RUN   TestStatementDocumentLayouts/cards/prefix_8
+=== RUN   TestStatementDocumentLayouts/cards/prefix_12
+=== RUN   TestStatementDocumentLayouts/cards/prefix_16
+=== RUN   TestStatementDocumentLayouts/cards/prefix_24
+=== RUN   TestStatementDocumentLayouts/cards/prefix_32
+=== RUN   TestStatementDocumentLayouts/cards/prefix_64
+=== RUN   TestStatementDocumentLayouts/cards/translate
+=== RUN   TestStatementDocumentLayouts/cards/scale
+=== RUN   TestStatementDocumentLayouts/cards/wide_gap
+=== RUN   TestStatementDocumentLayouts/cards/continuation
+=== RUN   TestStatementDocumentLayouts/cards/columns
+=== RUN   TestStatementDocumentLayouts/cards/reordered
+--- PASS: TestStatementDocumentLayouts (0.06s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_0 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_4 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_8 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_12 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_16 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_24 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_32 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/prefix_64 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/translate (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/scale (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/wide_gap (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/continuation (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/columns (0.00s)
+    --- PASS: TestStatementDocumentLayouts/columns/reordered (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_0 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_4 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_8 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_12 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_16 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_24 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_32 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/prefix_64 (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/translate (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/scale (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/wide_gap (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/continuation (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/columns (0.00s)
+    --- PASS: TestStatementDocumentLayouts/cards/reordered (0.00s)
+PASS

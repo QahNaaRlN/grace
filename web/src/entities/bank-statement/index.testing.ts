@@ -46,10 +46,22 @@ export function statementPreviewFixture(): components['schemas']['StatementExtra
     hash: 'preview-hash',
     expiresAt: '2026-10-19T00:15:00Z',
     plan: {
+      plannerVersion: 'statement-document-atom.v1',
+      aliasVersion: 'statement-alias.lex-base36.v1',
+      atoms: [['span-1']],
+      aliases: { s0: 'span-1' },
+      limits: {
+        maxInputBytes: 90000,
+        inputTokens: 100000,
+        outputTokens: 16000,
+        maxSpans: 2000,
+        callTimeoutSeconds: 120,
+        attemptTimeoutSeconds: 150,
+      },
       documentHash: 'document-hash',
-      promptVersion: 'statement-span-mapping.v1',
+      promptVersion: 'statement-span-mapping.v9.document-alias',
       schemaHash: 'schema-hash',
-      redactionVersion: 'statement-allowlist.v1',
+      redactionVersion: 'statement-allowlist.v2.alias-placeholders',
       policy: {
         model: 'google/gemini-2.5-flash',
         provider: 'google-vertex/eu',
@@ -57,9 +69,9 @@ export function statementPreviewFixture(): components['schemas']['StatementExtra
         inputMicrosPerMillion: 300000,
         outputMicrosPerMillion: 2500000,
       },
-      maximumMicros: 8000,
+      maximumMicros: 70000,
       chunks: [
-        { index: 1, context: [], spans: [{ id: 'date', page: 1, x: 1, y: 1, text: '19.10.2026' }] },
+        { index: 1, context: [], spans: [{ id: 's0', page: 1, x: 1, y: 1, text: '19.10.2026' }] },
       ],
     },
   }

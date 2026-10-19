@@ -9,6 +9,7 @@ type Preview = components['schemas']['StatementExtractionPreview']
 export function useStatementAI(statementId: string) {
   const cache = useQueryClient()
   const preview = useMutation({
+    retry: false,
     mutationFn: async (expectedRevision: number) => {
       const { data, error } = await apiClient.POST(
         '/api/imports/statements/{statementId}/extraction-previews',
@@ -27,6 +28,7 @@ export function useStatementAI(statementId: string) {
     },
   })
   const extract = useMutation({
+    retry: false,
     mutationFn: async ({ preview: p, key }: { preview: Preview; key: string }) => {
       const { data: consent, error } = await apiClient.POST(
         '/api/imports/statements/{statementId}/extraction-consents',

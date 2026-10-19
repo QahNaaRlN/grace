@@ -76,7 +76,11 @@ func reply(w http.ResponseWriter, v any, e error) {
 	if status == 429 {
 		w.Header().Set("Retry-After", "2")
 	}
-	web.WriteError(w, status, code, "Распознавание не завершено. Проверьте согласие, состояние выписки и доступность AI; ручная проверка остаётся доступна.")
+	message := "Распознавание не завершено. Проверьте согласие, состояние выписки и доступность AI; ручная проверка остаётся доступна."
+	if code == "statement_atomic_block_limit" || code == "statement_document_span_limit" {
+		message = "Документ слишком велик для AI. Загрузите выписку за меньший период или используйте ручную подготовку строк."
+	}
+	web.WriteError(w, status, code, message)
 }
 func (h *Handler) preview(w http.ResponseWriter, r *http.Request) {
 	id, ok := path(w, r, "statementId")
@@ -107,7 +111,6 @@ func (h *Handler) consent(w http.ResponseWriter, r *http.Request) {
 	reply(w, out, e)
 }
 func (h *Handler) extract(w http.ResponseWriter, r *http.Request) {
-	_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(145 * time.Second))
 	id, ok := path(w, r, "statementId")
 	if !ok {
 		return
@@ -118,6 +121,10 @@ func (h *Handler) extract(w http.ResponseWriter, r *http.Request) {
 	}
 	if !identifier.MatchString(in.PreviewID) || !identifier.MatchString(in.ConsentID) {
 		reply(w, nil, fault("invalid_reference", 400))
+		return
+	}
+	if e := http.NewResponseController(w).SetWriteDeadline(time.Now().Add(180 * time.Second)); e != nil {
+		reply(w, nil, fault("statement_deadline_unavailable", 503))
 		return
 	}
 	out, e := h.service.Extract(r.Context(), id, r.Header.Get("Idempotency-Key"), in)

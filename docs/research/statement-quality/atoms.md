@@ -86,18 +86,22 @@ Proposal schema/prompt, не inference и не quality. Исходный PDF, la
 
 ## Следующий шаг и границы
 
-Предлагается принять [редакцию S1](../../specs/0055-record-atomic-planning.md):
+Владелец принял [редакцию S1](../../specs/0055-record-atomic-planning.md):
 один документ, обратимые короткие locators, 90000 bytes / 100000 input tokens /
 16000 output tokens, максимум 2000 spans; прежняя exact route и общий бюджет.
 Это повышает theoretical provider ceiling одного call с 0.008 до 0.07 USD.
-Новые caps должны быть приняты явно; платных calls эта работа не разрешает.
+Принятие зафиксировано 2026-10-19 («Утвердить S1 с новыми лимитами»);
+платных calls эта работа не разрешает.
 Дополнительно выявлены реальные transport blockers: общий reservation helper
-ограничен 10000/2000, call timeout — 30 s, API WriteTimeout — 15 s. В S1
+ограничен 10000/2000, call timeout — 30 s. Общий API WriteTimeout — 15 s,
+но extraction route уже имел best-effort deadline 145 s с игнорированием ошибки.
+Прежняя формулировка о неизбежном обрыве этого route была неполной. В S1
 предложен отдельный statement transport profile и route-specific write deadline,
 с real HTTP/fake-provider test. Отдельный
 [standard-library diagnostic](../../../scripts/research/httpdeadline/main.go)
 [воспроизвёл](atoms-evidence/http-deadline.json) обрыв медленного ответа и
 работу route deadline при сохранении общего малого timeout. Это feasibility
-diagnostic; сам Grace route/middleware/SQL ещё не проверен.
+diagnostic. В реализации S1 [real HTTP/SQL evidence](../../specs/0055-s1-evidence.md)
+проверяет сам handler, CORS, request cancellation и сохранение known billing.
 Затем implementation, fake-provider/SQL checks, S2 coverage protocol и S3 corpus,
 после них отдельно bounded model qualification. Включение до PASS не выполняется.

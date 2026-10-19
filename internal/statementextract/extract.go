@@ -12,6 +12,8 @@ import (
 // Extract claims and reserves the entire plan once. A replay only reads the
 // durable attempt: no automatic retry or recovery ever invokes the provider.
 func (s *Service) Extract(ctx context.Context, id, key string, in ExtractionInput) (Attempt, error) {
+	ctx, cancelRequest := context.WithTimeout(ctx, AttemptTimeoutSeconds*time.Second)
+	defer cancelRequest()
 	var out Attempt
 	if !validKey(key) {
 		return out, fault("idempotency_key_required", 400)
@@ -75,6 +77,13 @@ func (s *Service) Extract(ctx context.Context, id, key string, in ExtractionInpu
 	if !yes {
 		return out, fault("consent_required", 422)
 	}
+	var usedPreview bool
+	if e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM statement_extraction_attempts WHERE preview_id=$1 AND statement_id=$2)", preview.ID, id).Scan(&usedPreview); e != nil {
+		return out, e
+	}
+	if usedPreview {
+		return out, fault("preview_changed", 409)
+	}
 	var calls int
 	var running bool
 	e = tx.QueryRow(ctx, "SELECT ai_calls,EXISTS(SELECT 1 FROM statement_extraction_attempts WHERE statement_id=$1 AND status='running') FROM statement_sources WHERE id=$1", id).Scan(&calls, &running)
@@ -99,7 +108,7 @@ func (s *Service) Extract(ctx context.Context, id, key string, in ExtractionInpu
 	if e = tx.Commit(ctx); e != nil {
 		return out, e
 	}
-	attemptCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
+	attemptCtx, cancel := context.WithTimeout(ctx, AttemptTimeoutSeconds*time.Second)
 	defer cancel()
 	// Cross-process cancellation observes source revisions and tombstones. There
 	// is no long-lived financial transaction across a provider request.
@@ -115,9 +124,12 @@ func (s *Service) Extract(ctx context.Context, id, key string, in ExtractionInpu
 			code = "statement_incomplete"
 			break
 		}
-		callCtx, callCancel := context.WithTimeout(attemptCtx, 30*time.Second)
+		callCtx, callCancel := context.WithTimeout(attemptCtx, CallTimeoutSeconds*time.Second)
 		proposal, billing, callErr := s.reasoner.Complete(callCtx, policy, chunk)
 		callCancel()
+		if callErr == nil {
+			proposal, callErr = CanonicalProposal(preview.Plan, proposal)
+		}
 		if billing == nil || billing.GenerationID == "" || len(billing.GenerationID) > 200 || billing.CostMicros < 0 || billing.CostMicros > policy.CallMicros() || billing.InputTokens < 0 || billing.InputTokens > InputBound || billing.OutputTokens < 0 || billing.OutputTokens > OutputBound {
 			unknown = true
 			code = "usage_requires_review"

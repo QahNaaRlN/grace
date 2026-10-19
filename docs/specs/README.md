@@ -6,17 +6,18 @@
 Предложен выбор из квалифицированных model/endpoint пар до consent, закрепление
 одной policy на attempt и прежний общий бюджет. Это не fallback после отправки
 данных и не обход unknown billing SPEC-0055; платные calls/production changes
-в документационном пакете не выполняются. Ветка основана на draft PR #66.
+в документационном пакете не выполняются. База кандидата — PR #66, теперь integrated (`06169e5`); SPEC-0056 остаётся draft.
 [Проработка качества](../research/statement-quality/README.md), 2026-10-19:
 принята владельцем («Принимаю»), 32 offline probes, план planner/coverage/corpus;
 модельных вызовов нет, реализация not_started.
-[S1 technical candidate](0055-record-atomic-planning.md) фиксирует границы
+[Accepted S1 contract](0055-record-atomic-planning.md) фиксирует границы
 первого пакета: [offline comparison](../research/statement-quality/atoms.md),
 280 cases, геометрические кандидаты REJECTED. Whole-document/aliases и новые
 caps 90000 bytes / 100000 input / 16000 output приняты владельцем 2026-10-19
 («Утвердить S1 с новыми лимитами»), theoretical provider ceiling 0.07 USD/call;
-общий бюджет сохраняется, paid campaigns отдельно; implementation
-not_started, модельных вызовов нет. Полная qualification не сводится к smoke.
+общий бюджет сохраняется, paid campaigns отдельно. [S1 implementation](0055-s1-evidence.md)
+локально проверен: 84 layout cases, HTTP/SQL/confirmation/cancellation, no external
+model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Полная qualification не сводится к smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:

@@ -136,9 +136,8 @@ func loadPreview(ctx context.Context, tx pgx.Tx, id, statement string) (Preview,
 }
 
 // Old consent cannot authorize new prompt/schema/redaction or inference settings.
-func currentPlanContract(p Plan) bool {
-	return p.PromptVersion == PromptVersion && p.RedactionVersion == RedactionVersion && p.SchemaHash == Hash(json.RawMessage(ProposalSchema))
-}
+func currentPlanContract(p Plan) bool { return validPlan(p) }
+
 func (s *Service) Consent(ctx context.Context, id, key string, in ConsentInput) (Consent, error) {
 	var out Consent
 	if !validKey(key) {

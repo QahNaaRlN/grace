@@ -91,7 +91,7 @@ func main() {
 		_ = json.NewEncoder(os.Stdout).Encode(policy)
 		return
 	}
-	provider, e := assistant.NewOpenRouterProvider(cfg.OpenRouterAPIKey, nil)
+	provider, e := assistant.NewStatementOpenRouterProvider(cfg.OpenRouterAPIKey, nil)
 	if e != nil {
 		fail("provider_unavailable")
 	}

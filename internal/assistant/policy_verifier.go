@@ -28,15 +28,24 @@ func NewPolicyVerifier() *PolicyVerifier {
 	return &PolicyVerifier{client: &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, endpoint: "https://openrouter.ai/api/v1/models/", checked: map[string]ModelPolicy{}, attempted: map[string]time.Time{}}
 }
 func (v *PolicyVerifier) Current(ctx context.Context, approved ModelPolicy) (ModelPolicy, error) {
+	return v.current(ctx, approved, false)
+}
+func (v *PolicyVerifier) CurrentStatement(ctx context.Context, approved ModelPolicy) (ModelPolicy, error) {
+	return v.current(ctx, approved, true)
+}
+func (v *PolicyVerifier) current(ctx context.Context, approved ModelPolicy, statement bool) (ModelPolicy, error) {
 	if v == nil {
-		if approved.Valid(time.Now()) {
+		if !statement && approved.Valid(time.Now()) {
 			return approved, nil
 		}
 		return ModelPolicy{}, errors.New("price_unknown")
 	}
 	identity := approved
 	identity.VerifiedAt = time.Time{}
-	key := aiHash(identity)
+	key := aiHash(struct {
+		Policy    ModelPolicy
+		Statement bool
+	}{identity, statement})
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	policy := approved
@@ -44,7 +53,8 @@ func (v *PolicyVerifier) Current(ctx context.Context, approved ModelPolicy) (Mod
 		policy = cached
 	}
 	now := time.Now()
-	if policy.Valid(now) && now.Sub(policy.VerifiedAt) < 23*time.Hour {
+	_, cachedVerified := v.checked[key]
+	if (!statement || cachedVerified) && policy.Valid(now) && now.Sub(policy.VerifiedAt) < 23*time.Hour {
 		return policy, nil
 	}
 	if last := v.attempted[key]; !last.IsZero() && now.Sub(last) < time.Minute {
@@ -81,12 +91,15 @@ func (v *PolicyVerifier) Current(ctx context.Context, approved ModelPolicy) (Mod
 	var metadata struct {
 		Data struct {
 			Endpoints []struct {
-				ModelID    string   `json:"model_id"`
-				Tag        string   `json:"tag"`
-				Name       string   `json:"provider_name"`
-				Status     int      `json:"status"`
-				Parameters []string `json:"supported_parameters"`
-				Pricing    struct {
+				ContextLength int      `json:"context_length"`
+				MaxCompletion int      `json:"max_completion_tokens"`
+				MaxPrompt     *int     `json:"max_prompt_tokens"`
+				ModelID       string   `json:"model_id"`
+				Tag           string   `json:"tag"`
+				Name          string   `json:"provider_name"`
+				Status        int      `json:"status"`
+				Parameters    []string `json:"supported_parameters"`
+				Pricing       struct {
 					Prompt     string `json:"prompt"`
 					Completion string `json:"completion"`
 					Image      string `json:"image"`
@@ -104,6 +117,9 @@ func (v *PolicyVerifier) Current(ctx context.Context, approved ModelPolicy) (Mod
 		parameters := map[string]bool{}
 		for _, p := range endpoint.Parameters {
 			parameters[p] = true
+		}
+		if statement && (!statementCapabilityFits(endpoint.ContextLength, endpoint.MaxCompletion, endpoint.MaxPrompt, parameters)) {
+			continue
 		}
 		if !parameters["structured_outputs"] || !parameters["response_format"] || !parameters["max_tokens"] {
 			continue

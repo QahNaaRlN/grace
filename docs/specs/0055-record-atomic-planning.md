@@ -1,11 +1,11 @@
 # SPEC-0055 / S1: целый документ и короткие source aliases
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
-- Статус: accepted, 2026-10-19; implementation `not_started`.
+- Статус: accepted, 2026-10-19; implementation `locally_verified`; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен.
 - Основание: принятая [проработка качества](../research/statement-quality/README.md), revision `c63e7cd3f7ca355ee7470036919b948d0078b73f` / PR #68; поручение продолжить движение к включению Statement AI.
 - Acceptance record: владелец выбрал «Утвердить S1 с новыми лимитами (рекомендую)» в ответ на конкретный контракт / PR #69, revision `fa4617f2239bb5c4ca51b82a4a8ff463f16f2191`. Приняты 90000 bytes / 2000 spans / 100000 input / 16000 output и максимум 70000 provider micros/call; общий бюджет сохраняется, платные прогоны требуют отдельного решения.
 - Product baseline: `7be572ceaac5819a2031059ef60388dcd0711614`, PR #66; research base `f3476a3`.
-- Ветка: `codex/statement-record-planning`; product implementation отсутствует.
+- Specification integration: PR #69, main `dcd2bb8`. Implementation branch: `codex/statement-document-plan`; работа начата 2026-10-19 по принятому scope.
 
 ## Принятое решение
 
@@ -70,7 +70,7 @@ vector S2, автоматический выбор модели SPEC-0056, но�
 
 ## Принятые request bounds и стоимость
 
-| Параметр | Текущий product | S1 candidate |
+| Параметр | Текущий product | S1 accepted |
 | --- | --- | --- |
 | Messages + schema bytes / request | 9000 | 90000 |
 | Input token upper bound | 10000 | 100000 |
@@ -79,7 +79,7 @@ vector S2, автоматический выбор модели SPEC-0056, но�
 | Source spans / новый plan | общий extractor limit | максимум 2000 |
 | Provider ceiling / call при прежних ценовых ceilings | 8000 micros | 70000 micros (0.07 USD) |
 
-Расчёт candidate ceiling: ceil((300000×100000 + 2500000×16000)/1000000).
+Расчёт принятого потолка: ceil((300000×100000 + 2500000×16000)/1000000).
 Это публичный теоретический предел provider cost, не фактический расход,
 остаток владельца или гарантия latency. Существующие fees/reservation guards
 учитываются общим budget ledger; общий allowance не меняется. Нет доступного
@@ -104,7 +104,10 @@ preflight отказ, а не недооценённая reservation. Timeout о
 Одного изменения констант planner недостаточно. Проверены три действующих
 ограничения: `ModelPolicy.ReservationMicros` принимает максимум 10000/2000;
 provider и statement call имеют 30 s; общий API `WriteTimeout` — 15 s.
-CLI smoke не проверяет последний предел, поэтому не заменяет HTTP integration.
+Уточнение при реализации: extraction handler уже устанавливал route deadline
+145 s, но игнорировал ошибку SetWriteDeadline. Общий 15 s предел сам по себе
+не доказывает обрыв именно этого route. S1 заменяет существующее best-effort
+поведение на проверяемые 180 s; CLI smoke не заменяет HTTP integration.
 
 Ввести отдельный server-owned transport profile `statement-document.v1`:
 100000 input / 16000 output / 120 s provider request, text-only с прежней pinned
@@ -182,7 +185,9 @@ API. Owner preview показывает фактический redacted payload,
 ## Acceptance matrix
 
 Prototype evidence ниже проверяет размер/целостность, не реализацию API/SQL/LLM.
-Все integration/product критерии сейчас `NOT_RUN`.
+Локальные integration/product критерии проверены; [S1 evidence](0055-s1-evidence.md)
+связывает каждый критерий с executable tests. External inference, actual provider
+compatibility/quality и production activation остаются `NOT_RUN` для S1.
 
 | ID | Критерий | Исполняемое evidence для реализации |
 | --- | --- | --- |

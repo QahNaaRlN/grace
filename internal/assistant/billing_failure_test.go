@@ -71,12 +71,13 @@ func TestRejectedOutputRetainsVerifiedBillingWithoutReturningContent(t *testing.
 
 type failedStatementProvider struct{ known bool }
 
+func (p failedStatementProvider) StatementDocumentProfile() bool { return true }
 func (p failedStatementProvider) Complete(context.Context, LLMRequest) (LLMResponse, error) {
 	return LLMResponse{BillingKnown: p.known, ID: "synthetic-failed", CostMicros: 17, PromptTokens: 100, CompletionTokens: 2000}, &ProviderProtocolError{Reason: "finish_length"}
 }
 func TestStatementReasonerRetainsOnlyVerifiedBillOnProviderError(t *testing.T) {
 	for _, known := range []bool{true, false} {
-		r := &StatementReasoner{Policy: ModelPolicy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000, VerifiedAt: time.Now().Add(-time.Minute)}, Provider: failedStatementProvider{known}}
+		r := &StatementReasoner{Verifier: statementVerifierFixture(t), Policy: ModelPolicy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000, VerifiedAt: time.Now().Add(-time.Minute)}, Provider: failedStatementProvider{known}}
 		policy, err := r.CurrentPolicy(context.Background())
 		if err != nil {
 			t.Fatal(err)

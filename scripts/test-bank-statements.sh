@@ -34,7 +34,7 @@ docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-
  -v "$statement_test_binary:/run/statement.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
  -e TEST_BANK_STATEMENTS=true -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
  -e TEST_DATABASE_URL=postgres://grace:grace@postgres:5432/grace?sslmode=disable \
- -w /src/internal/statementextract alpine:3.22 /run/statement.test -test.run '^TestStatementRealPDFFakeProviderLifecycle$' -test.v
+ -w /src/internal/statementextract alpine:3.22 /run/statement.test -test.run '^(TestStatementRealPDFFakeProviderLifecycle|TestStatementDocumentLayouts)$' -test.v
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -p 1 -tags=integration ./internal/imports ./internal/statementextract -run Statement -count=1 -v
 statement_compose exec -T postgres pg_dump -U grace -d grace > /tmp/grace-statement-restore-$$.sql
