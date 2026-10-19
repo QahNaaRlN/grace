@@ -7,6 +7,9 @@
 одной policy на attempt и прежний общий бюджет. Это не fallback после отправки
 данных и не обход unknown billing SPEC-0055; платные calls/production changes
 в документационном пакете не выполняются. Ветка основана на draft PR #66.
+[Проработка качества](../research/statement-quality/README.md), 2026-10-19:
+32 offline probes, design candidate planner/coverage/corpus; модельных вызовов
+нет, реализация not_started. Полная qualification не сводится к одному smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:

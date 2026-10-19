@@ -1,0 +1,10 @@
+{
+  "baselineCommit": "7be572ceaac5819a2031059ef60388dcd0711614",
+  "historicalPromptOverlayCommit": "8a83cdcad87cb62e5a8e6b7e5213c3201bd64d37",
+  "goVersion": "go version go1.27.2 linux/amd64",
+  "probeSHA256": "71b3b26027560d552173ad7d79a4fab4915f62ab9696b1eaa2f805df9ffec30f",
+  "shellSHA256": "5a246ed41dd9e69629cc4ff03276e96b658ae53176b7e5ff6bf63c70d7c0fb4b",
+  "extractorDockerfileSHA256": "e17066f027214aa74d6e010486ef6f3edfb57b273f31ae1e67ee8e965fde5879",
+  "providerCalls": 0,
+  "databaseWrites": 0
+}

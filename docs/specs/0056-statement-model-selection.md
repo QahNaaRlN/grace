@@ -62,6 +62,15 @@ qualified status только из факта наличия в каталоге
   кредитных условий, финансовой арифметики или подтверждения проводок.
 - Самостоятельное production enable. Полный AC12 SPEC-0055 сохраняется отдельно.
 
+## Связанная проработка качества — 2026-10-19
+
+Владелец отдельно поручил проработку устойчивости обоих formats и расширенного
+корпуса. [Design study](../research/statement-quality/README.md) содержит
+32 выполненных offline probes (0 model calls), подтверждённую нестабильность
+record packing, 24-case corpus manifest (2 existing / 22 planned) и этапы
+planner → coverage protocol → corpus → bounded evaluation → registry.
+Дополнительный model-selection код не реализован; статус этого контракта draft.
+
 ## Реестр и qualification
 
 Реестр — защищённая операторская конфигурация с неизменяемыми версиями;
@@ -118,7 +127,15 @@ latency и billing также сохраняются; ограничения к�
 Весь qualification run последовательный, ≤120 s; неполное выполнение не
 получает PASS. Это верхние границы, не обещание завершения 32 calls за 120 s.
 Повтор — отдельный run, а не скрытое увеличение этого ceiling. Истёкший/неполный
-report не становится qualified. В этой документационной работе paid calls нет;
+report не становится qualified. Per-run cap — граница shard, не обещание
+полной qualification за один run. Complete campaign manifest и общий cap
+утверждаются отдельно; частичные shards не дают qualified. Design study
+предлагает три повтора на 22 text cases: это 66 scheduled document attempts;
+одни 16 positive cases требуют минимум 48 calls, поэтому один 32-call run
+недостаточен. Negative cases могут отказать до сети. Proposed ceiling полного
+campaign — ≤198 calls / ≤1.584 USD на одну пару при ≤3 calls/case; это UNVERIFIED working
+envelope до corpus preflight и кандидат для review, не разрешённые расходы. Нельзя автоматически разбить
+неутверждённый большой benchmark на серию разрешённых малых runs. В этой документационной работе paid calls нет;
 старый unknown billing уже сверён; любой новый unknown billing блокирует run.
 
 ## Выбор и стабильность плана
