@@ -8,6 +8,12 @@ on:
         required: false
         type: string
 
+      reconcile_statement_usage:
+        description: Reconcile the specifically approved synthetic run, using protected generation IDs
+        required: false
+        default: none
+        type: choice
+        options: [none, inspect, apply]
       statement_action:
         description: Preserve current statement AI state, or explicitly enable/disable
         required: false
@@ -31,7 +37,7 @@ concurrency:
 
 jobs:
   inspect-statement:
-    if: ${{ inputs.inspect_statement_only }}
+    if: ${{ inputs.inspect_statement_only || inputs.reconcile_statement_usage != 'none' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -46,6 +52,7 @@ jobs:
           printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
       - name: Check readiness without exporting runtime values
+        if: ${{ inputs.reconcile_statement_usage == 'none' }}
         run: |
           ssh grace-deploy@195.133.195.190 'bash -s' <<'REMOTE'
           set -eu
@@ -65,8 +72,21 @@ jobs:
           echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'
           REMOTE
 
+      - name: Reconcile only the approved synthetic usage with private upstream metadata
+        if: ${{ inputs.reconcile_statement_usage == 'inspect' || inputs.reconcile_statement_usage == 'apply' }}
+        env:
+          RECONCILE_IDS: ${{ secrets.GRACE_STATEMENT_RECONCILE_IDS }}
+          RECONCILE_MODE: ${{ inputs.reconcile_statement_usage }}
+        run: |
+          set -eu
+          script="/opt/grace/shared/statement-reconcile-$GITHUB_RUN_ID.py"
+          scp scripts/ops-reconcile-statement.py "grace-deploy@195.133.195.190:$script"
+          trap 'ssh grace-deploy@195.133.195.190 "rm -f $script"' EXIT
+          case "$RECONCILE_MODE" in inspect) flag='' ;; apply) flag='--apply' ;; *) exit 2 ;; esac
+          printf '%s' "$RECONCILE_IDS" | ssh grace-deploy@195.133.195.190 "python3 $script $flag"
+
   deploy:
-    if: ${{ !inputs.inspect_statement_only }}
+    if: ${{ !inputs.inspect_statement_only && inputs.reconcile_statement_usage == 'none' }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
