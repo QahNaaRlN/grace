@@ -4,6 +4,8 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -46,31 +48,25 @@ func main() {
 	if *mode == "diagnostic" {
 		var report statementqualification.Report
 		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 262145))
-		if decoder.Decode(&report) != nil || report.Version != "statement.synthetic.v1" {
+		if decoder.Decode(&report) != nil || report.Version != statementqualification.ReportVersion && report.Version != "statement.synthetic.v1" {
 			fail("invalid_qualification_report")
 		}
 		_ = json.NewEncoder(os.Stdout).Encode(safeDiagnostic(report))
 		return
 	}
 	if *mode == "summary" {
-		var report statementqualification.Report
-		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 65537))
-		decoder.DisallowUnknownFields()
-		if decoder.Decode(&report) != nil || report.Version != "statement.synthetic.v1" || !report.Passed || len(report.Results) != 2 {
+		report, err := statementqualification.DecodeReport(os.Stdin)
+		if err != nil || statementqualification.ValidateReport(report, time.Now()) != nil {
 			fail("invalid_qualification_report")
 		}
-		for _, result := range report.Results {
-			if !result.Passed {
-				fail("invalid_qualification_report")
-			}
-		}
-		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"qualificationPassed": true, "syntheticCases": len(report.Results), "qualifiedAt": report.Time})
+
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"activationSmokePassed": true, "syntheticCases": len(report.Results), "checkedAt": report.Time})
 		return
 	}
 	if *mode != "check" && *mode != "policy" && *mode != "qualify" {
 		fail("invalid_mode")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), statementqualification.RunTimeout)
 	defer cancel()
 	cfg, e := config.Load()
 	if e != nil || !cfg.AIEnabled || cfg.OpenRouterAPIKey == "" {
@@ -140,7 +136,8 @@ func main() {
 		if e != nil {
 			fail("synthetic_extraction_failed")
 		}
-		samples = append(samples, statementqualification.Sample{Name: name, Document: d})
+		digest := sha256.Sum256(raw)
+		samples = append(samples, statementqualification.Sample{Name: name, Document: d, SHA256: hex.EncodeToString(digest[:])})
 	}
 	report, e := statementqualification.Run(ctx, samples, reasoner, meter{database.ForUsers(pool)})
 	_ = json.NewEncoder(os.Stdout).Encode(report)

@@ -76,3 +76,8 @@ latency/billing и повторяемость остаются `UNVERIFIED`. S2 
 protocol, S3 expanded corpus/golden review и отдельно утверждённая bounded
 qualification сохраняют свои этапы. SPEC-0056 registry/model auto-selection
 остаётся draft/not_started. Ручной импорт и financial confirmation сохраняются.
+
+Датированное продолжение 2026-10-19: старый 32000-micros smoke cap был сохранён
+именно в S1. Позже владелец отдельно принял [owner-test activation amendment](0055-owner-test-activation.md)
+с двумя calls / aggregate 140000 micros и единственным разрешённым smoke.
+Это самостоятельное решение, а не ретроспективное расширение разрешения S1.

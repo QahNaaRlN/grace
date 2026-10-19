@@ -60,7 +60,7 @@ jobs:
           fi
           uncertain=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain' AND purpose='statement' AND generation_id LIKE 'statement-qualification:%');")
           if [ "$uncertain" = t ]; then echo 'statement_qualification_usage_requires_review'; fi
-          ready=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT grace_ai_remaining() >= 70000 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain');")
+          ready=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT grace_ai_remaining() >= 140000 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain');")
           test "$ready" = t
           echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'
           REMOTE
@@ -165,6 +165,22 @@ jobs:
           case "$STATEMENT_ACTION" in enable|disable) ;; *) exit 1 ;; esac
           ssh grace-deploy@195.133.195.190 \
             "/opt/grace/releases/$RELEASE_SHA/statement-ai.sh $STATEMENT_ACTION"
+
+      - name: Verify enabled Statement AI in exact runtime image
+        if: ${{ inputs.statement_action == 'enable' }}
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          ssh grace-deploy@195.133.195.190 'bash -s' -- "$RELEASE_SHA" <<'REMOTE'
+          set -eu
+          expected_sha="$1"
+          api=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=api)
+          test -n "$api"
+          image=$(docker inspect --format '{{.Config.Image}}' "$api")
+          test "$image" = "ghcr.io/qahnaarln/grace-api:sha-$expected_sha"
+          docker exec "$api" /bin/sh -ec 'test "$GRACE_STATEMENT_AI_ENABLED" = true; exec grace-statement-admin -mode=check'
+          echo 'Exact release image and enabled Statement AI runtime verified.'
+          REMOTE
 
       - name: Verify public authentication and application
         run: ./scripts/check-public-entrypoint.sh https://graceapp.ru

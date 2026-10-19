@@ -31,10 +31,12 @@ func (f *fakeReasoner) Complete(context.Context, statementextract.Policy, statem
 type fakeMeter struct {
 	reserves, settles int
 	actual            *int64
+	reserved          int64
 }
 
-func (f *fakeMeter) Reserve(context.Context, int64, statementextract.Policy) (string, error) {
+func (f *fakeMeter) Reserve(_ context.Context, n int64, _ statementextract.Policy) (string, error) {
 	f.reserves++
+	f.reserved = n
 	return "reservation", nil
 }
 func (f *fakeMeter) Settle(_ context.Context, _ string, n *int64) error {
@@ -51,7 +53,7 @@ func TestQualificationBillsMalformedAndNeverRetries(t *testing.T) {
 				reasoner.billing = &statementextract.Billing{CostMicros: 42, GenerationID: "synthetic-generation", InputTokens: 20, OutputTokens: 10}
 			}
 			meter := &fakeMeter{}
-			report, e := Run(context.Background(), []Sample{{"columns", d}, {"cards", d}}, reasoner, meter)
+			report, e := Run(context.Background(), []Sample{{"columns", d, FixtureHash("columns")}, {"cards", d, FixtureHash("cards")}}, reasoner, meter)
 			if e == nil || report.Passed || reasoner.calls != 1 || meter.reserves != 1 || meter.settles != 1 {
 				t.Fatal("retry or lost settlement", e, report, meter)
 			}
@@ -98,11 +100,11 @@ func TestScoreCatchesLostClockAndAvailableAsClosing(t *testing.T) {
 	}
 }
 
-func TestNewProfileCannotSpendThroughOldQualificationCap(t *testing.T) {
+func TestNewProfileReservesApprovedAggregateBeforeProvider(t *testing.T) {
 	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "public", Page: 1, Block: 1, Line: 1, Word: 1, Text: "RUB", Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 20, YMax: 10}}}}
 	reasoner, meter := &fakeReasoner{}, &fakeMeter{}
-	_, e := Run(context.Background(), []Sample{{"columns", d}, {"cards", d}}, reasoner, meter)
-	if e == nil || e.Error() != "qualification_cap_exceeded" || reasoner.calls != 0 || meter.reserves != 0 {
-		t.Fatal("old smoke cap silently raised", e, reasoner.calls, meter.reserves)
+	_, e := Run(context.Background(), []Sample{{"columns", d, FixtureHash("columns")}, {"cards", d, FixtureHash("cards")}}, reasoner, meter)
+	if e == nil || reasoner.calls != 1 || meter.reserves != 1 || meter.reserved != 140000 || meter.settles != 1 {
+		t.Fatal(e, reasoner.calls, meter)
 	}
 }

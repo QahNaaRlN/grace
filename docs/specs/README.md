@@ -1,3 +1,5 @@
+[S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation in_progress. Полная qualification остаётся отдельно.
+
 # Spec-first процесс Grace
 
 [SPEC-0056 — автоматический выбор модели для банковской выписки](0056-statement-model-selection.md)
