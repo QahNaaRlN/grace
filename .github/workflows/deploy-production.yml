@@ -65,6 +65,10 @@ jobs:
           echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'
           REMOTE
 
+      - name: Diagnose fixed synthetic field locators without values
+        run: |
+          ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-smoke.py
+
   deploy:
     if: ${{ !inputs.inspect_statement_only }}
     name: Deploy owner VPS
