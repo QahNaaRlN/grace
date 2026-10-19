@@ -1,10 +1,10 @@
 # Банковская выписка: загрузка, проверка и подтверждение
 
-Актуализация: 2026-10-19. SPEC-0055 интегрирована PR #64 (`b51b74f`) и
-развёрнута 2026-10-19 02:37:31 +05:00 (deploy `39168570754`). Ручная загрузка и
-review доступны в production. Включение Statement AI поручено владельцем
-2026-10-19, но synthetic gate не пройден: флаг false. Расход сверён 2026-10-19,
-остаётся завершение cards smoke. Текущий runtime `1ada384`. [Актуальные статусы и evidence](specs/0055-activation-evidence.md).
+Актуализация: 2026-10-19. Production `711a13d` (PR #71), deploy `39248364426`
+internal health PASS 16:58:36 +05:00 / 11:58:36 UTC. Ручная загрузка/review
+доступны, Statement AI false: единственный S1 smoke дал columns quality FAIL,
+cards NOT_RUN. Платный повтор не выполнялся; новый [S1.1](specs/0055-s11-lexical-grounding.md)
+отдельно принят владельцем для исправления и одного нового smoke. [Актуальный audit](specs/0055-activation-evidence.md).
 Поддерживается текстовый PDF одного дебетового RUB-счёта. OCR/сканы,
 зашифрованные документы и кредитные условия в этот срез не входят.
 Новый банк не требует обязательного parser-профиля, но успешное извлечение для
@@ -75,11 +75,17 @@ providerName `Google`, положительные ceilings input ≤300000/outpu
 micros на миллион tokens. Это не команда на включение production; policy
 проверяет транспорт. Analysis/receipt policies не перенастраиваются.
 
-Весь план резервируется до первой передачи в общем budget ledger; ≤32 calls за
-жизнь документа, включая retries, ≤30 s/call и ≤120 s/attempt. Неизвестный расход
-останавливает новые calls до reconciliation. Replay и recovery не повторяют
-оплаченный/неопределённый запрос автоматически. Preview показывает bound,
-а не обещание реальной цены или завершения за 120 s.
+[Принятый S1](specs/0055-record-atomic-planning.md) передаёт один целый
+redacted document: ≤2000 spans / ≤90000 messages+schema bytes,
+≤100000 input / ≤16000 output tokens, один call на attempt. Statement call
+≤120 s, product attempt ≤150 s, HTTP write deadline 180 s. До первой
+передачи резервируется theoretical provider ceiling ≤$0.07; shared allowance
+и fees не меняются. Превышение размера требует меньшего периода либо ручного
+review, без усечения. Lifetime guard остаётся ≤32 calls/document, но новый
+attempt требует нового актуального preview и consent; retries автоматически
+не выполняются. Неизвестный расход блокирует новые calls до reconciliation.
+Replay/recovery не повторяют оплаченный/неопределённый запрос. Preview показывает
+bound, а не фактическую цену или обещание завершения за указанный timeout.
 
 Для воспроизводимой offline проверки:
 
@@ -105,8 +111,8 @@ Default остаётся выключенным; production opt-in хранит�
 
 В Deploy production появился явный `statement_action=enable|disable|preserve`.
 Enable сначала выполняет небольшой live smoke только на двух поставляемых
-synthetic PDF, в общем budget ledger, до 4 calls/$0.032, без скрытого retry и
-без создания imports/events. Неуспех оставляет настройку выключенной. Неизвестный
+synthetic PDF, в общем budget ledger, максимум 2 calls / $0.14 aggregate provider ceiling, без retry и
+без создания imports/events. Это отдельно [принятый owner-test smoke](specs/0055-owner-test-activation.md): 120 s/call, 300 s/run, ровно один разрешённый запуск. Неуспех оставляет настройку выключенной; новый платный запуск после FAIL требует нового решения. Неизвестный
 расход фиксируется uncertain и блокирует новые calls. Report с usage хранится
 приватно на VPS; CI получает только итог и дату, без budget/usage values.
 Успешная повторная enable-команда не повторяет платный smoke. Disable не требует

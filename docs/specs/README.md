@@ -1,3 +1,5 @@
+[S1.1 lexical grounding](0055-s11-lexical-grounding.md) — accepted, 2026-10-19: после columns quality FAIL `39248364426` предложены source-derived lexical class, source-order aliases и усиленный description scorer. Владелец отдельно утвердил реализацию S1.1, один новый smoke ≤2 calls / $0.14 aggregate и включение только при полном PASS. Принятие не стирает предыдущий FAIL; offline candidate evidence — 0 calls.
+
 [S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation in_progress. Полная qualification остаётся отдельно.
 
 # Spec-first процесс Grace
@@ -28,9 +30,12 @@ model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/g
 для узких выборов/проверок после измерения. Доступный остаток не подменяет book
 balance. [Технический контракт](0055-technical-contract.md), включая новый provider tag,
 принят. Первый ручной production release `b51b74f` подтверждён 2026-10-19 02:37:31 +05:00.
-Текущий `1ada384` (PR #65), deploy/internal health PASS 03:28:08 +05:00:
-helper и ручной PDF review доступны. Statement AI false: activation FAIL,
-теперь BLOCKED до успешного cards smoke (расход уже сверён).
+Текущий production `711a13d` (PR #71): main CI `39247242557` и Delivery
+`39248213380` PASS; deploy/internal health `39248364426` PASS, 2026-10-19
+16:58:36 +05:00 / 11:58:36 UTC. Один разрешённый S1 smoke FAIL на columns:
+3 rows вместо 2, plaintext description selected as amount и неверные descriptions;
+cards NOT_RUN, Statement AI false. Post-failure read-only `39248740781` PASS,
+unknown usage не блокирует. S1.1 принят отдельно для исправления и одного нового smoke.
 [Implementation evidence](0055-evidence.md), [активация и актуальные статусы](0055-activation-evidence.md).
 Полная AC12 qualification, Jev comparison и owner functional acceptance остаются
 открытыми; private inference не выполнялся.

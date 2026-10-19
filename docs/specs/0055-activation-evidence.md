@@ -1,7 +1,18 @@
 # SPEC-0055 — Statement AI activation
 
-Актуализация: 2026-10-19 (Asia/Yekaterinburg). **Statement AI выключен;
-активация не завершена.** Код и ручной импорт развёрнуты отдельно от включения AI.
+Актуализация: 2026-10-19 (Asia/Yekaterinburg). **Statement AI выключен; цель включения ещё не достигнута.**
+Production `711a13d` (PR #71): main CI `39247242557`, Delivery `39248213380`
+PASS. Deploy `39248364426` internal health PASS 11:58:36 UTC / 16:58:36 +05:00;
+последующий единственный smoke FAIL на columns (3 rows вместо 2, неверные
+monetary/description bindings), cards NOT_RUN. Флаг не изменён, report retained,
+автоматических платных повторов нет. Post-failure read-only `39248740781` PASS,
+unknown usage не блокирует. Public `/`, `/login`, `/api/meta` 200, protected routes 401.
+
+[Новый owner-test evidence](0055-owner-test-activation-evidence.md) связывает OA1–OA8;
+[S1.1](0055-s11-lexical-grounding.md) отдельно принят владельцем для исправления
+и одного нового smoke ≤2 calls / $0.14 aggregate. Его реализация ещё не начата.
+
+## Исторические попытки и исходы (не текущий release)
 
 | Срез | Дата / evidence | Статус |
 | --- | --- | --- |
@@ -11,7 +22,7 @@
 | Statement activation approval | Прямое поручение владельца, 2026-10-19 | authorized |
 | Первичная readiness | Read-only [39169569800](https://github.com/QahNaaRlN/grace/actions/runs/39169569800), 2026-10-19 | PASS на момент проверки |
 | Механизм активации | [PR #65](https://github.com/QahNaaRlN/grace/pull/65), merge `1ada384`; PR CI `39170768987`, main CI `39171530255`, Delivery `39172115986` | integrated; gates PASS |
-| Текущий production release | [39172255492](https://github.com/QahNaaRlN/grace/actions/runs/39172255492): deploy/internal health PASS, 2026-10-19 03:28:08 +05:00 / 2026-10-18 22:28:08 UTC | `1ada384` deployed; последующий activation step FAIL |
+| Исторический production release | [39172255492](https://github.com/QahNaaRlN/grace/actions/runs/39172255492): deploy/internal health PASS, 2026-10-19 03:28:08 +05:00 / 2026-10-18 22:28:08 UTC | `1ada384` deployed; последующий activation step FAIL |
 | Отдельный public smoke | `./scripts/check-public-entrypoint.sh https://graceapp.ru`, 2026-10-19: `/`, `/login`, `/api/meta` 200; protected routes 401 | PASS; не означает AI enabled |
 | Первое включение | Тот же run, 03:28:14 +05:00: synthetic quality gate FAIL; public post-enable smoke skipped | disabled; smoke не разрешил изменение флага |
 | Уточнение synthetic mapping | Ветка `codex/statement-ai-activation`, prompt v7: columns PASS; cards merge FAIL ([39173759321](https://github.com/QahNaaRlN/grace/actions/runs/39173759321)); конфигурация приложения не менялась | частичный результат, общий smoke FAIL |
