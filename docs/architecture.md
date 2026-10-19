@@ -129,7 +129,7 @@ TypeSafe получает текст запроса, язык и reference time;
 По accepted SPEC-0026 локально реализованы OpenRouter: объяснения месячных итогов,
 история разговоров и временные черновики фото чеков. В ветке SPEC-0033 эта работа
 объединена с password mode и общим UI. Production global AI/key readiness
-проверена 2026-10-19; Statement AI disabled / activation BLOCKED (billing review, cards smoke). Доступность
+проверена 2026-10-19; Statement AI disabled / activation BLOCKED (расход сверён; cards smoke pending). Доступность
 определяет сервер по policy/провайдеру/бюджету. Расчёты Go и факты отделены от
 интерпретаций модели. Передача итогов и фото требует отдельных согласий;
 запись расхода или привязка чека требует явного preview/confirmation, а не ответа

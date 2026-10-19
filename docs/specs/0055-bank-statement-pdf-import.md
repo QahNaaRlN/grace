@@ -10,10 +10,10 @@
 - Implementation branch: `codex/bank-statement-pdf-import`
 - Implementation commit: `8e37465` ([offline evidence](0055-evidence.md)); model qualification NOT_RUN
 - Integration: PR #64, merge `b51b74f`, CI main `39167930999` PASS; production deploy `39168570754`, 2026-10-19 02:37:31 +05:00
-- Statement AI: disabled / activation BLOCKED (billing review и cards smoke) по прямому поручению владельца 2026-10-19; [activation evidence](0055-activation-evidence.md)
+- Statement AI: disabled / activation BLOCKED (расход сверён; cards smoke pending) по прямому поручению владельца 2026-10-19; [activation evidence](0055-activation-evidence.md)
 - Baseline: main `a98e304` после PR #61; production `a89a855`
 - Этапы roadmap: 2 «Источники/подтверждение», первый срез этапа 5 «Банковские PDF»
-- Реализация: integrated/deployed manual path; отдельное Statement AI enable поручено 2026-10-19, activation BLOCKED (unknown billing, cards smoke). Полная qualification и owner functional acceptance ещё открыты.
+- Реализация: integrated/deployed manual path; отдельное Statement AI enable поручено 2026-10-19, activation BLOCKED (cards smoke; расход сверён). Полная qualification и owner functional acceptance ещё открыты.
 
 ## Проблема и пользовательский результат
 

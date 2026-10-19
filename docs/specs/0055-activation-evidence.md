@@ -15,8 +15,12 @@
 | Отдельный public smoke | `./scripts/check-public-entrypoint.sh https://graceapp.ru`, 2026-10-19: `/`, `/login`, `/api/meta` 200; protected routes 401 | PASS; не означает AI enabled |
 | Первое включение | Тот же run, 03:28:14 +05:00: synthetic quality gate FAIL; public post-enable smoke skipped | disabled; smoke не разрешил изменение флага |
 | Уточнение synthetic mapping | Ветка `codex/statement-ai-activation`, prompt v7: columns PASS; cards merge FAIL ([39173759321](https://github.com/QahNaaRlN/grace/actions/runs/39173759321)); конфигурация приложения не менялась | частичный результат, общий smoke FAIL |
-| Последний live probe | [39174108946](https://github.com/QahNaaRlN/grace/actions/runs/39174108946), 2026-10-19 03:53 +05:00 / 2026-10-18 22:53 UTC: columns PASS, cards provider FAIL | billing uncertain; новые платные calls остановлены |
-| Текущая readiness | [39174447002](https://github.com/QahNaaRlN/grace/actions/runs/39174447002): `statement_qualification_usage_requires_review` | BLOCKED до точной сверки upstream generation ID |
+| Исторический provider FAIL | [39174108946](https://github.com/QahNaaRlN/grace/actions/runs/39174108946), 2026-10-19 03:53 +05:00 / 2026-10-18 22:53 UTC: columns PASS, cards provider FAIL | historical billing uncertain; сверено ниже |
+| Историческая readiness | [39174447002](https://github.com/QahNaaRlN/grace/actions/runs/39174447002): `statement_qualification_usage_requires_review` | FAIL на тот момент; сверено ниже |
+| Приватная сверка расхода | Owner предоставил ID; read-only metadata match [39217122586](https://github.com/QahNaaRlN/grace/actions/runs/39217122586) PASS; settlement [39217226634](https://github.com/QahNaaRlN/grace/actions/runs/39217226634), 2026-10-19 12:38:04 +05:00 / 07:38:04 UTC | точный расход подтверждён, ledger reconciled, дальнейшая qualification разрешена |
+| После сверки: v7 + merge fix | [39217497119](https://github.com/QahNaaRlN/grace/actions/runs/39217497119), 2026-10-19 12:41:18 +05:00 / 07:41:18 UTC: columns PASS, cards финансовые поля PASS, coverage FAIL (`unmapped_spans:4`) | overall FAIL; расход известен и settled |
+| Read-only source diagnosis | [39218054190](https://github.com/QahNaaRlN/grace/actions/runs/39218054190), 12:46:13 +05:00: повторная currency и три labels второй строки | PASS; без inference |
+| v8 coverage-audit candidate | [39218319463](https://github.com/QahNaaRlN/grace/actions/runs/39218319463), 12:48:57 +05:00 / 07:48:57 UTC: columns PASS, cards FAIL (лишняя неполная строка и coverage) | REJECTED; v8 prompt откачен, не публикуется как улучшение |
 | Исправления mapping/диагностики/billing | Рабочая ветка; исходы неуспешных probes сохранены | candidate; ещё не deployed |
 | AC12 representative corpus / Jev comparison / cascade | Малый activation smoke не заменяет полный benchmark | NOT_RUN |
 | Private bank inference / owner functional acceptance | Агентом не выполнялись / результата владельца ещё нет | NOT_RUN / pending |
@@ -40,21 +44,34 @@ row count, operation/booking clocks, account/FX amounts/currencies, direction,
 printed turnovers, coverage и различие available/book balances. Все критерии
 остаются обязательными; частичный PASS не включает настройку.
 
-## Причина остановки и следующий шаг
+## Сверка расхода и следующий шаг — 2026-10-19
 
-Последний неуспешный вызов cards не оставил подтверждённого billing evidence в
-локальном отчёте. Точная причина provider failure не установлена: это не
-доказательство конкретного finish reason или бесплатного запроса. Общий ledger
-закрыл дальнейшие платные calls. Неизвестный расход не обнулён и резерв не снят.
+После неуспешного cards probe общий ledger остановил calls из-за неизвестного
+расхода. Владелец предоставил два generation ID. Серверный GET generation metadata
+однозначно сопоставил их с известным columns call, оставшимся cards call,
+моделью/провайдером, временем и единственной соответствующей reservation.
+Из exact authoritative cost с округлением вверх до micros подтверждён общий
+расход запуска через существующий owner-scoped `grace_ai_settle`. Неизвестный
+расход не обнулён по предположению. Allowance/fees не изменены.
 
-Для сверки запрошен только generation ID из OpenRouter Activity за указанное
-время. По нему нужно серверно получить authoritative generation metadata,
-сопоставить модель/провайдера/время и единственную соответствующую reservation,
-учесть уже известные вызовы этого запуска и сохранить audit приватно.
-Ключ, сумма из UI и увеличение бюджета не требуются. До сверки — без новых
-inference calls. Затем: завершить cards smoke, пройти CI/release gates точного
-исправленного SHA и повторить явную активацию. Enabled допустим только после
-успеха обоих synthetic cases и проверки runtime policy/flag.
+Settlement run `39217226634` PASS, 2026-10-19 07:38:04 UTC. Приватный audit
+`/opt/grace/shared/statement-reconciliation-39174108946.json`, mode 0600,
+сохраняет original report digest, upstream metadata и ledger before/after.
+Ключ не покидал VPS, ID/суммы не публиковались в Git/CI. Временный GitHub secret
+с ID удалён; временные workflow controls не входят в итоговый diff.
+Metadata не установила точную причину исходного provider failure; конкретный
+finish reason не предполагается. Сверка расходов не является quality PASS.
+
+Следующий gate — успешные columns/cards smoke исправленного кандидата,
+проверки точного SHA, release и runtime policy/flag. До этого Statement AI false.
+Повторный synthetic probe `39217497119` после reconciliation завершился
+quality FAIL: четыре непокрытых locators. Read-only diagnosis установила их
+роли, после чего один bounded v8 probe `39218319463` также дал FAIL с
+регрессией числа/полноты строк. V8 отклонён, сохранён v7 + проверенный merge fix.
+Никакая настройка приложения не менялась, личные документы не передавались.
+Дальнейшие paid probes этой редакции остановлены; результат не повышен до PASS.
+Следующий модельный путь требует отдельно проверенного кандидата/контракта;
+публичная доступность модели не является evidence пригодности.
 
 ## Исправления и проверяемые критерии
 
@@ -63,6 +80,7 @@ inference calls. Затем: завершить cards smoke, пройти CI/rel
 | Критерий | Исправление / executable evidence |
 | --- | --- |
 | AC3/AC4: только grounded значения | Dynamic money span enum; ровно один currency locator на поле; явная валюта каждой строки. `go test ./internal/statementextract` проверяет состав enum и запрет пропуска context/source spans |
+| AC4/AC7: объединение header и полнота | Labels участвуют в merge/coverage только вместе с непустым значением из того же чанка; orphan hints не удаляют явный service. Неизвестные IDs и конфликтующие реальные labels/values по-прежнему FAIL. `TestMergeUnboundContextLabelDoesNotConflictWithBoundHeader`, `TestUnboundLabelsNeverClaimCoverageOrRemoveExplicitService` (RED воспроизведён, GREEN PASS) |
 | AC4/AC7: полное покрытие без изменения денег | Только явно классифицированный service set упорядочивается по документу; неизвестные/повторные/пересекающиеся IDs и неверный порядок финансовых selections отклоняются. Те же unit tests |
 | AC9/AC10: cap, audit, отсутствие paid replay | Проверенные route/ID/cost сохраняются отдельно от непригодного JSON; неизвестный billing остаётся unknown. `TestRejectedOutputRetainsVerifiedBillingWithoutReturningContent`, `TestStatementReasonerRetainsOnlyVerifiedBillOnProviderError` |
 | AC11: безопасная диагностика | `TestSyntheticDiagnosticDoesNotExportValuesReasonsOrBilling`; private synthetic traces, наружу только статические codes и source locator IDs |
@@ -95,3 +113,26 @@ Jev выключен.
 `/tmp/grace-statement-followup-production.log`,
 `/tmp/grace-statement-followup-bank.log`. CI/release результаты PR #65 выше
 относятся к `1ada384`; исправления остаются кандидатом до отдельных gates.
+
+## Проверки после reconciliation — 2026-10-19
+
+- `make test` после merge fix: PASS (включая 330 web tests); v8 regression suite
+  также проходит, но live quality FAIL, поэтому эта prompt-редакция отклонена.
+- `./scripts/test-bank-statements.sh` после merge fix: PASS. Повтор для v8
+  FAIL: `fixture plan split unexpectedly 2` — увеличенный prompt изменил
+  chunk boundary. Это дополнительное основание отклонения v8. Финальный v7
+  product code побайтно совпадает с прошедшим после merge fix (`e484964`);
+  targeted Go tests после отката PASS. Fake-provider regression не доказывает
+  качество настоящей модели.
+- Source coverage и реальные conflicts не ослаблены. Model quality блокирует
+  production activation даже при зелёных unit/integration gates.
+- Временный reconciliation/candidate/source-diagnostic код удалён из итогового
+  diff. Только приватные защищённые reports/audit остаются на VPS. Общий бюджет
+  и fees не менялись; metering updates не являются финансовыми Posting.
+
+Финальный v7 regression evidence: `/tmp/grace-statement-reconciled-test.log`,
+`/tmp/grace-statement-reconciled-bank.log` (PASS); production gates
+`/tmp/grace-statement-v8-production.log` (PASS, итоговый workflow тот же).
+Отклонённые v8 результаты сохранены отдельно в `/tmp/grace-statement-v8-test.log`
+(unit/web PASS), `/tmp/grace-statement-v8-bank.log` (plan-boundary FAIL) и live
+run выше. Они не переименованы в PASS и не относятся к финальной prompt policy.

@@ -17,7 +17,7 @@ balance. [Технический контракт](0055-technical-contract.md), 
 принят. Первый ручной production release `b51b74f` подтверждён 2026-10-19 02:37:31 +05:00.
 Текущий `1ada384` (PR #65), deploy/internal health PASS 03:28:08 +05:00:
 helper и ручной PDF review доступны. Statement AI false: activation FAIL,
-теперь BLOCKED до billing review и успешного cards smoke.
+теперь BLOCKED до успешного cards smoke (расход уже сверён).
 [Implementation evidence](0055-evidence.md), [активация и актуальные статусы](0055-activation-evidence.md).
 Полная AC12 qualification, Jev comparison и owner functional acceptance остаются
 открытыми; private inference не выполнялся.

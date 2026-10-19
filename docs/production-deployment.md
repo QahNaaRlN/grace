@@ -358,7 +358,7 @@ Failed smoke не меняет настройку; failed rollout восстан
 `inspect_statement_only=true` также не экспортирует runtime values.
 Актуальные даты/фактический enabled status: [activation evidence](specs/0055-activation-evidence.md).
 
-Фактический срез 2026-10-19: `1ada384` deployed/internal healthy
+Исторический срез до reconciliation 2026-10-19: `1ada384` deployed/internal healthy
 (run `39172255492`), последующий activation step FAIL, statement flag false.
 Последний synthetic candidate probe `39174108946`: columns PASS, cards provider
 FAIL; readiness `39174447002` требует billing review. Не повторять платный
@@ -367,3 +367,13 @@ authoritative metadata и соответствие конкретному зап
 приватно на VPS. После сверки cards smoke всё ещё обязан пройти. Временный
 workflow для paid candidate probes не включается в основной release workflow;
 `inspect_statement_only` остаётся read-only.
+
+Сверка 2026-10-19 12:38:04 +05:00: run `39217226634` PASS, точный расход
+соответствующего synthetic attempt подтверждён через `grace_ai_settle`,
+ledger готов к дальнейшей qualification. Приватный audit сохранён на VPS;
+Statement AI пока false до успешного quality gate и отдельной активации.
+
+Model gate после сверки: v7 probe `39217497119` FAIL (coverage); v8
+`39218319463` FAIL (неполная лишняя строка/coverage), v8 откачен. Statement AI
+не включён, дальнейшие paid probes этой редакции остановлены. Все ошибочные
+результаты сохранены; при зелёном CI нельзя обходить этот quality gate.

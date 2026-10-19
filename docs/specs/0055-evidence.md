@@ -99,8 +99,9 @@ PDF/text/images/личные строки/суммы/идентификатор�
 Review/integration/main CI/первый production release кода завершены (PR #64);
 механизм активации также интегрирован (PR #65). Это не полный model benchmark.
 
-1. Точно сверить unknown billing последнего synthetic cards probe по generation ID.
-   Пока новые платные calls остановлены; флаг остаётся false.
+1. Unknown billing последнего synthetic cards probe точно сверён
+   2026-10-19 12:38:04 +05:00 (run `39217226634`). Флаг остаётся false;
+   сверка не заменяет успешную проверку качества.
 2. Завершить cards smoke и выпустить проверенные исправления; включить AI только
    при успешных обоих synthetic layouts и проверенной runtime policy.
 3. AC12: отдельный opt-in benchmark на synthetic/de-identified fixtures с cap
