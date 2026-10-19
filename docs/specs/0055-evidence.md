@@ -8,11 +8,14 @@
 - Implementation commit: `8e37465ae4bd88b8b12cc3b81b1913c4cf243b9d`.
 - Статус кода: `integrated`, PR #64, `b51b74f`, post-merge CI `39167930999` PASS.
   Это executor evidence, не owner functional acceptance; AC12 остаётся открытым.
-- Production: первый manual release `b51b74f`, deploy `39168570754`, healthy
-  2026-10-19 02:37:31 +05:00 (2026-10-18 21:37:31 UTC). Текущий `1ada384`,
-  deploy/internal health PASS 03:28:08 +05:00 (run `39172255492`); activation
-  step FAIL, Statement AI false. Private inference/импорт личных операций
-  агентом не выполнялись. [Активация и billing blocker](0055-activation-evidence.md).
+- Production: первый manual release `b51b74f`, 2026-10-19 02:37:31 +05:00.
+  Текущий `ef782ec` (S1.1 PR #73), CI/Delivery/internal health PASS;
+  deploy `39255669019`, healthy 17:55:14 +05:00 / 12:55:14 UTC.
+  Единственный S1.1 smoke FAIL: columns `record_description`, cards NOT_RUN,
+  Statement AI false. Read-only `39255943568` и standalone public/auth PASS.
+  Private inference/импорт личных операций агентом не выполнялись.
+  [Активация и история](0055-activation-evidence.md), [S1.1 evidence](0055-s11-evidence.md).
+
 
 ## Реализованный путь
 

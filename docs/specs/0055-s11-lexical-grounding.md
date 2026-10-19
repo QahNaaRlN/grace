@@ -2,7 +2,7 @@
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: **accepted**, 2026-10-19; прямое решение владельца «Утвердить S1.1, один smoke и включение при PASS».
-- Implementation: **in_progress**, `codex/statement-lexical-grounding`; разрешена реализация и один новый smoke по приведённым ниже границам. Production пока `711a13d`, AI false.
+- Implementation: **integrated**, [PR #73](https://github.com/QahNaaRlN/grace/pull/73), main `ef782ec`, 2026-10-19. [Evidence L1–L7](0055-s11-evidence.md) отделяет реализацию от release/activation. Один разрешённый smoke использован: `39255669019`, columns `record_description` FAIL, cards NOT_RUN, AI false. Production `ef782ec`, internal health PASS 2026-10-19 17:55:14 +05:00. Следующий prompt/smoke — отдельно accepted [S1.2](0055-s12-description-separators.md).
 - Основание: цель владельца — включение Statement AI для собственных production-тестов; отдельно принятые [S1](0055-record-atomic-planning.md) и [owner-test activation](0055-owner-test-activation.md).
 - Baseline: production `711a13d` (PR #71), deploy `39248364426`: internal health PASS; один разрешённый smoke завершился quality FAIL на columns, cards NOT_RUN, flag false. Автоповторов нет.
 
@@ -138,10 +138,9 @@ columns 46 spans, money candidates 22→10, input estimate 7769→8138 bytes;
 cards 57 spans, candidates 23→9, 8108→8479 bytes. Все source IDs сохранены
 ровно один раз, оба baseline помещаются в прежний 90000 cap. Эти размеры —
 prototype recipe с явным proposed prompt/schema, не утверждение о финальной
-production реализации или реальном token count. 84-layout production proof
-нужно повторить после принятия/реализации; semantic quality остаётся UNVERIFIED.
+production реализации или реальном token count. 84-layout actual planner proof повторён после реализации: [source-hashed evidence](../research/statement-quality/s11-evidence/summary.json), все 84 PASS без inference; semantic quality остаётся отдельным live gate.
 
-Воспроизведение: `sh scripts/research/probe-statement-smoke-candidate.sh /tmp/grace-smoke-candidate.json`.
+Исторический prototype воспроизводится из planning revision `aeac32d`: `sh scripts/research/probe-statement-smoke-candidate.sh /tmp/grace-smoke-candidate.json`. Для текущей S1.1 реализации: `sh scripts/research/verify-statement-document-plan.sh docs/research/statement-quality/s11-evidence`.
 Первичные schema ограничения остаются описанными в accepted S1; новые JSON Schema
 features не добавляются. Tightening enum/новые aliases/lexical hints всё равно
 нуждаются в actual endpoint smoke, metadata сама по себе этого не доказывает.
