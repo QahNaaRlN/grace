@@ -20,13 +20,15 @@ type Sample struct {
 	Document statementdata.Document
 }
 type Result struct {
-	Name      string   `json:"name"`
-	Rows      int      `json:"rows"`
-	Checks    int      `json:"checks"`
-	Correct   int      `json:"correct"`
-	Passed    bool     `json:"passed"`
-	Codes     []string `json:"codes"`
-	LatencyMS int64    `json:"latencyMs"`
+	Name       string   `json:"name"`
+	Rows       int      `json:"rows"`
+	Checks     int      `json:"checks"`
+	Correct    int      `json:"correct"`
+	Passed     bool     `json:"passed"`
+	Codes      []string `json:"codes"`
+	Validation []string `json:"validation"`
+	Coverage   []string `json:"coverage"`
+	LatencyMS  int64    `json:"latencyMs"`
 }
 type Call struct {
 	GenerationID string `json:"generationId"`
@@ -35,7 +37,12 @@ type Call struct {
 	CostMicros   int64  `json:"costMicros"`
 	LatencyMS    int64  `json:"latencyMs"`
 }
+type Trace struct {
+	Name  string                   `json:"name"`
+	Parts []statementdata.Proposal `json:"parts"`
+}
 type Report struct {
+	Traces        []Trace                 `json:"traces,omitempty"`
 	Version       string                  `json:"version"`
 	Time          time.Time               `json:"time"`
 	Policy        statementextract.Policy `json:"policy"`
@@ -102,6 +109,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		}
 	}()
 	for i, sample := range samples {
+		report.Traces = append(report.Traces, Trace{Name: sample.Name, Parts: []statementdata.Proposal{}})
 		started := time.Now()
 		parts := []statementdata.Proposal{}
 		for _, chunk := range plans[i].Chunks {
@@ -119,15 +127,21 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
 			}
 			if e != nil || billing == nil {
+				var detail interface{ ProtocolReason() string }
+				if errors.As(e, &detail) {
+					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
+				}
 				return report, errors.New("qualification_provider_failed")
 			}
 			if total > report.MaximumMicros {
 				return report, errors.New("qualification_cost_overrun")
 			}
 			parts = append(parts, part)
+			report.Traces[len(report.Traces)-1].Parts = append(report.Traces[len(report.Traces)-1].Parts, part)
 		}
 		proposal, e := statementextract.MergeProposals(plans[i], parts)
 		if e != nil {
+			report.Results = append(report.Results, Result{Name: sample.Name, Codes: []string{e.Error()}, Validation: []string{e.Error()}})
 			return report, errors.New("qualification_merge_failed")
 		}
 		pages := []int{}
@@ -152,7 +166,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 // Score checks source values and separate clocks/FX/balances, never a model's
 // self-reported confidence. It is a small activation smoke, not full AC12.
 func Score(name string, r statementdata.Review) Result {
-	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}}
+	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}, Validation: r.Reconciliation.Blockers, Coverage: r.Reconciliation.RowCoverage.Reasons}
 	check := func(ok bool, code string) {
 		out.Checks++
 		if ok {

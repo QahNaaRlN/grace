@@ -41,8 +41,17 @@ func fail(code string) {
 	os.Exit(1)
 }
 func main() {
-	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), or summary")
+	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), summary, or diagnostic")
 	flag.Parse()
+	if *mode == "diagnostic" {
+		var report statementqualification.Report
+		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 262145))
+		if decoder.Decode(&report) != nil || report.Version != "statement.synthetic.v1" {
+			fail("invalid_qualification_report")
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(safeDiagnostic(report))
+		return
+	}
 	if *mode == "summary" {
 		var report statementqualification.Report
 		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 65537))

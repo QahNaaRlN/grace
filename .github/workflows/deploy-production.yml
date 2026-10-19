@@ -53,6 +53,13 @@ jobs:
           postgres=$(docker ps -q --filter label=com.docker.compose.project=grace-production --filter label=com.docker.compose.service=postgres)
           test -n "$api" && test -n "$postgres"
           docker exec "$api" /bin/sh -ec 'test "${GRACE_AI_ENABLED:-false}" = true && test -r /run/secrets/openrouter_api_key'
+          # Emit only fixed error/scorer codes from our synthetic report, never usage.
+          report=$(find /opt/grace/shared -maxdepth 1 -name 'statement-qualification-*.json' -type f | sort | tail -n 1)
+          if [ -n "$report" ]; then
+            grep -oE '"error":"[a-z_]+"|"codes":\[[a-z_",]*\]|"validation":\[[a-zA-Z0-9_":,.-]*\]|"coverage":\[[a-zA-Z0-9_":,.-]*\]|"name":"(columns|cards)"|"passed":(true|false)' "$report" || true
+          fi
+          uncertain=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain' AND purpose='statement' AND generation_id LIKE 'statement-qualification:%');")
+          if [ "$uncertain" = t ]; then echo 'statement_qualification_usage_requires_review'; fi
           ready=$(docker exec "$postgres" psql -U grace -d grace -Atc "SELECT grace_ai_remaining() >= 16000 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain');")
           test "$ready" = t
           echo 'Statement activation prerequisites passed; no configuration, budget or usage values exported.'

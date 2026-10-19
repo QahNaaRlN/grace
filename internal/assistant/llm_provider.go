@@ -77,7 +77,15 @@ type LLMRequest struct {
 	InputTokenUpperBound int
 	MaxOutputTokens      int
 }
+
+// ProviderProtocolError exposes only a fixed diagnostic code, never input/output.
+type ProviderProtocolError struct{ Reason string }
+
+func (e *ProviderProtocolError) Error() string          { return "provider_protocol" }
+func (e *ProviderProtocolError) ProtocolReason() string { return e.Reason }
+
 type LLMResponse struct {
+	BillingKnown     bool
 	ID               string
 	Model            string
 	Provider         string
@@ -198,10 +206,8 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 			Cost       json.Number `json:"cost"`
 		} `json:"usage"`
 	}
-	if json.Unmarshal(raw, &out) != nil || out.ID == "" || out.Model != in.Policy.Model ||
-		len(out.Choices) != 1 || len(out.Choices[0].Message.ToolCalls) > 0 || out.Choices[0].FinishReason != "stop" || !json.Valid([]byte(out.Choices[0].Message.Content)) ||
-		out.Usage.Prompt < 1 || out.Usage.Prompt > in.InputTokenUpperBound || out.Usage.Completion < 1 || out.Usage.Completion > in.MaxOutputTokens {
-		return LLMResponse{}, errors.New("provider_protocol")
+	if json.Unmarshal(raw, &out) != nil || out.ID == "" || out.Model != in.Policy.Model {
+		return LLMResponse{}, &ProviderProtocolError{Reason: "envelope"}
 	}
 	// Routing slugs and response display names are distinct API fields. The
 	// expected name is verified by the operator, never inferred from a slug.
@@ -226,7 +232,36 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 	if err != nil {
 		return LLMResponse{}, err
 	}
-	return LLMResponse{out.ID, out.Model, actualProvider, json.RawMessage(out.Choices[0].Message.Content), out.Usage.Prompt, out.Usage.Completion, cost}, nil
+	if out.Usage.Prompt < 1 || out.Usage.Completion < 0 {
+		return LLMResponse{}, &ProviderProtocolError{Reason: "usage"}
+	}
+	// Billing is gateway metadata, independent of whether the model produced
+	// usable JSON. Retain only validated route/cost/ID on a content failure.
+	billed := LLMResponse{BillingKnown: true, ID: out.ID, Model: out.Model, Provider: actualProvider, PromptTokens: out.Usage.Prompt, CompletionTokens: out.Usage.Completion, CostMicros: cost}
+	if out.Usage.Completion == 0 {
+		return billed, &ProviderProtocolError{Reason: "usage"}
+	}
+	if out.Usage.Prompt > in.InputTokenUpperBound || out.Usage.Completion > in.MaxOutputTokens {
+		return billed, &ProviderProtocolError{Reason: "token_bound"}
+	}
+	if len(out.Choices) != 1 {
+		return billed, &ProviderProtocolError{Reason: "choices"}
+	}
+	if len(out.Choices[0].Message.ToolCalls) > 0 {
+		return billed, &ProviderProtocolError{Reason: "tools"}
+	}
+	if out.Choices[0].FinishReason != "stop" {
+		reason := "finish_other"
+		if out.Choices[0].FinishReason == "length" {
+			reason = "finish_length"
+		}
+		return billed, &ProviderProtocolError{Reason: reason}
+	}
+	if !json.Valid([]byte(out.Choices[0].Message.Content)) {
+		return billed, &ProviderProtocolError{Reason: "content"}
+	}
+	billed.Content = json.RawMessage(out.Choices[0].Message.Content)
+	return billed, nil
 }
 
 func microsPrice(n int64) json.Number {

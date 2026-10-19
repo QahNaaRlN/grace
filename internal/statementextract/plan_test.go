@@ -118,3 +118,71 @@ func TestCurrentPlanContractRejectsPreviousConsentSettings(t *testing.T) {
 		}
 	}
 }
+
+func TestContextHeadingInMainSpansStillRequiresCoverage(t *testing.T) {
+	d := testDocument("19.10.2026", "-12.34", "RUB", "Operation")
+	plan, e := BuildPlan(d, testPolicy(), nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	p := statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{"span-0"}, AccountAmount: statementdata.Selection{"span-1"}, AccountCurrency: statementdata.Selection{"span-2"}}}}
+	merged, e := MergeProposals(plan, []statementdata.Proposal{p})
+	if e != nil {
+		t.Fatal(e)
+	}
+	r, e := statementdata.ValidateProposal(d, merged, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "incomplete" {
+		t.Fatal("context header silently hidden", r, e)
+	}
+	p.Service = []statementdata.ServiceMapping{{Spans: statementdata.Selection{"span-3"}, Reason: "Unused printed column heading"}}
+	merged, e = MergeProposals(plan, []statementdata.Proposal{p})
+	if e != nil {
+		t.Fatal(e)
+	}
+	r, e = statementdata.ValidateProposal(d, merged, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "matched" || len(r.Reconciliation.Blockers) != 0 {
+		t.Fatal("explicit coverage not preserved", r, e)
+	}
+}
+
+func TestMoneySchemaExcludesHeadingDateAndCurrencyButKeepsOpaqueInteger(t *testing.T) {
+	c := Chunk{Spans: []RedactedSpan{{ID: "heading", Text: "Available"}, {ID: "currency", Text: "RUB"}, {ID: "date", Text: "19.10.2026"}, {ID: "amount", Text: "7777.00"}, {ID: "integer", Text: "[text_integer]"}}}
+	var schema struct {
+		Defs map[string]struct {
+			Items struct {
+				Enum []string `json:"enum"`
+			} `json:"items"`
+		} `json:"$defs"`
+	}
+	if e := json.Unmarshal(RequestSchema(c), &schema); e != nil {
+		t.Fatal(e)
+	}
+	got := strings.Join(schema.Defs["moneySelection"].Items.Enum, ",")
+	if got != "amount,integer" {
+		t.Fatal("monetary role allowed label/date/currency or lost minimized integer", got)
+	}
+	raw, _ := json.Marshal(Messages(c))
+	if InputBytes(c) != len(raw)+len(RequestSchema(c)) {
+		t.Fatal("dynamic schema escaped input bound")
+	}
+}
+
+func TestServiceOrderIsCanonicalButFinancialOrderAndDuplicatesStillFail(t *testing.T) {
+	d := testDocument("19.10.2026", "-12.34", "RUB", "Operation", "Synthetic heading")
+	p := statementdata.Proposal{Rows: []statementdata.RowMapping{{OperationDate: statementdata.Selection{"span-0"}, AccountAmount: statementdata.Selection{"span-1"}, AccountCurrency: statementdata.Selection{"span-2"}}}, Service: []statementdata.ServiceMapping{{Spans: statementdata.Selection{"span-4", "span-3"}, Reason: "Explicit unused headings"}}}
+	r, e := statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e != nil || r.Reconciliation.RowCoverage.Status != "matched" || len(r.Reconciliation.Blockers) > 0 {
+		t.Fatal("service set not canonicalized", r, e)
+	}
+	p.Service[0].Spans = statementdata.Selection{"span-4", "span-4", "span-3"}
+	r, e = statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e == nil && len(r.Reconciliation.Blockers) == 0 {
+		t.Fatal("duplicate service reference accepted")
+	}
+	p.Service[0].Spans = statementdata.Selection{"span-4", "span-3"}
+	p.Rows[0].AccountAmount = statementdata.Selection{"span-1", "span-0"}
+	r, e = statementdata.ValidateProposal(d, p, []int{1}, true, "")
+	if e == nil && len(r.Rows[0].Issues) == 0 {
+		t.Fatal("financial field ordering relaxed")
+	}
+}

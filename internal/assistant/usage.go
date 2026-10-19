@@ -60,7 +60,11 @@ func MeteredCompletion(ctx context.Context, provider ReasoningProvider, meter Us
 	}
 	out, err := provider.Complete(ctx, in)
 	if err != nil {
-		if settleErr := meter.Settle(ctx, id, nil); settleErr != nil {
+		var billed *LLMResponse
+		if out.BillingKnown {
+			billed = &out
+		}
+		if settleErr := meter.Settle(ctx, id, billed); settleErr != nil {
 			return LLMResponse{}, errors.New("ai_usage_requires_review")
 		}
 		return LLMResponse{}, err

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -255,7 +256,22 @@ func ValidateProposal(d Document, p Proposal, reviewedPages []int, rolesConfirme
 			addIssue("service_reason_required")
 			continue
 		}
-		if _, e := get("service", service.Spans, false, true); e != nil {
+		// Service is an explicit classification set, not a financial value.
+		// Canonicalize its ordering only. Unknown/duplicate/overlapping IDs
+		// still fail, and money/date/currency selections retain strict ordering.
+		ids := append(Selection{}, service.Spans...)
+		sort.SliceStable(ids, func(i, j int) bool {
+			a, okA := positions[ids[i]]
+			b, okB := positions[ids[j]]
+			if !okA {
+				return false
+			}
+			if !okB {
+				return true
+			}
+			return a < b
+		})
+		if _, e := get("service", ids, false, true); e != nil {
 			addIssue("service:" + e.Error())
 		}
 	}

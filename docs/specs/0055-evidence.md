@@ -8,9 +8,11 @@
 - Implementation commit: `8e37465ae4bd88b8b12cc3b81b1913c4cf243b9d`.
 - Статус кода: `integrated`, PR #64, `b51b74f`, post-merge CI `39167930999` PASS.
   Это executor evidence, не owner functional acceptance; AC12 остаётся открытым.
-- Production: `b51b74f`, deploy `39168570754`, healthy 2026-10-19 02:37:31 +05:00
-  (2026-10-18 21:37:31 UTC). Private inference и импорт личных операций агентом
-  не выполнялись. [Актуальная активация](0055-activation-evidence.md).
+- Production: первый manual release `b51b74f`, deploy `39168570754`, healthy
+  2026-10-19 02:37:31 +05:00 (2026-10-18 21:37:31 UTC). Текущий `1ada384`,
+  deploy/internal health PASS 03:28:08 +05:00 (run `39172255492`); activation
+  step FAIL, Statement AI false. Private inference/импорт личных операций
+  агентом не выполнялись. [Активация и billing blocker](0055-activation-evidence.md).
 
 ## Реализованный путь
 
@@ -83,7 +85,7 @@ Screenshot synthetic mobile review: `/tmp/grace0055-mobile-summary.jpg`.
 Предоставленный владельцем PDF прочитан read-only в локальном контейнере без
 сети; отдельный helper также network=none. Preflight не использует БД, credentials
 или провайдера; stdout содержит только counts/bounds. Оригинал не изменён.
-Проверка окончательной версии prompt/redaction: 5 страниц, 1661 span,
+Историческая проверка prompt/redaction исходного implementation head: 5 страниц, 1661 span,
 16 planned calls, max messages+schema **8963 bytes** (лимит 9000),
 maximum **128000 micros ($0.128)** по утверждённым ceilings, **providerCalls=0**.
 Это reservation plan, не actual token usage, не обещание completion ≤120 s
@@ -92,21 +94,23 @@ maximum **128000 micros ($0.128)** по утверждённым ceilings, **pro
 PDF/text/images/личные строки/суммы/идентификаторы не добавлены в Git/CI и
 не отправлены OpenRouter/TypeSafe. В Git только явно синтетические fixtures.
 
-## Следующий gate
+## Оставшиеся gates — актуализация 2026-10-19
 
-1. Независимый review кода и прохождение CI точного implementation head.
-2. AC12: отдельный opt-in benchmark на synthetic/de-identified fixtures с явным
-   cap в прежнем общем бюджете: row/field/column accuracy, omissions, grounding,
-   abstentions, input/output/reasoning usage, cost и latency; LLM-only и сравнение
-   узких Jev decisions/cascade. Нельзя объявлять fake provider model benchmark.
-3. При измеренной пользе Jev — отдельные privacy/consent policy; по умолчанию
-   второй provider не подключён. Local statement credentials/policy не настроены,
-   live calls в этом пакете не выполнялись.
-4. После qualification — owner acceptance, main integration и отдельная
-   production release wiring/image publication/activation. Local compose overlay
-   не является готовым production rollout. Приватный reference передаётся только
-   после document-specific consent через реализованный preview; загрузка PDF
-   в чат и одобрение архитектуры этот consent не заменяют.
+Review/integration/main CI/первый production release кода завершены (PR #64);
+механизм активации также интегрирован (PR #65). Это не полный model benchmark.
+
+1. Unknown billing последнего synthetic cards probe точно сверён
+   2026-10-19 12:38:04 +05:00 (run `39217226634`). Флаг остаётся false;
+   сверка не заменяет успешную проверку качества.
+2. Завершить cards smoke и выпустить проверенные исправления; включить AI только
+   при успешных обоих synthetic layouts и проверенной runtime policy.
+3. AC12: отдельный opt-in benchmark на synthetic/de-identified fixtures с cap
+   в прежнем бюджете: field/row/column accuracy, omissions, grounding,
+   abstentions, usage/cost/latency, LLM-only/Jev/cascade. Columns PASS v7
+   не доказывает качество других форматов или личной выписки.
+4. Owner functional acceptance. Приватный reference передаётся только после
+   document-specific consent; финансовая запись требует отдельного подтверждения.
+   При измеренной пользе Jev нужны отдельные privacy/consent policy; он выключен.
 
 [Гайд владельца и локального оператора](../bank-statements.md).
 
@@ -118,8 +122,8 @@ PDF/text/images/личные строки/суммы/идентификатор�
 не объявляются выполненными. Production wiring добавлено в этот PR: публикация
 exact-SHA helper image, production sandbox/socket/healthcheck и non-root smoke.
 Deployment regression проверяет отказ rollback на старый image с сохранёнными
-PDF sources и разрешённый rollback на совместимый image. Фактические CI/main/
-Delivery/deploy run IDs фиксируются после выпуска; пока это release candidate.
+PDF sources и разрешённый rollback на совместимый image. На этом историческом этапе это был release candidate; фактические результаты
+выпуска приведены ниже, текущая активация — в отдельном evidence.
 
 
 ## Подтверждённый выпуск — 2026-10-19
