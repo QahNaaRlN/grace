@@ -252,8 +252,8 @@ Origin. Спецификации извлечения определяют со�
 2026-10-19 согласовано направление автоматического выбора модели для выписки.
 [SPEC-0056](specs/0056-statement-model-selection.md) — **draft**, реализация
 **not_started**: quality/privacy gates, выбор стоимости полного плана до
-consent, закреплённый маршрут без скрытого fallback. Новый draft не заменяет
-billing reconciliation и cards qualification SPEC-0055; Statement AI false.
+consent, закреплённый маршрут без скрытого fallback. Сверка расхода
+SPEC-0055 завершена; cards quality FAIL сохраняется, Statement AI false.
 Конкретный реестр допущенных моделей и runtime enable ещё не утверждены.
 
 Это рекомендуемая последовательность с зависимостями, без обещания сроков.

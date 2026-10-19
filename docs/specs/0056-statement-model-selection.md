@@ -9,8 +9,8 @@
 - Implementation status: not_started
 - Specification branch: `codex/statement-model-selection`
 - Implementation branch / commit: отсутствуют
-- Review baseline: `12ef5a0`, draft [PR #66](https://github.com/QahNaaRlN/grace/pull/66), основан на main `1ada384`; эта ветка содержит только документацию поверх baseline
-- Baseline CI: run `39175297738`, 2026-10-19 — все пять jobs PASS; PR #66 остаётся draft, его изменения не считаются integrated/deployed
+- Review baseline: `7be572c`, draft [PR #66](https://github.com/QahNaaRlN/grace/pull/66), основан на main `1ada384`; собственный diff этой ветки содержит только документацию поверх baseline
+- Baseline CI: historical `12ef5a0`, run `39175297738`, 2026-10-19 — все пять jobs PASS; проверки новой редакции PR #66 отдельны. PR остаётся draft, изменения не считаются integrated/deployed
 - Зависимость: принятые [SPEC-0055](0055-bank-statement-pdf-import.md), [технический контракт](0055-technical-contract.md), существующие statement consent и общий usage ledger
 
 ## Проблема и пользовательский результат
@@ -32,8 +32,9 @@ metadata закреплённой пары, но не выбирает друг�
 policy, source state, redaction, prompt/schema и maximum plan cost.
 
 Production `1ada384` развёрнут, Statement AI false. На кандидате PR #66 columns
-synthetic smoke PASS, cards FAIL; последний provider failure требует billing
-review. [Activation evidence](0055-activation-evidence.md) отделяет эти результаты
+synthetic smoke PASS, cards FAIL. Расход provider failure точно сверён
+2026-10-19 12:38:04 +05:00 (run `39217226634`). После сверки v7 не прошёл
+coverage, v8 дал регрессию и отклонён. [Activation evidence](0055-activation-evidence.md) отделяет эти результаты
 от общего benchmark и owner acceptance. Ни Gemini, ни другой кандидат не получают
 qualified status только из факта наличия в каталоге. На момент draft пригодный
 для автоматического выбора пул отсутствует.
@@ -118,7 +119,7 @@ latency и billing также сохраняются; ограничения к�
 получает PASS. Это верхние границы, не обещание завершения 32 calls за 120 s.
 Повтор — отдельный run, а не скрытое увеличение этого ceiling. Истёкший/неполный
 report не становится qualified. В этой документационной работе paid calls нет;
-существующий unknown billing сначала требует reconciliation.
+старый unknown billing уже сверён; любой новый unknown billing блокирует run.
 
 ## Выбор и стабильность плана
 
@@ -222,7 +223,7 @@ quality, owner acceptance или production enable.
    само по себе не меняет accepted pinned policy SPEC-0055.
 2. Offline registry/selector + API/consent + ledger/rollback tests в отдельном
    implementation worktree. Никаких paid calls или production flag changes.
-3. После reconciliation старого расхода — отдельно запущенная qualification
+3. Старый расход сверён. Далее — отдельно запущенная qualification
    разрешённых пар в прежнем бюджете; при отсутствии прошедших кандидатов
    автовыбор честно недоступен. Конкретные дополнительные model IDs не считаются
    разрешёнными по этому draft и добавляются через operator-reviewed registry.
