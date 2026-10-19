@@ -2,7 +2,7 @@
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: **accepted**, 2026-10-19; прямое решение владельца «Утвердить S1.1, один smoke и включение при PASS».
-- Implementation: **not_started** на момент принятия; разрешена реализация и один новый smoke по приведённым ниже границам. Production versions ещё не изменены.
+- Implementation: **in_progress**, `codex/statement-lexical-grounding`; разрешена реализация и один новый smoke по приведённым ниже границам. Production пока `711a13d`, AI false.
 - Основание: цель владельца — включение Statement AI для собственных production-тестов; отдельно принятые [S1](0055-record-atomic-planning.md) и [owner-test activation](0055-owner-test-activation.md).
 - Baseline: production `711a13d` (PR #71), deploy `39248364426`: internal health PASS; один разрешённый smoke завершился quality FAIL на columns, cards NOT_RUN, flag false. Автоповторов нет.
 

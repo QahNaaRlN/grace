@@ -3837,6 +3837,7 @@ components:
       - x
       - y
       - text
+      - lexicalClass
       properties:
         id:
           type: string
@@ -3848,6 +3849,11 @@ components:
           type: integer
         text:
           type: string
+        lexicalClass:
+          type: string
+          enum: [numeric_fragment, other]
+          description: Server-derived token shape before redaction; never a financial role or value.
+
     StatementChunk:
       type: object
       additionalProperties: false

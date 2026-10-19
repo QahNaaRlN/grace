@@ -2,7 +2,6 @@ package statementextract
 
 import (
 	"encoding/json"
-	"strings"
 )
 
 var ProposalSchema = func() json.RawMessage {
@@ -35,22 +34,21 @@ var ProposalSchema = func() json.RawMessage {
 	header["labels"] = object(labels, headerKeys)
 	allHeader := append(append([]string{}, headerKeys...), "currency", "labels", "openingBookDate", "closingBookDate")
 	schema := object(map[string]any{"rows": map[string]any{"type": "array", "items": object(row, rowKeys)}, "header": object(header, allHeader), "service": map[string]any{"type": "array", "items": object(map[string]any{"spans": selection, "reason": map[string]any{"type": "string"}}, []string{"spans", "reason"})}}, []string{"rows", "header", "service"})
-	schema["$defs"] = map[string]any{"moneySelection": map[string]any{"type": "array", "minItems": 0, "items": map[string]any{"type": "string"}, "description": "Only the printed number/sign span IDs. Exclude all labels, headings and currencies. Use [] if absent. Redacted integer fragments may be opaque placeholders; Go validates their actual source text."}}
+	schema["$defs"] = map[string]any{"moneySelection": map[string]any{"type": "array", "minItems": 0, "items": map[string]any{"type": "string"}, "description": "Only the printed number/sign span IDs. Exclude all labels, headings and currencies. Use [] if absent. Hidden numeric fragments use number-class placeholders. Text-class fragments are never monetary candidates. Go enforces this eligibility and validates actual original values."}}
 	raw, _ := json.Marshal(schema)
 	return raw
 }()
 
-// RequestSchema narrows monetary choices to numeric/sign or opaque redacted
-// fragments. Visible headings, dates and currency tokens cannot become an amount.
-// Opaque fragments stay eligible so minimization never loses grouped integers;
-// all selected original fragments still pass Go grounding and decimal checks.
+// RequestSchema uses server-owned lexical metadata derived before redaction.
+// It never trusts placeholder-like source text. Numeric fragments remain hidden;
+// original values still pass financial grounding, decimal and currency checks.
 func RequestSchema(c Chunk) json.RawMessage {
 	var schema map[string]any
 	_ = json.Unmarshal(ProposalSchema, &schema)
 	ids := []string{}
 	seen := map[string]bool{}
 	for _, span := range append(append([]RedactedSpan{}, c.Context...), c.Spans...) {
-		if !seen[span.ID] && (amountToken.MatchString(span.Text) || span.Text == "+" || span.Text == "-" || span.Text == "−" || strings.HasPrefix(span.Text, "[text_")) {
+		if !seen[span.ID] && span.LexicalClass == ClassNumericFragment {
 			ids = append(ids, span.ID)
 			seen[span.ID] = true
 		}

@@ -9,19 +9,20 @@ import (
 	"github.com/QahNaaRlN/grace/internal/statementextract"
 )
 
-const ReportVersion = "statement.synthetic.v2.document-alias"
+const ReportVersion = "statement.synthetic.v3.lexical-records"
+const ScorerVersion = "statement-fixed-corpus.v2.record-descriptions"
 const MaxSmokeMicros int64 = 140000
 const MaxSmokeCalls = 2
 const RunTimeout = 300 * time.Second
 
 type Profile struct {
-	Planner, Prompt, Schema, Redaction, Alias, Extractor        string
-	Input, Output, Bytes, Spans, CallSeconds, RunSeconds, Calls int
-	CeilingMicros                                               int64
+	Planner, Prompt, Schema, Redaction, Alias, Extractor, Scorer string
+	Input, Output, Bytes, Spans, CallSeconds, RunSeconds, Calls  int
+	CeilingMicros                                                int64
 }
 
 func CurrentProfile() Profile {
-	return Profile{statementextract.PlannerVersion, statementextract.PromptVersion, statementextract.Hash(statementextract.ProposalSchema), statementextract.RedactionVersion, statementextract.AliasVersion, statementdata.ExtractorVersion, statementextract.InputBound, statementextract.OutputBound, statementextract.MaxInputBytes, statementextract.MaxPlanSpans, statementextract.CallTimeoutSeconds, int(RunTimeout / time.Second), MaxSmokeCalls, MaxSmokeMicros}
+	return Profile{statementextract.PlannerVersion, statementextract.PromptVersion, statementextract.Hash(statementextract.ProposalSchema), statementextract.RedactionVersion, statementextract.AliasVersion, statementdata.ExtractorVersion, ScorerVersion, statementextract.InputBound, statementextract.OutputBound, statementextract.MaxInputBytes, statementextract.MaxPlanSpans, statementextract.CallTimeoutSeconds, int(RunTimeout / time.Second), MaxSmokeCalls, MaxSmokeMicros}
 }
 func FixtureHash(name string) string {
 	switch name {
@@ -69,9 +70,9 @@ func ValidateReport(r Report, now time.Time) error {
 	}
 	for i, name := range []string{"columns", "cards"} {
 		c, result, trace := r.Corpus[i], r.Results[i], r.Traces[i]
-		checks := 17
+		checks := 19
 		if name == "cards" {
-			checks = 18
+			checks = 20
 		}
 		if c.Name != name || c.FixtureHash != FixtureHash(name) || !validHash(c.DocumentHash) || !validHash(c.PlanHash) || c.InputBytes <= 0 || c.InputBytes > statementextract.MaxInputBytes || result.Name != name || !result.Passed || result.Rows != 2 || result.Checks != checks || result.Correct != checks || len(result.Codes) != 0 || len(result.Validation) != 0 || len(result.Coverage) != 0 || trace.Name != name || len(trace.Parts) != 1 {
 			return fail

@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"sort"
 	"strconv"
 
 	"github.com/QahNaaRlN/grace/internal/statementdata"
@@ -27,7 +26,6 @@ func validPlan(p Plan) bool {
 		return false
 	}
 	ids := append([]string{}, atom...)
-	sort.Strings(ids)
 	seen := map[string]bool{}
 	for i, id := range ids {
 		if id == "" || seen[id] || p.Aliases["s"+strconv.FormatInt(int64(i), 36)] != id {
@@ -40,6 +38,15 @@ func validPlan(p Plan) bool {
 		if wireSeen[span.ID] || p.Aliases[span.ID] != atom[i] || span.Page < 1 || span.Text == "" {
 			return false
 		}
+		if span.LexicalClass != ClassNumericFragment && span.LexicalClass != ClassOther {
+			return false
+		}
+		if span.LexicalClass == ClassNumericFragment && span.Text != "[number_"+span.ID+"]" && lexicalClass(span.Text) != ClassNumericFragment {
+			return false
+		}
+		if span.LexicalClass == ClassOther && lexicalClass(span.Text) == ClassNumericFragment {
+			return false
+		}
 		wireSeen[span.ID] = true
 	}
 	return true
@@ -50,6 +57,21 @@ func validPlan(p Plan) bool {
 func CanonicalProposal(plan Plan, in statementdata.Proposal) (statementdata.Proposal, error) {
 	if !validPlan(plan) {
 		return statementdata.Proposal{}, errors.New("provider_protocol")
+	}
+	monetary := map[string]bool{}
+	for _, span := range plan.Chunks[0].Spans {
+		monetary[span.ID] = span.LexicalClass == ClassNumericFragment
+	}
+	moneySelections := []statementdata.Selection{in.Header.OpeningBookBalance, in.Header.ClosingBookBalance, in.Header.AvailableBalanceObserved, in.Header.DebitTurnover, in.Header.CreditTurnover}
+	for _, row := range in.Rows {
+		moneySelections = append(moneySelections, row.AccountAmount, row.TransactionAmount)
+	}
+	for _, ids := range moneySelections {
+		for _, id := range ids {
+			if !monetary[id] {
+				return statementdata.Proposal{}, errors.New("provider_protocol")
+			}
+		}
 	}
 	var failed bool
 	selection := func(ids statementdata.Selection) statementdata.Selection {
