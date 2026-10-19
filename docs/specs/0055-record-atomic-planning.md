@@ -1,7 +1,7 @@
 # SPEC-0055 / S1: целый документ и короткие source aliases
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
-- Статус: accepted, 2026-10-19; implementation `locally_verified`; publication/CI pending.
+- Статус: accepted, 2026-10-19; implementation `locally_verified`; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен.
 - Основание: принятая [проработка качества](../research/statement-quality/README.md), revision `c63e7cd3f7ca355ee7470036919b948d0078b73f` / PR #68; поручение продолжить движение к включению Statement AI.
 - Acceptance record: владелец выбрал «Утвердить S1 с новыми лимитами (рекомендую)» в ответ на конкретный контракт / PR #69, revision `fa4617f2239bb5c4ca51b82a4a8ff463f16f2191`. Приняты 90000 bytes / 2000 spans / 100000 input / 16000 output и максимум 70000 provider micros/call; общий бюджет сохраняется, платные прогоны требуют отдельного решения.
 - Product baseline: `7be572ceaac5819a2031059ef60388dcd0711614`, PR #66; research base `f3476a3`.

@@ -17,7 +17,7 @@ caps 90000 bytes / 100000 input / 16000 output приняты владельце
 («Утвердить S1 с новыми лимитами»), theoretical provider ceiling 0.07 USD/call;
 общий бюджет сохраняется, paid campaigns отдельно. [S1 implementation](0055-s1-evidence.md)
 локально проверен: 84 layout cases, HTTP/SQL/confirmation/cancellation, no external
-model calls; publication/CI pending. Полная qualification не сводится к smoke.
+model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Полная qualification не сводится к smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:

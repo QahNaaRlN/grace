@@ -268,7 +268,7 @@ S2/corpus not_started, Statement AI false. S1 реализован и локал
 formats и все 56 structural cases этой стратегии помещаются без разрывов;
 model quality не проверялась. [S1 implementation evidence](specs/0055-s1-evidence.md):
 84 actual-planner layout cases, real HTTP/fake/SQL/confirmation, shared budget
-and cancellation guards; локальные gates PASS, publication/CI pending. Принятие
+and cancellation guards; локальные gates PASS, опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Принятие
 зафиксировано 2026-10-19 («Утвердить S1 с новыми лимитами»); paid campaigns
 отдельно, общий бюджет не увеличивается.
 
