@@ -1,8 +1,9 @@
 # SPEC-0055 / S1.10: непрерывность описания и роли книжных остатков
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started.
-- Acceptance record: отсутствует; реализация production-кода не разрешена.
+- Статус: accepted; implementation_status: not_started.
+- Acceptance record: 2026-10-21, прямое «Утвердить S1.10 и offline-реализацию».
+  Разрешены G1–G5, external inference=0; без deployment/model switch.
 - Worktree: `statement-grounding-guards`, ветка `codex/statement-grounding-guards`.
 - Основание: [S1.9](0055-s19-evidence.md), [точный диагноз](../research/statement-quality/s18-saved-trace-diagnosis.md).
 
@@ -169,9 +170,10 @@ Evidence; старый cached matched; owner isolation, revision race и руч�
 | G4 | Новый profile не принимает старые reports; historical S1.9 artifacts неизменны, replay v1 честно UNVERIFIED; canonical public summary sanitization PASS. Fake-provider full columns19/cards20/RU23 PASS, сильные scorer assertions сохранены |
 | G5 | make test, make test-production, scripts/test-bank-statements.sh, go vet и git diff --check PASS; external model requests=0, deployment/model switch=0 |
 
-## Решение для review
+## Решение владельца
 
-Предлагается утвердить реализацию G1–G5 как один offline-пакет. Новые
+Утверждена реализация G1–G5 как один offline-пакет.
+Принятие фиксируется отдельным коммитом до production-кода. Новые
 model calls, smoke budget, deployment и production model switch не входят.
 Сравнение современных моделей — следующий контракт с обновлённым профилем,
 свежей metadata и отдельным бюджетом; SPEC-0056 registry пока остаётся draft.
