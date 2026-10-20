@@ -258,7 +258,8 @@ Origin. Спецификации извлечения определяют со�
 ## Порядок следующих этапов
 
 2026-10-20: [S1.4 candidate screening](specs/0055-s14-candidate-screening.md)
-accepted («работаем»), C1–C5 local PASS, live C6 pending: один Gemini 3.1
+accepted («работаем»), C1–C5 local/exact-source CI PASS, live C6 **FAIL provider-stage**
+(run 39459614043), до первого score; качество UNVERIFIED. Разрешённый run выполнен: один Gemini 3.1
 Flash Lite / Google EU run, columns/cards/RU, максимум 3 calls / $0.1617 provider.
 Product policy и activation не расширяются; [evidence](specs/0055-s14-evidence.md).
 

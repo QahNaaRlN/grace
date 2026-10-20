@@ -13,7 +13,7 @@ accepted commit `a94cbb4` предшествует коду. Baseline `7c4ef83` 
 | C3 | `TestScreeningRealHelperThreeCases`: pinned Poppler → columns19/19 + cards20/20 + RU23/23. Whole-run reservation161700, один settle300 synthetic micros, 3 calls. RU omitted description FAIL, без retry. Это fake-provider evidence, не измерение Gemini |
 | C4 | `TestScreeningStopSettleAndPreflight`, `TestScreeningReportNeverActivates`: wrong order/hash/policy до reservation, known error billed, unknown freezes; report с другим version/profile никогда не разрешает activation. `scripts/test-statement-screening.sh`: failed preflight без marker; failed run сохраняет report600/marker и не повторяется, включая другой SHA; billing не попадает в stdout |
 | C5 | PASS: `TMPDIR=/var/tmp/grace-quality-next-tests VITEST_MAX_WORKERS=1 make test` (Go + 88 web files / 334 tests + lint/FSD/format/build/Jev); `scripts/test-bank-statements.sh`; `make test-production`; `go vet ./cmd/... ./internal/...`; `git diff --check`; YAML/exclusive-job guards |
-| C6 | Live smoke NOT_RUN; разрешён ровно один, 3-call maximum / provider cap161700; production adoption не разрешено |
+| C6 | **FAIL**, [run 39459614043](https://github.com/QahNaaRlN/grace/actions/runs/39459614043), source `e36dbcbb5c57ed8b2060cc2bcbc1ebc8482fd728`, 2026-10-20 16:41:56 UTC. `qualification_provider_failed`, results empty, до первого score. Application image/health preserved. Автоповторов нет; качество кандидата не измерено, billing audit read-only pending |
 
 Remote harness добавлен как explicit `statement_screening_only` в существующий
 workflow. Deploy/inspect jobs взаимоисключены с screening. Exact-source CI обязателен
@@ -36,3 +36,16 @@ existing GitHub production environment/key. Новые credentials не запр
 Полная qualification, model registry и product adoption остаются вне этого
 пакета; даже полный 19/20/23 PASS не гарантирует все банки. Никакого automatic
 production switch или финансового подтверждения по результату screening.
+
+## CI и единичный live run
+
+[PR #78](https://github.com/QahNaaRlN/grace/pull/78), exact-source
+[CI 39458315766](https://github.com/QahNaaRlN/grace/actions/runs/39458315766):
+все 5 jobs PASS, включая обычный parallel web run, полный make test-integration
+и 3 image builds. Screening dispatched ровно один раз, отдельной job;
+inspect/deploy skipped. Неуспешный provider run не является quality FAIL модели
+или отрицательным результатом scorer: структурированный результат первого
+документа до scorer не дошёл. В публичном summary нет authoritative HTTP
+reason/status или billing values, точная причина пока не установлена.
+Для аудита добавлен read-only fixed-report inspector, который выводит только
+booleans/counts и не делает inference, reservation, settlement или config writes.

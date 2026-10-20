@@ -128,6 +128,11 @@ jobs:
         run: |
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-smoke.py
 
+      - name: Inspect fixed screening outcome without billing values
+        if: always()
+        run: |
+          ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
+
   deploy:
     if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only }}
     name: Deploy owner VPS
