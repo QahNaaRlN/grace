@@ -30,3 +30,14 @@ outputs — только fixed codes/booleans. При успехе не возо
 inference/financial/budget writes; workflow modes mutually exclusive; diff check,
 обязательный make test. Read-only verification и exact settlement runs фиксируются
 отдельно. После завершения transient secret удаляется, отсутствие проверяется.
+
+## Уточнение сопоставления identity — 2026-10-20
+
+Read-only API verification выявила: generation metadata использует canonical slug
+`google/gemini-3.1-flash-lite-20260507`, report policy — alias
+`google/gemini-3.1-flash-lite`. Принимается только эта фиксированная пара при
+свежем подтверждении официальным GET /models (`id` → `canonical_slug`), совпадающая
+с опубликованным до smoke snapshot shortlist. Digest каталога сохраняется в private
+audit. Любой другой canonical slug или отсутствие mapping — отказ. Product
+policy, transport identity checks и scorer не меняются; это сопоставление полей
+metadata для metering recovery, а не разрешение нового endpoint или paid replay.

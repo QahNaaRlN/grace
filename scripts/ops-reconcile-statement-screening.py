@@ -17,6 +17,8 @@ import urllib.request
 
 RUN = 's14-gemini31-20261020'
 BASE = Path('/opt/grace/shared')
+MODEL = 'google/gemini-3.1-flash-lite'
+CANONICAL_MODEL = 'google/gemini-3.1-flash-lite-20260507'
 class Stop(Exception):
     pass
 
@@ -43,7 +45,12 @@ def micros(value):
     require(n.is_finite() and n >= 0 and n <= 10, 'generation_cost_invalid')
     return int((n*1000000).to_integral_value(rounding=decimal.ROUND_CEILING))
 
-def validate(report, row, ids, data):
+def canonical_model(catalog):
+    matches = [m for m in catalog.get('data', []) if m.get('id') == MODEL]
+    require(len(matches) == 1 and matches[0].get('canonical_slug') == CANONICAL_MODEL, 'canonical_model_mapping_unverified')
+    return CANONICAL_MODEL
+
+def validate(report, row, ids, data, verified_canonical=None):
     require(report.get('version') == 'statement.screening.v1.gemini31-ru-roles' and report.get('error') == 'qualification_provider_failed' and not report.get('passed') and report.get('actualMicros') is None, 'unexpected_qualification_report')
     require(report.get('policy', {}).get('model') == 'google/gemini-3.1-flash-lite' and report['policy'].get('provider') == 'google-vertex/eu' and report['policy'].get('providerName') == 'Google', 'report_policy_mismatch')
     calls = report.get('calls', [])
@@ -58,7 +65,7 @@ def validate(report, row, ids, data):
     total = 0
     for ident in ids:
         d = data[ident]
-        require(d.get('id') == ident and d.get('model') == report['policy']['model'] and d.get('provider_name', '').lower() == 'google' and d.get('is_byok') is False, 'generation_route_mismatch')
+        require(d.get('id') == ident and (d.get('model') == report['policy']['model'] or verified_canonical == CANONICAL_MODEL and d.get('model') == verified_canonical) and d.get('provider_name', '').lower() == 'google' and d.get('is_byok') is False, 'generation_route_mismatch')
         require(-2 <= (timestamp(d['created_at'])-start).total_seconds() <= 120, 'generation_time_mismatch')
         cost = micros(d.get('total_cost'))
         if ident in known:
@@ -129,9 +136,13 @@ def main():
         'costZero':d.get('total_cost') is not None and decimal.Decimal(str(d['total_cost'])) == 0,
         'generationWithinWindow':-2 <= (timestamp(d['created_at'])-timestamp(report['time'])).total_seconds() <= 120,
         'finishError':d.get('finish_reason') == 'error'}))
-    total = validate(report, row, ids, data)
+    with opener.open('https://openrouter.ai/api/v1/models', timeout=15) as response:
+        catalog_raw = response.read((8<<20)+1)
+    require(len(catalog_raw) <= 8<<20, 'model_catalog_too_large')
+    verified_canonical = canonical_model(json.loads(catalog_raw))
+    total = validate(report, row, ids, data, verified_canonical)
     audit_path = BASE/('statement-reconciliation-'+RUN+'.json')
-    audit = {'version':'statement-reconciliation.v1', 'reportDigest':hashlib.sha256(raw).hexdigest(), 'reportName':paths[0].name, 'usageBefore':row, 'generations':data, 'actualMicros':total, 'verifiedAt':dt.datetime.now(dt.timezone.utc).isoformat(), 'committed':False}
+    audit = {'version':'statement-reconciliation.v1', 'canonicalModelMapping':{'model':MODEL,'canonicalModel':verified_canonical,'catalogSha256':hashlib.sha256(catalog_raw).hexdigest()}, 'reportDigest':hashlib.sha256(raw).hexdigest(), 'reportName':paths[0].name, 'usageBefore':row, 'generations':data, 'actualMicros':total, 'verifiedAt':dt.datetime.now(dt.timezone.utc).isoformat(), 'committed':False}
     if audit_path.exists():
         require(not audit_path.is_symlink() and audit_path.stat().st_mode & 0o077 == 0, 'audit_not_private')
         old = json.loads(audit_path.read_text())

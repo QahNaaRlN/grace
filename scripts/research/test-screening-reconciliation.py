@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Offline test: no key, network, SQL or private generation ID."""
+import sys
+sys.dont_write_bytecode = True
 import copy
 import importlib.util
 from pathlib import Path
@@ -42,3 +44,21 @@ for name, mutate in cases:
 settled = dict(row, status='settled', actual_micros=1001)
 assert m.validate(report, settled, [ident], {ident: generation}) == 1001
 print('Screening reconciliation offline match/mismatch/ceil/replay checks PASS')
+
+canonical = dict(generation, model=m.CANONICAL_MODEL)
+try:
+    m.validate(report, row, [ident], {ident: canonical})
+except m.Stop:
+    pass
+else:
+    raise AssertionError('unverified alias mapping accepted')
+assert m.canonical_model({'data':[{'id':m.MODEL,'canonical_slug':m.CANONICAL_MODEL}]}) == m.CANONICAL_MODEL
+assert m.validate(report,row,[ident],{ident:canonical},m.CANONICAL_MODEL) == 1001
+for slug in ['other/model', 'google/gemini-3.1-flash-lite-NEW']:
+    try:
+        m.canonical_model({'data':[{'id':m.MODEL,'canonical_slug':slug}]})
+    except m.Stop:
+        pass
+    else:
+        raise AssertionError('different canonical model accepted')
+print('Exact official alias/canonical mapping checks PASS')
