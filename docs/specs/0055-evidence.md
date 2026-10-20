@@ -9,12 +9,12 @@
 - Статус кода: `integrated`, PR #64, `b51b74f`, post-merge CI `39167930999` PASS.
   Это executor evidence, не owner functional acceptance; AC12 остаётся открытым.
 - Production: первый manual release `b51b74f`, 2026-10-19 02:37:31 +05:00.
-  Текущий `ef782ec` (S1.1 PR #73), CI/Delivery/internal health PASS;
-  deploy `39255669019`, healthy 17:55:14 +05:00 / 12:55:14 UTC.
-  Единственный S1.1 smoke FAIL: columns `record_description`, cards NOT_RUN,
-  Statement AI false. Read-only `39255943568` и standalone public/auth PASS.
+  Текущий `7b2deea` (S1.2 PR #74), main CI `39395041781`, Delivery
+  `39396018990`, deploy `39396162864` **PASS**. Оба synthetic cases 19/20 PASS;
+  **AI enabled**, actual-image/runtime/policy/public checks подтверждены
+  2026-10-20 13:51:07 +05:00 / 08:51:07 UTC.
   Private inference/импорт личных операций агентом не выполнялись.
-  [Активация и история](0055-activation-evidence.md), [S1.1 evidence](0055-s11-evidence.md).
+  [Текущее evidence D1–D5](0055-s12-evidence.md), [история FAIL](0055-activation-evidence.md).
 
 
 ## Реализованный путь
@@ -56,7 +56,7 @@ live модели, универсальную поддержку банков и
 Integration tests требуют своих environment flags; обычный `go test` не заменяет
 эти скрипты и не доказывает БД/assertions, если suite был skipped.
 
-## Локальные результаты и границы
+## Локальные результаты первого implementation snapshot и границы
 
 - `make test`: 330 Web tests плюс Go, ESLint, Steiger, Prettier, generated API,
   production web build и offline Jev evaluation checks.

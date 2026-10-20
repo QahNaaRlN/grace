@@ -1,0 +1,13 @@
+{
+  "run": "39396521229",
+  "safePayloads": [
+    {
+      "time": "2026-10-20T08:52:24.8674059Z",
+      "payload": "statement_ai_runtime_enabled"
+    },
+    {
+      "time": "2026-10-20T08:52:25.0264487Z",
+      "payload": "Statement activation prerequisites passed; no configuration, budget or usage values exported."
+    }
+  ]
+}

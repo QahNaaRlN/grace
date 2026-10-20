@@ -1,16 +1,15 @@
 # Roadmap Grace
 
-Актуализация: 2026-10-19 (Asia/Yekaterinburg; UTC указан отдельно в evidence).
-В `main` интегрированы SPEC-0055, S1 (PR #70), activation adapter (PR #71)
-и S1.1 lexical grounding (PR #73). Production `ef782ec`: main CI `39254418192`,
-Delivery `39255451276` PASS; deploy `39255669019` internal health PASS
-**17:55:14 +05:00 / 12:55:14 UTC**. Единственный S1.1 smoke FAIL: columns
-только `record_description` (пропущенный дефис), cards NOT_RUN, Statement AI false.
-Read-only `39255943568` подтверждает disabled и отсутствие unknown usage blocker;
-standalone public/auth smoke PASS. [S1.1 audit](specs/0055-s11-evidence.md).
-[S1.2](specs/0055-s12-description-separators.md) отдельно принят владельцем:
-узкий prompt amendment, negative regression, один новый smoke ≤2 calls / $0.14,
-enable только оба full PASS. Implementation in_progress, [D1–D5](specs/0055-s12-evidence.md).
+Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).
+**Statement AI включён для owner production testing** в `7b2deea` (S1.2 PR #74).
+Main CI `39395041781`, Delivery `39396018990`, deploy `39396162864` PASS.
+Columns **19/19**, cards **20/20**; exact-image/runtime flag/current policy
+подтверждены **13:51:07 +05:00 / 08:51:07 UTC**, public/auth PASS 13:51:10. Независимая read-only проверка `39396521229`
+13:52:24 +05:00 подтвердила enabled и activation readiness без unknown usage.
+[Current evidence D1–D5](specs/0055-s12-evidence.md). Один отдельно утверждённый
+S1.2 smoke использован, без повторов или личных документов. Прежние FAIL
+сохранены в [истории](specs/0055-activation-evidence.md). Следующий шаг — ваша
+проверка PDF в «Импортах» с новым preview/consent и явным financial confirmation.
 Полная AC12 qualification, сравнение Jev/cascade и owner functional acceptance
 не завершены. SPEC-0019 остаётся draft; номер 0025 не использован.
 Унаследованные замечания ShellCheck сохранены в evidence SPEC-0050.
@@ -21,24 +20,24 @@ enable только оба full PASS. Implementation in_progress, [D1–D5](spec
 этапы реализованы или их спецификации приняты.
 Архитектурные правила определяет [контракт](architecture.md).
 
-## Текущая работа — 2026-10-19
+## Текущая работа — 2026-10-20
 
 Текущая принятая спецификация — [SPEC-0055](specs/0055-bank-statement-pdf-import.md).
 Реализация интегрирована PR #64; protected activation/rollback — PR #65.
-Ручной путь в production. Активация Statement AI ожидает успешного
-synthetic smoke обоих layouts после неуспешного cards probe. Неизвестный расход
-точно сверён 2026-10-19; остаются выпуск исправлений и owner UI check.
+Ручной путь и Statement AI доступны в production `7b2deea`. S1.2 прошёл оба
+synthetic cases и actual runtime checks. Неизвестный исторический расход сверён
+2026-10-19; следующий gate — owner UI/private test, затем отдельный full corpus.
 SPEC-0054 ранее выпущена как `a89a855` (run `39151600396`, 2026-10-18).
 
 | Направление | Сделано | Осталось / зависимость |
 | --- | --- | --- |
-| Выпуск `main` | `ef782ec`: S1.1, main CI/Delivery/internal health PASS 2026-10-19 17:55:14 +05:00 | S1.1 columns description FAIL; AI false; S1.2 принят, один новый smoke; owner UI pending |
-| ИИ (OpenRouter) | Global/key prerequisites подтверждены; отдельные statement consent/flag/policy и bounded qualifier реализованы | Statement AI false; unknown billing сверён run `39217226634`. Нужны оба synthetic cases PASS; AC12/Jev/cascade открыты |
+| Выпуск `main` | `7b2deea`: S1.2 PR #74, CI/Delivery/deploy/runtime/public PASS 2026-10-20 13:51:07 +05:00 | Owner UI/private test; docs follow-up не меняет production code SHA |
+| ИИ (OpenRouter) | Statement AI enabled; columns19/19, cards20/20; pinned policy/global kill switch/consent/shared budget сохранены | Full AC12/Jev/cascade/corpus и SPEC-0056 registry отдельно |
 | Напоминания | Durable outbox за 3 и 1 день, verified email, общий лимит | Подтвердить production SMTP и сверить reservations с облачным счётом |
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
 | Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Интегрирована: PR #57, merge `95c5fa8`, CI run 39032209158, в production с `95c5fa8` ([evidence](specs/0053-evidence.md)) |
 | Рассрочки и BNPL | SPEC-0054 влита PR #60 (`a89a855`): покупка/долг/переводы и ручное подтверждение карточного грейса | Post-merge gates, main CI, Delivery и production release `a89a855` пройдены; остаётся owner UI smoke |
-| CI и статусы | PR #73, main CI `39254418192`, Delivery `39255451276`, deploy/internal health `ef782ec` PASS | Run `39255669019` activation FAIL; read-only/public/auth PASS; S1.2 implementation in_progress |
+| CI и статусы | PR CI `39393961404`, main CI `39395041781`, Delivery `39396018990`, deploy `39396162864` PASS | Owner functional acceptance pending; не приравнивать synthetic PASS к качеству всех банков |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Реализованные этапы
@@ -104,7 +103,7 @@ post-merge evidence. Это не означает реализацию всег�
 | 0052 | Разделение Web по маршрутам, восстановление после ошибки чанка; статус `integrated` | `95c5fa8` | [Scope](specs/0052-route-code-splitting.md) | [Evidence](specs/0052-evidence.md) |
 | 0053 | Тело/проценты кредита, досрочные погашения, снимки долга и разбивка статистики | `95c5fa8` | [Scope](specs/0053-loan-principal-interest.md) | [Evidence](specs/0053-evidence.md) |
 | 0054 | Рассрочки/BNPL, связь покупки и долга, распределение переводов, общее банковское требование карты | `a89a855` | [Scope](specs/0054-installments-bnpl.md) | [Evidence](specs/0054-evidence.md) |
-| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `ef782ec` (manual + S1.1; AI false) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation quality FAIL](specs/0055-activation-evidence.md) |
+| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `7b2deea` (manual + S1.2 AI owner testing) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation/history](specs/0055-activation-evidence.md) |
 
 Ранние записи evidence могут предшествовать итоговой интеграции; итоговый
 статус этапа подтверждают строка статуса спецификации и дополнение в её
@@ -252,14 +251,13 @@ Origin. Спецификации извлечения определяют со�
 [SPEC-0056](specs/0056-statement-model-selection.md) — **draft**, реализация
 **not_started**: quality/privacy gates, выбор стоимости полного плана до
 consent, закреплённый маршрут без скрытого fallback. Сверка расхода
-SPEC-0055 завершена; cards quality FAIL сохраняется, Statement AI false.
-Конкретный реестр допущенных моделей и runtime enable ещё не утверждены.
+SPEC-0055 завершена; исторические FAIL сохраняются. Statement AI включён для owner testing по отдельному accepted S1.2. Конкретный реестр квалифицированных моделей SPEC-0056 ещё не утверждён.
 2026-10-19 владелец принял [проработку устойчивости](research/statement-quality/README.md)
 («Принимаю», PR #68):
 32 offline probes выявили разрыв record core при добавлении нефинансового
 префикса. Предложены отдельные пакеты planner, явного coverage protocol и
 24-case corpus (2 PDF существуют, 22 planned). Model calls = 0; реализация
-S2/corpus not_started, Statement AI false. S1 реализован и локально проверен
+S2/corpus not_started. S1 реализован, интегрирован и включён в текущий production с accepted S1.1/S1.2 amendments; его первоначальная offline проверка:
 в рамках [принятого S1 контракта](specs/0055-record-atomic-planning.md):
 [280 offline cases](research/statement-quality/atoms.md) отклонили геометрические
 эвристики. Владелец принял целый документ с короткими aliases и новыми caps
@@ -267,7 +265,7 @@ S2/corpus not_started, Statement AI false. S1 реализован и локал
 formats и все 56 structural cases этой стратегии помещаются без разрывов;
 model quality не проверялась. [S1 implementation evidence](specs/0055-s1-evidence.md):
 84 actual-planner layout cases, real HTTP/fake/SQL/confirmation, shared budget
-and cancellation guards; локальные gates PASS, опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Принятие
+and cancellation guards; локальные/CI/Delivery gates PASS, [PR #70](https://github.com/QahNaaRlN/grace/pull/70) integrated (`8ed8e80`); текущий release/enable зафиксирован в S1.2 evidence. Принятие
 зафиксировано 2026-10-19 («Утвердить S1 с новыми лимитами»); paid campaigns
 отдельно, общий бюджет не увеличивается.
 
@@ -281,8 +279,8 @@ and cancellation guards; локальные gates PASS, опубликовано
 | 1 | **Нормализация эталонной таблицы и отчёт сверки.** Типизированный снимок, точные суммы/даты, проблемы схемы, сопоставление каждого дополнительного ряда | **Завершено:** [SPEC-0016](specs/0016-spreadsheet-import-review.md), [инструкция](import-review.md) | Все дополнительные строки проверены; кандидаты не удаляются/сливаются автоматически. Ledger не меняется |
 | 2 | **Подтверждаемый импорт и происхождение данных.** Общие черновики, source records, история проверки, стабильные связи и preview перед записью | **Частично:** импорт таблицы (SPEC-0017/0023/0027/0028/0038/0044), черновики фото чека (0026) и копии графика кредита (0034), история правок операций (0041). Банковские PDF source records/spans/provenance и общий review/confirmation добавлены SPEC-0055; прочие типы документов ещё не унифицированы | Идемпотентность, tenant isolation, явное подтверждение, связь с существующими фактами. Неполные/конфликтующие данные остаются черновиками |
 | 3 | **Счета, кредитные договоры и финансирование.** Канонические сущности/aliases, снимки долга, версии условий и графиков, требования minimum/grace/installment, выдачи и погашения с распределением тела/процентов/комиссий | **Частично:** счета/сверка (0040), сведения/PDF/копии графика (0034), удобные графики и сроки (0037/0039/0045/0046); карты — версии условий, снимки долга, minimum/grace и погашение (0051); кредиты — части строк, распределение оплаты, досрочное погашение и снимки долга (0053). Рассрочки/BNPL (0054) интегрированы и выпущены в `a89a855`. Остались запись выдачи кредита и общая модель источников финансирования | Принятый scope — SPEC-0054. Не менять legacy-графики неявно; покупка и погашение не удваивают расходы, карточная рассрочка не удваивает долг. Выдача не является доходом; правила конкретных банков требуют подтверждения |
-| 4 | **Отдельное подключение рассуждающей LLM.** Заменяемый API-адаптер для извлечения, диалога и объяснений; Jev сохраняет отдельную роль | **Частично:** OpenRouter adapter, политика моделей и бюджет, месячные объяснения, чтение фото чека (0026/0033/0034). Production global AI/key readiness подтверждена 2026-10-19 без передачи бюджетных значений. PDF extraction adapter/consent/budget реализованы SPEC-0055; Statement AI disabled; S1.1 columns description FAIL, S1.2 accepted (новый smoke отдельно разрешён), диалог остаётся отдельным scope | Извлечение возвращает валидируемые черновики; объяснения используют результаты tools. Ошибка/отключение ИИ не нарушает ledger и детерминированные расчёты |
-| 5 | **Импорт банковских и кредитных PDF.** Дебетовые/кредитные выписки, документы условий и графики, контроль остатков, matching с существующими операциями | **Частично:** SPEC-0055 интегрирована и выпущена: один текстовый debit RUB PDF → spans → ручной/AI draft → Go validation → matching/confirmation. Ручной путь доступен, Statement AI disabled; S1.1 columns description FAIL, S1.2 accepted (новый smoke отдельно разрешён). OCR, кредитные выписки/условия и подтверждение качества других банков не выполнены | Этапы 2–4. Страницы и источник каждого значения доступны; повторная выписка/парный перевод/покупка с чеком не дают повторного учёта. Правила хранения различаются по типу PDF |
+| 4 | **Отдельное подключение рассуждающей LLM.** Заменяемый API-адаптер для извлечения, диалога и объяснений; Jev сохраняет отдельную роль | **Частично:** OpenRouter adapter, политика моделей и бюджет, месячные объяснения, чтение фото чека (0026/0033/0034). Production global AI/key readiness подтверждена 2026-10-19 без передачи бюджетных значений. PDF extraction adapter/consent/budget реализованы SPEC-0055; Statement AI enabled для owner testing (`7b2deea`); S1.2 оба synthetic cases PASS, full corpus отдельно, диалог остаётся отдельным scope | Извлечение возвращает валидируемые черновики; объяснения используют результаты tools. Ошибка/отключение ИИ не нарушает ledger и детерминированные расчёты |
+| 5 | **Импорт банковских и кредитных PDF.** Дебетовые/кредитные выписки, документы условий и графики, контроль остатков, matching с существующими операциями | **Частично:** SPEC-0055 интегрирована и выпущена: один текстовый debit RUB PDF → spans → ручной/AI draft → Go validation → matching/confirmation. Ручной путь доступен, Statement AI enabled для owner testing (`7b2deea`); S1.2 оба synthetic cases PASS, full corpus отдельно. OCR, кредитные выписки/условия и подтверждение качества других банков не выполнены | Этапы 2–4. Страницы и источник каждого значения доступны; повторная выписка/парный перевод/покупка с чеком не дают повторного учёта. Правила хранения различаются по типу PDF |
 | 6 | **Товарная детализация и временное распознавание чеков.** Группы и конкретные продукты, quantity/unit/price/discount, подтверждённый чек из фото | **Частично:** фото → черновик позиций → подтверждение с удалением фото и обновлением данных (0026/0049). Нет товарных групп, конкретных продуктов и цены за единицу | Этапы 2 и 4. Совпадение суммы чека с покупкой, сопоставление товаров с возможностью исправить, видимая неполнота; подтверждение не создаёт вторую проводку, фото удаляется |
 | 7 | **Аналитика и план финансовой нагрузки.** Потребление own/borrowed/unknown, цены товаров/корзина, план и факт зарплаты, бюджеты, приоритеты и будущие обязательства | **Частично:** графики статистики (0030), личные категории (0033/0042), «Финансовое здоровье» с полнотой данных (0033), явная зарплата (0021), разбивка платежей кредита на тело/проценты/прочее/неизвестное (0053). Нет общей аналитики own/borrowed, корзины, бюджетов, плана зарплаты и прогноза | Этапы 3, 5 и 6 для соответствующих данных. Расчёты в Go, раздельные валюты, явные даты/точность, полнота и актуальность; прогноз отделён от подтверждённых фактов |
 | 8 | **Анализ действующих карт и долгов одной кнопкой.** Снимок, детерминированные сценарии платежей/грейса и объяснение LLM с рекомендацией | **Не начато** | Этапы 3–5 и 7. Расчёт воспроизводим относительно даты анализа; используются применимые условия, собственные деньги и обязательства. Показаны источники, цели, ограничения и недостающие данные; нет самостоятельных платежей/изменений |
@@ -291,10 +289,10 @@ and cancellation guards; локальные gates PASS, опубликовано
 их принятых scope. Анализ одной кнопкой не обещает универсальный расчёт грейса
 до реализации подтверждённых правил конкретных действующих продуктов.
 
-Ближайший срез — после завершённой сверки расхода
-пройти synthetic cards smoke, выпустить проверенные исправления и включить
-Statement AI по поручению владельца от 2026-10-19. Затем — owner UI check. Код SPEC-0055
-уже в main/production, поэтому он не обозначается как «не начат». Отдельно
+Ближайший срез — owner UI/private test после подтверждённого включения
+Statement AI в `7b2deea` 2026-10-20. Загрузить PDF через «Импорты», получить
+новый preview и отдельно разрешить inference, затем проверить и подтвердить
+финансовые строки. Код SPEC-0055 уже в main/production. Отдельно
 остаются AC12 (репрезентативный корпус/русский язык, качество строк и колонок,
 omissions/abstentions, latency, LLM-only/Jev/cascade), owner acceptance,
 кредитные/мультивалютные PDF и OCR. Synthetic activation smoke не заменяет AC12.
@@ -332,7 +330,7 @@ evidence, а не только наличием каталога или draft. �
 спецификации и отчёты сохранять; их исходные наблюдения не считать описанием
 текущей версии.
 
-## Statement AI: owner-test release — 2026-10-19
+## Исторический owner-test release snapshot — 2026-10-19
 
 S1 интегрирован PR #70 (`8ed8e80`), main CI `39243697470` и Delivery
 `39244588305` PASS. Владелец отдельно принял
@@ -343,7 +341,7 @@ $0.14 total, прежний shared budget), включение только пр
 offline проверки от предстоящих release/runtime gates. Production AI в этом
 snapshot не включён; full qualification S2–S5 и AC12 остаются отдельными.
 
-## S1 live outcome и S1.1 — 2026-10-19
+## Исторический S1 live outcome и S1.1 — 2026-10-19
 
 Один разрешённый S1 smoke `39248364426` использован и остановлен после
 columns quality FAIL; cards NOT_RUN, никакого повтора до PASS.
@@ -351,9 +349,9 @@ Read-only locators `39249075304` и network-none [offline evidence](research/sta
 доказали permissive money eligibility и wrong description bindings. Владелец
 ответил «Утвердить S1.1, один smoke и включение при PASS» на точный
 [contract](specs/0055-s11-lexical-grounding.md); прежний shared budget/fees и
-полные quality/confirmation gates сохраняются. Цель owner-test enable активна.
+полные quality/confirmation gates сохраняются. На этом историческом этапе цель owner-test enable оставалась активна; текущий исход S1.2 — ниже.
 
-## S1.1 live outcome и S1.2 — 2026-10-19
+## Исторический S1.1 live outcome и принятие S1.2 — 2026-10-19
 
 S1.1 release `ef782ec` прошёл все offline/CI/Delivery/internal-health gates;
 один smoke `39255669019` остановился на неполном описании columns, cards NOT_RUN.
@@ -363,3 +361,12 @@ Read-only `39255943568` и public/auth PASS; AI false. Бесплатный pinn
 [S1.2](specs/0055-s12-description-separators.md), реализацию и один новый bounded
 smoke, включение только при обоих полных PASS. Следом — owner UI test; AC12,
 Jev/cascade и expanded corpus остаются самостоятельными этапами.
+
+## S1.2 owner-test activation — 2026-10-20
+
+PR #74 integrated `7b2deea`, все local/PR/main CI и Delivery gates PASS.
+Единственный разрешённый smoke `39396162864` прошёл columns19/19 и cards20/20.
+Actual image/runtime/current policy PASS 13:51:07 +05:00; public/auth PASS.
+Statement AI enabled. [D1–D5 и safe payloads](specs/0055-s12-evidence.md).
+Owner private test, S2–S5/AC12, Jev/cascade, русский/expanded corpus, credit/OCR
+и draft SPEC-0056 остаются открытыми; автоматического расширения scope нет.

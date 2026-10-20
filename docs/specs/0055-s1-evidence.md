@@ -1,5 +1,7 @@
 # SPEC-0055 / S1 implementation evidence
 
+Текущий статус на 2026-10-20: S1 integrated PR #70 / `8ed8e80`, included в S1.2 production `7b2deea` с owner-test AI enabled. [Actual evidence](0055-s12-evidence.md). Ниже исторический offline implementation snapshot; его профиль superseded accepted S1.1/S1.2 amendments.
+
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Принятый контракт: [S1 document-atom.v1](0055-record-atomic-planning.md), принят прямым ответом владельца «Утвердить S1 с новыми лимитами»; specification PR #69 integrated main `dcd2bb8`.
 - Implementation branch: `codex/statement-document-plan`; локальные проверки выполнены, implementation опубликован в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); live CI/integration status — в PR. До интеграции результат не называется deployed/production accepted.

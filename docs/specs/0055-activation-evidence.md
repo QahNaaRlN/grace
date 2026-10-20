@@ -1,17 +1,17 @@
 # SPEC-0055 — Statement AI activation
 
-Актуализация: 2026-10-19 (Asia/Yekaterinburg). **Statement AI выключен; цель включения ещё не достигнута.**
-Production `ef782ec` (S1.1 PR #73): main CI `39254418192` и Delivery `39255451276` PASS.
-Deploy `39255669019`: internal health PASS **12:55:14 UTC / 17:55:14 +05:00**;
-единственный разрешённый S1.1 smoke FAIL на columns: только `record_description`
-(дефис из второго описания в service), cards NOT_RUN. Полные критерии сохранены.
-Read-only `39255943568` PASS 12:56:16 UTC: actual runtime disabled, unknown
-usage не блокирует. Standalone public/auth smoke PASS (200/401). Повтора нет.
+Актуализация: 2026-10-20 (Asia/Yekaterinburg).
 
-[S1.1 evidence L1–L7](0055-s11-evidence.md) сохраняет executable проверки и FAIL.
-[S1.2](0055-s12-description-separators.md) отдельно принят владельцем: конкретное
-prompt уточнение и negative regression, один новый smoke ≤2 calls / $0.14,
-включение только при обоих полных PASS. Реализация ещё не начата.
+**Statement AI включён для owner production testing**: release `7b2deea`,
+2026-10-20 **13:51:07 +05:00 / 08:51:07 UTC**. PR #74, main CI `39395041781`,
+Delivery `39396018990`, deploy `39396162864` — PASS. Columns **19/19** и cards
+**20/20** прошли строгий scorer; exact API image/runtime flag/current policy и
+public/auth smoke подтверждены. [Evidence D1–D5](0055-s12-evidence.md).
+
+Один отдельно утверждённый S1.2 smoke использован; никаких retries/repair/
+private PDF/financial writes. Прежние FAIL сохранены ниже и в S1/S1.1 evidence.
+Ручной путь и отдельные document consent/financial confirmation остаются.
+Owner private acceptance и full AC12/Jev/corpus — pending/NOT_RUN.
 
 ## Исторические попытки и исходы (не текущий release)
 
@@ -44,7 +44,7 @@ reasoning explicitly disabled, no fallback/ZDR/deny. Принятые ceilings:
 input 300000/output 2500000 micros/1M. Перед активацией endpoint metadata
 повторно проверяет серверный verifier.
 [Первичный каталог endpoint](https://openrouter.ai/api/v1/models/google/gemini-2.5-flash/endpoints)
-проверен 2026-10-19. Текущий production prompt: `statement-span-mapping.v10.lexical-records` (S1.1);
+проверен 2026-10-19. Текущий production prompt: `statement-span-mapping.v11.description-separators` (S1.2);
 исторические v2/v7/v8 не являются текущим runtime profile.
 
 Исторический pre-S1 activation smoke использовал два synthetic PDF
@@ -57,7 +57,7 @@ row count, operation/booking clocks, account/FX amounts/currencies, direction,
 printed turnovers, coverage и различие available/book balances. Все критерии
 остаются обязательными; частичный PASS не включает настройку.
 
-## Сверка расхода и следующий шаг — 2026-10-19
+## Историческая сверка расхода и следующий шаг на 2026-10-19
 
 После неуспешного cards probe общий ledger остановил calls из-за неизвестного
 расхода. Владелец предоставил два generation ID. Серверный GET generation metadata
@@ -75,7 +75,7 @@ Settlement run `39217226634` PASS, 2026-10-19 07:38:04 UTC. Приватный a
 Metadata не установила точную причину исходного provider failure; конкретный
 finish reason не предполагается. Сверка расходов не является quality PASS.
 
-Следующий gate — успешные columns/cards smoke исправленного кандидата,
+Следующим gate на этом историческом этапе были успешные columns/cards smoke исправленного кандидата,
 проверки точного SHA, release и runtime policy/flag. До этого Statement AI false.
 Повторный synthetic probe `39217497119` после reconciliation завершился
 quality FAIL: четыре непокрытых locators. Read-only diagnosis установила их
@@ -158,3 +158,14 @@ Run `39255669019` internal health PASS, activation FAIL; текущий baseline
 выключен. [Public-source replay](../research/statement-quality/s11-description-offline.json)
 сопоставил missing separator с service без нового inference. Cards NOT_RUN;
 полная AC12 qualification, Jev/cascade и owner private functional test открыты.
+
+## S1.2 activation — 2026-10-20
+
+**Statement AI включён для owner production testing**: release `7b2deea`,
+2026-10-20 **13:51:07 +05:00 / 08:51:07 UTC**. PR #74, main CI `39395041781`,
+Delivery `39396018990`, deploy `39396162864` — PASS. Columns **19/19** и cards
+**20/20** прошли строгий scorer; exact API image/runtime flag/current policy и
+public/auth smoke подтверждены. [Evidence D1–D5](0055-s12-evidence.md).
+Полная qualification не выводится из небольшого activation smoke.
+Public source/runtime evidence не содержит usage, generation IDs, ключей
+или личных значений. Private billing audit остаётся на VPS.

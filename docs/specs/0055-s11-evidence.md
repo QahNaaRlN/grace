@@ -1,5 +1,7 @@
 # SPEC-0055 / S1.1 implementation evidence
 
+Текущий статус на 2026-10-20: **S1.2 owner-test enabled**, `7b2deea`, run `39396162864`; [actual evidence](0055-s12-evidence.md). Ниже сохранён исторический snapshot и его FAIL, не текущий runtime статус.
+
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Accepted contract: [S1.1 lexical grounding](0055-s11-lexical-grounding.md); прямое решение владельца «Утвердить S1.1, один smoke и включение при PASS».
 - Implementation branch: `codex/statement-lexical-grounding`, база accepted planning PR #72 / main `49152ad`.
@@ -74,3 +76,13 @@ SPEC-0056 model registry по-прежнему не qualified. При live FAIL 
 Никакой автоматической починки/ослабления scorer. [S1.2](0055-s12-description-separators.md)
 отдельно принят владельцем для узкого prompt amendment, regression и одного
 нового bounded smoke; его семантический результат пока UNVERIFIED.
+
+## Subsequent S1.2 activation — 2026-10-20
+
+**Statement AI включён для owner production testing**: release `7b2deea`,
+2026-10-20 **13:51:07 +05:00 / 08:51:07 UTC**. PR #74, main CI `39395041781`,
+Delivery `39396018990`, deploy `39396162864` — PASS. Columns **19/19** и cards
+**20/20** прошли строгий scorer; exact API image/runtime flag/current policy и
+public/auth smoke подтверждены. [Evidence D1–D5](0055-s12-evidence.md).
+
+OA7/OA8 достигнуты для отдельно принятого S1.2, а не ретроактивно для неуспешного S1/S1.1 run. Owner private functional acceptance остаётся pending.
