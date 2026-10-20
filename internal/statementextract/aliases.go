@@ -10,8 +10,9 @@ import (
 )
 
 // A persisted consent is usable only for this exact complete wire contract.
-func validPlan(p Plan) bool {
-	if p.PlannerVersion != PlannerVersion || p.AliasVersion != AliasVersion || p.PromptVersion != PromptVersion || p.RedactionVersion != RedactionVersion || p.SchemaHash != Hash(json.RawMessage(ProposalSchema)) || p.Limits != currentLimits() || !p.Policy.Valid() || p.MaximumMicros != p.Policy.CallMicros() {
+func validPlan(p Plan) bool { return planShapeValid(p, p.Policy.Valid()) }
+func planShapeValid(p Plan, allowed bool) bool {
+	if p.PlannerVersion != PlannerVersion || p.AliasVersion != AliasVersion || p.PromptVersion != PromptVersion || p.RedactionVersion != RedactionVersion || p.SchemaHash != Hash(json.RawMessage(ProposalSchema)) || p.Limits != currentLimits() || !allowed || p.MaximumMicros != p.Policy.CallMicros() {
 		return false
 	}
 	hash, e := hex.DecodeString(p.DocumentHash)
@@ -55,7 +56,10 @@ func validPlan(p Plan) bool {
 // CanonicalProposal copies every typed selection; it never edits source text,
 // direction, service reasons or the provider's original proposal in place.
 func CanonicalProposal(plan Plan, in statementdata.Proposal) (statementdata.Proposal, error) {
-	if !validPlan(plan) {
+	return canonicalProposal(plan, in, validPlan(plan))
+}
+func canonicalProposal(plan Plan, in statementdata.Proposal, valid bool) (statementdata.Proposal, error) {
+	if !valid {
 		return statementdata.Proposal{}, errors.New("provider_protocol")
 	}
 	monetary := map[string]bool{}

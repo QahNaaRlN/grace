@@ -146,11 +146,14 @@ func InputBytes(c Chunk) int {
 	return len(raw) + len(RequestSchema(c))
 }
 func BuildPlan(d statementdata.Document, policy Policy, visibleIDs []string) (Plan, error) {
+	return buildPlan(d, policy, visibleIDs, policy.Valid())
+}
+func buildPlan(d statementdata.Document, policy Policy, visibleIDs []string, allowed bool) (Plan, error) {
 	p := Plan{PlannerVersion: PlannerVersion, AliasVersion: AliasVersion, Limits: currentLimits(), DocumentHash: d.Hash(), PromptVersion: PromptVersion, SchemaHash: Hash(json.RawMessage(ProposalSchema)), RedactionVersion: RedactionVersion, Policy: policy, Chunks: []Chunk{}}
 	if e := d.Validate(); e != nil {
 		return p, e
 	}
-	if !policy.Valid() {
+	if !allowed {
 		return p, errors.New("price_unknown")
 	}
 	if len(d.Spans) > MaxPlanSpans {

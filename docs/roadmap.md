@@ -257,6 +257,11 @@ Origin. Спецификации извлечения определяют со�
 
 ## Порядок следующих этапов
 
+2026-10-20: [S1.4 candidate screening](specs/0055-s14-candidate-screening.md)
+accepted («работаем»), C1–C5 local PASS, live C6 pending: один Gemini 3.1
+Flash Lite / Google EU run, columns/cards/RU, максимум 3 calls / $0.1617 provider.
+Product policy и activation не расширяются; [evidence](specs/0055-s14-evidence.md).
+
 2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов
 вместо оборотов и подбор более современных и эффективных моделей.
 [Следующий пакет качества](research/statement-quality/next-quality-package.md)

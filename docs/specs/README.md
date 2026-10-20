@@ -1,7 +1,8 @@
 [SPEC-0055 / S1.4 — candidate screening](0055-s14-candidate-screening.md) — **accepted**,
 2026-10-20, прямое «работаем»: реализация и один 3-call screening Gemini 3.1
 Flash Lite / Google EU, provider cap $0.1617. Не разрешает production model switch
-или enable; implementation not_started.
+или enable; implementation local_verified (C1–C5), live C6 pending;
+[evidence](0055-s14-evidence.md).
 
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
 — **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;

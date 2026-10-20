@@ -43,7 +43,7 @@ docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-
  --network=none --memory=512m --pids-limit=16 \
  -v "${statement_test_binary}.activation:/run/activation.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
  -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
- -w /src/internal/statementqualification alpine:3.22 /run/activation.test -test.run '^(TestActivationRealHelperSmoke|TestTurnoverRolesRealHelper)$' -test.v
+ -w /src/internal/statementqualification alpine:3.22 /run/activation.test -test.run '^(TestActivationRealHelperSmoke|TestTurnoverRolesRealHelper|TestScreeningRealHelperThreeCases)$' -test.v
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -p 1 -tags=integration ./internal/imports ./internal/statementextract -run Statement -count=1 -v
 statement_compose exec -T postgres pg_dump -U grace -d grace > /tmp/grace-statement-restore-$$.sql

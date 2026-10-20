@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"time"
 
 	"github.com/QahNaaRlN/grace/internal/statementdata"
 	"github.com/QahNaaRlN/grace/internal/statementextract"
@@ -14,9 +15,11 @@ import (
 // StatementReasoner reuses the existing pinned/ZDR/no-fallback transport. It
 // has no tools or financial writer and is separately disabled by default.
 type StatementReasoner struct {
-	Verifier *PolicyVerifier
-	Policy   ModelPolicy
-	Provider ReasoningProvider
+	Verifier          *PolicyVerifier
+	Policy            ModelPolicy
+	Provider          ReasoningProvider
+	screening         bool
+	screeningVerified time.Time
 }
 
 func (r *StatementReasoner) CurrentPolicy(ctx context.Context) (statementextract.Policy, error) {
@@ -26,12 +29,22 @@ func (r *StatementReasoner) CurrentPolicy(ctx context.Context) (statementextract
 	if profile, ok := r.Provider.(interface{ StatementDocumentProfile() bool }); !ok || !profile.StatementDocumentProfile() {
 		return statementextract.Policy{}, errors.New("provider_request")
 	}
+	if r.screening && time.Since(r.screeningVerified) > 10*time.Minute {
+		if e := r.verifyScreeningZDR(ctx); e != nil {
+			return statementextract.Policy{}, e
+		}
+		r.screeningVerified = time.Now()
+	}
 	p, e := r.Verifier.CurrentStatement(ctx, r.Policy)
 	if e != nil {
 		return statementextract.Policy{}, e
 	}
 	out := statementextract.Policy{Model: p.Model, Provider: p.Provider, ProviderName: p.ProviderName, InputMicrosPerMillion: p.InputMicrosPerMillion, OutputMicrosPerMillion: p.OutputMicrosPerMillion}
-	if !out.Valid() {
+	allowed := out.Valid()
+	if r.screening {
+		allowed = statementextract.ScreeningPolicyValid(out)
+	}
+	if !allowed {
 		return out, errors.New("price_unknown")
 	}
 	return out, nil

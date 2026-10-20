@@ -102,6 +102,7 @@ type OpenRouterProvider struct {
 	endpoint          string
 	client            HTTPDoer
 	statementDocument bool
+	screeningDocument bool
 }
 
 func NewOpenRouterProvider(key string, client HTTPDoer) (*OpenRouterProvider, error) {
