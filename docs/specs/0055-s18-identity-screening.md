@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.8: один screening с идентичностью S1.7
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (S1–S4 PASS); live_status: FAIL qualification_quality_failed, columns17/19; billing_status: settled.
+- Статус: accepted; implementation_status: integrated (PR №80, 5e9116e; post-merge local/CI5/5 PASS); live_status: FAIL qualification_quality_failed, columns17/19; billing_status: settled.
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.8 и один ограниченный smoke».
   Разрешены реализация S1–S4 и один S5 при всех указанных gates.
 - Основание: [S1.7](0055-s17-selected-model-identity.md),

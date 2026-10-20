@@ -41,6 +41,11 @@ on:
         required: false
         default: false
         type: boolean
+      diagnose_statement_s19_only:
+        description: Только чтение сохранённого S1.8 и offline replay, без inference и деплоя
+        required: false
+        default: false
+        type: boolean
       inspect_statement_only:
         description: Check statement AI readiness without emitting secrets or budget values
         required: false
@@ -58,7 +63,7 @@ concurrency:
 
 jobs:
   screen-statement:
-    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only }}
+    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only }}
     name: One bounded candidate screening
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -111,7 +116,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
   screen-statement-s16:
-    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only }}
+    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only }}
     name: Один ограниченный прогон S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -176,7 +181,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s16.py
 
   screen-statement-s18:
-    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') }}
+    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.diagnose_statement_s19_only }}
     name: Один ограниченный прогон S1.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -241,8 +246,51 @@ jobs:
         run: |
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s18.py
 
+  diagnose-statement-s19:
+    if: ${{ inputs.diagnose_statement_s19_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    name: Бесплатная диагностика сохранённого S1.8
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Offline privacy and mode gates
+        run: |
+          python3 scripts/research/test-statement-s19-diagnosis.py
+          python3 scripts/research/test-screening-workflow-modes.py
+          go test ./scripts/research/s19-replay
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Read only fixed synthetic selections and closed reasons
+        run: |
+          ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-s19.py > "$RUNNER_TEMP/s19-projection.json"
+      - name: Replay using previous Go validation and scorer
+        run: |
+          scripts/research/replay-statement-s19.sh "$RUNNER_TEMP/s19-projection.json" > "$RUNNER_TEMP/s19-replay.json"
+          cat "$RUNNER_TEMP/s19-replay.json"
+      - name: Retain only sanitized diagnostic artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: statement-s19-sanitized
+          path: |
+            ${{ runner.temp }}/s19-projection.json
+            ${{ runner.temp }}/s19-replay.json
+          retention-days: 7
+          if-no-files-found: error
+
   inspect-statement:
-    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -302,7 +350,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
 
   reconcile-statement-s16:
-    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only }}
+    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only }}
     name: Сверка единственного расхода S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -333,7 +381,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - 9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f' < scripts/research/inspect-statement-screening-s16.py
 
   deploy:
-    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
