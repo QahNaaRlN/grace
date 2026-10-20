@@ -16,7 +16,8 @@ def verified(data, sha):
 if __name__ == '__main__':
     try:
         raw = Path(sys.argv[2]).read_bytes()
-        assert len(raw) <= 1048576 and verified(json.loads(raw), sys.argv[1])
+        if len(raw) > 1048576 or not verified(json.loads(raw), sys.argv[1]):
+            raise ValueError("unverified")
     except Exception:
         print('screening_exact_source_ci_unverified')
         sys.exit(1)
