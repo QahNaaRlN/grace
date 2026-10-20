@@ -1,7 +1,9 @@
 # SPEC-0055 / S1.6: восстановление учёта единственного запроса
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started.
+- Статус: accepted; implementation_status: not_started.
+- Принят владельцем 2026-10-21: «Утвердить сверку и восстановление учёта».
+  Разрешены реализация, read-only сверка и точный settlement одной reservation.
 - Основание: [S1.6 evidence](0055-s16-evidence.md), run `39496554051`,
   source `9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f`.
 - Цель: подтвердить фактический расход через GET metadata и учесть его ровно
@@ -14,7 +16,7 @@
 пусты и actualMicros неизвестен. Reservation уникальна и uncertain, общий ledger
 блокирует новые платные вызовы. Это не доказательство нулевого расхода.
 
-## Предлагаемый контракт
+## Принятый контракт
 
 1. Только `/opt/grace/shared/statement-screening-s16-gemini31-diag-20261021.json`
    и его `.started` marker. Проверить source SHA, приватность 0600/отсутствие
