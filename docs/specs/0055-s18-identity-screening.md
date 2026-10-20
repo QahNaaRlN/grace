@@ -59,7 +59,8 @@ screening трёх прежних репозиторных синтетичес�
    Любая конфликтующая комбинация не запускает платный/deploy job.
    Сохраняются production concurrency и существующий exclusive file lock.
 3. Полный source SHA фиксируется после реализации. Перед оплатой должны пройти
-   **все jobs CI exact SHA**, а также post-merge gates №79. Binary, SOURCE_SHA,
+   **все jobs CI exact SHA** (Quality gates, PostgreSQL integration и три
+   image builds, без skipped), а также post-merge gates №79. Binary, SOURCE_SHA,
    runner и три PDF связаны manifest/SHA256SUMS; fixture hashes сверяются
    существующим screening CLI. Никаких личных документов и ключей в bundle.
 4. Preflight без POST выполняется до расходования marker. Если он не прошёл,

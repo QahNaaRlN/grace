@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.6: один новый прогон с диагностикой S1.5
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (N1–N4 PASS); live_status: FAIL selected_model, billing uncertain.
+- Статус: accepted; implementation_status: local_verified (N1–N4 PASS); live_status: FAIL selected_model; billing_status: reconciled (2026-10-21 02:13:09 +05:00).
+- Unknown billing был исходным состоянием после smoke; [отдельная сверка и settlement](0055-s16-reconciliation-evidence.md) завершены, shared uncertain block снят.
 - [Исполнение и N1–N5](0055-s16-evidence.md).
 - Утверждение: «Утвердить S1.6 и один ограниченный smoke», 2026-10-21.
 - Основание: владелец слил [PR №78](https://github.com/QahNaaRlN/grace/pull/78),
