@@ -2066,6 +2066,18 @@ export interface components {
                 reason: string;
             }[];
         };
+        StatementDraftMapping: {
+            /** @enum {string} */
+            version: "statement-review-mapping.v1";
+            /** Format: int64 */
+            revision: number;
+            /** @enum {string} */
+            status: "complete" | "reconstructed_partial" | "unavailable";
+            proposal: components["schemas"]["StatementProposal"] | null;
+            unmappedSpanIds: string[] | null;
+            unclassifiedSpanIds: string[];
+            issues: string[];
+        };
         BankStatement: {
             sizeBytes: number;
             publishedRows: number;
@@ -2088,6 +2100,7 @@ export interface components {
             pageCount: number;
             review: components["schemas"]["StatementReview"] | null;
             layout?: components["schemas"]["StatementLayout"];
+            draftMapping?: components["schemas"]["StatementDraftMapping"];
         };
         StatementEdit: {
             expectedRevision: number;

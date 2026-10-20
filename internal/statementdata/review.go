@@ -55,6 +55,8 @@ func ValidateProposal(d Document, p Proposal, reviewedPages []int, rolesConfirme
 				if prev := used[s.ID]; prev != "" {
 					return ev, errors.New("overlapping_evidence")
 				}
+			}
+			for _, s := range ev.Spans {
 				used[s.ID] = role
 			}
 		}
@@ -276,8 +278,10 @@ func ValidateProposal(d Document, p Proposal, reviewedPages []int, rolesConfirme
 		}
 	}
 	uncovered := 0
+	out.unmappedSpanIDs = []string{}
 	for _, s := range d.Spans {
 		if used[s.ID] == "" {
+			out.unmappedSpanIDs = append(out.unmappedSpanIDs, s.ID)
 			uncovered++
 		}
 	}

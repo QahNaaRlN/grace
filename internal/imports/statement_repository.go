@@ -16,12 +16,12 @@ import (
 func (r *Repository) SetPDFExtractor(e PDFExtractor) { r.extractor = e }
 func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statement, error) {
 	var s Statement
-	var layout, review, pages []byte
-	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
+	var layout, review, pages, mapping []byte
+	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,s.mapping_snapshot,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
 	if lock {
 		query += " FOR UPDATE OF s"
 	}
-	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &s.PublishedRows, &s.ExcludedRows)
+	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &mapping, &s.PublishedRows, &s.ExcludedRows)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return s, ErrNotFound
 	}
@@ -41,6 +41,7 @@ func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statem
 			return s, e
 		}
 	}
+	s.DraftMapping = statementdata.MappingFor(s.Layout, s.Review, mapping, s.Revision)
 	return s, nil
 }
 func statementAccount(ctx context.Context, tx pgx.Tx, id string) error {
@@ -544,7 +545,11 @@ func (r *Repository) MaterializeStatementInTx(ctx context.Context, tx pgx.Tx, id
 	}
 
 	encoded, _ = json.Marshal(review)
-	_, e = tx.Exec(ctx, "UPDATE statement_sources SET batch_id=$2,review=$3,revision=revision+1,status='reviewing',roles_confirmed=false,reviewed_pages='[]' WHERE id=$1", id, batch, encoded)
+	snapshot, e := json.Marshal(statementdata.NewMappingSnapshot(*s.Layout, proposal, review, origin, s.Revision+1))
+	if e != nil {
+		return s, e
+	}
+	_, e = tx.Exec(ctx, "UPDATE statement_sources SET batch_id=$2,review=$3,revision=revision+1,status='reviewing',roles_confirmed=false,reviewed_pages='[]',mapping_snapshot=$4 WHERE id=$1", id, batch, encoded, snapshot)
 	if e != nil {
 		return s, e
 	}

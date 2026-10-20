@@ -8,8 +8,14 @@ Columns **19/19**, cards **20/20**; exact-image/runtime flag/current policy
 13:52:24 +05:00 подтвердила enabled и activation readiness без unknown usage.
 [Current evidence D1–D5](specs/0055-s12-evidence.md). Один отдельно утверждённый
 S1.2 smoke использован, без повторов или личных документов. Прежние FAIL
-сохранены в [истории](specs/0055-activation-evidence.md). Следующий шаг — ваша
-проверка PDF в «Импортах» с новым preview/consent и явным financial confirmation.
+сохранены в [истории](specs/0055-activation-evidence.md). Owner-test выполнен
+агентом: проверка строк PASS, end-to-end импорт **blocked**
+из-за header turnover mismatch, неполного source coverage и пустого manual editor.
+Read-only run [39414784421](https://github.com/QahNaaRlN/grace/actions/runs/39414784421)
+подтвердил header mismatch при согласованных row sums; гипотеза соседнего
+числового префикса не подтверждена. Следующий пакет —
+[исправление review](specs/0055-review-repair.md), **accepted / implemented_locally**; R1–R7 PASS, R8 NOT_RUN;
+финансовое подтверждение и успешный owner E2E не выполнены.
 Полная AC12 qualification, сравнение Jev/cascade и owner functional acceptance
 не завершены. SPEC-0019 остаётся draft; номер 0025 не использован.
 Унаследованные замечания ShellCheck сохранены в evidence SPEC-0050.
@@ -26,12 +32,14 @@ S1.2 smoke использован, без повторов или личных �
 Реализация интегрирована PR #64; protected activation/rollback — PR #65.
 Ручной путь и Statement AI доступны в production `7b2deea`. S1.2 прошёл оба
 synthetic cases и actual runtime checks. Неизвестный исторический расход сверён
-2026-10-19; следующий gate — owner UI/private test, затем отдельный full corpus.
+2026-10-19. Agent-run private UI test: row checks PASS, E2E blocked;
+[review repair](specs/0055-review-repair.md) принят и проверен локально (R1–R7 PASS), затем повторный
+owner workflow и отдельно full corpus.
 SPEC-0054 ранее выпущена как `a89a855` (run `39151600396`, 2026-10-18).
 
 | Направление | Сделано | Осталось / зависимость |
 | --- | --- | --- |
-| Выпуск `main` | `7b2deea`: S1.2 PR #74, CI/Delivery/deploy/runtime/public PASS 2026-10-20 13:51:07 +05:00 | Owner UI/private test; docs follow-up не меняет production code SHA |
+| Выпуск `main` | `7b2deea`: S1.2 PR #74, CI/Delivery/deploy/runtime/public PASS 2026-10-20 13:51:07 +05:00 | Owner-test E2E blocked; review repair verified locally, pending release; docs не меняют production code SHA |
 | ИИ (OpenRouter) | Statement AI enabled; columns19/19, cards20/20; pinned policy/global kill switch/consent/shared budget сохранены | Full AC12/Jev/cascade/corpus и SPEC-0056 registry отдельно |
 | Напоминания | Durable outbox за 3 и 1 день, verified email, общий лимит | Подтвердить production SMTP и сверить reservations с облачным счётом |
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
@@ -289,10 +297,13 @@ and cancellation guards; локальные/CI/Delivery gates PASS, [PR #70](htt
 их принятых scope. Анализ одной кнопкой не обещает универсальный расчёт грейса
 до реализации подтверждённых правил конкретных действующих продуктов.
 
-Ближайший срез — owner UI/private test после подтверждённого включения
-Statement AI в `7b2deea` 2026-10-20. Загрузить PDF через «Импорты», получить
-новый preview и отдельно разрешить inference, затем проверить и подтвердить
-финансовые строки. Код SPEC-0055 уже в main/production. Отдельно
+Ближайший срез — review/публикация и выпуск принятого
+[review repair](specs/0055-review-repair.md) (R1–R7 PASS локально;
+[evidence](specs/0055-review-repair-evidence.md)), затем повторить owner workflow
+после deploy. R8 пока NOT_RUN.
+Текущий agent-run private test остановлен на header/coverage/manual-editor
+blockers; повторный inference не является способом их скрыть. Код SPEC-0055
+уже в main/production, Statement AI включён в `7b2deea` 2026-10-20. Отдельно
 остаются AC12 (репрезентативный корпус/русский язык, качество строк и колонок,
 omissions/abstentions, latency, LLM-only/Jev/cascade), owner acceptance,
 кредитные/мультивалютные PDF и OCR. Synthetic activation smoke не заменяет AC12.

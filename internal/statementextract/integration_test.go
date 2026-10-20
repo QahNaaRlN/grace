@@ -264,6 +264,14 @@ func TestStatementExtractionConsentMeteringReplay(t *testing.T) {
 		t.Fatal("owner role/page gate skipped", e)
 	}
 
+	if source.DraftMapping == nil || source.DraftMapping.Status != "complete" || source.DraftMapping.Proposal == nil {
+		t.Fatal("model mapping not retained")
+	}
+	var mappingOrigin string
+	if e = pool.QueryRow(ctx, "SELECT mapping_snapshot->>'origin' FROM statement_sources WHERE id=$1", source.ID).Scan(&mappingOrigin); e != nil || mappingOrigin != "model" {
+		t.Fatal("model mapping provenance", e)
+	}
+
 	// Every AI resource is owner-scoped even when the other principal is admin.
 	var otherID string
 	if e = pool.QueryRow(ctx, "INSERT INTO users(display_name,role) VALUES('Statement AI other admin','admin') RETURNING id::text").Scan(&otherID); e != nil {

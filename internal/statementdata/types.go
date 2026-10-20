@@ -128,7 +128,8 @@ type Reconciliation struct {
 	Warnings          []string `json:"warnings"`
 }
 type Review struct {
-	Rows           []Row          `json:"rows"`
-	Header         Header         `json:"header"`
-	Reconciliation Reconciliation `json:"reconciliation"`
+	unmappedSpanIDs []string
+	Rows            []Row          `json:"rows"`
+	Header          Header         `json:"header"`
+	Reconciliation  Reconciliation `json:"reconciliation"`
 }

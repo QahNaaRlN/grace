@@ -1,3 +1,8 @@
+[SPEC-0055 — исправление review](0055-review-repair.md) — **accepted**, 2026-10-20,
+implementation **implemented_locally**, R1–R7 PASS; R8 NOT_RUN. Пакет после owner-test: наблюдаемая сверка
+итогов, сохранение canonical mapping/coverage и редактирование текущих строк;
+legacy service не восстанавливается догадкой. Владелец утвердил конкретный контракт («да, утверждаю»); [локальные evidence](0055-review-repair-evidence.md). Release/deploy и owner acceptance остаются отдельно.
+
 [S1.2 description separators](0055-s12-description-separators.md) — accepted, **deployed_owner_test** (PR #74 / `7b2deea`), 2026-10-20. Один smoke `39396162864`: columns 19/19, cards 20/20; actual image/runtime/current policy/public/auth PASS. **Statement AI включён** 13:51:07 +05:00 / 08:51:07 UTC. [D1–D5 evidence](0055-s12-evidence.md); owner private test и full AC12 остаются открыты. Исторические S1/S1.1 FAIL сохранены.
 
 [S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation integrated PR #71; S1.1 PR #73 был выпущен `ef782ec` с AI false; текущий owner-test S1.2 `7b2deea` enabled. Полная qualification остаётся отдельно.

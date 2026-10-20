@@ -398,6 +398,11 @@ func TestStatementPartialConfirmationAndDirectSQLCleanup(t *testing.T) {
 	if e != nil || s.DeletedAt != nil || s.Layout == nil || s.PublishedRows != 1 || s.Review.Reconciliation.FinancialCoverage.Status != "incomplete" {
 		t.Fatal("partial confirmation discarded original", s, e)
 	}
+	_, e = r.ManualStatementDraft(ctx, s.ID, "published-mapping-regroup", StatementManualDraft{ExpectedRevision: s.Revision, Proposal: proposal, Reason: "Must not regroup published rows"})
+	requireCode(t, e, "statement_draft_published")
+	if _, err := p.Exec(ctx, "UPDATE statement_sources SET mapping_snapshot='{}' WHERE id=$1", s.ID); err == nil {
+		t.Fatal("published mapping was mutable through SQL")
+	}
 	batch, e = r.Batch(ctx, batch.ID)
 	if e != nil {
 		t.Fatal(e)
