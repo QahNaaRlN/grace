@@ -89,7 +89,11 @@ not_started. [План качества](../research/statement-quality/next-qual
 связывает подбор с регрессией неверного выбора БИК/КПП вместо оборотов.
 До shortlist требуется сверка актуальных официальных model/provider metadata,
 цен, structured-output возможностей и privacy/endpoint ограничений с датой
-проверки. Конкретные современные модели пока не выбраны и не квалифицированы.
+проверки. [Metadata shortlist 2026-10-20](../research/statement-quality/model-shortlist-2026-10-20.md)
+содержит Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; качество и
+latency UNVERIFIED, ни одна новая пара не квалифицирована. Accepted S1.3
+реализует только regression/role guard и исследование metadata; registry этой
+SPEC-0056 по-прежнему not_started.
 Сравнение ведётся на одинаковом versioned corpus: сначала обязательные quality
 и privacy gates, затем стоимость успешного документа и latency. Дата выпуска
 сама по себе не даёт преимущества или допуска. Замена pinned policy и новый

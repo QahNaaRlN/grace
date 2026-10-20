@@ -262,8 +262,12 @@ Origin. Спецификации извлечения определяют со�
 [Следующий пакет качества](research/statement-quality/next-quality-package.md)
 фиксирует последовательность: synthetic regression → исправление grounding →
 сравнение актуальных model/endpoint пар → отдельно согласованный AI smoke →
-полный corpus. Статус: **planned**, реализация **not_started**; конкретные
-модели ещё не выбраны. Новизна модели не заменяет качество; сравниваются
+полный corpus. [S1.3](specs/0055-s13-turnover-roles.md) **accepted** прямым поручением
+«оформи спеку и вперед», реализация **local_verified**,
+[T1–T6 PASS](specs/0055-s13-evidence.md), не deployed.
+[Metadata shortlist](research/statement-quality/model-shortlist-2026-10-20.md):
+Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары
+**unqualified**, production policy не меняется. Новизна модели не заменяет качество; сравниваются
 точность ролей/строк, полнота, стоимость успешного документа и задержка.
 Production policy пока прежняя; новые платные вызовы этим поручением не запущены.
 

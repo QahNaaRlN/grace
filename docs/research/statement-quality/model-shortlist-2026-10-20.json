@@ -1,0 +1,118 @@
+{
+  "version": "statement-model-shortlist.v1",
+  "checkedAtUtc": "2026-10-20T13:31:16.615008+00:00",
+  "sources": [
+    {
+      "url": "https://openrouter.ai/api/v1/models",
+      "sha256": "15468005917cfe1f747b78369e69a6d248a0337dd61586e8b31168d7403b5bbc"
+    },
+    {
+      "url": "https://openrouter.ai/api/v1/endpoints/zdr",
+      "sha256": "7cc27240da90a8bee900fea07da4186779cda517e3762d205cd24207efa42b56"
+    }
+  ],
+  "inputBound": 100000,
+  "outputBound": 16000,
+  "providerCalls": 0,
+  "note": "Public metadata snapshot only. No quality qualification, production policy update or regional residency guarantee.",
+  "candidates": [
+    {
+      "model": "google/gemini-2.5-flash",
+      "endpoint": "google-vertex/eu",
+      "canonicalSlug": "google/gemini-2.5-flash",
+      "modelCreatedUtc": "2025-06-17T15:01:28+00:00",
+      "source": "https://openrouter.ai/api/v1/models/google/gemini-2.5-flash/endpoints",
+      "sourceSha256": "d8491b34c38662ed15bfdc624c264121488eabb950b2ce2e73fe957464b70777",
+      "providerName": null,
+      "endpointStatus": null,
+      "price": null,
+      "modelReasoning": {
+        "mandatory": false
+      },
+      "profileMetadataCompatible": false,
+      "listedZdr": false,
+      "quality": "UNVERIFIED",
+      "latency": "UNVERIFIED",
+      "productionEligible": false,
+      "reasons": [
+        "exact_endpoint_not_listed",
+        "exact_pair_not_in_zdr_snapshot",
+        "current_s13_quality_unverified"
+      ]
+    },
+    {
+      "model": "google/gemini-3.1-flash-lite",
+      "endpoint": "google-vertex/eu",
+      "canonicalSlug": "google/gemini-3.1-flash-lite-20260507",
+      "modelCreatedUtc": "2026-05-07T15:47:08+00:00",
+      "source": "https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite-20260507/endpoints",
+      "sourceSha256": "66fba94547d7b47fcd7e5620b0f5d3afd4197054e0fce2eea996a9f10fecd8ec",
+      "providerName": "Google",
+      "endpointStatus": 0,
+      "price": {
+        "inputUsdPerMillion": "0.275000000",
+        "outputUsdPerMillion": "1.65000000",
+        "maximumProviderMicrosPerDocument": 53900,
+        "feesIncluded": false
+      },
+      "modelReasoning": {
+        "mandatory": false,
+        "default_enabled": true,
+        "supported_efforts": [
+          "high",
+          "medium",
+          "low",
+          "minimal",
+          "none"
+        ],
+        "default_effort": "minimal"
+      },
+      "profileMetadataCompatible": true,
+      "listedZdr": true,
+      "quality": "UNVERIFIED",
+      "latency": "UNVERIFIED",
+      "productionEligible": false,
+      "reasons": [
+        "not_in_current_production_allowlist",
+        "current_s13_quality_unverified"
+      ]
+    },
+    {
+      "model": "inception/mercury-3",
+      "endpoint": "inception",
+      "canonicalSlug": "inception/mercury-3-20261019",
+      "modelCreatedUtc": "2026-10-16T13:45:37+00:00",
+      "source": "https://openrouter.ai/api/v1/models/inception/mercury-3-20261019/endpoints",
+      "sourceSha256": "e345d932d0e585cf9ae536f0414c3099a45586929b711c8ff425ed21a3b30c99",
+      "providerName": "Inception",
+      "endpointStatus": 0,
+      "price": {
+        "inputUsdPerMillion": "0.1000000",
+        "outputUsdPerMillion": "0.35000000",
+        "maximumProviderMicrosPerDocument": 15600,
+        "feesIncluded": false
+      },
+      "modelReasoning": {
+        "mandatory": false,
+        "default_enabled": true,
+        "supported_efforts": [
+          "high",
+          "medium",
+          "low",
+          "none"
+        ],
+        "default_effort": "medium"
+      },
+      "profileMetadataCompatible": true,
+      "listedZdr": true,
+      "quality": "UNVERIFIED",
+      "latency": "UNVERIFIED",
+      "productionEligible": false,
+      "reasons": [
+        "different_provider_region_profile_requires_review",
+        "not_in_current_production_allowlist",
+        "current_s13_quality_unverified"
+      ]
+    }
+  ]
+}

@@ -1,9 +1,10 @@
 # Statement AI: регрессия ролей и обновление моделей
 
 - Дата: 2026-10-20 (Asia/Yekaterinburg).
-- Статус: planned; implementation_status: not_started.
+- Статус: направление принято; реализация S1.3 local_verified, не deployed.
 - Поручение владельца: «Добавь, еще нужно выбирать более современные и эффективные модели».
-- Принято направление работы; технический контракт исправления ещё не принят.
+- [Технический контракт S1.3](../../specs/0055-s13-turnover-roles.md) accepted прямым
+  поручением «оформи спеку и вперед»; paid evaluation остаётся следующим пакетом.
 - Основание: [production/R8 evidence](../../specs/0055-review-repair-evidence.md),
   [draft SPEC-0056](../../specs/0056-statement-model-selection.md).
 

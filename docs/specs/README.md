@@ -1,6 +1,7 @@
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
 — **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;
-implementation **not_started**. Go role guard + RU regression + financial-label
+implementation **local_verified**, [T1–T6 evidence](0055-s13-evidence.md).
+Go role guard + RU regression + financial-label
 redaction + публичная metadata современных кандидатов. Без paid calls,
 production policy switch или deployment; SPEC-0056 registry остаётся draft.
 

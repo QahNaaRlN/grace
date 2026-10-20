@@ -284,6 +284,7 @@ func applyStatementFlags(s *Statement) {
 	if s.Review == nil {
 		return
 	}
+	statementdata.ApplyTurnoverRoleChecks(s.Layout, s.Review)
 	coverage := statementdata.Check{Status: "incomplete", Reasons: []string{}}
 	if s.PublishedRows == len(s.Review.Rows) && s.ExcludedRows == 0 {
 		coverage.Status = "represented"

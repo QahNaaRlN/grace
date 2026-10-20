@@ -243,5 +243,8 @@ OpenAPI и сгенерированные типы. Финансовое ядр�
 ## Следующее поручение — 2026-10-20
 
 Добавлены [регрессия ролей банковских реквизитов и подбор современных моделей](next-quality-package.md).
-Статус planned / implementation not_started; существующие результаты и счётчики
-corpus не изменены. Новых fixtures, model calls или qualification PASS пока нет.
+[S1.3](../../specs/0055-s13-turnover-roles.md) accepted прямым поручением
+«оформи спеку и вперед», [реализация local_verified](../../specs/0055-s13-evidence.md), не deployed. Добавлен новый RU
+development fixture с independent golden; старый 24-case manifest и его
+исторические счётчики не переписаны. [Shortlist metadata](model-shortlist-2026-10-20.md)
+не является qualification. Model calls = 0; полного нового campaign нет.

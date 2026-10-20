@@ -309,6 +309,7 @@ func ValidateProposal(d Document, p Proposal, reviewedPages []int, rolesConfirme
 	out.Reconciliation = Reconcile(out.Rows, out.Header)
 	out.Reconciliation.RowCoverage = coverage
 	out.Reconciliation.Blockers = append(out.Reconciliation.Blockers, blockers...)
+	ApplyTurnoverRoleChecks(&d, &out)
 	return out, nil
 }
 
