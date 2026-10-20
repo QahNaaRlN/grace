@@ -68,9 +68,6 @@ func (g groundingEvidence) check(ev Evidence) bool {
 		} else if i > 0 && !orderedSpan(ev.Spans[i-1], s) {
 			return false
 		}
-		if i > 0 && samePrintedLine(ev.Spans[i-1], s) && s.Box.XMin < ev.Spans[i-1].Box.XMin {
-			return false
-		}
 		parts = append(parts, s.Text)
 	}
 	return ev.Literal == strings.Join(parts, " ")

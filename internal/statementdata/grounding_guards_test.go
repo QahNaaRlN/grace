@@ -275,3 +275,22 @@ func TestDescriptionBoundaryOmissionsRemainOutsideGapGuarantee(t *testing.T) {
 		t.Fatal("boundary evidence auto-expanded")
 	}
 }
+
+func TestDescriptionUsesExtractorOrderWithoutInferringWritingDirection(t *testing.T) {
+	d, p := gapFixture("-")
+	p.Rows[0].Description = Selection{"desc1", "desc2", "desc3", "desc4", "desc5"}
+	p.Service = nil
+	for i := 3; i < len(d.Spans); i++ {
+		x := float64(120 - (i-3)*20)
+		d.Spans[i].Box.XMin = x
+		d.Spans[i].Box.XMax = x + 19
+	}
+	r, e := ValidateProposal(d, p, []int{1}, true, "")
+	if e != nil || len(r.Rows[0].Issues) > 0 {
+		t.Fatal("authentic extractor word order rejected", e, r)
+	}
+	ApplyGroundingChecks(nil, &r)
+	if len(r.Rows[0].Issues) > 0 || r.Rows[0].Description != "OWN TRANSFER - REVIEW SEMANTICS" {
+		t.Fatal("retained reading direction inferred", r)
+	}
+}

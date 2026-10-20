@@ -7,7 +7,7 @@ Implementation status: local_verified; интеграция и deployment не �
 
 | ID | Исполняемое подтверждение |
 | --- | --- |
-| G1 | `go test ./internal/statementdata` PASS: пропуск `-`, `+`, слова и placeholder внутри одной линии даёт description_evidence_gap при service и unmapped; исходные proposal/literal/money/debit totals сохранены. Line/block/page transitions и отдельный итоговый merchant text допустимы, unknown не заполняется. NaN/нулевая/повторная/обратная/несовпадающая metadata и missing retained evidence => description_evidence_unverified. Дедупликация fresh/read checks PASS |
+| G1 | `go test ./internal/statementdata` PASS: пропуск `-`, `+`, слова и placeholder внутри одной линии даёт description_evidence_gap при service и unmapped; исходные proposal/literal/money/debit totals сохранены. Line/block/page transitions, исходный Word-порядок без монотонности X и отдельный итоговый merchant text допустимы, unknown не заполняется. NaN/нулевая/повторная/обратная/несовпадающая metadata и missing retained evidence => description_evidence_unverified. Дедупликация fresh/read checks PASS |
 | G2 | Та же unit suite: обе роли, все пять EN/RU phrases для каждой, регистр/пунктуация, opposite/unknown/available/bank/turnover/digit-bearing labels, соседняя/удалённая/чужая страница/колонка/обратная/перенесённая подпись, отсутствие/дубли evidence, противоречие literal/value/layout. BIC/KPP/INN/SWIFT и БИК/КПП/ИНН в контексте отклонены. Parsed values/evidence не меняются, nil parsing и прежний ambiguous_money сохранены. Split signed row/book money `-1 234.56` PASS |
 | G3 | `scripts/test-bank-statements.sh` PASS: TestStatementGroundingLegacyPreviewAndConfirmation, 9 сценариев gap/book_role/missing_evidence × full/deleted/expired. Fresh и forged legacy review, rolesConfirmed=true, cleared blockers/matched, actual HTTP read/preview/confirm. Старый good preview =>409 preview_changed, новый blocked preview =>422 preview_blocked. Postings/events count неизменен, JSON review и revision не меняются при чтении/preview/failed confirm. Owner isolation/revision conflict/owner-renamed import description PASS |
 | G4 | `go test ./internal/statementqualification ./cmd/statement-admin` и real-helper qualification PASS: старые scorer tags отвергаются при правильном заново вычисленном digest, current profiles принимаются. Closed new diagnostics и row_1..row_5000 prefix не пропускают private text/ID. Полные fake-provider columns19/cards20/RU23 проходят прежние сильные golden assertions. Historical replay v1 =>UNVERIFIED при текущем профиле, а current validator на фактическом S1.8 trace добавляет row_2:description_evidence_gap: current16/19 при historical17/19. Исходные projection/replay сохранены |
@@ -52,7 +52,7 @@ unverified; исходный PDF не восстанавливается дог�
 В первом SQL fixture позитивная mapping проверялась до owner page/role review;
 исправлена фаза fixture, production guard не ослаблялся. В финальном проходе
 все девять сценариев и остальные SQL/restore/down-guard regressions PASS.
-После перехода helper на один индекс повторены Go и bank suites. Финальное
+После перехода helper на один индекс и удаления лишнего предположения о возрастании X повторены Go и bank suites. Финальное
 vet выполнено на обновлённом коде; изменения Web ограничены подписью issues.
 
 Журналы `/tmp/grace-s110-make.log`, `/tmp/grace-s110-go-final.log`,
