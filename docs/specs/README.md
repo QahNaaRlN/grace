@@ -1,9 +1,15 @@
+Текущее ограничение — **2026-10-21 01:59:30 +05:00**: единственный S1.6
+остановился до первой оценки с `selected_model`. HTTP200, ID сохранён приватно,
+расход пока не подтверждён, shared ledger uncertain блокирует платные calls.
+[Исполнение](0055-s16-evidence.md); [восстановление учёта](0055-s16-reconciliation.md)
+— draft/not_started, без inference. Повторов и изменения production policy нет.
+
 Интеграция — **2026-10-21**: PR №78 слит, `29a28a7`; S1.3/S1.4/S1.5 в main.
 [Post-merge evidence](0055-pr78-postmerge.md): main CI 5/5 PASS, Delivery PASS,
-локальные make test/go vet/diff check PASS; deployment не выполнялся. [S1.6](0055-s16-diagnostic-screening.md) — accepted/not_started,
-владелец утвердил реализацию и один новый ограниченный smoke.
+локальные make test/go vet/diff check PASS; deployment не выполнялся. [S1.6](0055-s16-diagnostic-screening.md) — accepted/local_verified (N1–N4 PASS), live FAIL selected_model;
+владелец утвердил реализацию и один запуск, разрешение израсходовано.
 
-Текущее состояние, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
+Исторический срез, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
 provider stage до первого score; quality UNVERIFIED. Расход подтверждён через
 GET generation metadata и учтён; shared uncertain block снят.
 Runtime Statement AI flag enabled сохранён, production-модель не менялась.

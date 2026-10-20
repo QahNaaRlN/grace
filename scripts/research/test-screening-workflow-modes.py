@@ -36,7 +36,7 @@ for old, new, inspect, reconcile, action in itertools.product([False, True], [Fa
         assert active == ['deploy']
     count += 1
 for key in ('statement_screening_only', 'statement_screening_s16_only'):
-    # Description lines have eight spaces, not the six-space input boundary.
+    # Описание имеет восемь пробелов отступа, граница входного параметра — шесть.
     block = re.search(r'      '+key+r':\n(.*?)(?=^      [a-z_]+:|^permissions:)', source, re.M | re.S)[1]
     assert 'default: false' in block and 'type: boolean' in block
 assert 'cp deployments/production/statement-screening-s16.sh' in source

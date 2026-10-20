@@ -1,13 +1,21 @@
+Текущее ограничение — **2026-10-21 01:59:30 +05:00**:
+[S1.6](specs/0055-s16-evidence.md) выполнен один раз, **FAIL selected_model** до
+первой оценки. HTTP200, приватный ID сохранён; расход unknown, shared ledger
+uncertain блокирует платные AI calls. Cards/RU не отправлялись. Image/health
+сохранены, деплоя и изменения policy/flags нет, повтор не разрешён.
+Следующий [контракт восстановления учёта](specs/0055-s16-reconciliation.md)
+— draft/not_started, только GET metadata и точная settlement, без inference.
+
 Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
 слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
 [Проверки после слияния](specs/0055-pr78-postmerge.md): main CI 5/5 PASS,
 локальные make test/go vet/diff check PASS; Delivery `39490817275` PASS.
 Образы опубликованы, деплой приложения не выполнялся.
-Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — accepted/implementing:
+Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — accepted/local_verified, live FAIL selected_model:
 один новый smoke с диагностикой, не более 3 вызовов / $0.1617 provider cap,
-без переключения модели; владелец утвердил реализацию и этот единственный запуск.
+без переключения модели; владелец утвердил реализацию и этот единственный запуск; он выполнен, повтор не разрешён.
 
-Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
+Состояние до S1.6 — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
 [единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
 FAIL до первого score; quality UNVERIFIED. Предоставленный владельцем generation
 ID сверён через API, подтверждённый расход учтён, shared uncertain block снят.
