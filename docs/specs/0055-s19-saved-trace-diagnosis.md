@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.9: диагностика сохранённого S1.8 без inference
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified; diagnosis_status: PASS (D1–D5).
+- Статус: accepted; implementation_status: integrated (PR №81, 5981449); diagnosis_status: PASS (D1–D5).
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.9 и бесплатную диагностику».
   Разрешены D1–D4 и один read-only D5; provider inference=0.
 - Worktree: `statement-trace-diagnosis`; ветка `codex/statement-trace-diagnosis`.
@@ -13,7 +13,7 @@
 replay совпал с исходным FAIL17/19. Подтверждены пропуск дефиса строки2 и
 знаки дефиса из заголовков вместо отсутствующих book balances; два
 ambiguous_money. Новых inference/ledger writes/deployment нет. S1.8 FAIL
-сохраняется; source CI/head CI и интеграция — отдельные gates.
+сохраняется; source/head/main CI5/5 и post-merge local gates PASS; [интеграция](0055-pr81-postmerge.md).
 
 ## Проблема и пользовательский результат
 

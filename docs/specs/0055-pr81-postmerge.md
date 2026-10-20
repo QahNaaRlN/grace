@@ -13,12 +13,12 @@ head PR `10869fb3da3580c3b1bd2ca4042f2947cf30eb84`.
 | Vet / diff | `go vet ./cmd/... ./internal/... ./scripts/research/s19-replay`, `git diff --check` exit0 |
 | Diagnostic source | [CI39510485510](https://github.com/QahNaaRlN/grace/actions/runs/39510485510), ecfa850: SUCCESS |
 | Final PR head | [CI39511512571](https://github.com/QahNaaRlN/grace/actions/runs/39511512571), 10869fb: SUCCESS |
-| Merge main | [CI39512501902](https://github.com/QahNaaRlN/grace/actions/runs/39512501902), 5981449: IN_PROGRESS, Quality + три image builds PASS, PostgreSQL integration pending |
-| Delivery merge | Пока UNVERIFIED; прежний run39508797773 относится к №80, не №81 |
+| Merge main | [CI39512501902](https://github.com/QahNaaRlN/grace/actions/runs/39512501902), 5981449: SUCCESS, все5/5 jobs PASS |
+| Delivery merge | [Delivery39513380470](https://github.com/QahNaaRlN/grace/actions/runs/39513380470) SUCCESS на exact merge SHA; это публикация образов, не deployment |
 
 Журналы `/tmp/grace-pr81-postmerge-make.log`, `/tmp/grace-pr81-postmerge-vet.log`.
-Основная копия чиста после локальных gates. До завершения main CI полный
-post-merge PASS не заявляется. Слияние не является deployment.
+Основная копия чиста после локальных gates. Main CI все5/5 и Delivery PASS
+подтверждены 2026-10-21 04:12 +05:00. S1.9 integrated. Слияние не является deployment.
 
 S1.9 diagnosis PASS сохраняется: [D1–D5 evidence](0055-s19-evidence.md),
 единственный read-only39510628212; новых dispatch/inference в post-merge сессии

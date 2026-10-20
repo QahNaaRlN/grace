@@ -64,6 +64,10 @@ Source CI относится к исполняемому diagnostic source ecfa8
 
 PR №81 слит владельцем, `5981449`, 2026-10-21 04:04:03 +05:00.
 [Post-merge evidence](0055-pr81-postmerge.md): local gates PASS, source ecfa850
-и final-head10869fb CI SUCCESS. Merge main CI39512501902 выполняется.
+и final-head10869fb CI SUCCESS. Merge main CI39512501902 все5/5 PASS; Delivery39513380470 SUCCESS.
 Прежние pending снимки выше — исторические, не текущий статус head.
 Нового read-only dispatch, inference и deployment после слияния нет.
+
+S1.9 implementation integrated: merge source совпадает с head PR, post-merge
+make test/vet/diff PASS, основная копия clean. Срез подтверждён 04:12 +05:00.
+S1.8 quality FAIL сохраняется; новая модель/paid run не разрешены интеграцией.
