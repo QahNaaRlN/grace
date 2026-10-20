@@ -51,7 +51,7 @@ docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-
  --network=none --memory=512m --pids-limit=16 \
  -v "${statement_test_binary}.s19:/run/s19.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
  -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
- -w /src/scripts/research/s19-replay alpine:3.22 /run/s19.test -test.run '^TestS19RealHelperReplay$' -test.v
+ -w /src/scripts/research/s19-replay alpine:3.22 /run/s19.test -test.run '^TestS19(RealHelperReplay|RetainedReplay)$' -test.v
 rm -f "${statement_test_binary}.s19"
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -p 1 -tags=integration ./internal/imports ./internal/statementextract -run Statement -count=1 -v

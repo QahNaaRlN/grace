@@ -4,7 +4,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -153,5 +155,85 @@ func TestS19RealHelperReplay(t *testing.T) {
 				t.Fatal("different source accepted")
 			}
 		})
+	}
+}
+
+// The actual S1.8 response survives as locator-only synthetic evidence.
+func TestS19RetainedReplay(t *testing.T) {
+	socket := os.Getenv("TEST_PDF_EXTRACTOR_SOCKET")
+	if socket == "" {
+		t.Skip("isolated helper required")
+	}
+	raw, e := os.ReadFile("../../../docs/research/statement-quality/s18-saved-trace-projection.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var p projection
+	if json.Unmarshal(raw, &p) != nil {
+		t.Fatal("invalid retained projection")
+	}
+	helper, e := pdfextract.NewClient(socket)
+	if e != nil {
+		t.Fatal(e)
+	}
+	pdf, e := os.ReadFile("../../../internal/pdfextract/testdata/columns.pdf")
+	if e != nil {
+		t.Fatal(e)
+	}
+	d, e := helper.Extract(context.Background(), pdf)
+	if e != nil {
+		t.Fatal(e)
+	}
+	out, e := replay(p, d, statementqualification.FixtureHash("columns"))
+	if e != nil || !out.Verified || out.Result.Correct != 17 {
+		t.Fatal("saved failure no longer reproduces", e)
+	}
+	expected := []string{"openingBookBalance:ambiguous_money", "closingBookBalance:ambiguous_money"}
+	if !reflect.DeepEqual(out.Result.Validation, expected) || out.Descriptions[1].Actual != "OWN TRANSFER REVIEW SEMANTICS" {
+		t.Fatal("changed cause", out)
+	}
+	plan, e := statementextract.BuildScreeningPlan(d, statementextract.ScreeningPolicy())
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, id := range []string{"p1-b1-l1-w3", "p2-b1-l1-w3", "p2-b8-l1-w3"} {
+		found := false
+		for _, span := range d.Spans {
+			if span.ID == id {
+				found = true
+				if span.Text != "-" {
+					t.Fatal("different source separator")
+				}
+			}
+		}
+		if !found {
+			t.Fatal("missing source separator")
+		}
+		delivered := false
+		for _, span := range plan.Chunks[0].Spans {
+			if plan.Aliases[span.ID] == id {
+				delivered = true
+				if span.Text != "-" || span.LexicalClass != statementextract.ClassNumericFragment {
+					t.Fatal("different delivered sign class")
+				}
+			}
+		}
+		if !delivered {
+			t.Fatal("separator not delivered")
+		}
+	}
+	if !reflect.DeepEqual(p.Parts[0].Header.OpeningBookBalance, statementdata.Selection{"p1-b1-l1-w3"}) || !reflect.DeepEqual(p.Parts[0].Header.ClosingBookBalance, statementdata.Selection{"p2-b1-l1-w3"}) {
+		t.Fatal("changed book-balance selection")
+	}
+	inService := false
+	for _, g := range p.Parts[0].Service {
+		for _, id := range g.Spans {
+			if id == "p2-b8-l1-w3" {
+				inService = true
+			}
+		}
+	}
+	if !inService {
+		t.Fatal("missing separator not assigned to service")
 	}
 }

@@ -1,17 +1,19 @@
-Следующий подготовленный контракт — [S1.9](specs/0055-s19-saved-trace-diagnosis.md),
-**draft / not_started**, 2026-10-21: самостоятельное read-only чтение фиксированного
-S1.8 trace и локальный replay прежними Go validation/scorer, inference=0.
-[Статический разбор](research/statement-quality/s18-saved-trace-diagnosis.md)
-сузил отказ до одного описания и двух нерасшифрованных blockers; причина UNVERIFIED.
-Операторский workflow ожидает принятия контракта. Исправления и paid smoke отдельно.
+[S1.9 — бесплатная диагностика сохранённого S1.8](specs/0055-s19-saved-trace-diagnosis.md) —
+**accepted / local_verified, diagnosis PASS**, 2026-10-21 03:48:32 +05:00.
+[D1–D5 evidence](specs/0055-s19-evidence.md): read-only39510628212 SUCCESS, artifactsUnchanged=true,
+replayMatchesSaved=true. Причины FAIL17/19 установлены: пропущен дефис строки2;
+два дефиса заголовков выбраны как отсутствующие book balances и отклонены
+Go ambiguous_money. Новый inference=0; scorer/prompt/model/flags не менялись.
+PR №81 содержит реализацию и retained synthetic regression; интеграция отдельно.
+PR №80 интегрирован (`5e9116e`), post-merge local/CI5/5/Delivery PASS.
 
 Последний live результат — **2026-10-21 03:10:03 +05:00**:
 [S1.8](specs/0055-s18-evidence.md) выполнен один раз после CI5/5: **FAIL17/19 columns**,
 record_description/blockers. Exact canonical прошёл; cards/RU не отправлены.
 Известный расход учтён, reservation settled, shared uncertain block=false.
 Image/health сохранены; marker consumed, новых попыток и model/flag switch нет.
-Следующий шаг — offline-разбор сохранённого синтетического ответа; исправления
-prompt/scorer/transport и новый paid run этим контрактом не разрешены.
+Offline-разбор выполнен S1.9 (см. выше); исправления prompt/scorer/transport
+и новый paid run остаются отдельным scope.
 
 Интеграция №79: `938b370`, 2026-10-21 02:43:30 +05:00;
 [post-merge gates](specs/0055-pr79-postmerge.md) завершены: main CI5/5 и Delivery PASS,
