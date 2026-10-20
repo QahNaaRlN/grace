@@ -17,7 +17,7 @@ prompt/scorer/transport и новый paid run этим контрактом н�
 [post-merge gates](specs/0055-pr79-postmerge.md) завершены: main CI5/5 и Delivery PASS,
 локальные make test/go vet/diff check PASS. S1.7 integrated; PR №80 слит в main (`5e9116e`) 2026-10-21 03:24:55 +05:00.
 [Post-merge проверки №80](specs/0055-pr80-postmerge.md): local make test/vet/diff PASS;
-merge CI5/5 PASS, S1.8 integrated; Delivery39508797773 pending; production deployment не выполнялся.
+merge CI5/5 PASS, S1.8 integrated; Delivery39508797773 PASS; production deployment не выполнялся.
 
 Исторический срез до S1.8 — **2026-10-21 02:13:09 +05:00**:
 расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.

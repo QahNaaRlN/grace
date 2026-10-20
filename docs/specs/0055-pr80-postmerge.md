@@ -15,7 +15,7 @@ head PR `6b48499bcf90c3a643faab9db7f061a4433d81b9`.
 | Whitespace / primary | `git diff --check` exit0, основная копия clean после тестов |
 | CI PR-head | [39506573585](https://github.com/QahNaaRlN/grace/actions/runs/39506573585) SUCCESS |
 | CI merge | [39507934933](https://github.com/QahNaaRlN/grace/actions/runs/39507934933) SUCCESS: все 5/5 jobs, включая PostgreSQL integration |
-| Delivery merge | [39508797773](https://github.com/QahNaaRlN/grace/actions/runs/39508797773) IN_PROGRESS на exact merge SHA; публикация образов ещё не подтверждена |
+| Delivery merge | [39508797773](https://github.com/QahNaaRlN/grace/actions/runs/39508797773) SUCCESS на exact merge SHA; образы опубликованы, deployment не выполнялся |
 
 Журналы: `/tmp/grace-pr80-postmerge-test.log`,
 `/tmp/grace-pr80-postmerge-vet.log`, `/tmp/grace-pr80-postmerge-ci.log`.
@@ -23,7 +23,7 @@ head PR `6b48499bcf90c3a643faab9db7f061a4433d81b9`.
 доступом к локальным кешам завершён exit0. Это не отказ продуктового теста.
 
 S1.8 operator-код и исторический результат интегрированы в main; локальные
-post-merge gates и CI5/5 PASS. Delivery остаётся отдельным pending gate. [S1.8 live](0055-s18-evidence.md)
+post-merge gates и CI5/5 PASS. Delivery SUCCESS; публикация образов не является деплоем. [S1.8 live](0055-s18-evidence.md)
 остаётся FAIL columns17/19, authorization consumed, cards/RU не отправлены.
 Эта интеграционная проверка не является новым smoke или production qualification.
 Новых inference, production workflow dispatch, deployment и переключений нет.

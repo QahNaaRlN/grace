@@ -75,5 +75,5 @@ Private report/marker: `/opt/grace/shared/statement-screening-s18-gemini31-ident
 
 PR №80 слит владельцем 2026-10-21 03:24:55 +05:00, `5e9116e`.
 [Post-merge evidence](0055-pr80-postmerge.md): local make test/vet/diff PASS,
-main CI39507934933 все5/5 PASS. Delivery39508797773 пока IN_PROGRESS.
+main CI39507934933 все5/5 PASS. Delivery39508797773 SUCCESS.
 Implementation integrated; live FAIL17/19 сохранён. Новых inference/деплоя нет.
