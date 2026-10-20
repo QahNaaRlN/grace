@@ -20,6 +20,12 @@ on:
         default: false
         type: boolean
 
+      diagnose_owner_statement:
+        description: Read-only owner-authorized diagnosis with fixed boolean output
+        required: false
+        default: false
+        type: boolean
+
 permissions:
   actions: read
   contents: read
@@ -31,7 +37,7 @@ concurrency:
 
 jobs:
   inspect-statement:
-    if: ${{ inputs.inspect_statement_only }}
+    if: ${{ inputs.inspect_statement_only && !inputs.diagnose_owner_statement }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -70,8 +76,28 @@ jobs:
         run: |
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-smoke.py
 
+  diagnose-owner-statement:
+    if: ${{ inputs.diagnose_owner_statement && inputs.inspect_statement_only && inputs.statement_action == 'preserve' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Diagnose exact owner target without exporting private data
+        env:
+          GRACE_STATEMENT_DIAGNOSTIC_TARGET: ${{ secrets.GRACE_STATEMENT_DIAGNOSTIC_TARGET }}
+        run: python3 scripts/research/diagnose-owner-statement.py --dispatch
+
   deploy:
-    if: ${{ !inputs.inspect_statement_only }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.diagnose_owner_statement }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
