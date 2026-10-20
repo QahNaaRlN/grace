@@ -257,3 +257,60 @@ func TestScreeningProofConcurrentCacheCopies(t *testing.T) {
 		t.Fatal("shared cache/proof mutated", gets)
 	}
 }
+
+func TestScreeningCatalogFailureStopsReasonerBeforeInference(t *testing.T) {
+	posts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			posts++
+			t.Error("POST после непройденной проверки каталога")
+			return
+		}
+		if r.URL.Path == "/endpoints/zdr" {
+			fmt.Fprint(w, `{"data":[{"model_id":"google/gemini-3.1-flash-lite","tag":"google-vertex/eu","status":0}]}`)
+			return
+		}
+		fmt.Fprint(w, `{"data":[]}`)
+	}))
+	defer server.Close()
+	reasoner, err := NewStatementScreeningReasoner("synthetic")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reasoner.Verifier.endpoint = server.URL + "/models/"
+	reasoner.Verifier.client = server.Client()
+	provider := reasoner.Provider.(*OpenRouterProvider)
+	provider.endpoint = server.URL
+	provider.client = server.Client()
+	_, billing, err := reasoner.Complete(context.Background(), statementextract.ScreeningPolicy(), statementextract.Chunk{})
+	if err == nil || err.Error() != "screening_identity_unverified" || billing != nil || posts != 0 {
+		t.Fatal("reasoner пропустил отрицательный proof", err, posts)
+	}
+}
+
+func TestScreeningProofDoesNotOpenStandardProvider(t *testing.T) {
+	pin := statementextract.ScreeningPolicy()
+	policy := ModelPolicy{Model: pin.Model, Provider: pin.Provider, ProviderName: pin.ProviderName, InputMicrosPerMillion: pin.InputMicrosPerMillion, OutputMicrosPerMillion: pin.OutputMicrosPerMillion, VerifiedAt: time.Now().Add(-time.Minute)}
+	posts := 0
+	client := doerFunc(func(*http.Request) (*http.Response, error) {
+		posts++
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{"id":"gen-SYNTHETIC-standard","model":"google/gemini-3.1-flash-lite","provider":"Google","openrouter_metadata":{"requested":"google/gemini-3.1-flash-lite","strategy":"direct","attempt":1,"is_byok":false,"pipeline":[],"endpoints":{"available":[{"model":"google/gemini-3.1-flash-lite-20260507","provider":"Google","selected":true}]}},"choices":[{"finish_reason":"stop","message":{"content":"{}"}}],"usage":{"prompt_tokens":100,"completion_tokens":10,"cost":0.001}}`))}, nil
+	})
+	for _, statement := range []bool{false, true} {
+		var provider *OpenRouterProvider
+		if statement {
+			provider, _ = NewStatementOpenRouterProvider("synthetic", client)
+		} else {
+			provider, _ = NewOpenRouterProvider("synthetic", client)
+		}
+		before := posts
+		out, err := provider.Complete(context.Background(), LLMRequest{screeningProof: syntheticScreeningProof(), Policy: policy, DisableReasoning: true, Messages: []LLMMessage{{Role: "system", Content: "Synthetic"}, {Role: "user", Content: "Synthetic"}}, Schema: json.RawMessage(`{}`), InputTokenUpperBound: 1000, MaxOutputTokens: 100})
+		expectedPosts := 1
+		if statement {
+			expectedPosts = 0
+		}
+		if err == nil || out.BillingKnown || out.ScreeningDiagnostic != nil || posts-before != expectedPosts {
+			t.Fatal("screening proof изменил обычный transport", err, posts)
+		}
+	}
+}

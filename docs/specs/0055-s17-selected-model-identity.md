@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.7: точная идентичность модели в screening
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: not_started.
+- Статус: accepted; implementation_status: local_verified.
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.7 и offline-реализацию».
   Разрешена реализация I1–I4, без inference/деплоя/переключения модели.
 - Основание: [диагностика](../research/statement-quality/s17-selected-model-identity.md),
@@ -140,9 +140,11 @@ Offline PASS не подтверждает качество живой моде�
 старое разрешение S1.6 израсходовано. Интеграция принятого контракта и реализации в main остаётся отдельным
 действием; основная копия сохраняется чистой.
 
-## Решение, требуемое до реализации
+## Решение владельца
 
-Утвердить этот bounded контракт и offline реализацию I1–I4, без платного smoke,
+Утверждены этот bounded контракт и offline реализация I1–I4, без платного smoke,
 деплоя и переключения модели. Он меняет screening transport acceptance,
 diagnostic/report profile относительно S1.5; прежнее принятие S1.6 recovery
-такие изменения явно исключало. Решение получено 2026-10-21; acceptance commit предшествует реализации.
+такие изменения явно исключало. Решение получено 2026-10-21; acceptance commit `ad1b90b` предшествует реализации.
+[Исполняемые подтверждения I1–I4](0055-s17-evidence.md): локальные проверки PASS.
+Интеграция, paid smoke, deployment и adoption не выполнялись.

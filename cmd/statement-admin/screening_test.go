@@ -31,3 +31,19 @@ func TestScreeningSummaryOnlyExportsClosedCodes(t *testing.T) {
 		}
 	}
 }
+
+func TestScreeningSummaryModelClassesStayClosed(t *testing.T) {
+	for _, class := range []string{"alias", "pinned_canonical", "other", "empty", "multiple", "not_observed", "PRIVATE-model"} {
+		route := &statementextract.ScreeningRouteEvidence{SelectedModelClass: class}
+		report := statementqualification.Report{Calls: []statementqualification.Call{{ScreeningRoute: route}}, Failure: &statementextract.ScreeningDiagnostic{Code: "selected_model", Route: route}}
+		raw, _ := json.Marshal(screeningSummary(report))
+		want := class
+		if class == "PRIVATE-model" {
+			want = "not_observed"
+		}
+		text := string(raw)
+		if strings.Contains(text, "PRIVATE") || !strings.Contains(text, `"selectedModelClass":"`+want+`"`) || !strings.Contains(text, `"selectedModelClasses":["`+want+`"]`) || !strings.Contains(text, `"activationAuthorized":false`) {
+			t.Fatal("класс или приватность сводки", text)
+		}
+	}
+}

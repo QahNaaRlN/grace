@@ -6,8 +6,10 @@
 первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
 Production policy/model/flags сохранены, деплоя и paid retry нет.
 Следующий [S1.7 — точная идентичность модели в screening](0055-s17-selected-model-identity.md)
-— **draft/not_started**, 2026-10-21. Разбор выполнен, конкретный контракт
-готов к решению владельца; production-код не менялся, inference=0.
+— **accepted/local_verified**, 2026-10-21. Владелец утвердил offline-реализацию;
+I1–I4 PASS: точная пара, свежий catalog proof, report v3, product isolation,
+реальные PDF со scorer19/20/23, make test/production/race/vet.
+[Подтверждения](0055-s17-evidence.md). Внешних inference=0; интеграция ожидается.
 Новый платный smoke, деплой и переключение модели не разрешены.
 
 Интеграция — **2026-10-21**: PR №78 слит, `29a28a7`; S1.3/S1.4/S1.5 в main.
