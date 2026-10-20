@@ -35,6 +35,11 @@ func (r *StatementReasoner) CurrentPolicy(ctx context.Context) (statementextract
 		}
 		r.screeningVerified = time.Now()
 	}
+	if r.screening {
+		if _, err := r.Verifier.screeningIdentity(ctx); err != nil {
+			return statementextract.Policy{}, err
+		}
+	}
 	p, e := r.Verifier.CurrentStatement(ctx, r.Policy)
 	if e != nil {
 		return statementextract.Policy{}, e
@@ -66,11 +71,21 @@ func (r *StatementReasoner) Complete(ctx context.Context, approved statementextr
 	for _, m := range statementextract.Messages(chunk) {
 		messages = append(messages, LLMMessage{Role: m["role"], Content: m["content"]})
 	}
-	out, e := r.Provider.Complete(ctx, LLMRequest{DisableReasoning: true, Policy: policy, Messages: messages, Schema: statementextract.RequestSchema(chunk), InputTokenUpperBound: statementextract.InputBound, MaxOutputTokens: statementextract.OutputBound})
+	var proof *statementextract.ScreeningIdentityProof
+	if r.screening {
+		proof, e = r.Verifier.screeningIdentity(ctx)
+		if e != nil {
+			return proposal, nil, e
+		}
+	}
+	out, e := r.Provider.Complete(ctx, LLMRequest{screeningProof: proof, DisableReasoning: true, Policy: policy, Messages: messages, Schema: statementextract.RequestSchema(chunk), InputTokenUpperBound: statementextract.InputBound, MaxOutputTokens: statementextract.OutputBound})
 	if e != nil && !out.BillingKnown {
 		return proposal, nil, e
 	}
 	billing := &statementextract.Billing{GenerationID: out.ID, CostMicros: out.CostMicros, InputTokens: out.PromptTokens, OutputTokens: out.CompletionTokens}
+	if r.screening && out.ScreeningDiagnostic != nil {
+		billing.ScreeningRoute = out.ScreeningDiagnostic.Route
+	}
 	if e != nil {
 		return proposal, billing, e
 	}

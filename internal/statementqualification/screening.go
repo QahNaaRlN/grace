@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const ScreeningReportVersion = "statement.screening.v2.gemini31-diagnostics"
+const ScreeningReportVersion = "statement.screening.v3.gemini31-identity"
 const ScreeningScorerVersion = "statement-screening.v1.19-20-23"
 const ScreeningMaxMicros int64 = 161700
 
@@ -30,13 +30,13 @@ func RunScreening(ctx context.Context, samples []Sample, r statementextract.Reas
 // complete screening result only, never an incomplete campaign or unknown bill.
 func ValidateScreeningReport(r Report, now time.Time) error {
 	fail := errors.New("invalid_screening_report")
-	if r.Failure != nil || r.Version != ScreeningReportVersion || r.Profile != ScreeningProfile() || !statementextract.ScreeningPolicyValid(r.Policy) || r.Digest != reportDigest(r) || !r.Passed || r.Error != "" || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 3 || len(r.Results) != 3 || len(r.Traces) != 3 || len(r.Calls) != 3 || r.MaximumMicros != ScreeningMaxMicros || r.ActualMicros == nil {
+	if r.ScreeningFinishedAt == nil || r.ScreeningFinishedAt.After(now) || r.ScreeningFinishedAt.Before(r.Time) || r.Failure != nil || r.Version != ScreeningReportVersion || r.Profile != ScreeningProfile() || !statementextract.ScreeningPolicyValid(r.Policy) || r.Digest != reportDigest(r) || !r.Passed || r.Error != "" || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 3 || len(r.Results) != 3 || len(r.Traces) != 3 || len(r.Calls) != 3 || r.MaximumMicros != ScreeningMaxMicros || r.ActualMicros == nil {
 		return fail
 	}
 	total := int64(0)
 	ids := map[string]bool{}
 	for _, c := range r.Calls {
-		if !validBill(&statementextract.Billing{GenerationID: c.GenerationID, CostMicros: c.CostMicros, InputTokens: c.InputTokens, OutputTokens: c.OutputTokens}, r.Policy) || c.OutputTokens == 0 || ids[c.GenerationID] {
+		if !c.ScreeningRoute.Valid(*r.ScreeningFinishedAt) || c.ScreeningRoute.ObservedAt.Before(r.Time) || !validBill(&statementextract.Billing{GenerationID: c.GenerationID, CostMicros: c.CostMicros, InputTokens: c.InputTokens, OutputTokens: c.OutputTokens}, r.Policy) || c.OutputTokens == 0 || ids[c.GenerationID] {
 			return fail
 		}
 		ids[c.GenerationID] = true

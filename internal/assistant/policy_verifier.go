@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/QahNaaRlN/grace/internal/statementextract"
 	"io"
 	"math/big"
 	"net/http"
@@ -17,11 +18,12 @@ import (
 // price ceiling. Routing still enforces ZDR/deny/no-fallback on every inference.
 // Metadata requests contain no user questions, images or financial data.
 type PolicyVerifier struct {
-	mu        sync.Mutex
-	client    HTTPDoer
-	endpoint  string
-	checked   map[string]ModelPolicy
-	attempted map[string]time.Time
+	screeningProof *statementextract.ScreeningIdentityProof
+	mu             sync.Mutex
+	client         HTTPDoer
+	endpoint       string
+	checked        map[string]ModelPolicy
+	attempted      map[string]time.Time
 }
 
 func NewPolicyVerifier() *PolicyVerifier {

@@ -5,10 +5,11 @@ import "regexp"
 // ScreeningDiagnostic is operator-only evidence, never verified billing or consent.
 // CorrelationID is private and unverified even when it has a valid gateway shape.
 type ScreeningDiagnostic struct {
-	Code          string `json:"code"`
-	HTTPStatus    int    `json:"httpStatus,omitempty"`
-	ContentType   string `json:"contentType,omitempty"`
-	CorrelationID string `json:"unverifiedCorrelationId,omitempty"`
+	Route         *ScreeningRouteEvidence `json:"route,omitempty"`
+	Code          string                  `json:"code"`
+	HTTPStatus    int                     `json:"httpStatus,omitempty"`
+	ContentType   string                  `json:"contentType,omitempty"`
+	CorrelationID string                  `json:"unverifiedCorrelationId,omitempty"`
 }
 
 var correlationID = regexp.MustCompile(`^gen-[0-9A-Za-z-]+$`)
@@ -30,6 +31,10 @@ func (d ScreeningDiagnostic) Sanitize() ScreeningDiagnostic {
 	}
 	if len(d.CorrelationID) > 128 || !correlationID.MatchString(d.CorrelationID) {
 		d.CorrelationID = ""
+	}
+	if d.Route != nil {
+		route := d.Route.Sanitize()
+		d.Route = &route
 	}
 	return d
 }

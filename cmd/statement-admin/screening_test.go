@@ -11,7 +11,7 @@ import (
 func TestScreeningSummaryOnlyExportsClosedCodes(t *testing.T) {
 	for _, reason := range []string{"metadata_missing", "PRIVATE-key"} {
 		privateID := "gen-SYNTHETIC-private-correlation"
-		report := statementqualification.Report{Version: statementqualification.ScreeningReportVersion, Error: "qualification_provider_failed_" + reason, Failure: &statementextract.ScreeningDiagnostic{Code: reason, HTTPStatus: 200, ContentType: "PRIVATE-header", CorrelationID: privateID}, Calls: []statementqualification.Call{{GenerationID: privateID, CostMicros: 123456}}, Results: []statementqualification.Result{{Name: "columns", Codes: []string{"row_count", "PRIVATE-body"}, Validation: []string{"PRIVATE-error"}, Coverage: []string{"PRIVATE-request"}}}}
+		report := statementqualification.Report{Version: statementqualification.ScreeningReportVersion, Error: "qualification_provider_failed_" + reason, Failure: &statementextract.ScreeningDiagnostic{Route: &statementextract.ScreeningRouteEvidence{SelectedModelClass: "PRIVATE-model"}, Code: reason, HTTPStatus: 200, ContentType: "PRIVATE-header", CorrelationID: privateID}, Calls: []statementqualification.Call{{GenerationID: privateID, CostMicros: 123456}}, Results: []statementqualification.Result{{Name: "columns", Codes: []string{"row_count", "PRIVATE-body"}, Validation: []string{"PRIVATE-error"}, Coverage: []string{"PRIVATE-request"}}}}
 		raw, err := json.Marshal(screeningSummary(report))
 		if err != nil {
 			t.Fatal(err)

@@ -101,7 +101,7 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 					policy.InputMicrosPerMillion = 300000
 					policy.OutputMicrosPerMillion = 2500000
 				}
-				out, e := p.Complete(context.Background(), LLMRequest{Policy: policy, DisableReasoning: true, Messages: []LLMMessage{{Role: "system", Content: "Synthetic"}, {Role: "user", Content: "Synthetic"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 100000, MaxOutputTokens: 16000})
+				out, e := p.Complete(context.Background(), LLMRequest{screeningProof: syntheticScreeningProof(), Policy: policy, DisableReasoning: true, Messages: []LLMMessage{{Role: "system", Content: "Synthetic"}, {Role: "user", Content: "Synthetic"}}, Schema: json.RawMessage(`{"type":"object"}`), InputTokenUpperBound: 100000, MaxOutputTokens: 16000})
 				detail := ""
 				if e != nil {
 					detail = "generic"
@@ -114,7 +114,11 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 				if test.name == "malformed_id" {
 					expectedID = ""
 				}
-				if screening && (out.ScreeningDiagnostic == nil || out.ScreeningDiagnostic.Code != codes[test.name] || out.ScreeningDiagnostic.HTTPStatus != 200 || out.ScreeningDiagnostic.ContentType != "json" || out.ScreeningDiagnostic.CorrelationID != expectedID) {
+				wantCode, wantDetail, wantKnown := codes[test.name], test.detail, test.known
+				if screening && test.name == "canonical_selected_model" {
+					wantCode, wantDetail, wantKnown = "unknown", "", true
+				}
+				if screening && (out.ScreeningDiagnostic == nil || out.ScreeningDiagnostic.Code != wantCode || out.ScreeningDiagnostic.HTTPStatus != 200 || out.ScreeningDiagnostic.ContentType != "json" || out.ScreeningDiagnostic.CorrelationID != expectedID) {
 					t.Fatalf("diagnostic mismatch: %+v", out.ScreeningDiagnostic)
 				}
 				if !screening && out.ScreeningDiagnostic != nil {
@@ -129,7 +133,7 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 						t.Fatal("legacy error changed", e)
 					}
 				}
-				if calls != 1 || detail != test.detail || out.BillingKnown != test.known {
+				if calls != 1 || detail != wantDetail || out.BillingKnown != wantKnown {
 					t.Fatalf("calls=%d detail=%q known=%v error=%v", calls, detail, out.BillingKnown, e)
 				}
 			}
