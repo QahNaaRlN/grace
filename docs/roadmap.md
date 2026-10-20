@@ -1,6 +1,8 @@
 Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
 слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
-[Проверки после слияния](specs/0055-pr78-postmerge.md) ещё завершаются.
+[Проверки после слияния](specs/0055-pr78-postmerge.md): main CI 5/5 PASS,
+локальные make test/go vet/diff check PASS; Delivery `39490817275` PASS.
+Образы опубликованы, деплой приложения не выполнялся.
 Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — draft/not_started:
 один новый smoke с диагностикой, не более 3 вызовов / $0.1617 provider cap,
 без переключения модели и без разрешения платного запуска до утверждения.

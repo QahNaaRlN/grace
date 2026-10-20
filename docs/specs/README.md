@@ -1,6 +1,6 @@
 Интеграция — **2026-10-21**: PR №78 слит, `29a28a7`; S1.3/S1.4/S1.5 в main.
-[Post-merge evidence](0055-pr78-postmerge.md) отделяет интеграцию от CI/Delivery и
-отсутствующего deployment. [S1.6](0055-s16-diagnostic-screening.md) — draft/not_started,
+[Post-merge evidence](0055-pr78-postmerge.md): main CI 5/5 PASS, Delivery PASS,
+локальные make test/go vet/diff check PASS; deployment не выполнялся. [S1.6](0055-s16-diagnostic-screening.md) — draft/not_started,
 предлагается один новый диагностический smoke, без разрешения расходов.
 
 Текущее состояние, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на

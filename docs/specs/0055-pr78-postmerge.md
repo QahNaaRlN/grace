@@ -11,8 +11,9 @@
 CI feature-коммита `3cb42e2` — все 5 jobs PASS,
 [39466910860](https://github.com/QahNaaRlN/grace/actions/runs/39466910860).
 [CI коммита слияния 39489660261](https://github.com/QahNaaRlN/grace/actions/runs/39489660261)
-проверяется отдельно; при подготовке записи Quality gates уже PASS,
-интеграция и сборки ещё выполнялись. Delivery нового SHA ещё не подтверждён.
+завершён успешно: все 5 jobs PASS — Quality gates, PostgreSQL integration gates,
+сборки api/web/pdf-extractor. [Delivery 39490817275](https://github.com/QahNaaRlN/grace/actions/runs/39490817275)
+того же SHA — PASS. Это подтверждает публикацию образов, не деплой приложения.
 Локальные post-merge проверки на `29a28a7` завершены: `make test` с
 `TMPDIR=/var/tmp/grace-quality-next-tests VITEST_MAX_WORKERS=1` — exit0,
 88 web-файлов / 334 теста, Go/lint/FSD/форматирование/сборка/Jev PASS;
