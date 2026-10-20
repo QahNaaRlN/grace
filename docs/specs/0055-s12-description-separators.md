@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.2: полное описание с печатными разделителями
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
-- Статус: **accepted**, 2026-10-19; прямое решение владельца «Утвердить S1.2, один smoke и включение при PASS». Implementation **not_started**: принятие записано до production-кода.
+- Статус: **accepted**, 2026-10-19; прямое решение владельца «Утвердить S1.2, один smoke и включение при PASS». Implementation **in_progress**, `codex/statement-description-separators`; принятие записано в `bf4b3c8` до production-кода.
 - Основание: [S1.1 evidence](0055-s11-evidence.md), release `ef782ec`, один smoke `39255669019` FAIL. Columns: две строки, финансовые поля, обороты и coverage PASS; единственный code `record_description`. Cards NOT_RUN. AI false, разрешение на этот smoke использовано.
 - Scope: только prompt clarification + negative regression; затем **один отдельно разрешённый** новый columns/cards smoke. Не разрешает повторов, model switching или расширение corpus.
 

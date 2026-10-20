@@ -10,7 +10,7 @@ Read-only `39255943568` подтверждает disabled и отсутстви�
 standalone public/auth smoke PASS. [S1.1 audit](specs/0055-s11-evidence.md).
 [S1.2](specs/0055-s12-description-separators.md) отдельно принят владельцем:
 узкий prompt amendment, negative regression, один новый smoke ≤2 calls / $0.14,
-enable только оба full PASS. Implementation not_started.
+enable только оба full PASS. Implementation in_progress, [D1–D5](specs/0055-s12-evidence.md).
 Полная AC12 qualification, сравнение Jev/cascade и owner functional acceptance
 не завершены. SPEC-0019 остаётся draft; номер 0025 не использован.
 Унаследованные замечания ShellCheck сохранены в evidence SPEC-0050.
@@ -38,7 +38,7 @@ SPEC-0054 ранее выпущена как `a89a855` (run `39151600396`, 2026-
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
 | Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Интегрирована: PR #57, merge `95c5fa8`, CI run 39032209158, в production с `95c5fa8` ([evidence](specs/0053-evidence.md)) |
 | Рассрочки и BNPL | SPEC-0054 влита PR #60 (`a89a855`): покупка/долг/переводы и ручное подтверждение карточного грейса | Post-merge gates, main CI, Delivery и production release `a89a855` пройдены; остаётся owner UI smoke |
-| CI и статусы | PR #73, main CI `39254418192`, Delivery `39255451276`, deploy/internal health `ef782ec` PASS | Run `39255669019` activation FAIL; read-only/public/auth PASS; S1.2 implementation not_started |
+| CI и статусы | PR #73, main CI `39254418192`, Delivery `39255451276`, deploy/internal health `ef782ec` PASS | Run `39255669019` activation FAIL; read-only/public/auth PASS; S1.2 implementation in_progress |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Реализованные этапы

@@ -24,6 +24,7 @@ type activationFixtureReasoner struct {
 	omit             bool
 	wrongFX          bool
 	wrongDescription bool
+	omitSeparator    bool
 }
 
 func (f *activationFixtureReasoner) CurrentPolicy(ctx context.Context) (statementextract.Policy, error) {
@@ -84,6 +85,23 @@ func (f *activationFixtureReasoner) Complete(ctx context.Context, _ statementext
 	} else {
 		p.Header.AvailableBalanceObserved = ids("7777.00")
 		p.Header.Labels["availableBalanceObserved"] = line("7777.00", 0, map[string]bool{"Available": true, "balance": true})
+	}
+	if f.omitSeparator {
+		// Preserve total coverage and financial fields while omitting one
+		// printed separator from the description into the service group.
+		kept := statementdata.Selection{}
+		for _, id := range p.Rows[1].Description {
+			separator := false
+			for _, span := range c.Spans {
+				if span.ID == id && span.Text == "-" {
+					separator = true
+				}
+			}
+			if !separator {
+				kept = append(kept, id)
+			}
+		}
+		p.Rows[1].Description = kept
 	}
 	used := map[string]bool{}
 	for _, r := range p.Rows {
@@ -146,9 +164,9 @@ func TestActivationRealHelperSmoke(t *testing.T) {
 		}
 		samples = append(samples, Sample{name, d, hex.EncodeToString(hash[:])})
 	}
-	for _, mode := range []string{"complete", "missing_coverage", "wrong_fx", "wrong_description"} {
+	for _, mode := range []string{"complete", "missing_coverage", "wrong_fx", "wrong_description", "missing_description_separator"} {
 		t.Run(mode, func(t *testing.T) {
-			fake := &activationFixtureReasoner{omit: mode == "missing_coverage", wrongFX: mode == "wrong_fx", wrongDescription: mode == "wrong_description"}
+			fake := &activationFixtureReasoner{omit: mode == "missing_coverage", wrongFX: mode == "wrong_fx", wrongDescription: mode == "wrong_description", omitSeparator: mode == "missing_description_separator"}
 			meter := &fakeMeter{}
 			report, e := Run(context.Background(), samples, fake, meter)
 			if mode == "complete" {
@@ -161,6 +179,15 @@ func TestActivationRealHelperSmoke(t *testing.T) {
 					t.Fatal("current real report cannot activate", e, report.Results)
 				}
 			} else {
+				if mode == "missing_description_separator" {
+					if len(report.Results) != 1 {
+						t.Fatal("missing negative score", report)
+					}
+					result := report.Results[0]
+					if result.Rows != 2 || result.Checks != 19 || result.Correct != 18 || len(result.Codes) != 1 || result.Codes[0] != "record_description" || len(result.Validation) != 0 || len(result.Coverage) != 0 {
+						t.Fatal("separator omission changed financial/coverage assertions or escaped", result)
+					}
+				}
 				if e == nil || report.Passed || fake.calls != 1 || meter.actual == nil || *meter.actual != 100 {
 					t.Fatal("negative accepted or retry/lost bill", e, report, meter)
 				}
