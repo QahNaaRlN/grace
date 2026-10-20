@@ -104,6 +104,31 @@ def main():
             payload = response.read(1048577)
         require(len(payload) <= 1048576, 'generation_metadata_too_large')
         data[ident] = json.loads(payload, parse_float=decimal.Decimal)['data']
+    # Preserve authoritative metadata privately even when identity validation
+    # refuses settlement. Public output contains only match booleans.
+    evidence_path = BASE/('statement-generation-inspection-'+RUN+'.json')
+    require(not evidence_path.is_symlink(), 'inspection_path_unsafe')
+    tmp = str(evidence_path)+'.tmp'
+    fd = os.open(tmp, os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'w') as f:
+        json.dump({'reportDigest':hashlib.sha256(raw).hexdigest(), 'generations':data, 'verifiedAt':dt.datetime.now(dt.timezone.utc).isoformat()}, f, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, evidence_path)
+    d = data[ids[0]]
+    provider = d.get('provider_name')
+    print(json.dumps({'generationIdentityInspection':True,
+        'idMatches':d.get('id') == ids[0],
+        'modelAliasMatches':d.get('model') == report['policy']['model'],
+        'modelCanonicalMatches':d.get('model') == 'google/gemini-3.1-flash-lite-20260507',
+        'providerGoogleMatches':isinstance(provider,str) and provider.lower() == 'google',
+        'providerMissing':provider is None or provider == '',
+        'providerGoogleAIStudio':provider == 'Google AI Studio',
+        'nonByokMatches':d.get('is_byok') is False,
+        'costPresent':d.get('total_cost') is not None,
+        'costZero':d.get('total_cost') is not None and decimal.Decimal(str(d['total_cost'])) == 0,
+        'generationWithinWindow':-2 <= (timestamp(d['created_at'])-timestamp(report['time'])).total_seconds() <= 120,
+        'finishError':d.get('finish_reason') == 'error'}))
     total = validate(report, row, ids, data)
     audit_path = BASE/('statement-reconciliation-'+RUN+'.json')
     audit = {'version':'statement-reconciliation.v1', 'reportDigest':hashlib.sha256(raw).hexdigest(), 'reportName':paths[0].name, 'usageBefore':row, 'generations':data, 'actualMicros':total, 'verifiedAt':dt.datetime.now(dt.timezone.utc).isoformat(), 'committed':False}
