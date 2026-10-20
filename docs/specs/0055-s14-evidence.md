@@ -94,3 +94,19 @@ Runtime flag enabled и production-модель сохранены. Снятие
 Обязательный `make test` повторён для ops-изменений: exit0, 334 web tests и
 Go/lint/FSD/format/build/Jev PASS (`/tmp/grace-s14-reconcile-make.log`). Offline
 reconciliation match/mismatch/ceil/replay/canonical checks и diff check PASS.
+
+## Диагностика без paid replay — 2026-10-20 17:18:36 UTC
+
+[Read-only run 39464907701](https://github.com/QahNaaRlN/grace/actions/runs/39464907701),
+source `0f8a062`: source-bound saved metadata и committed settlement audit совпали,
+runtime/shared-ledger readiness PASS; screening/deploy skipped. 14 synthetic
+transport counterexamples PASS, inspector private-output/digest/permissions/symlink
+checks PASS. [Полный разбор](../research/statement-quality/s14-provider-failure-diagnosis.md)
+отделяет generation metadata от chat response и локальные counterexamples от
+утраченного live envelope. Точная первопричина UNVERIFIED, подтверждён пробел
+observability. [S1.5](0055-s15-screening-diagnostics.md) подготовлен как draft,
+production-код и новые paid calls не выполнялись.
+
+Обязательный make test для diagnostic edits завершён exit0: Go, 334 web tests,
+lint/FSD/format/build/Jev PASS (`/tmp/grace-s14-diagnosis-make.log`); diff check PASS.
+Это локальные checks; current-head remote CI и live quality остаются отдельными.

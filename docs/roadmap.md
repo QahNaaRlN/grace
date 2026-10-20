@@ -271,8 +271,13 @@ accepted («работаем»), C1–C5 local/exact-source CI PASS, live C6 **F
 Flash Lite / Google EU run, columns/cards/RU, максимум 3 calls / $0.1617 provider.
 Product policy и activation не расширяются; [evidence](specs/0055-s14-evidence.md).
 Reconciliation расхода завершён отдельно в 17:10:51 UTC, uncertain block снят.
-Следующий технический шаг — локализовать provider-stage failure без платного
-повтора; затем отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
+[Диагностика без inference](research/statement-quality/s14-provider-failure-diagnosis.md)
+завершена 17:18:36 UTC: read-only audit/runtime/shared-ledger readiness PASS;
+14 synthetic transport cases PASS. Точный исходный guard UNVERIFIED — не сохранён
+chat envelope, несколько guards дают общий код. Следующий bounded пакет
+[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — draft/not_started,
+только безопасные коды отказа и private correlation, без нового smoke.
+После него — отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
 не deployed; новая модель не допущена в production.
 
 2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов

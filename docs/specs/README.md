@@ -11,6 +11,13 @@ Flash Lite / Google EU, provider cap $0.1617. Не разрешает production
 или enable; implementation local_verified (C1–C5), live C6 FAIL provider-stage, quality UNVERIFIED;
 [evidence](0055-s14-evidence.md).
 
+[Диагностика исходного S1.4 failure](../research/statement-quality/s14-provider-failure-diagnosis.md),
+2026-10-20 17:18:36 UTC: read-only saved-metadata audit PASS, runtime/shared-ledger
+readiness PASS, 14 synthetic transport counterexamples PASS. Доказан пробел
+observability, точный исходный guard UNVERIFIED: chat envelope не сохранён.
+[S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **draft**,
+implementation not_started; без нового inference, policy switch или deployment.
+
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
 — **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;
 implementation **local_verified**, [T1–T6 evidence](0055-s13-evidence.md).
