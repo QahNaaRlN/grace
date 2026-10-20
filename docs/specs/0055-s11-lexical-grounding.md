@@ -2,6 +2,7 @@
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: **accepted**, 2026-10-19; прямое решение владельца «Утвердить S1.1, один smoke и включение при PASS».
+- Текущий release: S1.2 `7b2deea`, Statement AI enabled 2026-10-20; [actual D1–D5](0055-s12-evidence.md). S1.1 FAIL ниже сохранён как исторический.
 - Implementation: **integrated**, [PR #73](https://github.com/QahNaaRlN/grace/pull/73), main `ef782ec`, 2026-10-19. [Evidence L1–L7](0055-s11-evidence.md) отделяет реализацию от release/activation. Один разрешённый smoke использован: `39255669019`, columns `record_description` FAIL, cards NOT_RUN, AI false. Production `ef782ec`, internal health PASS 2026-10-19 17:55:14 +05:00. Следующий prompt/smoke — отдельно accepted [S1.2](0055-s12-description-separators.md).
 - Основание: цель владельца — включение Statement AI для собственных production-тестов; отдельно принятые [S1](0055-record-atomic-planning.md) и [owner-test activation](0055-owner-test-activation.md).
 - Baseline: production `711a13d` (PR #71), deploy `39248364426`: internal health PASS; один разрешённый smoke завершился quality FAIL на columns, cards NOT_RUN, flag false. Автоповторов нет.

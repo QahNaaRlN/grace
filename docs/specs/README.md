@@ -1,8 +1,6 @@
-[S1.2 description separators](0055-s12-description-separators.md) — **accepted**, 2026-10-19: владелец утвердил узкий prompt amendment, regression и один новый columns/cards smoke ≤2 calls / $0.14, включение только при обоих PASS; implementation in_progress (`codex/statement-description-separators`), [D1–D5 evidence](0055-s12-evidence.md). Основание — S1.1 columns `record_description` FAIL: public-source replay подтвердил только пропущенный дефис в service, без новых calls.
+[S1.2 description separators](0055-s12-description-separators.md) — accepted, **deployed_owner_test** (PR #74 / `7b2deea`), 2026-10-20. Один smoke `39396162864`: columns 19/19, cards 20/20; actual image/runtime/current policy/public/auth PASS. **Statement AI включён** 13:51:07 +05:00 / 08:51:07 UTC. [D1–D5 evidence](0055-s12-evidence.md); owner private test и full AC12 остаются открыты. Исторические S1/S1.1 FAIL сохранены.
 
-[S1.1 lexical grounding](0055-s11-lexical-grounding.md) — accepted, 2026-10-19: после columns quality FAIL `39248364426` предложены source-derived lexical class, source-order aliases и усиленный description scorer. Владелец отдельно утвердил реализацию S1.1, один новый smoke ≤2 calls / $0.14 aggregate и включение только при полном PASS. Принятие не стирает предыдущий FAIL; offline candidate evidence — 0 calls.
-
-[S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation integrated PR #71; S1.1 PR #73 в production `ef782ec`, AI false. Полная qualification остаётся отдельно.
+[S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation integrated PR #71; S1.1 PR #73 был выпущен `ef782ec` с AI false; текущий owner-test S1.2 `7b2deea` enabled. Полная qualification остаётся отдельно.
 
 # Spec-first процесс Grace
 
@@ -22,8 +20,8 @@
 caps 90000 bytes / 100000 input / 16000 output приняты владельцем 2026-10-19
 («Утвердить S1 с новыми лимитами»), theoretical provider ceiling 0.07 USD/call;
 общий бюджет сохраняется, paid campaigns отдельно. [S1 implementation](0055-s1-evidence.md)
-локально проверен: 84 layout cases, HTTP/SQL/confirmation/cancellation, no external
-model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/integration отслеживаются в PR, production deployment не выполнен. Полная qualification не сводится к smoke.
+интегрирован PR #70 (`8ed8e80`), включён в текущий production: 84 layout cases, HTTP/SQL/confirmation/cancellation, no external
+model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/grace/pull/70); CI/Delivery пройдены; последующие S1.1/S1.2 изменяют aliases/prompt отдельными accepted amendments. Полная qualification не сводится к smoke.
 
 [SPEC-0055 — банковские PDF разных форматов](0055-bank-statement-pdf-import.md)
 — `integrated` (PR #64, `b51b74f`, main CI `39167930999` PASS), технический вариант явно утверждён владельцем 2026-10-19:
@@ -32,12 +30,11 @@ model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/g
 для узких выборов/проверок после измерения. Доступный остаток не подменяет book
 balance. [Технический контракт](0055-technical-contract.md), включая новый provider tag,
 принят. Первый ручной production release `b51b74f` подтверждён 2026-10-19 02:37:31 +05:00.
-Текущий production `ef782ec` (S1.1 PR #73): main CI `39254418192`, Delivery
-`39255451276` PASS. Deploy/internal health `39255669019` PASS 2026-10-19
-17:55:14 +05:00 / 12:55:14 UTC. Один разрешённый S1.1 smoke FAIL на columns:
-только `record_description` (дефис в service), cards NOT_RUN, Statement AI false.
-Read-only `39255943568` PASS: direct disabled и no unknown usage blocker;
-public/auth PASS. S1.2 принят отдельно для узкого исправления и одного нового smoke.
+Текущий production `7b2deea` (S1.2 PR #74): main CI `39395041781`, Delivery
+`39396018990`, deploy `39396162864` PASS. Columns 19/19 и cards 20/20,
+exact-image/runtime/current policy/public/auth PASS; Statement AI enabled
+2026-10-20 13:51:07 +05:00 / 08:51:07 UTC. Один S1.2 smoke использован,
+не personal inference. Исторические FAIL сохранены; [D1–D5](0055-s12-evidence.md).
 [Implementation evidence](0055-evidence.md), [активация и актуальные статусы](0055-activation-evidence.md).
 Полная AC12 qualification, Jev comparison и owner functional acceptance остаются
 открытыми; private inference не выполнялся.

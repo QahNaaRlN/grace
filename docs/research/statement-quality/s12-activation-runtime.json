@@ -1,0 +1,54 @@
+{
+  "run": "39396162864",
+  "release": "7b2deeaf65fe05d2da0f2cffedb7f14be89e67c1",
+  "safePayloads": [
+    {
+      "time": "2026-10-20T08:50:43.1074536Z",
+      "payload": "release sha-7b2deeaf65fe05d2da0f2cffedb7f14be89e67c1 is healthy"
+    },
+    {
+      "time": "2026-10-20T08:50:53.5373312Z",
+      "payload": "{\"activationSmokePassed\":true,\"checkedAt\":\"2026-10-20T08:50:45.377384426Z\",\"syntheticCases\":2}"
+    },
+    {
+      "time": "2026-10-20T08:51:05.3193339Z",
+      "payload": "{\"statementAI\":true,\"policyVerified\":true}"
+    },
+    {
+      "time": "2026-10-20T08:51:05.7342777Z",
+      "payload": "release sha-7b2deeaf65fe05d2da0f2cffedb7f14be89e67c1 is healthy"
+    },
+    {
+      "time": "2026-10-20T08:51:05.7346371Z",
+      "payload": "Statement AI action enable completed; document consent and owner financial confirmation remain required."
+    },
+    {
+      "time": "2026-10-20T08:51:07.7621016Z",
+      "payload": "{\"statementAI\":true,\"policyVerified\":true}"
+    },
+    {
+      "time": "2026-10-20T08:51:07.7702413Z",
+      "payload": "Exact release image and enabled Statement AI runtime verified."
+    },
+    {
+      "time": "2026-10-20T08:51:08.6482000Z",
+      "payload": "/: 200, no Basic challenge"
+    },
+    {
+      "time": "2026-10-20T08:51:09.1257652Z",
+      "payload": "/login: 200, no Basic challenge"
+    },
+    {
+      "time": "2026-10-20T08:51:09.5985122Z",
+      "payload": "/api/meta: 200, no Basic challenge"
+    },
+    {
+      "time": "2026-10-20T08:51:10.0511010Z",
+      "payload": "/api/auth/me: 401, no Basic challenge"
+    },
+    {
+      "time": "2026-10-20T08:51:10.5058847Z",
+      "payload": "/api/v1/accounts: 401, no Basic challenge"
+    }
+  ]
+}

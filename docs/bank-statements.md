@@ -1,12 +1,11 @@
 # Банковская выписка: загрузка, проверка и подтверждение
 
-Актуализация: 2026-10-19. Production `ef782ec` (S1.1 PR #73), deploy `39255669019`
-internal health PASS **17:55:14 +05:00 / 12:55:14 UTC**. Ручная загрузка/review
-доступны, Statement AI false: единственный S1.1 smoke дал columns
-`record_description` FAIL (пропущен дефис), cards NOT_RUN. Повторов нет.
-Read-only `39255943568` подтвердил runtime disabled и readiness; public/auth PASS.
-[S1.2](specs/0055-s12-description-separators.md) отдельно принят для уточнения
-prompt и одного нового bounded smoke. [Актуальный audit](specs/0055-activation-evidence.md).
+Актуализация: 2026-10-20. **Statement AI включён для ваших production-тестов.**
+Release `7b2deea` (S1.2 PR #74), deploy `39396162864` SUCCESS;
+включённый runtime/точный образ/current policy подтверждены **13:51:07 +05:00 /
+08:51:07 UTC**. Columns 19/19, cards 20/20 и public/auth smoke PASS.
+[Actual evidence](specs/0055-s12-evidence.md). Предыдущие FAIL сохранены в
+[истории](specs/0055-activation-evidence.md). Ваша проверка личной выписки ещё впереди.
 Поддерживается текстовый PDF одного дебетового RUB-счёта. OCR/сканы,
 зашифрованные документы и кредитные условия в этот срез не входят.
 Новый банк не требует обязательного parser-профиля, но успешное извлечение для
@@ -19,7 +18,7 @@ prompt и одного нового bounded smoke. [Актуальный audit](
 2. Без AI сопоставить исходные фрагменты полям строк и заголовка. Исходный текст,
    страница, нормализованные значения и проблемы видны рядом. Причина решения
    обязательна. Нераспознанное нельзя заменить догадкой.
-3. Если оператор отдельно включил statement AI, сначала подготовить preview.
+3. Statement AI включён: подготовить **новый** preview (старое согласие не подходит новой версии).
    Проверить передаваемые минимизированные фрагменты, модель, endpoint, верхнюю
    стоимость и дать отдельное согласие на inference. Это не согласие на ledger.
    При недоступном AI остаётся ручное сопоставление. Автоматического fallback нет.
@@ -106,7 +105,7 @@ helper, fake provider и disposable PostgreSQL. Live model и Jev evaluation
 
 ## Управление Statement AI
 
-Default остаётся выключенным; production opt-in хранится отдельно в защищённом
+Default остаётся выключенным; текущий production opt-in включён 2026-10-20 и хранится отдельно в защищённом
 `/opt/grace/shared/secrets/statement.env` (400/600, operator/root). Release
 загружает флаг и pinned policy, не меняя receipt/analysis. Rollback восстанавливает
 снятые с прежнего API флаг/policy. Global AI kill switch сохраняется.
