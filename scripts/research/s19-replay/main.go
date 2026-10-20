@@ -59,7 +59,7 @@ func sameResult(a, b statementqualification.Result) bool {
 func replay(p projection, d statementdata.Document, fixtureHash string) (output, error) {
 	fail := errors.New("s19_replay_unverified")
 	out := output{}
-	if p.Version != "statement.s19.projection.v1" || !p.ExpectedSource || !p.ReportIdentityVerified || !p.ServiceReasonsValidated || !p.ArtifactsUnchanged || len(p.Corpus) != 3 || len(p.Parts) != 1 || fixtureHash != statementqualification.FixtureHash("columns") || d.Extractor != statementdata.ExtractorVersion {
+	if statementqualification.ScreeningScorerVersion != "statement-screening.v1.19-20-23" || p.Version != "statement.s19.projection.v1" || !p.ExpectedSource || !p.ReportIdentityVerified || !p.ServiceReasonsValidated || !p.ArtifactsUnchanged || len(p.Corpus) != 3 || len(p.Parts) != 1 || fixtureHash != statementqualification.FixtureHash("columns") || d.Extractor != statementdata.ExtractorVersion {
 		return out, fail
 	}
 	for i, n := range statementqualification.ScreeningNames() {

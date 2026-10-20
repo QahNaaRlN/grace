@@ -125,11 +125,11 @@ func TestS19RealHelperReplay(t *testing.T) {
 			}
 			result := statementqualification.ScoreScreening("columns", r)
 			expected := 19
-			if mode != "complete" {
+			if mode == "labels" {
 				expected = 18
 			}
-			if mode == "combined" {
-				expected = 17
+			if mode == "separator" || mode == "combined" {
+				expected = 16
 			}
 			if result.Checks != 19 || result.Correct != expected {
 				t.Fatalf("unexpected independent score: %+v", result)
@@ -142,8 +142,8 @@ func TestS19RealHelperReplay(t *testing.T) {
 			p.Corpus[0].PlanHash = statementextract.Hash(plan)
 			p.Corpus[0].InputBytes = statementextract.InputBytes(plan.Chunks[0])
 			out, e := replay(p, d, statementqualification.FixtureHash("columns"))
-			if e != nil || !out.ReplayMatchesSaved {
-				t.Fatal("exact replay failed", e)
+			if e == nil || out.Verified {
+				t.Fatal("historical v1 projection accepted under the new scorer")
 			}
 			p.Result.Correct++
 			if _, e := replay(p, d, statementqualification.FixtureHash("columns")); e == nil {
@@ -185,12 +185,29 @@ func TestS19RetainedReplay(t *testing.T) {
 		t.Fatal(e)
 	}
 	out, e := replay(p, d, statementqualification.FixtureHash("columns"))
-	if e != nil || !out.Verified || out.Result.Correct != 17 {
-		t.Fatal("saved failure no longer reproduces", e)
+	if e == nil || out.Verified {
+		t.Fatal("historical v1 got current PASS")
 	}
-	expected := []string{"openingBookBalance:ambiguous_money", "closingBookBalance:ambiguous_money"}
-	if !reflect.DeepEqual(out.Result.Validation, expected) || out.Descriptions[1].Actual != "OWN TRANSFER REVIEW SEMANTICS" {
-		t.Fatal("changed cause", out)
+	historical := []string{"openingBookBalance:ambiguous_money", "closingBookBalance:ambiguous_money"}
+	if p.Result.Correct != 17 || !reflect.DeepEqual(p.Result.Validation, historical) {
+		t.Fatal("historical result changed")
+	}
+	merged, e := statementextract.MergeProposals(mustPlan(t, d), p.Parts)
+	if e != nil {
+		t.Fatal(e)
+	}
+	pages := []int{}
+	for _, page := range d.Pages {
+		pages = append(pages, page.Number)
+	}
+	review, e := statementdata.ValidateProposal(d, merged, pages, true, "")
+	if e != nil {
+		t.Fatal(e)
+	}
+	current := statementqualification.ScoreScreening("columns", review)
+	expected := append(append([]string{}, historical...), "row_2:description_evidence_gap")
+	if current.Correct != 16 || !reflect.DeepEqual(current.Validation, expected) || review.Rows[1].Description != "OWN TRANSFER REVIEW SEMANTICS" {
+		t.Fatal("current source guard missed retained failure", current)
 	}
 	plan, e := statementextract.BuildScreeningPlan(d, statementextract.ScreeningPolicy())
 	if e != nil {
@@ -236,4 +253,13 @@ func TestS19RetainedReplay(t *testing.T) {
 	if !inService {
 		t.Fatal("missing separator not assigned to service")
 	}
+}
+
+func mustPlan(t *testing.T, d statementdata.Document) statementextract.Plan {
+	t.Helper()
+	p, e := statementextract.BuildScreeningPlan(d, statementextract.ScreeningPolicy())
+	if e != nil {
+		t.Fatal(e)
+	}
+	return p
 }

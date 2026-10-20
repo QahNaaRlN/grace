@@ -1,8 +1,9 @@
-Следующий контракт — [S1.10](specs/0055-s110-grounding-guards.md), **draft / not_started**, 2026-10-21:
+Следующий контракт — [S1.10](specs/0055-s110-grounding-guards.md), **accepted / local_verified**, 2026-10-21:
 общие Go-проверки внутренних пропусков description и ролей opening/closing
 book balance, актуальная проверка retained reviews перед confirmation и новая
 qualification/scorer version. Inference=0, без prompt/model/deployment изменений.
-Реализация требует принятия этого конкретного scope по AGENTS.md.
+Владелец принял G1–G5; реализация и offline/SQL/HTTP проверки PASS.
+[Подтверждения](specs/0055-s110-evidence.md). Интеграция PR №82 и CI final head отдельно.
 PR №81 слит (`5981449`, 04:04:03 +05:00); [post-merge evidence](specs/0055-pr81-postmerge.md):
 local gates PASS, source/head/main CI все5/5 PASS, Delivery39513380470 PASS.
 

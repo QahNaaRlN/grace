@@ -10,7 +10,7 @@ import (
 )
 
 const ReportVersion = "statement.synthetic.v3.lexical-records"
-const ScorerVersion = "statement-fixed-corpus.v2.record-descriptions"
+const ScorerVersion = "statement-fixed-corpus.v3.grounding"
 const MaxSmokeMicros int64 = 140000
 const MaxSmokeCalls = 2
 const RunTimeout = 300 * time.Second
