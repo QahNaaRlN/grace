@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.5: диагностика отказов screening
 
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started.
+- Статус: accepted; implementation_status: not_started.
+- Acceptance: прямое «Утверждаю» в ответ на S1.5 без нового smoke и смены модели.
 - Основание: [read-only diagnosis S1.4](../research/statement-quality/s14-provider-failure-diagnosis.md).
 - Решение требуется только для этого bounded исправления; новый live smoke,
   production adoption и deployment в пакет не входят.
@@ -14,7 +15,7 @@ qualification_provider_failed / unknown billing. Разные guards дают э
 operator-only screening report должен сохранять безопасное основание отказа,
 не принимая ранее отвергавшиеся ответы и не включая personal/provider text.
 
-## Контракт кандидата
+## Принятый контракт
 
 1. Только screeningDocument path получает закрытую классификацию: request,
    transport, timeout, http_4xx/http_5xx/http_other, read/oversize, envelope,

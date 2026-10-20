@@ -15,7 +15,8 @@ Flash Lite / Google EU, provider cap $0.1617. Не разрешает production
 2026-10-20 17:18:36 UTC: read-only saved-metadata audit PASS, runtime/shared-ledger
 readiness PASS, 14 synthetic transport counterexamples PASS. Доказан пробел
 observability, точный исходный guard UNVERIFIED: chat envelope не сохранён.
-[S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **draft**,
+[S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **accepted**,
+2026-10-20, прямое «Утверждаю»;
 implementation not_started; без нового inference, policy switch или deployment.
 
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
