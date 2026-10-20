@@ -1,4 +1,27 @@
-Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
+Текущее состояние — **2026-10-21 02:13:09 +05:00**:
+расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.
+[Сверка и settlement](specs/0055-s16-reconciliation-evidence.md) выполнены
+без нового inference; одна reservation settled, остальные строки не изменялись.
+[S1.6](specs/0055-s16-evidence.md) остаётся **FAIL selected_model** до
+первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
+Production policy/model/flags сохранены, деплоя и paid retry нет.
+Следующий [S1.7 — точная идентичность модели в screening](specs/0055-s17-selected-model-identity.md)
+— **accepted/local_verified**, 2026-10-21. Владелец утвердил offline-реализацию;
+I1–I4 PASS: точная пара, свежий catalog proof, report v3, product isolation,
+реальные PDF со scorer19/20/23, make test/production/race/vet.
+[Подтверждения](specs/0055-s17-evidence.md). Внешних inference=0; интеграция ожидается.
+Новый платный smoke, деплой и переключение модели не разрешены.
+
+Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
+слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
+[Проверки после слияния](specs/0055-pr78-postmerge.md): main CI 5/5 PASS,
+локальные make test/go vet/diff check PASS; Delivery `39490817275` PASS.
+Образы опубликованы, деплой приложения не выполнялся.
+Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — accepted/local_verified, live FAIL selected_model:
+один новый smoke с диагностикой, не более 3 вызовов / $0.1617 provider cap,
+без переключения модели; владелец утвердил реализацию и этот единственный запуск; он выполнен, повтор не разрешён.
+
+Состояние до S1.6 — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
 [единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
 FAIL до первого score; quality UNVERIFIED. Предоставленный владельцем generation
 ID сверён через API, подтверждённый расход учтён, shared uncertain block снят.
@@ -8,7 +31,7 @@ Statement AI runtime flag enabled и production-модель сохранены;
 
 # Roadmap Grace
 
-Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).
+Актуализация: **2026-10-21** (Asia/Yekaterinburg; UTC отдельно в evidence).
 **Production `ec15861`: review repair PR #76 deployed** в 17:44:58 +05:00 /
 12:44:58 UTC. Main CI `39423345963`, Delivery `39424344690`,
 [deploy `39424505774`](https://github.com/QahNaaRlN/grace/actions/runs/39424505774) PASS:
@@ -275,12 +298,12 @@ Reconciliation расхода завершён отдельно в 17:10:51 UTC,
 завершена 17:18:36 UTC: read-only audit/runtime/shared-ledger readiness PASS;
 14 synthetic transport cases PASS. Точный исходный guard UNVERIFIED — не сохранён
 chat envelope, несколько guards дают общий код. Следующий bounded пакет
-[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/local_verified
+[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/integrated (PR №78, `29a28a7`)
 (прямое «Утверждаю», 2026-10-20), [D1–D5 PASS](specs/0055-s15-evidence.md):
 безопасные коды отказа, HTTP category, private unverified correlation и report v2.
 make test (334 web), real helper + fake-provider 19/20/23, SQL lifecycle/restore и
 deployment mocks PASS. Не deployed, новых paid calls нет; current-head CI отдельно.
-После него — отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
+После него — отдельное решение о новом bounded smoke. S1.3 интегрирована (PR №78, `29a28a7`),
 не deployed; новая модель не допущена в production.
 
 2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов
@@ -289,7 +312,7 @@ deployment mocks PASS. Не deployed, новых paid calls нет; current-head
 фиксирует последовательность: synthetic regression → исправление grounding →
 сравнение актуальных model/endpoint пар → отдельно согласованный AI smoke →
 полный corpus. [S1.3](specs/0055-s13-turnover-roles.md) **accepted** прямым поручением
-«оформи спеку и вперед», реализация **local_verified**,
+«оформи спеку и вперед», реализация **integrated** (PR №78, `29a28a7`),
 [T1–T6 PASS](specs/0055-s13-evidence.md), не deployed.
 [Metadata shortlist](research/statement-quality/model-shortlist-2026-10-20.md):
 Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары

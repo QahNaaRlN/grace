@@ -43,6 +43,10 @@ test-integration:
 
 test-production:
 	./scripts/test-statement-screening.sh
+	./scripts/test-statement-screening-s16.sh
+	python3 scripts/research/test-screening-workflow-modes.py
+	python3 scripts/research/test-screening-s16-inspection.py
+	python3 scripts/research/test-screening-s16-reconciliation.py
 	./scripts/test-statement-activation.sh
 	./scripts/test-restore-readiness.sh
 	./scripts/test-commitments-rollout.sh

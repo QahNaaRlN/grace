@@ -1,4 +1,23 @@
-Текущее состояние, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
+Текущее состояние — **2026-10-21 02:13:09 +05:00**:
+расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.
+[Сверка и settlement](0055-s16-reconciliation-evidence.md) выполнены
+без нового inference; одна reservation settled, остальные строки не изменялись.
+[S1.6](0055-s16-evidence.md) остаётся **FAIL selected_model** до
+первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
+Production policy/model/flags сохранены, деплоя и paid retry нет.
+Следующий [S1.7 — точная идентичность модели в screening](0055-s17-selected-model-identity.md)
+— **accepted/local_verified**, 2026-10-21. Владелец утвердил offline-реализацию;
+I1–I4 PASS: точная пара, свежий catalog proof, report v3, product isolation,
+реальные PDF со scorer19/20/23, make test/production/race/vet.
+[Подтверждения](0055-s17-evidence.md). Внешних inference=0; интеграция ожидается.
+Новый платный smoke, деплой и переключение модели не разрешены.
+
+Интеграция — **2026-10-21**: PR №78 слит, `29a28a7`; S1.3/S1.4/S1.5 в main.
+[Post-merge evidence](0055-pr78-postmerge.md): main CI 5/5 PASS, Delivery PASS,
+локальные make test/go vet/diff check PASS; deployment не выполнялся. [S1.6](0055-s16-diagnostic-screening.md) — accepted/local_verified (N1–N4 PASS), live FAIL selected_model;
+владелец утвердил реализацию и один запуск, разрешение израсходовано.
+
+Исторический срез, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
 provider stage до первого score; quality UNVERIFIED. Расход подтверждён через
 GET generation metadata и учтён; shared uncertain block снят.
 Runtime Statement AI flag enabled сохранён, production-модель не менялась.
@@ -8,7 +27,7 @@ Runtime Statement AI flag enabled сохранён, production-модель не
 [SPEC-0055 / S1.4 — candidate screening](0055-s14-candidate-screening.md) — **accepted**,
 2026-10-20, прямое «работаем»: реализация и один 3-call screening Gemini 3.1
 Flash Lite / Google EU, provider cap $0.1617. Не разрешает production model switch
-или enable; implementation local_verified (C1–C5), live C6 FAIL provider-stage, quality UNVERIFIED;
+или enable; implementation integrated (PR №78, `29a28a7`; C1–C5 PASS), live C6 FAIL provider-stage, quality UNVERIFIED;
 [evidence](0055-s14-evidence.md).
 
 [Диагностика исходного S1.4 failure](../research/statement-quality/s14-provider-failure-diagnosis.md),
@@ -17,13 +36,13 @@ readiness PASS, 14 synthetic transport counterexamples PASS. Доказан пр
 observability, точный исходный guard UNVERIFIED: chat envelope не сохранён.
 [S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **accepted**,
 2026-10-20, прямое «Утверждаю»;
-implementation **local_verified (D1–D5 PASS)**; [evidence](0055-s15-evidence.md).
+implementation **integrated** (PR №78, `29a28a7`; D1–D5 PASS); [evidence](0055-s15-evidence.md).
 Закрытые diagnostics, private unverified correlation и новый screening report v2;
 без нового inference, policy switch или deployment. Current-head CI отдельно.
 
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
 — **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;
-implementation **local_verified**, [T1–T6 evidence](0055-s13-evidence.md).
+implementation **integrated** (PR №78, `29a28a7`), [T1–T6 evidence](0055-s13-evidence.md).
 Go role guard + RU regression + financial-label
 redaction + публичная metadata современных кандидатов. Без paid calls,
 production policy switch или deployment; SPEC-0056 registry остаётся draft.

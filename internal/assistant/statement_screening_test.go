@@ -15,6 +15,10 @@ func TestScreeningTransportIsExplicitAndPinned(t *testing.T) {
 	posts := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
+			if r.URL.Path == "/models" {
+				fmt.Fprint(w, identityCatalog)
+				return
+			}
 			if r.URL.Path == "/endpoints/zdr" {
 				fmt.Fprint(w, `{"data":[{"model_id":"google/gemini-3.1-flash-lite","tag":"google-vertex/eu","status":0}]}`)
 				return
@@ -57,7 +61,7 @@ func TestScreeningTransportIsExplicitAndPinned(t *testing.T) {
 		t.Fatal(e)
 	}
 	_, bill, e := reasoner.Complete(context.Background(), policy, statementextract.Chunk{Index: 1, Spans: []statementextract.RedactedSpan{{ID: "s0", Page: 1, Text: "-1.00", LexicalClass: statementextract.ClassNumericFragment}}})
-	if e == nil || bill == nil || bill.CostMicros != 10000 || posts != 1 {
+	if e == nil || bill == nil || bill.CostMicros != 10000 || bill.ScreeningRoute == nil || !bill.ScreeningRoute.Valid(time.Now()) || posts != 1 {
 		t.Fatal("lost malformed billing", e, bill, posts)
 	}
 	standard, e := NewStatementOpenRouterProvider("synthetic", server.Client())

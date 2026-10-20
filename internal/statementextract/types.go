@@ -9,6 +9,7 @@ import (
 )
 
 type Billing struct {
+	ScreeningRoute            *ScreeningRouteEvidence
 	GenerationID              string
 	CostMicros                int64
 	InputTokens, OutputTokens int

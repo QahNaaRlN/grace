@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.3: проверка ролей оборотов и актуальные кандидаты моделей
 
+- [Интеграция PR №78 и отдельные post-merge проверки](0055-pr78-postmerge.md).
 - Дата: 2026-10-20 (Asia/Yekaterinburg).
-- Статус: accepted; implementation_status: local_verified (T1–T6 PASS; не deployed).
+- Статус: accepted; implementation_status: integrated (PR №78, `29a28a7`, 2026-10-21); проверки (T1–T6 PASS; не deployed).
 - [Отчёт и executable evidence](0055-s13-evidence.md).
 - Acceptance record: прямое поручение владельца «оформи спеку и вперед» после
   принятого плана регрессии БИК/КПП и подбора современных эффективных моделей.

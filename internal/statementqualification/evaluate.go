@@ -32,31 +32,33 @@ type Result struct {
 	LatencyMS  int64    `json:"latencyMs"`
 }
 type Call struct {
-	GenerationID string `json:"generationId"`
-	InputTokens  int    `json:"inputTokens"`
-	OutputTokens int    `json:"outputTokens"`
-	CostMicros   int64  `json:"costMicros"`
-	LatencyMS    int64  `json:"latencyMs"`
+	ScreeningRoute *statementextract.ScreeningRouteEvidence `json:"screeningRoute,omitempty"`
+	GenerationID   string                                   `json:"generationId"`
+	InputTokens    int                                      `json:"inputTokens"`
+	OutputTokens   int                                      `json:"outputTokens"`
+	CostMicros     int64                                    `json:"costMicros"`
+	LatencyMS      int64                                    `json:"latencyMs"`
 }
 type Trace struct {
 	Name  string                   `json:"name"`
 	Parts []statementdata.Proposal `json:"parts"`
 }
 type Report struct {
-	Digest        string                                `json:"digest"`
-	Profile       Profile                               `json:"profile"`
-	Corpus        []CaseEvidence                        `json:"corpus"`
-	Traces        []Trace                               `json:"traces,omitempty"`
-	Version       string                                `json:"version"`
-	Time          time.Time                             `json:"time"`
-	Policy        statementextract.Policy               `json:"policy"`
-	MaximumMicros int64                                 `json:"maximumMicros"`
-	ActualMicros  *int64                                `json:"actualMicros"`
-	Results       []Result                              `json:"results"`
-	Calls         []Call                                `json:"calls"`
-	Passed        bool                                  `json:"passed"`
-	Error         string                                `json:"error,omitempty"`
-	Failure       *statementextract.ScreeningDiagnostic `json:"failure,omitempty"`
+	ScreeningFinishedAt *time.Time                            `json:"screeningFinishedAt,omitempty"`
+	Digest              string                                `json:"digest"`
+	Profile             Profile                               `json:"profile"`
+	Corpus              []CaseEvidence                        `json:"corpus"`
+	Traces              []Trace                               `json:"traces,omitempty"`
+	Version             string                                `json:"version"`
+	Time                time.Time                             `json:"time"`
+	Policy              statementextract.Policy               `json:"policy"`
+	MaximumMicros       int64                                 `json:"maximumMicros"`
+	ActualMicros        *int64                                `json:"actualMicros"`
+	Results             []Result                              `json:"results"`
+	Calls               []Call                                `json:"calls"`
+	Passed              bool                                  `json:"passed"`
+	Error               string                                `json:"error,omitempty"`
+	Failure             *statementextract.ScreeningDiagnostic `json:"failure,omitempty"`
 }
 
 // Run reserves every planned call before inference. It never retries a call;
@@ -79,6 +81,10 @@ func run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 	ctx, cancelRun := context.WithTimeout(ctx, time.Duration(profile.RunSeconds)*time.Second)
 	defer cancelRun()
 	defer func() {
+		if screening {
+			finished := time.Now().UTC()
+			report.ScreeningFinishedAt = &finished
+		}
 		if err != nil {
 			report.Passed = false
 			report.Error = err.Error()
@@ -158,7 +164,12 @@ func run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				known = false
 			} else {
 				total += billing.CostMicros
-				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
+				call := Call{GenerationID: billing.GenerationID, InputTokens: billing.InputTokens, OutputTokens: billing.OutputTokens, CostMicros: billing.CostMicros, LatencyMS: time.Since(callStart).Milliseconds()}
+				if screening && billing.ScreeningRoute != nil {
+					route := billing.ScreeningRoute.Sanitize()
+					call.ScreeningRoute = &route
+				}
+				report.Calls = append(report.Calls, call)
 			}
 			if e != nil || !known {
 				if screening {
@@ -178,6 +189,10 @@ func run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
 				}
 				return report, errors.New("qualification_provider_failed")
+			}
+			if screening && !billing.ScreeningRoute.Valid(time.Now()) {
+				report.Failure = &statementextract.ScreeningDiagnostic{Code: "request"}
+				return report, errors.New("qualification_provider_failed_request")
 			}
 			if total > report.MaximumMicros {
 				return report, errors.New("qualification_cost_overrun")

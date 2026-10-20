@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.5: диагностика отказов screening
 
+- [Интеграция PR №78 и отдельные post-merge проверки](0055-pr78-postmerge.md).
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (D1–D5 PASS); not_deployed.
+- Статус: accepted; implementation_status: integrated (PR №78, `29a28a7`, 2026-10-21); проверки (D1–D5 PASS); not_deployed.
 - [Implementation evidence](0055-s15-evidence.md).
 - Acceptance: прямое «Утверждаю» в ответ на S1.5 без нового smoke и смены модели.
 - Основание: [read-only diagnosis S1.4](../research/statement-quality/s14-provider-failure-diagnosis.md).

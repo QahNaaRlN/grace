@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.4: один screening современной модели
 
+- [Интеграция PR №78 и отдельные post-merge проверки](0055-pr78-postmerge.md).
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (C1–C5 PASS), C6 FAIL provider-stage; billing reconciled 2026-10-20 17:10:51 UTC, uncertain block cleared; quality UNVERIFIED.
+- Статус: accepted; implementation_status: integrated (PR №78, `29a28a7`, 2026-10-21); проверки (C1–C5 PASS), C6 FAIL provider-stage; billing reconciled 2026-10-20 17:10:51 UTC, uncertain block cleared; quality UNVERIFIED.
 - [Implementation evidence](0055-s14-evidence.md).
 - Acceptance: «работаем» в ответ на предложение следующего отдельно согласованного
   smoke: Gemini 3.1 Flash Lite / Google EU, 3 public cases / provider cap $0.1617.

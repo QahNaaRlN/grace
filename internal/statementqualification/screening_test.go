@@ -70,6 +70,12 @@ func screeningReportFixture() Report {
 	r.Results = append(r.Results, Result{Name: name, Rows: 2, Checks: 23, Correct: 23, Passed: true})
 	r.Calls = append(r.Calls, Call{GenerationID: "ru-synthetic", InputTokens: 100, OutputTokens: 100, CostMicros: 50})
 	r.Traces = append(r.Traces, Trace{Name: name, Parts: []statementdata.Proposal{{}}})
+	r.Time = r.Time.Add(-3 * time.Second)
+	for i := range r.Calls {
+		r.Calls[i].ScreeningRoute = screeningRouteFixture(r.Time.Add(time.Millisecond))
+	}
+	end := r.Time.Add(time.Second)
+	r.ScreeningFinishedAt = &end
 	r.Digest = reportDigest(r)
 	return r
 }
@@ -86,4 +92,9 @@ func TestScreeningReportNeverActivates(t *testing.T) {
 			t.Fatal("tampered screening passed")
 		}
 	}
+}
+
+func screeningRouteFixture(observed time.Time) *statementextract.ScreeningRouteEvidence {
+	pin := statementextract.ScreeningPolicy()
+	return &statementextract.ScreeningRouteEvidence{Proof: &statementextract.ScreeningIdentityProof{Alias: pin.Model, Canonical: statementextract.ScreeningCanonicalModel, Provider: pin.Provider, CatalogSHA256: strings.Repeat("a", 64), VerifiedAt: observed.Add(-time.Second)}, ObservedAt: observed, SelectedModelClass: "pinned_canonical"}
 }

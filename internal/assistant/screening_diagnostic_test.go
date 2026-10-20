@@ -68,6 +68,7 @@ func TestScreeningDiagnosticsIOAndProductCompatibility(t *testing.T) {
 				if screening {
 					p.statementDocument = true
 					p.screeningDocument = true
+					in.screeningProof = syntheticScreeningProof()
 					pin := statementextract.ScreeningPolicy()
 					in.Policy = ModelPolicy{Model: pin.Model, Provider: pin.Provider, ProviderName: pin.ProviderName, InputMicrosPerMillion: pin.InputMicrosPerMillion, OutputMicrosPerMillion: pin.OutputMicrosPerMillion, VerifiedAt: time.Now().Add(-time.Minute)}
 					in.DisableReasoning = true

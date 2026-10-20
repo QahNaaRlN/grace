@@ -120,12 +120,25 @@ func screeningSummary(r statementqualification.Report) map[string]any {
 		}
 		results = append(results, map[string]any{"name": s.Name, "passed": s.Passed, "checks": s.Checks, "correct": s.Correct, "codes": screeningPublicCodes(s.Codes), "validation": screeningPublicCodes(s.Validation), "coverage": screeningPublicCodes(s.Coverage)})
 	}
+	classes := []string{}
+	for i, call := range r.Calls {
+		if i >= 3 {
+			break
+		}
+		if call.ScreeningRoute != nil {
+			classes = append(classes, call.ScreeningRoute.Sanitize().SelectedModelClass)
+		}
+	}
 	diagnosticCode := ""
+	selectedClass := "not_observed"
 	if r.Failure != nil {
 		diagnosticCode = r.Failure.Sanitize().Code
+		if route := r.Failure.Sanitize().Route; route != nil {
+			selectedClass = route.SelectedModelClass
+		}
 	}
 	errorCode := statementqualification.ScreeningErrorCode(r.Error)
-	return map[string]any{"screeningPassed": valid, "error": errorCode, "diagnosticCode": diagnosticCode, "results": results, "activationAuthorized": false}
+	return map[string]any{"screeningPassed": valid, "error": errorCode, "diagnosticCode": diagnosticCode, "selectedModelClass": selectedClass, "selectedModelClasses": classes, "results": results, "activationAuthorized": false}
 }
 
 func screeningPublicCodes(in []string) []string {

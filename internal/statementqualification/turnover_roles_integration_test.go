@@ -53,7 +53,11 @@ func (f *screeningFixtureReasoner) Complete(ctx context.Context, p statementextr
 		}
 	}
 	if !ru {
-		return f.activationFixtureReasoner.Complete(ctx, p, c)
+		out, bill, err := f.activationFixtureReasoner.Complete(ctx, p, c)
+		if bill != nil {
+			bill.ScreeningRoute = screeningRouteFixture(time.Now().UTC())
+		}
+		return out, bill, err
 	}
 	f.calls++
 	out := f.ru
@@ -61,7 +65,7 @@ func (f *screeningFixtureReasoner) Complete(ctx context.Context, p statementextr
 		out.Rows = append([]statementdata.RowMapping{}, out.Rows...)
 		out.Rows[0].Description = nil
 	}
-	return out, &statementextract.Billing{GenerationID: "synthetic-screening-ru", CostMicros: 100, InputTokens: 25000, OutputTokens: 3000}, nil
+	return out, &statementextract.Billing{ScreeningRoute: screeningRouteFixture(time.Now().UTC()), GenerationID: "synthetic-screening-ru", CostMicros: 100, InputTokens: 25000, OutputTokens: 3000}, nil
 }
 func TestScreeningRealHelperThreeCases(t *testing.T) {
 	socket := os.Getenv("TEST_PDF_EXTRACTOR_SOCKET")

@@ -72,6 +72,7 @@ type LLMMessage struct {
 	Content any    `json:"content"`
 }
 type LLMRequest struct {
+	screeningProof       *statementextract.ScreeningIdentityProof
 	DisableReasoning     bool
 	Policy               ModelPolicy
 	Messages             []LLMMessage
@@ -152,6 +153,14 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 			resultErr = &screeningDiagnosticError{cause: resultErr, detail: diagnostic}
 		}
 	}()
+	if p.screeningDocument {
+		observed := time.Now().UTC()
+		diagnostic.Route = &statementextract.ScreeningRouteEvidence{Proof: in.screeningProof, ObservedAt: observed, SelectedModelClass: "not_observed"}
+		pin := statementextract.ScreeningPolicy()
+		if in.screeningProof == nil || !in.screeningProof.ValidAt(observed) || in.Policy.Model != pin.Model || in.Policy.Provider != pin.Provider || in.Policy.DisplayProvider() != pin.ProviderName || in.Policy.InputMicrosPerMillion != pin.InputMicrosPerMillion || in.Policy.OutputMicrosPerMillion != pin.OutputMicrosPerMillion {
+			return LLMResponse{}, errors.New("provider_request")
+		}
+	}
 	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
 	}
@@ -256,6 +265,9 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	diagnostic.Code = "envelope"
 	decoded := json.Unmarshal(raw, &out) == nil
 	if decoded {
+		if diagnostic.Route != nil {
+			diagnostic.Route.SelectedModelClass = selectedModelClass(out.Metadata)
+		}
 		diagnostic.CorrelationID = out.ID
 	}
 	if !decoded || out.ID == "" || out.Model != in.Policy.Model {
@@ -287,7 +299,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	for _, endpoint := range out.Metadata.Endpoints.Available {
 		if endpoint.Selected {
 			selected++
-			if endpoint.Model != in.Policy.Model {
+			if endpoint.Model != in.Policy.Model && !(p.screeningDocument && in.screeningProof != nil && endpoint.Model == in.screeningProof.Canonical) {
 				diagnostic.Code = "selected_model"
 				return LLMResponse{}, errors.New("provider_protocol")
 			}
