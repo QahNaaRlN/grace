@@ -13,7 +13,7 @@ accepted commit `a94cbb4` предшествует коду. Baseline `7c4ef83` 
 | C3 | `TestScreeningRealHelperThreeCases`: pinned Poppler → columns19/19 + cards20/20 + RU23/23. Whole-run reservation161700, один settle300 synthetic micros, 3 calls. RU omitted description FAIL, без retry. Это fake-provider evidence, не измерение Gemini |
 | C4 | `TestScreeningStopSettleAndPreflight`, `TestScreeningReportNeverActivates`: wrong order/hash/policy до reservation, known error billed, unknown freezes; report с другим version/profile никогда не разрешает activation. `scripts/test-statement-screening.sh`: failed preflight без marker; failed run сохраняет report600/marker и не повторяется, включая другой SHA; billing не попадает в stdout |
 | C5 | PASS: `TMPDIR=/var/tmp/grace-quality-next-tests VITEST_MAX_WORKERS=1 make test` (Go + 88 web files / 334 tests + lint/FSD/format/build/Jev); `scripts/test-bank-statements.sh`; `make test-production`; `go vet ./cmd/... ./internal/...`; `git diff --check`; YAML/exclusive-job guards |
-| C6 | **FAIL**, [run 39459614043](https://github.com/QahNaaRlN/grace/actions/runs/39459614043), source `e36dbcbb5c57ed8b2060cc2bcbc1ebc8482fd728`, 2026-10-20 16:41:56 UTC. `qualification_provider_failed`, results empty, до первого score. Application image/health preserved. Автоповторов нет; качество кандидата не измерено, billing audit read-only pending |
+| C6 | **FAIL**, [run 39459614043](https://github.com/QahNaaRlN/grace/actions/runs/39459614043), source `e36dbcbb5c57ed8b2060cc2bcbc1ebc8482fd728`, 2026-10-20 16:41:56 UTC. `qualification_provider_failed`, results empty, до первого score. Application image/health preserved. Автоповторов нет; качество кандидата не измерено, billing read-only audit: unknown / uncertain, 0 recorded calls / 0 scores |
 
 Remote harness добавлен как explicit `statement_screening_only` в существующий
 workflow. Deploy/inspect jobs взаимоисключены с screening. Exact-source CI обязателен
@@ -49,3 +49,24 @@ inspect/deploy skipped. Неуспешный provider run не является 
 reason/status или billing values, точная причина пока не установлена.
 Для аудита добавлен read-only fixed-report inspector, который выводит только
 booleans/counts и не делает inference, reservation, settlement или config writes.
+
+## Read-only audit и текущая блокировка
+
+[Audit 39460065144](https://github.com/QahNaaRlN/grace/actions/runs/39460065144),
+2026-10-20 16:44:29 UTC, source `652ba6b`: fixed report private, expected version/
+model/endpoint matched, authorizationConsumed=true, billingKnown=false,
+recordedCalls=0, scoredCases=0, passed=false. Это **не доказательство нулевого
+расхода или отсутствия upstream request**: отчёт не содержит подтверждённого
+billing и generation ID. Existing readiness отдельно вывел
+statement_qualification_usage_requires_review; job overall FAIL ожидаем из-за
+uncertain ledger, read-only report inspection step прошёл.
+
+Runtime flag Statement AI остаётся enabled, image/health сохранены, но shared
+uncertain ledger блокирует новые платные запросы. Ручной импорт доступен.
+Никакого budget reset, вымышленного zero settlement, нового inference или смены
+модели не сделано. Для reconciliation нужен generation ID из Activity для
+Gemini 3.1 Flash Lite / Google EU около 20.10.2026 16:41:56 UTC / 21:41:56 +05.
+Запрошен только ID, не API key. [Официальный generation endpoint](https://openrouter.ai/docs/api/api-reference/generations/get-generation)
+требует ID; [Analytics API](https://openrouter.ai/blog/announcements/activity-dashboard/)
+требует management key, regular inference key его не заменяет. Management key
+не запрашивался и не добавлялся. Без authoritative evidence блокировку не снимаем.

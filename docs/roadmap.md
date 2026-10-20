@@ -1,3 +1,10 @@
+Актуальное ограничение — 2026-10-20 16:44 UTC / 21:44 +05:00:
+[единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
+FAIL до первого score. Расход unknown, shared ledger uncertain блокирует новые
+платные AI-запросы. Statement AI runtime flag enabled сохранён; production image
+и health не менялись. Ручной импорт работает. Нужен generation ID для сверки;
+нулевой расход не предполагается, автоматического paid retry нет.
+
 # Roadmap Grace
 
 Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).

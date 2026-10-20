@@ -1,3 +1,9 @@
+Текущее ограничение, 2026-10-20 16:44 UTC: S1.4 screening остановился на
+provider stage до первого score; billing unknown, shared ledger uncertain.
+Runtime Statement AI flag enabled сохранён, но новые платные AI calls
+блокируются до authoritative reconciliation. Ручной импорт доступен.
+[Evidence/audit](0055-s14-evidence.md); повторов нет.
+
 [SPEC-0055 / S1.4 — candidate screening](0055-s14-candidate-screening.md) — **accepted**,
 2026-10-20, прямое «работаем»: реализация и один 3-call screening Gemini 3.1
 Flash Lite / Google EU, provider cap $0.1617. Не разрешает production model switch
