@@ -4451,6 +4451,38 @@ components:
                   type: string
               reason:
                 type: string
+    StatementDraftMapping:
+      type: object
+      additionalProperties: false
+      required: [version, revision, status, proposal, unmappedSpanIds, unclassifiedSpanIds, issues]
+      properties:
+        version:
+          type: string
+          enum: [statement-review-mapping.v1]
+        revision:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [complete, reconstructed_partial, unavailable]
+        proposal:
+          anyOf:
+          - $ref: '#/components/schemas/StatementProposal'
+          - type: 'null'
+        unmappedSpanIds:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+        unclassifiedSpanIds:
+          type: array
+          items:
+            type: string
+        issues:
+          type: array
+          items:
+            type: string
     BankStatement:
       type: object
       additionalProperties: false
@@ -4526,6 +4558,8 @@ components:
           - type: 'null'
         layout:
           $ref: '#/components/schemas/StatementLayout'
+        draftMapping:
+          $ref: '#/components/schemas/StatementDraftMapping'
     StatementEdit:
       type: object
       additionalProperties: false

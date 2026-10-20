@@ -63,7 +63,13 @@ export function BankStatementImport() {
             <p className="break-all font-medium">
               {s.fileName} · {s.pageCount} стр.
             </p>
-            {s.review && <StatementReconciliation review={s.review} />}
+            {s.review && (
+              <StatementReconciliation
+                review={s.review}
+                layout={s.layout}
+                mapping={s.draftMapping}
+              />
+            )}
             <StatementOwnerReview key={`owner:${s.id}`} statement={s} />
             {!s.deletedAt && (
               <Button asChild variant="outline">
