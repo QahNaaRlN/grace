@@ -35,7 +35,11 @@ func (p *OpenRouterProvider) reservation(policy ModelPolicy, input, output int) 
 		return policy.ReservationMicros(input, output)
 	}
 	pin := statementextract.Policy{Model: policy.Model, Provider: policy.Provider, ProviderName: policy.ProviderName, InputMicrosPerMillion: policy.InputMicrosPerMillion, OutputMicrosPerMillion: policy.OutputMicrosPerMillion}
-	if !policy.Valid(time.Now()) || !pin.Valid() || policy.Vision || policy.ImageTokenUpperBound != 0 || input < 1 || input > statementextract.InputBound || output < 1 || output > statementextract.OutputBound {
+	allowed := pin.Valid()
+	if p.screeningDocument {
+		allowed = statementextract.ScreeningPolicyValid(pin)
+	}
+	if !policy.Valid(time.Now()) || !allowed || policy.Vision || policy.ImageTokenUpperBound != 0 || input < 1 || input > statementextract.InputBound || output < 1 || output > statementextract.OutputBound {
 		return 0, errors.New("price_unknown")
 	}
 	return (policy.InputMicrosPerMillion*int64(input) + policy.OutputMicrosPerMillion*int64(output) + 999999) / 1000000, nil

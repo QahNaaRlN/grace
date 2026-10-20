@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Synthetic RU turnover roles regression</title>
+<meta name="Subject" content="unspecified"/>
+<meta name="Keywords" content=""/>
+<meta name="Author" content="anonymous"/>
+<meta name="Creator" content="anonymous"/>
+<meta name="Producer" content="ReportLab PDF Library - (opensource)"/>
+<meta name="CreationDate" content="2000-01-01T00:00:00Z"/>
+<meta name="ModDate" content="2000-01-01T00:00:00Z"/>
+</head>
+<body>
+<doc>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="30.000000" yMin="29.310000" xMax="273.040000" yMax="42.930000">
+        <line xMin="30.000000" yMin="29.310000" xMax="273.040000" yMax="42.930000">
+          <word xMin="30.000000" yMin="29.310000" xMax="113.590000" yMax="42.930000">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="116.190000" yMin="29.310000" xMax="165.150000" yMax="42.930000">ВЫПИСКА</word>
+          <word xMin="167.750000" yMin="29.310000" xMax="170.970000" yMax="42.930000">-</word>
+          <word xMin="173.570000" yMin="29.310000" xMax="186.540000" yMax="42.930000">НЕ</word>
+          <word xMin="189.140000" yMin="29.310000" xMax="244.310000" yMax="42.930000">РЕАЛЬНЫЙ</word>
+          <word xMin="246.910000" yMin="29.310000" xMax="273.040000" yMax="42.930000">БАНК</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="59.310000" xMax="169.430000" yMax="72.930000">
+        <line xMin="30.000000" yMin="59.310000" xMax="169.430000" yMax="72.930000">
+          <word xMin="30.000000" yMin="59.310000" xMax="84.440000" yMax="72.930000">Доступный</word>
+          <word xMin="87.040000" yMin="59.310000" xMax="124.360000" yMax="72.930000">остаток</word>
+          <word xMin="126.960000" yMin="59.310000" xMax="146.990000" yMax="72.930000">RUB</word>
+          <word xMin="149.590000" yMin="59.310000" xMax="169.430000" yMax="72.930000">0,00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="99.310000" xMax="104.360000" yMax="112.930000">
+        <line xMin="30.000000" yMin="99.310000" xMax="104.360000" yMax="112.930000">
+          <word xMin="30.000000" yMin="99.310000" xMax="52.890000" yMax="112.930000">Дата</word>
+          <word xMin="55.490000" yMin="99.310000" xMax="104.360000" yMax="112.930000">операции</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="210.000000" yMin="99.310000" xMax="264.580000" yMax="112.930000">
+        <line xMin="210.000000" yMin="99.310000" xMax="264.580000" yMax="112.930000">
+          <word xMin="210.000000" yMin="99.310000" xMax="241.950000" yMax="112.930000">Сумма</word>
+          <word xMin="244.550000" yMin="99.310000" xMax="264.580000" yMax="112.930000">RUB</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="124.310000" xMax="81.120000" yMax="137.930000">
+        <line xMin="30.000000" yMin="124.310000" xMax="81.120000" yMax="137.930000">
+          <word xMin="30.000000" yMin="124.310000" xMax="81.120000" yMax="137.930000">12.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="210.000000" yMin="124.310000" xMax="250.220000" yMax="137.930000">
+        <line xMin="210.000000" yMin="124.310000" xMax="250.220000" yMax="137.930000">
+          <word xMin="210.000000" yMin="124.310000" xMax="250.220000" yMax="137.930000">-2486,00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="149.310000" xMax="190.070000" yMax="162.930000">
+        <line xMin="30.000000" yMin="149.310000" xMax="190.070000" yMax="162.930000">
+          <word xMin="30.000000" yMin="149.310000" xMax="83.570000" yMax="162.930000">ТЕСТОВЫЙ</word>
+          <word xMin="86.170000" yMin="149.310000" xMax="134.230000" yMax="162.930000">МАГАЗИН</word>
+          <word xMin="136.830000" yMin="149.310000" xMax="140.050000" yMax="162.930000">-</word>
+          <word xMin="142.650000" yMin="149.310000" xMax="190.070000" yMax="162.930000">ПОКУПКА</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="749.310000" xMax="85.890000" yMax="762.930000">
+        <line xMin="30.000000" yMin="749.310000" xMax="85.890000" yMax="762.930000">
+          <word xMin="30.000000" yMin="749.310000" xMax="77.570000" yMax="762.930000">Страница</word>
+          <word xMin="80.170000" yMin="749.310000" xMax="85.890000" yMax="762.930000">1</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="30.000000" yMin="29.310000" xMax="251.290000" yMax="42.930000">
+        <line xMin="30.000000" yMin="29.310000" xMax="251.290000" yMax="42.930000">
+          <word xMin="30.000000" yMin="29.310000" xMax="113.590000" yMax="42.930000">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="116.190000" yMin="29.310000" xMax="165.150000" yMax="42.930000">ВЫПИСКА</word>
+          <word xMin="167.750000" yMin="29.310000" xMax="170.970000" yMax="42.930000">-</word>
+          <word xMin="173.570000" yMin="29.310000" xMax="251.290000" yMax="42.930000">ПРОДОЛЖЕНИЕ</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="64.310000" xMax="104.360000" yMax="77.930000">
+        <line xMin="30.000000" yMin="64.310000" xMax="104.360000" yMax="77.930000">
+          <word xMin="30.000000" yMin="64.310000" xMax="52.890000" yMax="77.930000">Дата</word>
+          <word xMin="55.490000" yMin="64.310000" xMax="104.360000" yMax="77.930000">операции</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="210.000000" yMin="64.310000" xMax="264.580000" yMax="77.930000">
+        <line xMin="210.000000" yMin="64.310000" xMax="264.580000" yMax="77.930000">
+          <word xMin="210.000000" yMin="64.310000" xMax="241.950000" yMax="77.930000">Сумма</word>
+          <word xMin="244.550000" yMin="64.310000" xMax="264.580000" yMax="77.930000">RUB</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="89.310000" xMax="81.120000" yMax="102.930000">
+        <line xMin="30.000000" yMin="89.310000" xMax="81.120000" yMax="102.930000">
+          <word xMin="30.000000" yMin="89.310000" xMax="81.120000" yMax="102.930000">13.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="210.000000" yMin="89.310000" xMax="252.720000" yMax="102.930000">
+        <line xMin="210.000000" yMin="89.310000" xMax="252.720000" yMax="102.930000">
+          <word xMin="210.000000" yMin="89.310000" xMax="252.720000" yMax="102.930000">+3105,00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="114.310000" xMax="239.200000" yMax="127.930000">
+        <line xMin="30.000000" yMin="114.310000" xMax="239.200000" yMax="127.930000">
+          <word xMin="30.000000" yMin="114.310000" xMax="83.570000" yMax="127.930000">ТЕСТОВЫЙ</word>
+          <word xMin="86.170000" yMin="114.310000" xMax="131.870000" yMax="127.930000">ПЕРЕВОД</word>
+          <word xMin="134.470000" yMin="114.310000" xMax="137.690000" yMax="127.930000">-</word>
+          <word xMin="140.290000" yMin="114.310000" xMax="199.230000" yMax="127.930000">ПРОВЕРИТЬ</word>
+          <word xMin="201.830000" yMin="114.310000" xMax="239.200000" yMax="127.930000">СМЫСЛ</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="169.310000" xMax="138.900000" yMax="182.930000">
+        <line xMin="30.000000" yMin="169.310000" xMax="138.900000" yMax="182.930000">
+          <word xMin="30.000000" yMin="169.310000" xMax="74.070000" yMax="182.930000">Расходы:</word>
+          <word xMin="76.670000" yMin="169.310000" xMax="96.700000" yMax="182.930000">RUB</word>
+          <word xMin="99.300000" yMin="169.310000" xMax="105.020000" yMax="182.930000">2</word>
+          <word xMin="107.620000" yMin="169.310000" xMax="138.900000" yMax="182.930000">486,00</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="194.310000" xMax="159.340000" yMax="207.930000">
+        <line xMin="30.000000" yMin="194.310000" xMax="159.340000" yMax="207.930000">
+          <word xMin="30.000000" yMin="194.310000" xMax="94.510000" yMax="207.930000">Пополнения:</word>
+          <word xMin="97.110000" yMin="194.310000" xMax="117.140000" yMax="207.930000">RUB</word>
+          <word xMin="119.740000" yMin="194.310000" xMax="125.460000" yMax="207.930000">3</word>
+          <word xMin="128.060000" yMin="194.310000" xMax="159.340000" yMax="207.930000">105,00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="669.310000" xMax="104.090000" yMax="682.930000">
+        <line xMin="30.000000" yMin="669.310000" xMax="104.090000" yMax="682.930000">
+          <word xMin="30.000000" yMin="669.310000" xMax="50.010000" yMax="682.930000">БИК</word>
+          <word xMin="52.610000" yMin="669.310000" xMax="104.090000" yMax="682.930000">044000999</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="694.310000" xMax="104.880000" yMax="707.930000">
+        <line xMin="30.000000" yMin="694.310000" xMax="104.880000" yMax="707.930000">
+          <word xMin="30.000000" yMin="694.310000" xMax="50.800000" yMax="707.930000">КПП</word>
+          <word xMin="53.400000" yMin="694.310000" xMax="104.880000" yMax="707.930000">550001111</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="749.310000" xMax="85.890000" yMax="762.930000">
+        <line xMin="30.000000" yMin="749.310000" xMax="85.890000" yMax="762.930000">
+          <word xMin="30.000000" yMin="749.310000" xMax="77.570000" yMax="762.930000">Страница</word>
+          <word xMin="80.170000" yMin="749.310000" xMax="85.890000" yMax="762.930000">2</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+</doc>
+</body>
+</html>

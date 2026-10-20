@@ -1,0 +1,189 @@
+{
+  "version": "turnover-roles-ru.golden.v1",
+  "origin": "Independent synthetic generator source before model calls; development only, not holdout",
+  "rows": [
+    {
+      "operationDate": [
+        {
+          "page": 1,
+          "line": "12.10.2026",
+          "text": "12.10.2026"
+        }
+      ],
+      "accountAmount": [
+        {
+          "page": 1,
+          "line": "-2486,00",
+          "text": "-2486,00"
+        }
+      ],
+      "accountCurrency": [
+        {
+          "page": 1,
+          "line": "Доступный остаток RUB 0,00",
+          "text": "RUB"
+        }
+      ],
+      "description": [
+        {
+          "page": 1,
+          "line": "ТЕСТОВЫЙ МАГАЗИН - ПОКУПКА",
+          "text": "ТЕСТОВЫЙ МАГАЗИН - ПОКУПКА"
+        }
+      ]
+    },
+    {
+      "operationDate": [
+        {
+          "page": 2,
+          "line": "13.10.2026",
+          "text": "13.10.2026"
+        }
+      ],
+      "accountAmount": [
+        {
+          "page": 2,
+          "line": "+3105,00",
+          "text": "+3105,00"
+        }
+      ],
+      "accountCurrency": [
+        {
+          "page": 1,
+          "line": "Доступный остаток RUB 0,00",
+          "text": "RUB"
+        }
+      ],
+      "description": [
+        {
+          "page": 2,
+          "line": "ТЕСТОВЫЙ ПЕРЕВОД - ПРОВЕРИТЬ СМЫСЛ",
+          "text": "ТЕСТОВЫЙ ПЕРЕВОД - ПРОВЕРИТЬ СМЫСЛ"
+        }
+      ]
+    }
+  ],
+  "header": {
+    "availableBalanceObserved": [
+      {
+        "page": 1,
+        "line": "Доступный остаток RUB 0,00",
+        "text": "0,00"
+      }
+    ],
+    "currency": [
+      {
+        "page": 1,
+        "line": "Доступный остаток RUB 0,00",
+        "text": "RUB"
+      }
+    ],
+    "debitTurnover": [
+      {
+        "page": 2,
+        "line": "Расходы: RUB 2 486,00",
+        "text": "2 486,00"
+      }
+    ],
+    "creditTurnover": [
+      {
+        "page": 2,
+        "line": "Пополнения: RUB 3 105,00",
+        "text": "3 105,00"
+      }
+    ]
+  },
+  "labels": {
+    "availableBalanceObserved": [
+      {
+        "page": 1,
+        "line": "Доступный остаток RUB 0,00",
+        "text": "Доступный остаток"
+      }
+    ],
+    "debitTurnover": [
+      {
+        "page": 2,
+        "line": "Расходы: RUB 2 486,00",
+        "text": "Расходы:"
+      }
+    ],
+    "creditTurnover": [
+      {
+        "page": 2,
+        "line": "Пополнения: RUB 3 105,00",
+        "text": "Пополнения:"
+      }
+    ]
+  },
+  "service": [
+    {
+      "page": 1,
+      "line": "СИНТЕТИЧЕСКАЯ ВЫПИСКА - НЕ РЕАЛЬНЫЙ БАНК",
+      "text": "СИНТЕТИЧЕСКАЯ ВЫПИСКА - НЕ РЕАЛЬНЫЙ БАНК"
+    },
+    {
+      "page": 1,
+      "line": "Дата операции",
+      "text": "Дата операции"
+    },
+    {
+      "page": 1,
+      "line": "Сумма RUB",
+      "text": "Сумма RUB"
+    },
+    {
+      "page": 1,
+      "line": "Страница 1",
+      "text": "Страница 1"
+    },
+    {
+      "page": 2,
+      "line": "СИНТЕТИЧЕСКАЯ ВЫПИСКА - ПРОДОЛЖЕНИЕ",
+      "text": "СИНТЕТИЧЕСКАЯ ВЫПИСКА - ПРОДОЛЖЕНИЕ"
+    },
+    {
+      "page": 2,
+      "line": "Дата операции",
+      "text": "Дата операции"
+    },
+    {
+      "page": 2,
+      "line": "Сумма RUB",
+      "text": "Сумма RUB"
+    },
+    {
+      "page": 2,
+      "line": "Расходы: RUB 2 486,00",
+      "text": "RUB"
+    },
+    {
+      "page": 2,
+      "line": "Пополнения: RUB 3 105,00",
+      "text": "RUB"
+    },
+    {
+      "page": 2,
+      "line": "БИК 044000999",
+      "text": "БИК 044000999"
+    },
+    {
+      "page": 2,
+      "line": "КПП 550001111",
+      "text": "КПП 550001111"
+    },
+    {
+      "page": 2,
+      "line": "Страница 2",
+      "text": "Страница 2"
+    }
+  ],
+  "expectedMinor": [
+    248600,
+    310500
+  ],
+  "expectedDescriptions": [
+    "ТЕСТОВЫЙ МАГАЗИН - ПОКУПКА",
+    "ТЕСТОВЫЙ ПЕРЕВОД - ПРОВЕРИТЬ СМЫСЛ"
+  ]
+}

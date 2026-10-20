@@ -42,6 +42,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	./scripts/test-statement-screening.sh
 	./scripts/test-statement-activation.sh
 	./scripts/test-restore-readiness.sh
 	./scripts/test-commitments-rollout.sh

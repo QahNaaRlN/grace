@@ -3,6 +3,8 @@ const issues: Record<string, string> = {
   owner_page_review_required: 'Проверьте покрытие каждой страницы.',
   source_coverage_incomplete: 'Остались фрагменты без назначения. Проверьте полноту строк.',
   invalid_source_rows: 'Не все исходные строки удалось проверить.',
+  turnover_role_unverified:
+    'Проверьте подпись и источник оборота: реквизиты банка и удалённые подписи не подходят.',
   printed_turnover_mismatch: 'Сумма строк расходится с напечатанным оборотом.',
   book_balance_mismatch: 'Бухгалтерские остатки расходятся с движениями за период.',
   available_is_not_book_balance: 'Доступный остаток банка нельзя использовать как бухгалтерский.',

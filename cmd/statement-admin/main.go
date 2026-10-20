@@ -44,7 +44,12 @@ func fail(code string) {
 }
 func main() {
 	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), summary, or diagnostic")
+	screeningDir := flag.String("screening-dir", "", "operator-only directory containing the three exact public screening PDFs")
 	flag.Parse()
+	if *mode == "screening" || *mode == "screening-preflight" || *mode == "screening-summary" {
+		screeningMain(*mode, *screeningDir)
+		return
+	}
 	if *mode == "diagnostic" {
 		var report statementqualification.Report
 		decoder := json.NewDecoder(io.LimitReader(os.Stdin, 262145))

@@ -43,25 +43,40 @@ type Trace struct {
 	Parts []statementdata.Proposal `json:"parts"`
 }
 type Report struct {
-	Digest        string                  `json:"digest"`
-	Profile       Profile                 `json:"profile"`
-	Corpus        []CaseEvidence          `json:"corpus"`
-	Traces        []Trace                 `json:"traces,omitempty"`
-	Version       string                  `json:"version"`
-	Time          time.Time               `json:"time"`
-	Policy        statementextract.Policy `json:"policy"`
-	MaximumMicros int64                   `json:"maximumMicros"`
-	ActualMicros  *int64                  `json:"actualMicros"`
-	Results       []Result                `json:"results"`
-	Calls         []Call                  `json:"calls"`
-	Passed        bool                    `json:"passed"`
-	Error         string                  `json:"error,omitempty"`
+	Digest        string                                `json:"digest"`
+	Profile       Profile                               `json:"profile"`
+	Corpus        []CaseEvidence                        `json:"corpus"`
+	Traces        []Trace                               `json:"traces,omitempty"`
+	Version       string                                `json:"version"`
+	Time          time.Time                             `json:"time"`
+	Policy        statementextract.Policy               `json:"policy"`
+	MaximumMicros int64                                 `json:"maximumMicros"`
+	ActualMicros  *int64                                `json:"actualMicros"`
+	Results       []Result                              `json:"results"`
+	Calls         []Call                                `json:"calls"`
+	Passed        bool                                  `json:"passed"`
+	Error         string                                `json:"error,omitempty"`
+	Failure       *statementextract.ScreeningDiagnostic `json:"failure,omitempty"`
 }
 
 // Run reserves every planned call before inference. It never retries a call;
 // unknown billing settles uncertain and freezes the shared allowance.
-func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reasoner, meter Meter) (report Report, err error) {
-	ctx, cancelRun := context.WithTimeout(ctx, RunTimeout)
+func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reasoner, meter Meter) (Report, error) {
+	return run(ctx, samples, reasoner, meter, false)
+}
+func run(ctx context.Context, samples []Sample, reasoner statementextract.Reasoner, meter Meter, screening bool) (report Report, err error) {
+	profile, version, names := CurrentProfile(), ReportVersion, []string{"columns", "cards"}
+	build, canonical, score := statementextract.BuildScreeningPlan, statementextract.CanonicalProposal, Score
+	if screening {
+		profile, version, names = ScreeningProfile(), ScreeningReportVersion, ScreeningNames()
+		canonical = statementextract.CanonicalScreeningProposal
+		score = ScoreScreening
+	} else {
+		build = func(d statementdata.Document, p statementextract.Policy) (statementextract.Plan, error) {
+			return statementextract.BuildPlan(d, p, nil)
+		}
+	}
+	ctx, cancelRun := context.WithTimeout(ctx, time.Duration(profile.RunSeconds)*time.Second)
 	defer cancelRun()
 	defer func() {
 		if err != nil {
@@ -70,13 +85,21 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		}
 		report.Digest = reportDigest(report)
 	}()
-	report = Report{Version: ReportVersion, Profile: CurrentProfile(), Time: time.Now().UTC(), Results: []Result{}, Calls: []Call{}}
-	if len(samples) != 2 || samples[0].Name != "columns" || samples[1].Name != "cards" {
+	report = Report{Version: version, Profile: profile, Time: time.Now().UTC(), Results: []Result{}, Calls: []Call{}}
+	if len(samples) != len(names) {
 		return report, errors.New("invalid_qualification_corpus")
+	}
+	for i, sample := range samples {
+		if sample.Name != names[i] {
+			return report, errors.New("invalid_qualification_corpus")
+		}
 	}
 	policy, err := reasoner.CurrentPolicy(ctx)
 	if err != nil {
 		return report, errors.New("policy_unavailable")
+	}
+	if screening && !statementextract.ScreeningPolicyValid(policy) {
+		return report, errors.New("screening_policy_invalid")
 	}
 	report.Policy = policy
 	plans := []statementextract.Plan{}
@@ -85,7 +108,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		if sample.SHA256 != FixtureHash(sample.Name) {
 			return report, errors.New("invalid_qualification_fixture")
 		}
-		plan, e := statementextract.BuildPlan(sample.Document, policy, nil)
+		plan, e := build(sample.Document, policy)
 		if e != nil {
 			return report, errors.New("qualification_plan_invalid")
 		}
@@ -94,7 +117,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		count += len(plan.Chunks)
 		report.MaximumMicros += plan.MaximumMicros
 	}
-	if count != MaxSmokeCalls || report.MaximumMicros > MaxSmokeMicros {
+	if count != profile.Calls || report.MaximumMicros > profile.CeilingMicros {
 		return report, errors.New("qualification_cap_exceeded")
 	}
 	reservation, err := meter.Reserve(ctx, report.MaximumMicros, policy)
@@ -138,6 +161,18 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
 			}
 			if e != nil || !known {
+				if screening {
+					diagnostic := statementextract.ScreeningDiagnostic{Code: "unknown"}
+					var detail interface {
+						ScreeningDiagnostic() statementextract.ScreeningDiagnostic
+					}
+					if errors.As(e, &detail) {
+						diagnostic = detail.ScreeningDiagnostic()
+					}
+					diagnostic = diagnostic.Sanitize()
+					report.Failure = &diagnostic
+					return report, errors.New("qualification_provider_failed_" + diagnostic.Code)
+				}
 				var detail interface{ ProtocolReason() string }
 				if errors.As(e, &detail) {
 					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
@@ -147,7 +182,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 			if total > report.MaximumMicros {
 				return report, errors.New("qualification_cost_overrun")
 			}
-			part, e = statementextract.CanonicalProposal(plans[i], part)
+			part, e = canonical(plans[i], part)
 			if e != nil {
 				return report, errors.New("qualification_protocol_failed")
 			}
@@ -167,7 +202,7 @@ func Run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 		if e != nil {
 			return report, errors.New("qualification_grounding_failed")
 		}
-		result := Score(sample.Name, review)
+		result := score(sample.Name, review)
 		result.LatencyMS = time.Since(started).Milliseconds()
 		report.Results = append(report.Results, result)
 		if !result.Passed {

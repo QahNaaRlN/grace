@@ -1,3 +1,11 @@
+Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
+[единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
+FAIL до первого score; quality UNVERIFIED. Предоставленный владельцем generation
+ID сверён через API, подтверждённый расход учтён, shared uncertain block снят.
+[Reconciliation](specs/0055-s14-reconciliation.md) завершён без нового inference.
+Statement AI runtime flag enabled и production-модель сохранены; deployment
+не выполнялся. Ручной импорт работает; автоматического paid retry нет.
+
 # Roadmap Grace
 
 Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).
@@ -256,6 +264,38 @@ Origin. Спецификации извлечения определяют со�
 синтетические данные.
 
 ## Порядок следующих этапов
+
+2026-10-20: [S1.4 candidate screening](specs/0055-s14-candidate-screening.md)
+accepted («работаем»), C1–C5 local/exact-source CI PASS, live C6 **FAIL provider-stage**
+(run 39459614043), до первого score; качество UNVERIFIED. Разрешённый run выполнен: один Gemini 3.1
+Flash Lite / Google EU run, columns/cards/RU, максимум 3 calls / $0.1617 provider.
+Product policy и activation не расширяются; [evidence](specs/0055-s14-evidence.md).
+Reconciliation расхода завершён отдельно в 17:10:51 UTC, uncertain block снят.
+[Диагностика без inference](research/statement-quality/s14-provider-failure-diagnosis.md)
+завершена 17:18:36 UTC: read-only audit/runtime/shared-ledger readiness PASS;
+14 synthetic transport cases PASS. Точный исходный guard UNVERIFIED — не сохранён
+chat envelope, несколько guards дают общий код. Следующий bounded пакет
+[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/local_verified
+(прямое «Утверждаю», 2026-10-20), [D1–D5 PASS](specs/0055-s15-evidence.md):
+безопасные коды отказа, HTTP category, private unverified correlation и report v2.
+make test (334 web), real helper + fake-provider 19/20/23, SQL lifecycle/restore и
+deployment mocks PASS. Не deployed, новых paid calls нет; current-head CI отдельно.
+После него — отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
+не deployed; новая модель не допущена в production.
+
+2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов
+вместо оборотов и подбор более современных и эффективных моделей.
+[Следующий пакет качества](research/statement-quality/next-quality-package.md)
+фиксирует последовательность: synthetic regression → исправление grounding →
+сравнение актуальных model/endpoint пар → отдельно согласованный AI smoke →
+полный corpus. [S1.3](specs/0055-s13-turnover-roles.md) **accepted** прямым поручением
+«оформи спеку и вперед», реализация **local_verified**,
+[T1–T6 PASS](specs/0055-s13-evidence.md), не deployed.
+[Metadata shortlist](research/statement-quality/model-shortlist-2026-10-20.md):
+Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары
+**unqualified**, production policy не меняется. Новизна модели не заменяет качество; сравниваются
+точность ролей/строк, полнота, стоимость успешного документа и задержка.
+Production policy пока прежняя; новые платные вызовы этим поручением не запущены.
 
 2026-10-19 согласовано направление автоматического выбора модели для выписки.
 [SPEC-0056](specs/0056-statement-model-selection.md) — **draft**, реализация

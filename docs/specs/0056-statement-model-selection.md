@@ -81,6 +81,25 @@ whole-document call с aliases и bounds 100000/16000 вместо 10000/2000.
 бюджетом нового profile; до SPEC-0056 acceptance их нужно пересчитать по
 принятому planner и preflight corpus. Реестр моделей и paid runs не разрешены.
 
+## Дополнение направления — 2026-10-20
+
+Владелец поручил учитывать более современные и эффективные модели. Направление
+принято к проработке; эта редакция SPEC-0056 остаётся draft, implementation
+not_started. [План качества](../research/statement-quality/next-quality-package.md)
+связывает подбор с регрессией неверного выбора БИК/КПП вместо оборотов.
+До shortlist требуется сверка актуальных официальных model/provider metadata,
+цен, structured-output возможностей и privacy/endpoint ограничений с датой
+проверки. [Metadata shortlist 2026-10-20](../research/statement-quality/model-shortlist-2026-10-20.md)
+содержит Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; качество и
+latency UNVERIFIED, ни одна новая пара не квалифицирована. Accepted S1.3
+реализует только regression/role guard и исследование metadata; registry этой
+SPEC-0056 по-прежнему not_started.
+Сравнение ведётся на одинаковом versioned corpus: сначала обязательные quality
+и privacy gates, затем стоимость успешного документа и latency. Дата выпуска
+сама по себе не даёт преимущества или допуска. Замена pinned policy и новый
+бюджетный план требуют принятого технического контракта; прежние S0 envelopes
+ниже остаются историческими предложениями, не разрешением на новые расходы.
+
 ## Реестр и qualification
 
 Реестр — защищённая операторская конфигурация с неизменяемыми версиями;

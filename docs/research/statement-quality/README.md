@@ -239,3 +239,12 @@ API/OpenAPI compatibility, миграции plan/consent/audit и rollback об�
 в технической редакции до реализации S1/S2; публичные DTO меняются только через
 OpenAPI и сгенерированные типы. Финансовое ядро и подтверждения не расширяются.
 Двухисходный fixture smoke, зелёный CI или более низкая цена не заменяют S3/S4.
+
+## Следующее поручение — 2026-10-20
+
+Добавлены [регрессия ролей банковских реквизитов и подбор современных моделей](next-quality-package.md).
+[S1.3](../../specs/0055-s13-turnover-roles.md) accepted прямым поручением
+«оформи спеку и вперед», [реализация local_verified](../../specs/0055-s13-evidence.md), не deployed. Добавлен новый RU
+development fixture с independent golden; старый 24-case manifest и его
+исторические счётчики не переписаны. [Shortlist metadata](model-shortlist-2026-10-20.md)
+не является qualification. Model calls = 0; полного нового campaign нет.

@@ -78,3 +78,26 @@ func TestSourceOrderAliasesAndHiddenClassesRemainAuthoritative(t *testing.T) {
 		t.Fatal("S1 consent accepted")
 	}
 }
+
+func TestTurnoverRoleLabelsStayVisibleWithoutIdentifierValues(t *testing.T) {
+	d := testDocument("Расходы:", "Пополнения:", "БИК", "КПП:", "ИНН", "BIC", "KPP", "INN", "SWIFT", "044000999", "550001111", "Synthetic bank name")
+	p, e := BuildPlan(d, testPolicy(), []string{"span-9", "span-10"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	for i, s := range p.Chunks[0].Spans {
+		if i < 9 && s.Text != d.Spans[i].Text {
+			t.Fatal("financial label hidden", s)
+		}
+		if i >= 9 && !strings.HasPrefix(s.Text, "[") {
+			t.Fatal("identifier/name disclosed", s)
+		}
+	}
+	for _, mutate := range []func(*Plan){func(p *Plan) { p.PromptVersion = "statement-span-mapping.v11.description-separators" }, func(p *Plan) { p.RedactionVersion = "statement-allowlist.v3.lexical-placeholders" }} {
+		old := p
+		mutate(&old)
+		if validPlan(old) {
+			t.Fatal("old consent profile accepted")
+		}
+	}
+}

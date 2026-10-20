@@ -1,3 +1,33 @@
+Текущее состояние, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
+provider stage до первого score; quality UNVERIFIED. Расход подтверждён через
+GET generation metadata и учтён; shared uncertain block снят.
+Runtime Statement AI flag enabled сохранён, production-модель не менялась.
+Ручной импорт доступен. [Reconciliation/evidence](0055-s14-reconciliation.md);
+новых inference, deployment или повторов smoke не было.
+
+[SPEC-0055 / S1.4 — candidate screening](0055-s14-candidate-screening.md) — **accepted**,
+2026-10-20, прямое «работаем»: реализация и один 3-call screening Gemini 3.1
+Flash Lite / Google EU, provider cap $0.1617. Не разрешает production model switch
+или enable; implementation local_verified (C1–C5), live C6 FAIL provider-stage, quality UNVERIFIED;
+[evidence](0055-s14-evidence.md).
+
+[Диагностика исходного S1.4 failure](../research/statement-quality/s14-provider-failure-diagnosis.md),
+2026-10-20 17:18:36 UTC: read-only saved-metadata audit PASS, runtime/shared-ledger
+readiness PASS, 14 synthetic transport counterexamples PASS. Доказан пробел
+observability, точный исходный guard UNVERIFIED: chat envelope не сохранён.
+[S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **accepted**,
+2026-10-20, прямое «Утверждаю»;
+implementation **local_verified (D1–D5 PASS)**; [evidence](0055-s15-evidence.md).
+Закрытые diagnostics, private unverified correlation и новый screening report v2;
+без нового inference, policy switch или deployment. Current-head CI отдельно.
+
+[SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
+— **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;
+implementation **local_verified**, [T1–T6 evidence](0055-s13-evidence.md).
+Go role guard + RU regression + financial-label
+redaction + публичная metadata современных кандидатов. Без paid calls,
+production policy switch или deployment; SPEC-0056 registry остаётся draft.
+
 [SPEC-0055 — исправление review](0055-review-repair.md) — **accepted**, 2026-10-20,
 implementation **deployed** (`ec15861`, PR #76), R1–R7 PASS; R8 agent browser PASS. Пакет после owner-test: наблюдаемая сверка
 итогов, сохранение canonical mapping/coverage и редактирование текущих строк;

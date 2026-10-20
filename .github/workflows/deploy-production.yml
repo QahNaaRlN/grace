@@ -14,6 +14,17 @@ on:
         default: preserve
         type: choice
         options: [preserve, enable, disable]
+      reconcile_screening_usage:
+        description: Verify or settle the one failed S1.4 screening using private generation metadata
+        required: false
+        default: none
+        type: choice
+        options: [none, inspect, apply]
+      statement_screening_only:
+        description: One authorized S1.4 candidate screening, no deploy or model activation
+        required: false
+        default: false
+        type: boolean
       inspect_statement_only:
         description: Check statement AI readiness without emitting secrets or budget values
         required: false
@@ -30,8 +41,61 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  screen-statement:
+    if: ${{ inputs.statement_screening_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
+    name: One bounded candidate screening
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify exclusive mode and successful exact-source CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INSPECT_ONLY: ${{ inputs.inspect_statement_only }}
+        run: |
+          set -eu
+          test "$INSPECT_ONLY" != true
+          gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=10 --json headSha,conclusion > "$RUNNER_TEMP/screening-ci.json"
+          python3 - "$GITHUB_SHA" "$RUNNER_TEMP/screening-ci.json" <<'PYCI'
+          import json,sys
+          assert any(x['headSha']==sys.argv[1] and x['conclusion']=='success' for x in json.load(open(sys.argv[2])))
+          PYCI
+      - name: Build exact operator bundle
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-screening-$GITHUB_SHA"
+          mkdir "$bundle"
+          CGO_ENABLED=0 go build -trimpath -o "$bundle/grace-statement-admin" ./cmd/statement-admin
+          cp internal/pdfextract/testdata/columns.pdf internal/pdfextract/testdata/cards.pdf internal/pdfextract/testdata/turnover-roles-ru.pdf "$bundle/"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          cp deployments/production/statement-screening.sh "$bundle/run.sh"
+          chmod 755 "$bundle" "$bundle/grace-statement-admin"
+          chmod 644 "$bundle/"*.pdf "$bundle/SOURCE_SHA" "$bundle/run.sh"
+          (cd "$bundle" && sha256sum grace-statement-admin *.pdf SOURCE_SHA run.sh > SHA256SUMS)
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Execute the single fixed authorization
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-screening-$GITHUB_SHA"
+          remote="/tmp/grace-statement-screening-$GITHUB_SHA"
+          ssh grace-deploy@195.133.195.190 "mkdir '$remote'"
+          scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
+          ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
+
   inspect-statement:
-    if: ${{ inputs.inspect_statement_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -46,6 +110,7 @@ jobs:
           printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
       - name: Check readiness without exporting runtime values
+        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' }}
         run: |
           ssh grace-deploy@195.133.195.190 'bash -s' <<'REMOTE'
           set -eu
@@ -67,11 +132,30 @@ jobs:
           REMOTE
 
       - name: Diagnose fixed synthetic field locators without values
+        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' }}
         run: |
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-smoke.py
 
+      - name: Verify or settle only the fixed S1.4 uncertain reservation
+        if: ${{ inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply' }}
+        env:
+          RECONCILE_IDS: ${{ secrets.GRACE_STATEMENT_SCREENING_GENERATION }}
+          RECONCILE_MODE: ${{ inputs.reconcile_screening_usage }}
+        run: |
+          set -eu
+          script="/opt/grace/shared/statement-reconcile-screening-$GITHUB_RUN_ID.py"
+          scp scripts/ops-reconcile-statement-screening.py "grace-deploy@195.133.195.190:$script"
+          trap 'ssh grace-deploy@195.133.195.190 "rm -f $script"' EXIT
+          case "$RECONCILE_MODE" in inspect) flag='' ;; apply) flag='--apply' ;; *) exit 2 ;; esac
+          printf '%s' "$RECONCILE_IDS" | ssh grace-deploy@195.133.195.190 "python3 $script $flag"
+
+      - name: Inspect fixed screening outcome without billing values
+        if: always()
+        run: |
+          ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
+
   deploy:
-    if: ${{ !inputs.inspect_statement_only }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
