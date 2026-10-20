@@ -59,3 +59,11 @@ remote dispatch не было. Исторический S1.8 FAIL не испр�
 Source CI относится к исполняемому diagnostic source ecfa850; после запуска
 добавлены только retained synthetic regression, документация и его CI wiring.
 Окончательный head CI фиксируется отдельно. Merge/deployment не выполнялись.
+
+## Слияние №81
+
+PR №81 слит владельцем, `5981449`, 2026-10-21 04:04:03 +05:00.
+[Post-merge evidence](0055-pr81-postmerge.md): local gates PASS, source ecfa850
+и final-head10869fb CI SUCCESS. Merge main CI39512501902 выполняется.
+Прежние pending снимки выше — исторические, не текущий статус head.
+Нового read-only dispatch, inference и deployment после слияния нет.

@@ -1,10 +1,18 @@
+Следующий контракт — [S1.10](specs/0055-s110-grounding-guards.md), **draft / not_started**, 2026-10-21:
+общие Go-проверки внутренних пропусков description и ролей opening/closing
+book balance, актуальная проверка retained reviews перед confirmation и новая
+qualification/scorer version. Inference=0, без prompt/model/deployment изменений.
+Реализация требует принятия этого конкретного scope по AGENTS.md.
+PR №81 слит (`5981449`, 04:04:03 +05:00); [post-merge evidence](specs/0055-pr81-postmerge.md):
+local gates PASS, source/head CI PASS, merge main CI PostgreSQL pending.
+
 [S1.9 — бесплатная диагностика сохранённого S1.8](specs/0055-s19-saved-trace-diagnosis.md) —
 **accepted / local_verified, diagnosis PASS**, 2026-10-21 03:48:32 +05:00.
 [D1–D5 evidence](specs/0055-s19-evidence.md): read-only39510628212 SUCCESS, artifactsUnchanged=true,
 replayMatchesSaved=true. Причины FAIL17/19 установлены: пропущен дефис строки2;
 два дефиса заголовков выбраны как отсутствующие book balances и отклонены
 Go ambiguous_money. Новый inference=0; scorer/prompt/model/flags не менялись.
-PR №81 содержит реализацию и retained synthetic regression; интеграция отдельно.
+PR №81 слит; S1.9 merged, post-merge main CI ещё выполняется.
 PR №80 интегрирован (`5e9116e`), post-merge local/CI5/5/Delivery PASS.
 
 Последний live результат — **2026-10-21 03:10:03 +05:00**:
