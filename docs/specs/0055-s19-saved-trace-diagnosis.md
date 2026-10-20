@@ -1,8 +1,9 @@
 # SPEC-0055 / S1.9: диагностика сохранённого S1.8 без inference
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started.
-- Acceptance record: отсутствует; требуется review нового operator/workflow path.
+- Статус: accepted; implementation_status: not_started.
+- Acceptance record: 2026-10-21, прямое «Утвердить S1.9 и бесплатную диагностику».
+  Разрешены D1–D4 и один read-only D5; provider inference=0.
 - Worktree: `statement-trace-diagnosis`; ветка `codex/statement-trace-diagnosis`.
 - База: main `5e9116e9c064c5129049414a060f340acc000700`, PR №80.
 
@@ -112,8 +113,8 @@ UNVERIFIED. Отсутствие report не означает, что вызов
 | D4 | make test, затронутые production mocks, go vet, git diff --check PASS; source diff подтверждает отсутствие продуктовых изменений |
 | D5 | Один read-only dispatch: exact source/report/fixtures verified, неизменность artifacts PASS; replay совпал либо результат честно UNVERIFIED; причина по конкретным selections/reasons без нового inference |
 
-## Открытое решение владельца
+## Решение владельца
 
-Утвердить S1.9: реализацию D1–D4 и read-only D5. Платных вызовов, деплоя,
+Утверждены S1.9: реализация D1–D4 и read-only D5. Платных вызовов, деплоя,
 переключения модели и исправления prompt/scorer/transport это не разрешает.
-До принятия production/operator implementation не начинается.
+Принятие зафиксировано отдельным коммитом до исполняемых изменений.
