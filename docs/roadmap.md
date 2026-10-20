@@ -1,9 +1,10 @@
-Актуальное ограничение — 2026-10-20 16:44 UTC / 21:44 +05:00:
+Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
 [единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
-FAIL до первого score. Расход unknown, shared ledger uncertain блокирует новые
-платные AI-запросы. Statement AI runtime flag enabled сохранён; production image
-и health не менялись. Ручной импорт работает. Нужен generation ID для сверки;
-нулевой расход не предполагается, автоматического paid retry нет.
+FAIL до первого score; quality UNVERIFIED. Предоставленный владельцем generation
+ID сверён через API, подтверждённый расход учтён, shared uncertain block снят.
+[Reconciliation](specs/0055-s14-reconciliation.md) завершён без нового inference.
+Statement AI runtime flag enabled и production-модель сохранены; deployment
+не выполнялся. Ручной импорт работает; автоматического paid retry нет.
 
 # Roadmap Grace
 
@@ -269,6 +270,10 @@ accepted («работаем»), C1–C5 local/exact-source CI PASS, live C6 **F
 (run 39459614043), до первого score; качество UNVERIFIED. Разрешённый run выполнен: один Gemini 3.1
 Flash Lite / Google EU run, columns/cards/RU, максимум 3 calls / $0.1617 provider.
 Product policy и activation не расширяются; [evidence](specs/0055-s14-evidence.md).
+Reconciliation расхода завершён отдельно в 17:10:51 UTC, uncertain block снят.
+Следующий технический шаг — локализовать provider-stage failure без платного
+повтора; затем отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
+не deployed; новая модель не допущена в production.
 
 2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов
 вместо оборотов и подбор более современных и эффективных моделей.

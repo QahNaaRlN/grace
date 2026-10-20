@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.4: один screening современной модели
 
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (C1–C5 PASS), C6 FAIL provider-stage; billing unknown, shared ledger uncertain.
+- Статус: accepted; implementation_status: local_verified (C1–C5 PASS), C6 FAIL provider-stage; billing reconciled 2026-10-20 17:10:51 UTC, uncertain block cleared; quality UNVERIFIED.
 - [Implementation evidence](0055-s14-evidence.md).
 - Acceptance: «работаем» в ответ на предложение следующего отдельно согласованного
   smoke: Gemini 3.1 Flash Lite / Google EU, 3 public cases / provider cap $0.1617.

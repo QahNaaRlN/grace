@@ -50,7 +50,7 @@ reason/status или billing values, точная причина пока не �
 Для аудита добавлен read-only fixed-report inspector, который выводит только
 booleans/counts и не делает inference, reservation, settlement или config writes.
 
-## Read-only audit и текущая блокировка
+## Read-only audit и историческая блокировка
 
 [Audit 39460065144](https://github.com/QahNaaRlN/grace/actions/runs/39460065144),
 2026-10-20 16:44:29 UTC, source `652ba6b`: fixed report private, expected version/
@@ -61,12 +61,36 @@ billing и generation ID. Existing readiness отдельно вывел
 statement_qualification_usage_requires_review; job overall FAIL ожидаем из-за
 uncertain ledger, read-only report inspection step прошёл.
 
-Runtime flag Statement AI остаётся enabled, image/health сохранены, но shared
-uncertain ledger блокирует новые платные запросы. Ручной импорт доступен.
+На момент audit runtime flag Statement AI оставался enabled, image/health
+сохранялись, но shared uncertain ledger блокировал новые платные запросы. Ручной импорт доступен.
 Никакого budget reset, вымышленного zero settlement, нового inference или смены
-модели не сделано. Для reconciliation нужен generation ID из Activity для
+модели не сделано. Для reconciliation был запрошен generation ID из Activity для
 Gemini 3.1 Flash Lite / Google EU около 20.10.2026 16:41:56 UTC / 21:41:56 +05.
 Запрошен только ID, не API key. [Официальный generation endpoint](https://openrouter.ai/docs/api/api-reference/generations/get-generation)
 требует ID; [Analytics API](https://openrouter.ai/blog/announcements/activity-dashboard/)
 требует management key, regular inference key его не заменяет. Management key
 не запрашивался и не добавлялся. Без authoritative evidence блокировку не снимаем.
+
+## Authoritative reconciliation завершён — 2026-10-20 17:10:51 UTC
+
+Владелец предоставил ID. [Принятый ops-контракт и критерии](0055-s14-reconciliation.md)
+исполнены на source `865ccbb`: [read-only inspect 39463492420](https://github.com/QahNaaRlN/grace/actions/runs/39463492420)
+и [apply 39463769303](https://github.com/QahNaaRlN/grace/actions/runs/39463769303) PASS.
+ID/provider/time/non-BYOK и authoritative cost совпали с единственной reservation.
+Generation API возвращает canonical slug, report содержит alias; точная пара
+подтверждена свежим официальным GET /models. Это объясняет первоначальный отказ
+ops-сопоставления metadata, но не доказывает причину provider-stage failure.
+
+Ровно одна reservation settled через существующую owner-scoped grace_ai_settle;
+`billingReconciled=true`, `sharedUncertainBlockCleared=true`. Значения расхода, ID
+и before/after остаются в private audit0600 на VPS. Transient GitHub secret удалён,
+exact-name lookup вернул 0. Новых inference не было, screening/deploy jobs skipped.
+Исходный report остаётся FAIL / billingKnown=false; отдельный reconciliation audit
+подтверждает учёт расхода, не переписывая историческое evidence. Качество Gemini
+3.1 Flash Lite остаётся UNVERIFIED, authorization consumed, paid retry не разрешён.
+Runtime flag enabled и production-модель сохранены. Снятие metering-блокировки
+не является новым end-to-end подтверждением работоспособности импорта.
+
+Обязательный `make test` повторён для ops-изменений: exit0, 334 web tests и
+Go/lint/FSD/format/build/Jev PASS (`/tmp/grace-s14-reconcile-make.log`). Offline
+reconciliation match/mismatch/ceil/replay/canonical checks и diff check PASS.

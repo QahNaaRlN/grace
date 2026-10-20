@@ -1,8 +1,9 @@
-Текущее ограничение, 2026-10-20 16:44 UTC: S1.4 screening остановился на
-provider stage до первого score; billing unknown, shared ledger uncertain.
-Runtime Statement AI flag enabled сохранён, но новые платные AI calls
-блокируются до authoritative reconciliation. Ручной импорт доступен.
-[Evidence/audit](0055-s14-evidence.md); повторов нет.
+Текущее состояние, 2026-10-20 17:10:51 UTC: S1.4 screening остановился на
+provider stage до первого score; quality UNVERIFIED. Расход подтверждён через
+GET generation metadata и учтён; shared uncertain block снят.
+Runtime Statement AI flag enabled сохранён, production-модель не менялась.
+Ручной импорт доступен. [Reconciliation/evidence](0055-s14-reconciliation.md);
+новых inference, deployment или повторов smoke не было.
 
 [SPEC-0055 / S1.4 — candidate screening](0055-s14-candidate-screening.md) — **accepted**,
 2026-10-20, прямое «работаем»: реализация и один 3-call screening Gemini 3.1

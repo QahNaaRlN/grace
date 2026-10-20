@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.4: сверка единственной uncertain reservation
 
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: not_started.
+- Статус: accepted; implementation_status: verified; exact settlement завершён 2026-10-20 17:10:51 UTC.
 - Основание: accepted [S1.4](0055-s14-candidate-screening.md), просьба о generation
   ID для authoritative reconciliation; владелец предоставил ID в прямом ответе.
 - Scope: GET generation metadata → exact match → owner-scoped grace_ai_settle
@@ -41,3 +41,19 @@ Read-only API verification выявила: generation metadata использу�
 audit. Любой другой canonical slug или отсутствие mapping — отказ. Product
 policy, transport identity checks и scorer не меняются; это сопоставление полей
 metadata для metering recovery, а не разрешение нового endpoint или paid replay.
+
+## Исполнение и критерии приёмки — 2026-10-20
+
+| Критерий | Исполняемое evidence |
+| --- | --- |
+| Exact metadata и расход до изменения ledger | [Inspect 39463492420](https://github.com/QahNaaRlN/grace/actions/runs/39463492420), source `865ccbb`: metadataMatched=true, unknownBillingVerified=true; официальный alias/canonical mapping подтверждён |
+| Одна owner-scoped settlement, отсутствие uncertain | [Apply 39463769303](https://github.com/QahNaaRlN/grace/actions/runs/39463769303), source `865ccbb`: billingReconciled=true, sharedUncertainBlockCleared=true, newInferenceAuthorized=false; private audit содержит before/after |
+| Fail closed для несовпадений и ceiling/replay | `python3 scripts/research/test-screening-reconciliation.py` PASS: ID/model/provider/time/BYOK/reservation/cost mismatch, exact canonical mapping, Decimal ceil, settled replay |
+| Без inference и deployment | В обоих workflow runs screening/deploy jobs skipped; script использует только GET metadata/catalog и существующую grace_ai_settle для одной reservation |
+| Регрессии и формат | `TMPDIR=/var/tmp/grace-quality-next-tests VITEST_MAX_WORKERS=1 make test` exit0, 334 web tests + Go/lint/FSD/format/build/Jev; `git diff --check` PASS |
+| Очистка transient secret | После apply `gh secret delete GRACE_STATEMENT_SCREENING_GENERATION`; exact-name lookup вернул 0 |
+
+Неизменяемый исходный screening report сохраняет billingKnown=false и FAIL.
+Authoritative reconciliation хранится отдельно; это исправление metering,
+не повтор smoke и не подтверждение качества кандидата. Первоначальная причина
+provider-stage failure ещё не установлена.
