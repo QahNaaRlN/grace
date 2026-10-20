@@ -55,6 +55,15 @@ try:
             return type(value) is int and minimum <= value <= maximum
         responses = d.get('provider_responses')
         items = responses if isinstance(responses, list) else []
+        pending, nested, visited = [d], False, 0
+        while pending and visited < 10000:
+            node = pending.pop()
+            visited += 1
+            if isinstance(node, dict):
+                nested = nested or any(k in node for k in ('openrouter_metadata', 'choices'))
+                pending.extend(v for v in node.values() if isinstance(v, (dict, list)))
+            elif isinstance(node, list):
+                pending.extend(v for v in node if isinstance(v, (dict, list)))
         print(json.dumps({
             'savedGenerationDiagnosisReadOnly': True,
             'boundToOriginalReport': True,
@@ -62,15 +71,20 @@ try:
             'gatewayFinishStop': d.get('finish_reason') == 'stop',
             'gatewayNotCancelled': d.get('cancelled') is False,
             'gatewayNonStreaming': d.get('streamed') is False,
+            'gatewayStreamedTrue': d.get('streamed') is True,
+            'gatewayStreamedMissing': d.get('streamed') is None,
             'gatewayPromptWithinBound': bounded_int('tokens_prompt', 1, 100000),
             'gatewayCompletionWithinBound': bounded_int('tokens_completion', 1, 16000),
             'gatewayGenerationWithinCallTimeout': bounded_int('generation_time', 0, 120000),
             'gatewayLatencyWithinCallTimeout': bounded_int('latency', 0, 120000),
             'gatewayRegionEU': d.get('data_region') == 'eu',
+            'gatewayRegionGlobal': d.get('data_region') == 'global',
             'gatewayRegionMissing': d.get('data_region') is None,
             'providerResponsesPresent': bool(items),
             'providerResponseErrorPresent': any(isinstance(x, dict) and bool(x.get('error')) for x in items),
             'chatEnvelopeRetainedInMetadata': any(k in d for k in ('openrouter_metadata', 'choices')),
+            'nestedChatEnvelopePresent': nested,
+            'nestedMetadataScanComplete': not pending,
             'originalChatEnvelopeRetainedByHarness': False,
         }, separators=(',', ':')))
 except (ValueError, OSError, TypeError, StopIteration, AttributeError):
