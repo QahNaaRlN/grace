@@ -17,7 +17,9 @@ readiness PASS, 14 synthetic transport counterexamples PASS. Доказан пр
 observability, точный исходный guard UNVERIFIED: chat envelope не сохранён.
 [S1.5 screening diagnostics](0055-s15-screening-diagnostics.md) — **accepted**,
 2026-10-20, прямое «Утверждаю»;
-implementation implementing; без нового inference, policy switch или deployment.
+implementation **local_verified (D1–D5 PASS)**; [evidence](0055-s15-evidence.md).
+Закрытые diagnostics, private unverified correlation и новый screening report v2;
+без нового inference, policy switch или deployment. Current-head CI отдельно.
 
 [SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
 — **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;

@@ -26,6 +26,7 @@ func TestScreeningDiagnosticsIOAndProductCompatibility(t *testing.T) {
 		transport               error
 		cancel                  bool
 	}{
+		{name: "request", code: "request", base: "provider_request"},
 		{name: "transport", code: "transport", base: "provider_unavailable", transport: errors.New("PRIVATE-transport-key")},
 		{name: "timeout", code: "timeout", base: "provider_timeout", transport: context.DeadlineExceeded, cancel: true},
 		{name: "http400", code: "http_4xx", base: "provider_request", status: 400, ctype: "application/json; private=PRIVATE-header-key"},
@@ -74,13 +75,20 @@ func TestScreeningDiagnosticsIOAndProductCompatibility(t *testing.T) {
 					in.MaxOutputTokens = 16000
 					in.Messages = []LLMMessage{{Role: "system", Content: "PRIVATE-request-key"}, {Role: "user", Content: "Synthetic"}}
 				}
+				if test.name == "request" {
+					in.Schema = json.RawMessage(`invalid-schema`)
+				}
 				ctx, cancel := context.WithCancel(context.Background())
 				if test.cancel {
 					cancel()
 				}
 				defer cancel()
 				out, err := p.Complete(ctx, in)
-				if err == nil || err.Error() != test.base || out.BillingKnown || calls != 1 {
+				expectedCalls := 1
+				if test.name == "request" {
+					expectedCalls = 0
+				}
+				if err == nil || err.Error() != test.base || out.BillingKnown || calls != expectedCalls {
 					t.Fatalf("screening=%v calls=%d known=%v err=%v", screening, calls, out.BillingKnown, err)
 				}
 				if screening {

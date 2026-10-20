@@ -27,6 +27,7 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 		mutate       func(object)
 	}{
 		{"valid", "", true, func(o object) {}},
+		{"malformed_id", "", true, func(o object) { o["id"] = "PRIVATE-invalid-id" }},
 		{"canonical_top_model", "envelope", false, func(o object) { o["model"] = canonical }},
 		{"metadata_missing", "generic", false, func(o object) { delete(o, "openrouter_metadata") }},
 		{"canonical_requested", "generic", false, func(o object) { o["openrouter_metadata"].(object)["requested"] = canonical }},
@@ -66,7 +67,7 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 			a["available"] = append(a["available"].([]any), a["available"].([]any)[0])
 		}},
 	}...)
-	codes := map[string]string{"valid": "unknown", "canonical_top_model": "envelope", "metadata_missing": "metadata_missing", "canonical_requested": "requested", "canonical_selected_model": "selected_model", "changed_selected_provider": "provider", "changed_display_provider": "display_provider", "retry_attempt": "attempt", "pipeline": "pipeline", "byok": "byok", "no_selected_route": "count", "duplicate_selected": "count", "missing_cost": "cost", "length": "finish_length", "invalid_content": "content", "strategy": "strategy", "negative_prompt": "usage", "negative_completion": "usage", "zero_completion": "usage", "token_bound": "token_bound", "choices": "choices", "tools": "tools", "finish_other": "finish_other"}
+	codes := map[string]string{"malformed_id": "unknown", "valid": "unknown", "canonical_top_model": "envelope", "metadata_missing": "metadata_missing", "canonical_requested": "requested", "canonical_selected_model": "selected_model", "changed_selected_provider": "provider", "changed_display_provider": "display_provider", "retry_attempt": "attempt", "pipeline": "pipeline", "byok": "byok", "no_selected_route": "count", "duplicate_selected": "count", "missing_cost": "cost", "length": "finish_length", "invalid_content": "content", "strategy": "strategy", "negative_prompt": "usage", "negative_completion": "usage", "zero_completion": "usage", "token_bound": "token_bound", "choices": "choices", "tools": "tools", "finish_other": "finish_other"}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			for _, screening := range []bool{false, true} {
@@ -109,7 +110,11 @@ func TestScreeningFailureDiagnosisSeparatesEnvelopeRouteAndContent(t *testing.T)
 						detail = protocol.ProtocolReason()
 					}
 				}
-				if screening && (out.ScreeningDiagnostic == nil || out.ScreeningDiagnostic.Code != codes[test.name] || out.ScreeningDiagnostic.HTTPStatus != 200 || out.ScreeningDiagnostic.ContentType != "json" || out.ScreeningDiagnostic.CorrelationID != "gen-SYNTHETIC-diagnosis") {
+				expectedID := "gen-SYNTHETIC-diagnosis"
+				if test.name == "malformed_id" {
+					expectedID = ""
+				}
+				if screening && (out.ScreeningDiagnostic == nil || out.ScreeningDiagnostic.Code != codes[test.name] || out.ScreeningDiagnostic.HTTPStatus != 200 || out.ScreeningDiagnostic.ContentType != "json" || out.ScreeningDiagnostic.CorrelationID != expectedID) {
 					t.Fatalf("diagnostic mismatch: %+v", out.ScreeningDiagnostic)
 				}
 				if !screening && out.ScreeningDiagnostic != nil {

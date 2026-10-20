@@ -1,7 +1,8 @@
 # SPEC-0055 / S1.5: диагностика отказов screening
 
 - Дата: 2026-10-20, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: implementing.
+- Статус: accepted; implementation_status: local_verified (D1–D5 PASS); not_deployed.
+- [Implementation evidence](0055-s15-evidence.md).
 - Acceptance: прямое «Утверждаю» в ответ на S1.5 без нового smoke и смены модели.
 - Основание: [read-only diagnosis S1.4](../research/statement-quality/s14-provider-failure-diagnosis.md).
 - Утверждение охватывает только это bounded исправление; новый live smoke,

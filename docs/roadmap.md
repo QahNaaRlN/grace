@@ -275,9 +275,11 @@ Reconciliation расхода завершён отдельно в 17:10:51 UTC,
 завершена 17:18:36 UTC: read-only audit/runtime/shared-ledger readiness PASS;
 14 synthetic transport cases PASS. Точный исходный guard UNVERIFIED — не сохранён
 chat envelope, несколько guards дают общий код. Следующий bounded пакет
-[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/implementing
-(прямое «Утверждаю», 2026-10-20),
-только безопасные коды отказа и private correlation, без нового smoke.
+[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/local_verified
+(прямое «Утверждаю», 2026-10-20), [D1–D5 PASS](specs/0055-s15-evidence.md):
+безопасные коды отказа, HTTP category, private unverified correlation и report v2.
+make test (334 web), real helper + fake-provider 19/20/23, SQL lifecycle/restore и
+deployment mocks PASS. Не deployed, новых paid calls нет; current-head CI отдельно.
 После него — отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
 не deployed; новая модель не допущена в production.
 
