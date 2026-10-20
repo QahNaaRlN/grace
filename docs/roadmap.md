@@ -1,3 +1,10 @@
+Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
+слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
+[Проверки после слияния](specs/0055-pr78-postmerge.md) ещё завершаются.
+Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — draft/not_started:
+один новый smoke с диагностикой, не более 3 вызовов / $0.1617 provider cap,
+без переключения модели и без разрешения платного запуска до утверждения.
+
 Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
 [единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage
 FAIL до первого score; quality UNVERIFIED. Предоставленный владельцем generation
@@ -275,12 +282,12 @@ Reconciliation расхода завершён отдельно в 17:10:51 UTC,
 завершена 17:18:36 UTC: read-only audit/runtime/shared-ledger readiness PASS;
 14 synthetic transport cases PASS. Точный исходный guard UNVERIFIED — не сохранён
 chat envelope, несколько guards дают общий код. Следующий bounded пакет
-[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/local_verified
+[S1.5 diagnostics](specs/0055-s15-screening-diagnostics.md) — accepted/integrated (PR №78, `29a28a7`)
 (прямое «Утверждаю», 2026-10-20), [D1–D5 PASS](specs/0055-s15-evidence.md):
 безопасные коды отказа, HTTP category, private unverified correlation и report v2.
 make test (334 web), real helper + fake-provider 19/20/23, SQL lifecycle/restore и
 deployment mocks PASS. Не deployed, новых paid calls нет; current-head CI отдельно.
-После него — отдельное решение о новом bounded smoke. S1.3 остаётся local_verified,
+После него — отдельное решение о новом bounded smoke. S1.3 интегрирована (PR №78, `29a28a7`),
 не deployed; новая модель не допущена в production.
 
 2026-10-20 владелец поручил добавить регрессию выбора банковских реквизитов
@@ -289,7 +296,7 @@ deployment mocks PASS. Не deployed, новых paid calls нет; current-head
 фиксирует последовательность: synthetic regression → исправление grounding →
 сравнение актуальных model/endpoint пар → отдельно согласованный AI smoke →
 полный corpus. [S1.3](specs/0055-s13-turnover-roles.md) **accepted** прямым поручением
-«оформи спеку и вперед», реализация **local_verified**,
+«оформи спеку и вперед», реализация **integrated** (PR №78, `29a28a7`),
 [T1–T6 PASS](specs/0055-s13-evidence.md), не deployed.
 [Metadata shortlist](research/statement-quality/model-shortlist-2026-10-20.md):
 Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары
