@@ -3,8 +3,8 @@
 Дата: 2026-10-20 (Asia/Yekaterinburg). Основание:
 [accepted контракт](0055-review-repair.md), прямое утверждение владельца «да, утверждаю».
 Worktree `statement-review-repair`, branch `codex/statement-review-repair`,
-база main `d0c109d`. Production release остаётся `7b2deea`; публикация и deploy
-этого пакета не выполнялись. Это executor evidence, не owner functional acceptance.
+база main `d0c109d`. Production release **`ec15861`**, [PR #76](https://github.com/QahNaaRlN/grace/pull/76),
+[deploy 39424505774](https://github.com/QahNaaRlN/grace/actions/runs/39424505774) PASS. Это executor evidence, не owner functional acceptance.
 
 ## Что реализовано
 
@@ -39,7 +39,7 @@ Worktree `statement-review-repair`, branch `codex/statement-review-repair`,
 | R5 | PASS локально | `TestStatementMappingSnapshotLifecycle`, existing HTTP/isolation/confirmation suite, strengthened `TestStatementPartialConfirmationAndDirectSQLCleanup`: stale/replay/reset, no postings до confirm, published API/SQL guard; web conflict требует review |
 | R6 | PASS локально | SQL direct document tombstone и expiry очищают snapshot/layout; deleted API не выдаёт Proposal; audit не содержит synthetic service reason; существующие cross-owner и restore cases проходят |
 | R7 | PASS локально | API generation, make test (88 files /334 web tests), full integration, local production suite, final affected bank suite, go vet и diff check PASS |
-| R8 | NOT_RUN | Требует отдельного release/deploy и повторного browser owner-test; private source не отправлялся модели и не включён в fixtures |
+| R8 | PASS agent browser | После deploy: actual header/source context, legacy restoration, cancel, explicit manual correction, full mapping persistence/reload, unchanged row evidence/normalization, zero unmapped и blocked negative preview; owner financial acceptance pending |
 
 Synthetic split-total regression проверяет поведение Go и UI, но не утверждает,
 что причина исторического частного FAIL была пропущенным соседним префиксом.
@@ -79,7 +79,64 @@ Patch отметок владельца/retention его сохраняет. Э�
 Go + полным bank integration после финальных изменений; остальные integration
 и production scripts успешно пройдены общими прогонами.
 
-R1–R7 проверены локально; R8 NOT_RUN. Нет новых provider calls, private corpus,
-конфигурационных/финансовых production changes, merge или deploy. Primary checkout
-оставлен чистым. Diff находится в feature worktree; CI/release/owner acceptance
-не подменяются локальными PASS.
+Локальная стадия завершилась R1–R7 PASS; на ней R8 ещё не выполнялся.
+Публикация, release и agent browser R8 подтверждены ниже. Provider calls=0;
+private corpus не добавлялся. Owner financial acceptance не подменяется
+локальными/CI/browser PASS.
+
+
+## PR и release gate — 2026-10-20
+
+- Implementation head `52abb11e78d36e772b37cabb15502fde8cbbc445`.
+- [PR #76](https://github.com/QahNaaRlN/grace/pull/76) merged,
+  `ec1586100819d1bd77902e5a5d94d508cdc984af`, 2026-10-20 12:34:41 UTC.
+- [PR CI 39422108502](https://github.com/QahNaaRlN/grace/actions/runs/39422108502)
+  — все 5 jobs PASS. Merge tree совпадает с проверенным feature tree.
+- [Main CI 39423345963](https://github.com/QahNaaRlN/grace/actions/runs/39423345963)
+  — все 5 jobs PASS.
+- [Delivery 39424344690](https://github.com/QahNaaRlN/grace/actions/runs/39424344690)
+  — source guard и три published images PASS для exact `ec15861`.
+- [Deploy 39424505774](https://github.com/QahNaaRlN/grace/actions/runs/39424505774)
+  — PASS, statement_action=preserve; verified pre-release backup, migration29,
+  helper/API health и public/auth checks. Healthy release зафиксирован
+  2026-10-20 **12:44:58 UTC /17:44:58 +05:00**.
+- [Read-only runtime 39425981524](https://github.com/QahNaaRlN/grace/actions/runs/39425981524)
+  — PASS, Statement AI enabled и current-policy readiness подтверждены
+  **12:54:49 UTC /17:54:49 +05:00**. Paid smoke/inference не запускались.
+- Владелец разрешил PR, выпуск и повторный browser test поручением «приступить».
+  Statement action при deploy — preserve; paid qualification/inference не запускаются.
+
+
+## R8 — реальный браузерный review после выпуска
+
+Agent-run проверка выполнена в существующей авторизованной вкладке, без нового
+upload, consent или model call. UI показал причину retained header FAIL:
+банковские реквизиты (БИК/КПП), включая их подписи, были выбраны как обороты.
+Это ошибка выбора финансовой роли; прежняя узкая гипотеза пропущенного соседнего
+числового префикса остаётся неподтверждённой. Автоматическое качество модели этим
+пакетом не исправлено и full corpus qualification не объявляется завершённой.
+
+Редактор восстановил все прежние строки из evidence, честно показал отсутствующую
+legacy service classification. Реальная несохранённая правка отменена; повторное
+открытие вернуло исходную selection без потери строк. Через UI исправлены только
+оба header turnover и их label selections по печатным итогам. Остальные поля,
+доступный остаток и отсутствующие book balances сохранены.
+
+Каждый оставшийся source fragment просмотрен в контексте: document/bank metadata,
+период документа, column headings, instrument identifiers, legal footer/signature,
+page markers и repeated currencies. Затем они явно размечены service с причинами;
+нет автоматического complement-to-service переноса. Сохранён один manual draft,
+с причиной, явно называющей agent review и отсутствие financial confirmation.
+
+После save и reload: turnover matched, exact unmapped=0, полный snapshot и service
+reasons сохраняются; legacy warning отсутствует. Все прежние row evidence и
+normalized records целиком совпали с независимой проверкой до выпуска.
+Отрицательный preview для нерешённой строки: 0 новых операций /0 связей /
+0 исключений, confirmation disabled, duplicate и decision guards сохранены.
+Owner attestations ролей/страниц остаются unchecked, финансовое подтверждение
+не выполнялось. Это **PASS review-repair**, не завершённый финансовый импорт
+и не owner functional acceptance.
+
+Приватные UI/PDF evidence и screenshot остаются локально, не в Git/CI. В публичный
+отчёт не включены денежные значения, source IDs, реквизиты пользователя или текст
+документа. Statement AI enabled сохранён; future model/corpus/Jev работа отдельно.

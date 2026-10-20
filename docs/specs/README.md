@@ -1,11 +1,11 @@
 [SPEC-0055 — исправление review](0055-review-repair.md) — **accepted**, 2026-10-20,
-implementation **implemented_locally**, R1–R7 PASS; R8 NOT_RUN. Пакет после owner-test: наблюдаемая сверка
+implementation **deployed** (`ec15861`, PR #76), R1–R7 PASS; R8 agent browser PASS. Пакет после owner-test: наблюдаемая сверка
 итогов, сохранение canonical mapping/coverage и редактирование текущих строк;
-legacy service не восстанавливается догадкой. Владелец утвердил конкретный контракт («да, утверждаю»); [локальные evidence](0055-review-repair-evidence.md). Release/deploy и owner acceptance остаются отдельно.
+legacy service не восстанавливается догадкой. Владелец утвердил конкретный контракт («да, утверждаю»); [release/R8 evidence](0055-review-repair-evidence.md). Release/deploy пройдены; owner financial acceptance остаётся отдельно.
 
 [S1.2 description separators](0055-s12-description-separators.md) — accepted, **deployed_owner_test** (PR #74 / `7b2deea`), 2026-10-20. Один smoke `39396162864`: columns 19/19, cards 20/20; actual image/runtime/current policy/public/auth PASS. **Statement AI включён** 13:51:07 +05:00 / 08:51:07 UTC. [D1–D5 evidence](0055-s12-evidence.md); owner private test и full AC12 остаются открыты. Исторические S1/S1.1 FAIL сохранены.
 
-[S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation integrated PR #71; S1.1 PR #73 был выпущен `ef782ec` с AI false; текущий owner-test S1.2 `7b2deea` enabled. Полная qualification остаётся отдельно.
+[S1 owner-test activation amendment](0055-owner-test-activation.md) — accepted, 2026-10-19: владелец утвердил реализацию, один smoke из двух synthetic calls / theoretical $0.14 total и включение только при PASS; без повторов, прежний shared budget. Implementation integrated PR #71; S1.1 PR #73 был выпущен `ef782ec` с AI false; первичная активация S1.2 `7b2deea` enabled; текущий release review repair `ec15861` сохраняет эту policy. Полная qualification остаётся отдельно.
 
 # Spec-first процесс Grace
 
@@ -35,7 +35,10 @@ model calls; опубликовано в [PR #70](https://github.com/QahNaaRlN/g
 для узких выборов/проверок после измерения. Доступный остаток не подменяет book
 balance. [Технический контракт](0055-technical-contract.md), включая новый provider tag,
 принят. Первый ручной production release `b51b74f` подтверждён 2026-10-19 02:37:31 +05:00.
-Текущий production `7b2deea` (S1.2 PR #74): main CI `39395041781`, Delivery
+Текущий production **`ec15861`** (review repair PR #76): [release/R8 evidence](0055-review-repair-evidence.md),
+main CI `39423345963`, Delivery `39424344690`, deploy `39424505774` PASS;
+R8 review repair agent browser PASS, owner financial confirmation pending.
+Statement AI enabled сохранён, новых provider calls нет. Исторический S1.2 (`7b2deea`, PR #74): main CI `39395041781`, Delivery
 `39396018990`, deploy `39396162864` PASS. Columns 19/19 и cards 20/20,
 exact-image/runtime/current policy/public/auth PASS; Statement AI enabled
 2026-10-20 13:51:07 +05:00 / 08:51:07 UTC. Один S1.2 smoke использован,

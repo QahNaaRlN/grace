@@ -2,8 +2,9 @@
 
 - Дата: 2026-10-20, Asia/Yekaterinburg.
 - Статус: **accepted**, 2026-10-20; прямое решение владельца «да, утверждаю».
-- Implementation: **implemented_locally**, 2026-10-20; R1–R7 PASS локально,
-  R8 **not_run** до отдельного release/deploy. Не merged/deployed.
+- Implementation: **deployed**, 2026-10-20: [PR #76](https://github.com/QahNaaRlN/grace/pull/76),
+  release `ec15861`, [deploy 39424505774](https://github.com/QahNaaRlN/grace/actions/runs/39424505774).
+  R1–R7 PASS локально/CI; R8 **agent_browser_pass**. Owner financial acceptance pending.
 - [Implementation evidence](0055-review-repair-evidence.md).
 - Родитель: [SPEC-0055](0055-bank-statement-pdf-import.md), accepted technical
   contract и deployed S1.2. Конкретный контракт принят владельцем.
