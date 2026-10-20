@@ -1,3 +1,10 @@
+Следующий подготовленный контракт — [S1.9](specs/0055-s19-saved-trace-diagnosis.md),
+**draft / not_started**, 2026-10-21: самостоятельное read-only чтение фиксированного
+S1.8 trace и локальный replay прежними Go validation/scorer, inference=0.
+[Статический разбор](research/statement-quality/s18-saved-trace-diagnosis.md)
+сузил отказ до одного описания и двух нерасшифрованных blockers; причина UNVERIFIED.
+Операторский workflow ожидает принятия контракта. Исправления и paid smoke отдельно.
+
 Последний live результат — **2026-10-21 03:10:03 +05:00**:
 [S1.8](specs/0055-s18-evidence.md) выполнен один раз после CI5/5: **FAIL17/19 columns**,
 record_description/blockers. Exact canonical прошёл; cards/RU не отправлены.
@@ -8,8 +15,9 @@ prompt/scorer/transport и новый paid run этим контрактом н�
 
 Интеграция №79: `938b370`, 2026-10-21 02:43:30 +05:00;
 [post-merge gates](specs/0055-pr79-postmerge.md) завершены: main CI5/5 и Delivery PASS,
-локальные make test/go vet/diff check PASS. S1.7 integrated; S1.8 local_verified,
-его operator-код и результаты находятся в PR №80, ещё не в main/production.
+локальные make test/go vet/diff check PASS. S1.7 integrated; PR №80 слит в main (`5e9116e`) 2026-10-21 03:24:55 +05:00.
+[Post-merge проверки №80](specs/0055-pr80-postmerge.md): local make test/vet/diff PASS;
+merge CI PostgreSQL integration pending, общий PASS пока не заявлен; production deployment не выполнялся.
 
 Исторический срез до S1.8 — **2026-10-21 02:13:09 +05:00**:
 расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.

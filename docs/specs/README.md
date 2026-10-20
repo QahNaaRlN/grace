@@ -1,3 +1,10 @@
+[S1.9 — диагностика сохранённого S1.8](0055-s19-saved-trace-diagnosis.md) —
+**draft / not_started**, 2026-10-21: отдельный read-only workflow, закрытые
+locator/reason metadata и replay на прежнем synthetic fixture. Продуктовые
+правила и платные запросы не входят; acceptance record отсутствует.
+[Статический разбор](../research/statement-quality/s18-saved-trace-diagnosis.md).
+PR №80 слит (`5e9116e`, 03:24:55 +05:00); [post-merge gates](0055-pr80-postmerge.md): local PASS, merge CI pending.
+
 Последний live результат — **2026-10-21 03:10:03 +05:00**:
 [S1.8](0055-s18-evidence.md) выполнен один раз после CI5/5: **FAIL17/19 columns**,
 record_description/blockers. Exact canonical прошёл; cards/RU не отправлены.
