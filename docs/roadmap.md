@@ -3,9 +3,9 @@
 [Проверки после слияния](specs/0055-pr78-postmerge.md): main CI 5/5 PASS,
 локальные make test/go vet/diff check PASS; Delivery `39490817275` PASS.
 Образы опубликованы, деплой приложения не выполнялся.
-Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — draft/not_started:
+Следующий [S1.6](specs/0055-s16-diagnostic-screening.md) — accepted/implementing:
 один новый smoke с диагностикой, не более 3 вызовов / $0.1617 provider cap,
-без переключения модели и без разрешения платного запуска до утверждения.
+без переключения модели; владелец утвердил реализацию и этот единственный запуск.
 
 Актуальное состояние — 2026-10-20 17:10:51 UTC / 22:10:51 +05:00:
 [единственный S1.4 screening](specs/0055-s14-evidence.md) завершился provider-stage

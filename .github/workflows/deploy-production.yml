@@ -25,6 +25,11 @@ on:
         required: false
         default: false
         type: boolean
+      statement_screening_s16_only:
+        description: Один утверждённый прогон S1.6, без деплоя и переключения модели
+        required: false
+        default: false
+        type: boolean
       inspect_statement_only:
         description: Check statement AI readiness without emitting secrets or budget values
         required: false
@@ -42,7 +47,7 @@ concurrency:
 
 jobs:
   screen-statement:
-    if: ${{ inputs.statement_screening_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
+    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
     name: One bounded candidate screening
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -94,8 +99,67 @@ jobs:
           scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
+  screen-statement-s16:
+    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    name: Один ограниченный прогон S1.6
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Проверка единственного режима и CI точного коммита
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INSPECT_ONLY: ${{ inputs.inspect_statement_only }}
+          OLD_SCREENING: ${{ inputs.statement_screening_only }}
+          RECONCILE_MODE: ${{ inputs.reconcile_screening_usage }}
+          STATEMENT_ACTION: ${{ inputs.statement_action }}
+        run: |
+          set -eu
+          test "$INSPECT_ONLY" != true
+          test "$OLD_SCREENING" != true
+          case "$RECONCILE_MODE" in ''|none) : ;; *) exit 2 ;; esac
+          case "$STATEMENT_ACTION" in ''|preserve) : ;; *) exit 2 ;; esac
+          gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=10 --json headSha,conclusion > "$RUNNER_TEMP/screening-ci.json"
+          python3 - "$GITHUB_SHA" "$RUNNER_TEMP/screening-ci.json" <<'PYCI'
+          import json,sys
+          assert any(x['headSha']==sys.argv[1] and x['conclusion']=='success' for x in json.load(open(sys.argv[2])))
+          PYCI
+      - name: Сборка операторского комплекта точного коммита
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-screening-$GITHUB_SHA"
+          mkdir "$bundle"
+          CGO_ENABLED=0 go build -trimpath -o "$bundle/grace-statement-admin" ./cmd/statement-admin
+          cp internal/pdfextract/testdata/columns.pdf internal/pdfextract/testdata/cards.pdf internal/pdfextract/testdata/turnover-roles-ru.pdf "$bundle/"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          cp deployments/production/statement-screening-s16.sh "$bundle/run.sh"
+          chmod 755 "$bundle" "$bundle/grace-statement-admin"
+          chmod 644 "$bundle/"*.pdf "$bundle/SOURCE_SHA" "$bundle/run.sh"
+          (cd "$bundle" && sha256sum grace-statement-admin *.pdf SOURCE_SHA run.sh > SHA256SUMS)
+      - name: Настройка SSH с закреплённым ключом сервера
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Исполнение единственного разрешения S1.6
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-screening-$GITHUB_SHA"
+          remote="/tmp/grace-statement-screening-$GITHUB_SHA"
+          ssh grace-deploy@195.133.195.190 "mkdir '$remote'"
+          scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
+          ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
+
   inspect-statement:
-    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -155,7 +219,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
 
   deploy:
-    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20

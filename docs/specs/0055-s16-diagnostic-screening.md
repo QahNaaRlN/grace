@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.6: один новый прогон с диагностикой S1.5
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: not_started.
+- Статус: accepted; implementation_status: implementing.
 - Утверждение: «Утвердить S1.6 и один ограниченный smoke», 2026-10-21.
 - Основание: владелец слил [PR №78](https://github.com/QahNaaRlN/grace/pull/78),
   коммит `29a28a71d6e7d895c95e707f831dc59622ff25c8`; [S1.5](0055-s15-screening-diagnostics.md)
