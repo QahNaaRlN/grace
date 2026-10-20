@@ -1,13 +1,21 @@
 # SPEC-0055 / S1.8: один screening с идентичностью S1.7
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: not_started; live_status: not_started.
+- Статус: accepted; implementation_status: local_verified (S1–S4 PASS); live_status: FAIL qualification_quality_failed, columns17/19; billing_status: settled.
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.8 и один ограниченный smoke».
   Разрешены реализация S1–S4 и один S5 при всех указанных gates.
 - Основание: [S1.7](0055-s17-selected-model-identity.md),
   [I1–I4](0055-s17-evidence.md), [post-merge №79](0055-pr79-postmerge.md).
 - Worktree: `statement-identity-smoke`; ветка `codex/statement-identity-smoke`,
   база `938b37062f6756c8f01106a26217752b5a4797ea` из main.
+
+## Результат исполнения
+
+[Подтверждения S1–S5](0055-s18-evidence.md): единственный run `39505958576`
+выполнен после exact-source CI5/5. Transport exact canonical прошёл; columns17/19
+FAIL по record_description/blockers, cards/RU не отправлены. Известный расход
+учтён, shared uncertain=false; marker consumed, повтор не разрешён.
+Application image/health сохранены, production policy/model/flags не менялись.
 
 ## Проблема и пользовательский результат
 

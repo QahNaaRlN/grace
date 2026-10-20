@@ -1,12 +1,17 @@
-Интеграция **2026-10-21 02:43:30 +05:00**: [PR №79](https://github.com/QahNaaRlN/grace/pull/79)
-слит владельцем, merge `938b370`. S1.7, диагностика S1.6 и recovery находятся в main;
-[post-merge проверки](specs/0055-pr79-postmerge.md) выполняются, итоговая приёмка ещё partial.
-Следующий [S1.8 — один screening с report v3](specs/0055-s18-identity-screening.md)
-— **draft/not_started**, реализация и платный запуск не разрешены.
-Предел кандидата: один run, до 3 вызовов / $0.1617 provider cost, прежний общий
-бюджет/fees; без деплоя и переключения production-модели.
+Последний live результат — **2026-10-21 03:10:03 +05:00**:
+[S1.8](specs/0055-s18-evidence.md) выполнен один раз после CI5/5: **FAIL17/19 columns**,
+record_description/blockers. Exact canonical прошёл; cards/RU не отправлены.
+Известный расход учтён, reservation settled, shared uncertain block=false.
+Image/health сохранены; marker consumed, новых попыток и model/flag switch нет.
+Следующий шаг — offline-разбор сохранённого синтетического ответа; исправления
+prompt/scorer/transport и новый paid run этим контрактом не разрешены.
 
-Текущее состояние — **2026-10-21 02:13:09 +05:00**:
+Интеграция №79: `938b370`, 2026-10-21 02:43:30 +05:00;
+[post-merge gates](specs/0055-pr79-postmerge.md) завершены: main CI5/5 и Delivery PASS,
+локальные make test/go vet/diff check PASS. S1.7 integrated; S1.8 local_verified,
+его operator-код и результаты находятся в PR №80, ещё не в main/production.
+
+Исторический срез до S1.8 — **2026-10-21 02:13:09 +05:00**:
 расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.
 [Сверка и settlement](specs/0055-s16-reconciliation-evidence.md) выполнены
 без нового inference; одна reservation settled, остальные строки не изменялись.
@@ -14,11 +19,11 @@
 первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
 Production policy/model/flags сохранены, деплоя и paid retry нет.
 Следующий [S1.7 — точная идентичность модели в screening](specs/0055-s17-selected-model-identity.md)
-— **accepted/local_verified**, 2026-10-21. Владелец утвердил offline-реализацию;
+— **accepted/integrated**, 2026-10-21. Владелец утвердил offline-реализацию;
 I1–I4 PASS: точная пара, свежий catalog proof, report v3, product isolation,
 реальные PDF со scorer19/20/23, make test/production/race/vet.
-[Подтверждения](specs/0055-s17-evidence.md). Внешних inference=0; source в main №79, post-merge gates выполняются.
-Новый платный smoke, деплой и переключение модели не разрешены.
+[Подтверждения](specs/0055-s17-evidence.md). Внешних inference=0; source в main №79, post-merge gates PASS.
+Повторные платные smoke, деплой и переключение модели не разрешены.
 
 Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
 слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.

@@ -13,13 +13,15 @@ Head PR: `028011817f1d9474fb95a9c80b20e93e1e0dc2ec`.
 - Локальный `TMPDIR=/var/tmp/grace-quality-next-tests VITEST_MAX_WORKERS=1 make test` на exact merge SHA: exit0; Go, 88 файлов / 334 web tests, lint/FSD/форматирование/сборка/Jev PASS.
 - `go vet ./cmd/... ./internal/...` и `git diff --check`: exit0. Primary checkout clean после всех локальных gates. Журналы `/tmp/grace-pr79-postmerge-make.log`, `/tmp/grace-pr79-postmerge-vet.log`.
 - `git diff --exit-code 0280118 938b370` exit0: дерево merge совпадает с проверенным PR.
-- Delivery нового merge `39503724048` выполняется; CI main завершён. Образы и приложение — разные gates, публикация образов не является деплоем.
+- [Delivery 39503724048](https://github.com/QahNaaRlN/grace/actions/runs/39503724048) SUCCESS; CI main завершён. Образы и приложение — разные gates, публикация образов не является деплоем.
 - В этой post-merge сессии inference, dispatch production workflow и deployment не выполнялись.
 
 S1.6 one-shot, diagnostics, recovery и S1.7 source достижимы из main.
 Это не утверждение успешного S1.6 smoke: FAIL и consumed authorization
 сохранены. Расход S1.6 был подтверждён и учтён отдельным recovery, без inference.
-S1.7 live качество UNVERIFIED; product policy/model не переключались.
+На момент слияния S1.7 live качество было UNVERIFIED; product policy/model не переключались.
+После отдельного утверждения выполнен [S1.8](0055-s18-evidence.md): canonical
+прошёл, columns17/19 FAIL; это не отменяет PASS post-merge gates №79.
 
 Следующий [кандидат S1.8](0055-s18-identity-screening.md) принят владельцем 2026-10-21; реализация и один ограниченный запуск разрешены по его контракту.
 Настоящая фиксация слияния не разрешает новый smoke или deployment.
