@@ -54,7 +54,7 @@ func validBill(b *statementextract.Billing, policy statementextract.Policy) bool
 // detects accidental edits; it is not a signature against a malicious operator.
 func ValidateReport(r Report, now time.Time) error {
 	fail := errors.New("invalid_qualification_report")
-	if r.Version != ReportVersion || r.Profile != CurrentProfile() || !r.Passed || r.Error != "" || r.Digest != reportDigest(r) || !r.Policy.Valid() || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 2 || len(r.Results) != 2 || len(r.Calls) != 2 || len(r.Traces) != 2 || r.MaximumMicros != 2*r.Policy.CallMicros() || r.MaximumMicros > MaxSmokeMicros || r.ActualMicros == nil {
+	if r.Failure != nil || r.Version != ReportVersion || r.Profile != CurrentProfile() || !r.Passed || r.Error != "" || r.Digest != reportDigest(r) || !r.Policy.Valid() || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 2 || len(r.Results) != 2 || len(r.Calls) != 2 || len(r.Traces) != 2 || r.MaximumMicros != 2*r.Policy.CallMicros() || r.MaximumMicros > MaxSmokeMicros || r.ActualMicros == nil {
 		return fail
 	}
 	var total int64

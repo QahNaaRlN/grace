@@ -74,13 +74,22 @@ func (r *StatementReasoner) Complete(ctx context.Context, approved statementextr
 	if e != nil {
 		return proposal, billing, e
 	}
+	protocolFailure := func() error {
+		cause := errors.New("provider_protocol")
+		if r.screening && out.ScreeningDiagnostic != nil {
+			diagnostic := *out.ScreeningDiagnostic
+			diagnostic.Code = "content"
+			return &screeningDiagnosticError{cause: cause, detail: diagnostic.Sanitize()}
+		}
+		return cause
+	}
 	dec := json.NewDecoder(bytes.NewReader(out.Content))
 	dec.DisallowUnknownFields()
 	if e = dec.Decode(&proposal); e != nil {
-		return proposal, billing, errors.New("provider_protocol")
+		return proposal, billing, protocolFailure()
 	}
 	if e = dec.Decode(&struct{}{}); e != io.EOF {
-		return proposal, billing, errors.New("provider_protocol")
+		return proposal, billing, protocolFailure()
 	}
 	return proposal, billing, nil
 }

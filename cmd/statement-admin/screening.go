@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/assistant"
@@ -28,29 +27,7 @@ func screeningMain(mode, dir string) {
 		if e != nil || r.Version != statementqualification.ScreeningReportVersion {
 			fail("invalid_screening_report")
 		}
-		valid := statementqualification.ValidateScreeningReport(r, time.Now()) == nil
-		code := regexp.MustCompile(`^[a-zA-Z0-9_:.-]{1,120}$`)
-		safe := func(in []string) []string {
-			out := []string{}
-			for _, s := range in {
-				if code.MatchString(s) {
-					out = append(out, s)
-				}
-			}
-			return out
-		}
-		results := []any{}
-		for _, s := range r.Results {
-			if s.Name != "columns" && s.Name != "cards" && s.Name != "turnover-roles-ru" {
-				continue
-			}
-			results = append(results, map[string]any{"name": s.Name, "passed": s.Passed, "checks": s.Checks, "correct": s.Correct, "codes": safe(s.Codes), "validation": safe(s.Validation), "coverage": safe(s.Coverage)})
-		}
-		errorCode := ""
-		if code.MatchString(r.Error) {
-			errorCode = r.Error
-		}
-		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"screeningPassed": valid, "error": errorCode, "results": results, "activationAuthorized": false})
+		_ = json.NewEncoder(os.Stdout).Encode(screeningSummary(r))
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 420*time.Second)
@@ -132,4 +109,35 @@ func screeningMain(mode, dir string) {
 	if e != nil {
 		os.Exit(1)
 	}
+}
+
+func screeningSummary(r statementqualification.Report) map[string]any {
+	valid := statementqualification.ValidateScreeningReport(r, time.Now()) == nil
+	results := []any{}
+	for _, s := range r.Results {
+		if s.Name != "columns" && s.Name != "cards" && s.Name != "turnover-roles-ru" {
+			continue
+		}
+		results = append(results, map[string]any{"name": s.Name, "passed": s.Passed, "checks": s.Checks, "correct": s.Correct, "codes": screeningPublicCodes(s.Codes), "validation": screeningPublicCodes(s.Validation), "coverage": screeningPublicCodes(s.Coverage)})
+	}
+	diagnosticCode := ""
+	if r.Failure != nil {
+		diagnosticCode = r.Failure.Sanitize().Code
+	}
+	errorCode := statementqualification.ScreeningErrorCode(r.Error)
+	return map[string]any{"screeningPassed": valid, "error": errorCode, "diagnosticCode": diagnosticCode, "results": results, "activationAuthorized": false}
+}
+
+func screeningPublicCodes(in []string) []string {
+	out := []string{}
+	for _, code := range in {
+		switch code {
+		case "row_count", "account_amount_currency", "direction", "operation_clock", "booking_clock", "record_description", "row_issues", "fx_column", "turnover", "coverage", "blockers", "absent_book_balances", "available_balance", "book_balances", "opening_book_value", "closing_book_value", "absent_booking", "absent_fx", "printed_debit_turnover", "printed_credit_turnover", "absent_book_dates",
+			"account_amount_required", "aggregate_overflow", "ambiguous_local_time", "ambiguous_money", "amount_overflow", "available_is_not_book_balance", "book_balance_mismatch", "book_balance_not_checked", "book_balance_period_not_proven", "currency_conflict", "currency_required", "description_evidence_limit", "direction_conflict", "direction_required", "field_evidence_limit", "financial_candidate_in_description", "historical_anchor_not_proven", "invalid_currency", "invalid_date", "invalid_direction", "invalid_span_reference", "invalid_timezone", "legacy_field_evidence_invalid", "legacy_service_mapping_missing", "mapping_review_missing", "mapping_snapshot_invalid", "missing_evidence", "no_financial_confirmation", "noncontiguous_date_evidence", "noncontiguous_evidence", "operation_date_required", "overlapping_evidence", "owner_field_role_review_required", "owner_page_review_required", "printed_turnover_mismatch", "service_reason_required", "source_coverage_incomplete", "statement_row_limit", "transaction_direction_conflict", "turnover_not_checked", "turnover_role_unverified", "unsupported_account_currency", "zero_posting":
+			out = append(out, code)
+		default:
+			out = append(out, "unknown")
+		}
+	}
+	return out
 }

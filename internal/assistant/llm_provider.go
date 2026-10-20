@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/QahNaaRlN/grace/internal/statementextract"
 )
 
 // ModelPolicy is an operator-verified endpoint and price snapshot. No automatic
@@ -85,14 +87,15 @@ func (e *ProviderProtocolError) Error() string          { return "provider_proto
 func (e *ProviderProtocolError) ProtocolReason() string { return e.Reason }
 
 type LLMResponse struct {
-	BillingKnown     bool
-	ID               string
-	Model            string
-	Provider         string
-	Content          json.RawMessage
-	PromptTokens     int
-	CompletionTokens int
-	CostMicros       int64
+	ScreeningDiagnostic *statementextract.ScreeningDiagnostic `json:"-"`
+	BillingKnown        bool
+	ID                  string
+	Model               string
+	Provider            string
+	Content             json.RawMessage
+	PromptTokens        int
+	CompletionTokens    int
+	CostMicros          int64
 }
 type ReasoningProvider interface {
 	Complete(context.Context, LLMRequest) (LLMResponse, error)
@@ -137,7 +140,18 @@ func costMicros(value string) (int64, error) {
 	return n.Int64(), nil
 }
 
-func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMResponse, error) {
+func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (result LLMResponse, resultErr error) {
+	diagnostic := statementextract.ScreeningDiagnostic{Code: "request"}
+	defer func() {
+		if !p.screeningDocument {
+			return
+		}
+		diagnostic = diagnostic.Sanitize()
+		result.ScreeningDiagnostic = &diagnostic
+		if resultErr != nil {
+			resultErr = &screeningDiagnosticError{cause: resultErr, detail: diagnostic}
+		}
+	}()
 	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
 	}
@@ -186,23 +200,39 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 	req.Header.Set("Authorization", "Bearer "+p.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-OpenRouter-Metadata", "enabled")
+	diagnostic.Code = "transport"
 	response, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
+			diagnostic.Code = "timeout"
 			return LLMResponse{}, errors.New("provider_timeout")
 		}
 		return LLMResponse{}, errors.New("provider_unavailable")
 	}
 	defer response.Body.Close()
+	diagnostic.HTTPStatus = response.StatusCode
+	diagnostic.ContentType = screeningContentType(response.Header.Get("Content-Type"))
 	// Do not reflect provider error bodies (which may echo personal input) in logs/UI.
 	if response.StatusCode != http.StatusOK {
+		diagnostic.Code = "http_other"
+		if response.StatusCode >= 400 && response.StatusCode < 500 {
+			diagnostic.Code = "http_4xx"
+		}
+		if response.StatusCode >= 500 && response.StatusCode < 600 {
+			diagnostic.Code = "http_5xx"
+		}
 		if response.StatusCode == http.StatusBadRequest || response.StatusCode == http.StatusUnprocessableEntity {
 			return LLMResponse{}, errors.New("provider_request")
 		}
 		return LLMResponse{}, errors.New("provider_unavailable")
 	}
 	raw, err := io.ReadAll(io.LimitReader(response.Body, (1<<20)+1))
-	if err != nil || len(raw) > 1<<20 {
+	if err != nil {
+		diagnostic.Code = "read"
+		return LLMResponse{}, errors.New("provider_protocol")
+	}
+	if len(raw) > 1<<20 {
+		diagnostic.Code = "oversize"
 		return LLMResponse{}, errors.New("provider_protocol")
 	}
 	var out struct {
@@ -223,48 +253,85 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 			Cost       json.Number `json:"cost"`
 		} `json:"usage"`
 	}
-	if json.Unmarshal(raw, &out) != nil || out.ID == "" || out.Model != in.Policy.Model {
+	diagnostic.Code = "envelope"
+	decoded := json.Unmarshal(raw, &out) == nil
+	if decoded {
+		diagnostic.CorrelationID = out.ID
+	}
+	if !decoded || out.ID == "" || out.Model != in.Policy.Model {
 		return LLMResponse{}, &ProviderProtocolError{Reason: "envelope"}
 	}
 	// Routing slugs and response display names are distinct API fields. The
 	// expected name is verified by the operator, never inferred from a slug.
-	if out.Metadata == nil || out.Metadata.Requested != in.Policy.Model || out.Metadata.Strategy != "direct" || out.Metadata.Attempt != 1 || out.Metadata.IsBYOK || len(out.Metadata.Pipeline) > 0 {
+	if out.Metadata == nil {
+		diagnostic.Code = "metadata_missing"
 		return LLMResponse{}, errors.New("provider_protocol")
+	}
+	for _, guard := range []struct {
+		bad  bool
+		code string
+	}{
+		{out.Metadata.Requested != in.Policy.Model, "requested"},
+		{out.Metadata.Strategy != "direct", "strategy"},
+		{out.Metadata.Attempt != 1, "attempt"},
+		{out.Metadata.IsBYOK, "byok"},
+		{len(out.Metadata.Pipeline) > 0, "pipeline"},
+	} {
+		if guard.bad {
+			diagnostic.Code = guard.code
+			return LLMResponse{}, errors.New("provider_protocol")
+		}
 	}
 	selected := 0
 	actualProvider := ""
 	for _, endpoint := range out.Metadata.Endpoints.Available {
 		if endpoint.Selected {
 			selected++
-			if endpoint.Model != in.Policy.Model || !strings.EqualFold(endpoint.Provider, in.Policy.DisplayProvider()) {
+			if endpoint.Model != in.Policy.Model {
+				diagnostic.Code = "selected_model"
+				return LLMResponse{}, errors.New("provider_protocol")
+			}
+			if !strings.EqualFold(endpoint.Provider, in.Policy.DisplayProvider()) {
+				diagnostic.Code = "provider"
 				return LLMResponse{}, errors.New("provider_protocol")
 			}
 			actualProvider = endpoint.Provider
 		}
 	}
-	if selected != 1 || (out.Provider != "" && !strings.EqualFold(out.Provider, actualProvider)) {
+	if selected != 1 {
+		diagnostic.Code = "count"
 		return LLMResponse{}, errors.New("provider_protocol")
 	}
+	if out.Provider != "" && !strings.EqualFold(out.Provider, actualProvider) {
+		diagnostic.Code = "display_provider"
+		return LLMResponse{}, errors.New("provider_protocol")
+	}
+	diagnostic.Code = "cost"
 	cost, err := costMicros(string(out.Usage.Cost))
 	if err != nil {
 		return LLMResponse{}, err
 	}
 	if out.Usage.Prompt < 1 || out.Usage.Completion < 0 {
+		diagnostic.Code = "usage"
 		return LLMResponse{}, &ProviderProtocolError{Reason: "usage"}
 	}
 	// Billing is gateway metadata, independent of whether the model produced
 	// usable JSON. Retain only validated route/cost/ID on a content failure.
 	billed := LLMResponse{BillingKnown: true, ID: out.ID, Model: out.Model, Provider: actualProvider, PromptTokens: out.Usage.Prompt, CompletionTokens: out.Usage.Completion, CostMicros: cost}
 	if out.Usage.Completion == 0 {
+		diagnostic.Code = "usage"
 		return billed, &ProviderProtocolError{Reason: "usage"}
 	}
 	if out.Usage.Prompt > in.InputTokenUpperBound || out.Usage.Completion > in.MaxOutputTokens {
+		diagnostic.Code = "token_bound"
 		return billed, &ProviderProtocolError{Reason: "token_bound"}
 	}
 	if len(out.Choices) != 1 {
+		diagnostic.Code = "choices"
 		return billed, &ProviderProtocolError{Reason: "choices"}
 	}
 	if len(out.Choices[0].Message.ToolCalls) > 0 {
+		diagnostic.Code = "tools"
 		return billed, &ProviderProtocolError{Reason: "tools"}
 	}
 	if out.Choices[0].FinishReason != "stop" {
@@ -272,11 +339,14 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (LLMRe
 		if out.Choices[0].FinishReason == "length" {
 			reason = "finish_length"
 		}
+		diagnostic.Code = reason
 		return billed, &ProviderProtocolError{Reason: reason}
 	}
 	if !json.Valid([]byte(out.Choices[0].Message.Content)) {
+		diagnostic.Code = "content"
 		return billed, &ProviderProtocolError{Reason: "content"}
 	}
+	diagnostic.Code = "unknown"
 	billed.Content = json.RawMessage(out.Choices[0].Message.Content)
 	return billed, nil
 }

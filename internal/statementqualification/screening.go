@@ -5,10 +5,11 @@ import (
 	"errors"
 	"github.com/QahNaaRlN/grace/internal/statementdata"
 	"github.com/QahNaaRlN/grace/internal/statementextract"
+	"strings"
 	"time"
 )
 
-const ScreeningReportVersion = "statement.screening.v1.gemini31-ru-roles"
+const ScreeningReportVersion = "statement.screening.v2.gemini31-diagnostics"
 const ScreeningScorerVersion = "statement-screening.v1.19-20-23"
 const ScreeningMaxMicros int64 = 161700
 
@@ -29,7 +30,7 @@ func RunScreening(ctx context.Context, samples []Sample, r statementextract.Reas
 // complete screening result only, never an incomplete campaign or unknown bill.
 func ValidateScreeningReport(r Report, now time.Time) error {
 	fail := errors.New("invalid_screening_report")
-	if r.Version != ScreeningReportVersion || r.Profile != ScreeningProfile() || !statementextract.ScreeningPolicyValid(r.Policy) || r.Digest != reportDigest(r) || !r.Passed || r.Error != "" || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 3 || len(r.Results) != 3 || len(r.Traces) != 3 || len(r.Calls) != 3 || r.MaximumMicros != ScreeningMaxMicros || r.ActualMicros == nil {
+	if r.Failure != nil || r.Version != ScreeningReportVersion || r.Profile != ScreeningProfile() || !statementextract.ScreeningPolicyValid(r.Policy) || r.Digest != reportDigest(r) || !r.Passed || r.Error != "" || r.Time.After(now) || now.Sub(r.Time) > 15*time.Minute || len(r.Corpus) != 3 || len(r.Results) != 3 || len(r.Traces) != 3 || len(r.Calls) != 3 || r.MaximumMicros != ScreeningMaxMicros || r.ActualMicros == nil {
 		return fail
 	}
 	total := int64(0)
@@ -92,4 +93,17 @@ func ScoreScreening(name string, r statementdata.Review) Result {
 	check(len(r.Reconciliation.Blockers) == 0, "blockers")
 	out.Passed = out.Checks == 23 && out.Checks == out.Correct
 	return out
+}
+
+// ScreeningErrorCode is the closed public vocabulary, even for an untrusted report.
+func ScreeningErrorCode(code string) string {
+	switch code {
+	case "", "invalid_qualification_corpus", "policy_unavailable", "screening_policy_invalid", "invalid_qualification_fixture", "qualification_plan_invalid", "qualification_cap_exceeded", "qualification_budget_unavailable", "qualification_settlement_failed", "qualification_timeout", "qualification_cost_overrun", "qualification_protocol_failed", "qualification_merge_failed", "qualification_grounding_failed", "qualification_quality_failed", "qualification_provider_failed":
+		return code
+	}
+	const prefix = "qualification_provider_failed_"
+	if strings.HasPrefix(code, prefix) {
+		return prefix + (statementextract.ScreeningDiagnostic{Code: strings.TrimPrefix(code, prefix)}).Sanitize().Code
+	}
+	return "unknown"
 }

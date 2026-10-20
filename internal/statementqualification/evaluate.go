@@ -43,19 +43,20 @@ type Trace struct {
 	Parts []statementdata.Proposal `json:"parts"`
 }
 type Report struct {
-	Digest        string                  `json:"digest"`
-	Profile       Profile                 `json:"profile"`
-	Corpus        []CaseEvidence          `json:"corpus"`
-	Traces        []Trace                 `json:"traces,omitempty"`
-	Version       string                  `json:"version"`
-	Time          time.Time               `json:"time"`
-	Policy        statementextract.Policy `json:"policy"`
-	MaximumMicros int64                   `json:"maximumMicros"`
-	ActualMicros  *int64                  `json:"actualMicros"`
-	Results       []Result                `json:"results"`
-	Calls         []Call                  `json:"calls"`
-	Passed        bool                    `json:"passed"`
-	Error         string                  `json:"error,omitempty"`
+	Digest        string                                `json:"digest"`
+	Profile       Profile                               `json:"profile"`
+	Corpus        []CaseEvidence                        `json:"corpus"`
+	Traces        []Trace                               `json:"traces,omitempty"`
+	Version       string                                `json:"version"`
+	Time          time.Time                             `json:"time"`
+	Policy        statementextract.Policy               `json:"policy"`
+	MaximumMicros int64                                 `json:"maximumMicros"`
+	ActualMicros  *int64                                `json:"actualMicros"`
+	Results       []Result                              `json:"results"`
+	Calls         []Call                                `json:"calls"`
+	Passed        bool                                  `json:"passed"`
+	Error         string                                `json:"error,omitempty"`
+	Failure       *statementextract.ScreeningDiagnostic `json:"failure,omitempty"`
 }
 
 // Run reserves every planned call before inference. It never retries a call;
@@ -160,6 +161,18 @@ func run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 				report.Calls = append(report.Calls, Call{billing.GenerationID, billing.InputTokens, billing.OutputTokens, billing.CostMicros, time.Since(callStart).Milliseconds()})
 			}
 			if e != nil || !known {
+				if screening {
+					diagnostic := statementextract.ScreeningDiagnostic{Code: "unknown"}
+					var detail interface {
+						ScreeningDiagnostic() statementextract.ScreeningDiagnostic
+					}
+					if errors.As(e, &detail) {
+						diagnostic = detail.ScreeningDiagnostic()
+					}
+					diagnostic = diagnostic.Sanitize()
+					report.Failure = &diagnostic
+					return report, errors.New("qualification_provider_failed_" + diagnostic.Code)
+				}
 				var detail interface{ ProtocolReason() string }
 				if errors.As(e, &detail) {
 					return report, errors.New("qualification_provider_failed_" + detail.ProtocolReason())
