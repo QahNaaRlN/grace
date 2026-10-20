@@ -1,24 +1,27 @@
 # Roadmap Grace
 
 Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).
-**Statement AI включён для owner production testing** в `7b2deea` (S1.2 PR #74).
-Main CI `39395041781`, Delivery `39396018990`, deploy `39396162864` PASS.
-Columns **19/19**, cards **20/20**; exact-image/runtime flag/current policy
-подтверждены **13:51:07 +05:00 / 08:51:07 UTC**, public/auth PASS 13:51:10. Независимая read-only проверка `39396521229`
-13:52:24 +05:00 подтвердила enabled и activation readiness без unknown usage.
-[Current evidence D1–D5](specs/0055-s12-evidence.md). Один отдельно утверждённый
-S1.2 smoke использован, без повторов или личных документов. Прежние FAIL
-сохранены в [истории](specs/0055-activation-evidence.md). Owner-test выполнен
-агентом: проверка строк PASS, end-to-end импорт **blocked**
-из-за header turnover mismatch, неполного source coverage и пустого manual editor.
-Read-only run [39414784421](https://github.com/QahNaaRlN/grace/actions/runs/39414784421)
-подтвердил header mismatch при согласованных row sums; гипотеза соседнего
-числового префикса не подтверждена. Следующий пакет —
-[исправление review](specs/0055-review-repair.md), **accepted / implemented_locally**; R1–R7 PASS, R8 NOT_RUN;
-финансовое подтверждение и успешный owner E2E не выполнены.
-Полная AC12 qualification, сравнение Jev/cascade и owner functional acceptance
-не завершены. SPEC-0019 остаётся draft; номер 0025 не использован.
-Унаследованные замечания ShellCheck сохранены в evidence SPEC-0050.
+**Production `ec15861`: review repair PR #76 deployed** в 17:44:58 +05:00 /
+12:44:58 UTC. Main CI `39423345963`, Delivery `39424344690`,
+[deploy `39424505774`](https://github.com/QahNaaRlN/grace/actions/runs/39424505774) PASS:
+backup/migration29/helper/API health/public/auth. **Statement AI включён**,
+state preserve и readiness подтверждены read-only `39425981524` 17:54:49 +05:00.
+Новых paid calls/smoke/private inference не было.
+
+[Review repair R1–R8](specs/0055-review-repair-evidence.md) — local/CI/agent browser PASS:
+сохранение разметки, восстановление legacy drafts, наблюдаемые header totals/source
+coverage и редактирование текущих строк. Реальный retained header FAIL объяснён
+выбором банковских реквизитов вместо оборотов; через UI выполнена ручная коррекция
+по документу. Row evidence/normalization сохранены, turnover matched, unmapped=0.
+**Owner financial acceptance pending**: роли/страницы/семантика и duplicates требуют
+явных решений; financial confirmation не выполнялся. Browser PASS не означает
+улучшения автоматического извлечения или завершения full AC12/corpus/Jev.
+
+Исторический S1.2 `7b2deea`: columns19/19 и cards20/20, один separately approved
+smoke; [D1–D5](specs/0055-s12-evidence.md). Прежние model FAIL сохранены в
+[истории](specs/0055-activation-evidence.md). SPEC-0056 model registry остаётся draft;
+SPEC-0019 draft, номер0025 не использован. Унаследованные ShellCheck замечания
+сохранены в evidence SPEC-0050.
 
 Документ разделяет реализованные этапы и целевое развитие из [видения](vision.md).
 Требования к целевому продукту уточнены по анализу действующей финансовой
@@ -30,22 +33,21 @@ Read-only run [39414784421](https://github.com/QahNaaRlN/grace/actions/runs/3941
 
 Текущая принятая спецификация — [SPEC-0055](specs/0055-bank-statement-pdf-import.md).
 Реализация интегрирована PR #64; protected activation/rollback — PR #65.
-Ручной путь и Statement AI доступны в production `7b2deea`. S1.2 прошёл оба
-synthetic cases и actual runtime checks. Неизвестный исторический расход сверён
-2026-10-19. Agent-run private UI test: row checks PASS, E2E blocked;
-[review repair](specs/0055-review-repair.md) принят и проверен локально (R1–R7 PASS), затем повторный
-owner workflow и отдельно full corpus.
+Ручной путь и Statement AI доступны в production `ec15861`. S1.2 synthetic
+qualification сохранена; review repair PR #76 прошёл CI/release и R8 agent browser
+проверку. Неизвестный исторический расход сверён 2026-10-19. Следующий owner gate —
+финансовые решения/роли/страницы и duplicates; full corpus отдельно.
 SPEC-0054 ранее выпущена как `a89a855` (run `39151600396`, 2026-10-18).
 
 | Направление | Сделано | Осталось / зависимость |
 | --- | --- | --- |
-| Выпуск `main` | `7b2deea`: S1.2 PR #74, CI/Delivery/deploy/runtime/public PASS 2026-10-20 13:51:07 +05:00 | Owner-test E2E blocked; review repair verified locally, pending release; docs не меняют production code SHA |
+| Выпуск `main` | `ec15861`: review repair PR #76, CI/Delivery/deploy/runtime/public + R8 PASS 2026-10-20 | Owner financial confirmation pending; source review исправлен; docs follow-up не меняет код выпуска |
 | ИИ (OpenRouter) | Statement AI enabled; columns19/19, cards20/20; pinned policy/global kill switch/consent/shared budget сохранены | Full AC12/Jev/cascade/corpus и SPEC-0056 registry отдельно |
 | Напоминания | Durable outbox за 3 и 1 день, verified email, общий лимит | Подтвердить production SMTP и сверить reservations с облачным счётом |
 | Вход | Почтовый код в production (SPEC-0022); пароль и email-bound приглашения реализованы (SPEC-0031) | Переключение production на password mode по [runbook](password-authentication-rollout.md) в evidence не записано |
 | Кредиты с графиком | [SPEC-0053](specs/0053-loan-principal-interest.md) принята 2026-10-17: тело/проценты, вид кредита, досрочное погашение, снимки долга | Интегрирована: PR #57, merge `95c5fa8`, CI run 39032209158, в production с `95c5fa8` ([evidence](specs/0053-evidence.md)) |
 | Рассрочки и BNPL | SPEC-0054 влита PR #60 (`a89a855`): покупка/долг/переводы и ручное подтверждение карточного грейса | Post-merge gates, main CI, Delivery и production release `a89a855` пройдены; остаётся owner UI smoke |
-| CI и статусы | PR CI `39393961404`, main CI `39395041781`, Delivery `39396018990`, deploy `39396162864` PASS | Owner functional acceptance pending; не приравнивать synthetic PASS к качеству всех банков |
+| CI и статусы | PR CI `39422108502`, main CI `39423345963`, Delivery `39424344690`, deploy `39424505774`, runtime `39425981524` PASS | Owner functional acceptance pending; не приравнивать synthetic PASS к качеству всех банков |
 | Эксплуатация | Backup/restore на VPS, проверки rollback миграций; зашифрованные копии в Yandex Object Storage с проверенным восстановлением (SPEC-0050) | Повторять restore drill после крупных изменений схемы |
 
 ## Реализованные этапы
@@ -111,7 +113,7 @@ post-merge evidence. Это не означает реализацию всег�
 | 0052 | Разделение Web по маршрутам, восстановление после ошибки чанка; статус `integrated` | `95c5fa8` | [Scope](specs/0052-route-code-splitting.md) | [Evidence](specs/0052-evidence.md) |
 | 0053 | Тело/проценты кредита, досрочные погашения, снимки долга и разбивка статистики | `95c5fa8` | [Scope](specs/0053-loan-principal-interest.md) | [Evidence](specs/0053-evidence.md) |
 | 0054 | Рассрочки/BNPL, связь покупки и долга, распределение переводов, общее банковское требование карты | `a89a855` | [Scope](specs/0054-installments-bnpl.md) | [Evidence](specs/0054-evidence.md) |
-| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `7b2deea` (manual + S1.2 AI owner testing) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation/history](specs/0055-activation-evidence.md) |
+| 0055 | Текстовые банковские PDF, grounded spans, ручной/AI draft и явное подтверждение | `ec15861` (manual + AI + review repair/R8) | [Scope](specs/0055-bank-statement-pdf-import.md) | [Evidence](specs/0055-evidence.md), [activation/history](specs/0055-activation-evidence.md) |
 
 Ранние записи evidence могут предшествовать итоговой интеграции; итоговый
 статус этапа подтверждают строка статуса спецификации и дополнение в её
@@ -297,13 +299,12 @@ and cancellation guards; локальные/CI/Delivery gates PASS, [PR #70](htt
 их принятых scope. Анализ одной кнопкой не обещает универсальный расчёт грейса
 до реализации подтверждённых правил конкретных действующих продуктов.
 
-Ближайший срез — review/публикация и выпуск принятого
-[review repair](specs/0055-review-repair.md) (R1–R7 PASS локально;
-[evidence](specs/0055-review-repair-evidence.md)), затем повторить owner workflow
-после deploy. R8 пока NOT_RUN.
-Текущий agent-run private test остановлен на header/coverage/manual-editor
-blockers; повторный inference не является способом их скрыть. Код SPEC-0055
-уже в main/production, Statement AI включён в `7b2deea` 2026-10-20. Отдельно
+Ближайший owner-срез — явная проверка ролей/страниц, семантики строк и duplicates,
+затем подтверждаемый preview. [Review repair](specs/0055-review-repair.md) выпущен
+в `ec15861`; [R1–R8 evidence](specs/0055-review-repair-evidence.md) PASS в scope
+ручного review, rows unchanged/turnover matched/unmapped=0. Отдельно требуется
+исследование автоматического выбора банковских реквизитов вместо денежных итогов;
+ручная коррекция не доказывает улучшение качества LLM. Statement AI enabled сохранён. Отдельно
 остаются AC12 (репрезентативный корпус/русский язык, качество строк и колонок,
 omissions/abstentions, latency, LLM-only/Jev/cascade), owner acceptance,
 кредитные/мультивалютные PDF и OCR. Synthetic activation smoke не заменяет AC12.
