@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.7: точная идентичность модели в screening
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified.
+- Статус: accepted; implementation_status: integrated (PR №79, `938b370`, post-merge gates PASS).
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.7 и offline-реализацию».
   Разрешена реализация I1–I4, без inference/деплоя/переключения модели.
 - Основание: [диагностика](../research/statement-quality/s17-selected-model-identity.md),
@@ -147,4 +147,4 @@ Offline PASS не подтверждает качество живой моде�
 diagnostic/report profile относительно S1.5; прежнее принятие S1.6 recovery
 такие изменения явно исключало. Решение получено 2026-10-21; acceptance commit `ad1b90b` предшествует реализации.
 [Исполняемые подтверждения I1–I4](0055-s17-evidence.md): локальные проверки PASS.
-Интеграция, paid smoke, deployment и adoption не выполнялись.
+Интеграция и post-merge gates завершены: [№79](0055-pr79-postmerge.md). Paid smoke S1.7, deployment и adoption не выполнялись.
