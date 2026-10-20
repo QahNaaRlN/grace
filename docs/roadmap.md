@@ -5,8 +5,10 @@
 [S1.6](specs/0055-s16-evidence.md) остаётся **FAIL selected_model** до
 первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
 Production policy/model/flags сохранены, деплоя и paid retry нет.
-Следующий отдельный этап — совместимость selected_model; изменения transport,
-новый платный smoke и переключение модели этим решением не разрешены.
+Следующий [S1.7 — точная идентичность модели в screening](specs/0055-s17-selected-model-identity.md)
+— **draft/not_started**, 2026-10-21. Разбор выполнен, конкретный контракт
+готов к решению владельца; production-код не менялся, inference=0.
+Новый платный smoke, деплой и переключение модели не разрешены.
 
 Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
 слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
