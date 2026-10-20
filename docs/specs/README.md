@@ -1,3 +1,9 @@
+[SPEC-0055 / S1.3 — роли оборотов и подбор моделей](0055-s13-turnover-roles.md)
+— **accepted**, 2026-10-20, прямое поручение «оформи спеку и вперед»;
+implementation **not_started**. Go role guard + RU regression + financial-label
+redaction + публичная metadata современных кандидатов. Без paid calls,
+production policy switch или deployment; SPEC-0056 registry остаётся draft.
+
 [SPEC-0055 — исправление review](0055-review-repair.md) — **accepted**, 2026-10-20,
 implementation **deployed** (`ec15861`, PR #76), R1–R7 PASS; R8 agent browser PASS. Пакет после owner-test: наблюдаемая сверка
 итогов, сохранение canonical mapping/coverage и редактирование текущих строк;
