@@ -1,8 +1,9 @@
 # SPEC-0055 / S1.8: один screening с идентичностью S1.7
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started; live_status: not_started.
-- Acceptance record: отсутствует. Слияние PR №79 не разрешает новый inference.
+- Статус: accepted; implementation_status: not_started; live_status: not_started.
+- Acceptance record: 2026-10-21, прямое «Утвердить S1.8 и один ограниченный smoke».
+  Разрешены реализация S1–S4 и один S5 при всех указанных gates.
 - Основание: [S1.7](0055-s17-selected-model-identity.md),
   [I1–I4](0055-s17-evidence.md), [post-merge №79](0055-pr79-postmerge.md).
 - Worktree: `statement-identity-smoke`; ветка `codex/statement-identity-smoke`,
@@ -107,9 +108,9 @@ report и ledger остаются честным audit: rollback не возвр
 | S4 | make test, затронутые ops/integration/production mocks, go vet и git diff --check PASS; до отдельно утверждённого единственного run external inference=0 |
 | S5 | Один live run после exact-source CI: полный PASS19/20/23 либо честный FAIL с diagnostics/metering и сохранёнными image/health; без повторов и переключения модели |
 
-## Требуемое решение
+## Решение владельца
 
-Утвердить реализацию S1–S4 и один ограниченный live S5: максимум 3 вызова /
+Утверждены реализация S1–S4 и один ограниченный live S5: максимум 3 вызова /
 $0.1617 provider cap при прежнем общем бюджете/fees. Это новое разрешение,
 потому что S1.6 использовано, а S1.7 явно исключало платный smoke.
-До решения — draft/not_started; новые operator/workflow code и POST запрещены.
+Принятие фиксируется коммитом до исполняемых изменений; автоматических повторов нет.
