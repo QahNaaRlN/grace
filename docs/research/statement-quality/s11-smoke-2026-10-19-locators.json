@@ -1,0 +1,153 @@
+{
+  "syntheticFieldLocators": [
+    {
+      "name": "columns",
+      "parts": [
+        {
+          "rows": [
+            {
+              "operationDate": [
+                "p1-b9-l1-w1"
+              ],
+              "bookingDate": [
+                "p1-b10-l1-w1"
+              ],
+              "accountAmount": [
+                "p1-b11-l1-w1"
+              ],
+              "accountCurrency": [
+                "p1-b7-l1-w2"
+              ],
+              "transactionAmount": [
+                "p1-b12-l1-w1"
+              ],
+              "transactionCurrency": [
+                "p1-b8-l1-w2"
+              ],
+              "description": [
+                "p1-b13-l1-w1",
+                "p1-b13-l1-w2"
+              ],
+              "directionEvidence": [
+                "p1-b11-l1-w1"
+              ]
+            },
+            {
+              "operationDate": [
+                "p2-b5-l1-w1"
+              ],
+              "bookingDate": [
+                "p2-b6-l1-w1"
+              ],
+              "accountAmount": [
+                "p2-b7-l1-w1"
+              ],
+              "accountCurrency": [
+                "p2-b4-l1-w2"
+              ],
+              "transactionAmount": [],
+              "transactionCurrency": [],
+              "description": [
+                "p2-b8-l1-w1",
+                "p2-b8-l1-w2",
+                "p2-b8-l1-w4",
+                "p2-b8-l1-w5"
+              ],
+              "directionEvidence": [
+                "p2-b7-l1-w1"
+              ]
+            }
+          ],
+          "header": {
+            "openingBookDate": [],
+            "closingBookDate": [],
+            "openingBookBalance": [],
+            "closingBookBalance": [],
+            "availableBalanceObserved": [
+              "p1-b2-l1-w4"
+            ],
+            "debitTurnover": [
+              "p1-b3-l1-w4"
+            ],
+            "creditTurnover": [
+              "p1-b4-l1-w4"
+            ],
+            "currency": [
+              "p1-b2-l1-w3"
+            ]
+          },
+          "labels": {
+            "openingBookBalance": [],
+            "closingBookBalance": [],
+            "availableBalanceObserved": [
+              "p1-b2-l1-w1",
+              "p1-b2-l1-w2"
+            ],
+            "debitTurnover": [
+              "p1-b3-l1-w1",
+              "p1-b3-l1-w2"
+            ],
+            "creditTurnover": [
+              "p1-b4-l1-w1",
+              "p1-b4-l1-w2"
+            ]
+          },
+          "service": [
+            [
+              "p1-b1-l1-w1",
+              "p1-b1-l1-w2",
+              "p1-b1-l1-w4"
+            ],
+            [
+              "p1-b1-l1-w3"
+            ],
+            [
+              "p1-b3-l1-w3"
+            ],
+            [
+              "p1-b4-l1-w3"
+            ],
+            [
+              "p1-b5-l1-w1"
+            ],
+            [
+              "p1-b6-l1-w1"
+            ],
+            [
+              "p1-b7-l1-w1"
+            ],
+            [
+              "p1-b8-l1-w1"
+            ],
+            [
+              "p2-b1-l1-w1",
+              "p2-b1-l1-w2",
+              "p2-b1-l1-w4"
+            ],
+            [
+              "p2-b1-l1-w3"
+            ],
+            [
+              "p2-b1-l1-w5"
+            ],
+            [
+              "p2-b1-l1-w6"
+            ],
+            [
+              "p2-b2-l1-w1"
+            ],
+            [
+              "p2-b3-l1-w1"
+            ],
+            [
+              "p2-b4-l1-w1"
+            ],
+            [
+              "p2-b8-l1-w3"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

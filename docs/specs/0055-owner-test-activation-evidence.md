@@ -75,3 +75,12 @@ Go rejected the proposal; all financial guards remain. Independent S1.1
 [contract](0055-s11-lexical-grounding.md) strengthens lexical eligibility and
 description scoring; its separately approved new run is not a retry under this
 exhausted authorization. Full qualification/owner functional acceptance pending.
+
+## Последующий S1.1 outcome
+
+S1.1 PR #73 / production `ef782ec`, main CI `39254418192`, Delivery `39255451276`
+и internal health `39255669019` PASS 2026-10-19 17:55:14 +05:00. Новый отдельно
+утверждённый smoke: columns `record_description` FAIL, cards NOT_RUN; OA7 для
+этого run FAIL, OA8 NOT_ACHIEVED. Read-only `39255943568` actual flag false,
+readiness PASS, standalone public/auth PASS. [S1.1 evidence](0055-s11-evidence.md)
+сохраняет diagnosis; [S1.2](0055-s12-description-separators.md) принят отдельно.

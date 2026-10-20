@@ -1,10 +1,12 @@
 # Банковская выписка: загрузка, проверка и подтверждение
 
-Актуализация: 2026-10-19. Production `711a13d` (PR #71), deploy `39248364426`
-internal health PASS 16:58:36 +05:00 / 11:58:36 UTC. Ручная загрузка/review
-доступны, Statement AI false: единственный S1 smoke дал columns quality FAIL,
-cards NOT_RUN. Платный повтор не выполнялся; новый [S1.1](specs/0055-s11-lexical-grounding.md)
-отдельно принят владельцем для исправления и одного нового smoke. [Актуальный audit](specs/0055-activation-evidence.md).
+Актуализация: 2026-10-19. Production `ef782ec` (S1.1 PR #73), deploy `39255669019`
+internal health PASS **17:55:14 +05:00 / 12:55:14 UTC**. Ручная загрузка/review
+доступны, Statement AI false: единственный S1.1 smoke дал columns
+`record_description` FAIL (пропущен дефис), cards NOT_RUN. Повторов нет.
+Read-only `39255943568` подтвердил runtime disabled и readiness; public/auth PASS.
+[S1.2](specs/0055-s12-description-separators.md) отдельно принят для уточнения
+prompt и одного нового bounded smoke. [Актуальный audit](specs/0055-activation-evidence.md).
 Поддерживается текстовый PDF одного дебетового RUB-счёта. OCR/сканы,
 зашифрованные документы и кредитные условия в этот срез не входят.
 Новый банк не требует обязательного parser-профиля, но успешное извлечение для

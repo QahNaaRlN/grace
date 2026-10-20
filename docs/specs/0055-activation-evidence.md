@@ -1,16 +1,17 @@
 # SPEC-0055 — Statement AI activation
 
 Актуализация: 2026-10-19 (Asia/Yekaterinburg). **Statement AI выключен; цель включения ещё не достигнута.**
-Production `711a13d` (PR #71): main CI `39247242557`, Delivery `39248213380`
-PASS. Deploy `39248364426` internal health PASS 11:58:36 UTC / 16:58:36 +05:00;
-последующий единственный smoke FAIL на columns (3 rows вместо 2, неверные
-monetary/description bindings), cards NOT_RUN. Флаг не изменён, report retained,
-автоматических платных повторов нет. Post-failure read-only `39248740781` PASS,
-unknown usage не блокирует. Public `/`, `/login`, `/api/meta` 200, protected routes 401.
+Production `ef782ec` (S1.1 PR #73): main CI `39254418192` и Delivery `39255451276` PASS.
+Deploy `39255669019`: internal health PASS **12:55:14 UTC / 17:55:14 +05:00**;
+единственный разрешённый S1.1 smoke FAIL на columns: только `record_description`
+(дефис из второго описания в service), cards NOT_RUN. Полные критерии сохранены.
+Read-only `39255943568` PASS 12:56:16 UTC: actual runtime disabled, unknown
+usage не блокирует. Standalone public/auth smoke PASS (200/401). Повтора нет.
 
-[Новый owner-test evidence](0055-owner-test-activation-evidence.md) связывает OA1–OA8;
-[S1.1](0055-s11-lexical-grounding.md) отдельно принят владельцем для исправления
-и одного нового smoke ≤2 calls / $0.14 aggregate. Его реализация ещё не начата.
+[S1.1 evidence L1–L7](0055-s11-evidence.md) сохраняет executable проверки и FAIL.
+[S1.2](0055-s12-description-separators.md) отдельно принят владельцем: конкретное
+prompt уточнение и negative regression, один новый smoke ≤2 calls / $0.14,
+включение только при обоих полных PASS. Реализация ещё не начата.
 
 ## Исторические попытки и исходы (не текущий release)
 
@@ -43,11 +44,12 @@ reasoning explicitly disabled, no fallback/ZDR/deny. Принятые ceilings:
 input 300000/output 2500000 micros/1M. Перед активацией endpoint metadata
 повторно проверяет серверный verifier.
 [Первичный каталог endpoint](https://openrouter.ai/api/v1/models/google/gemini-2.5-flash/endpoints)
-проверен 2026-10-19. Production prompt: `statement-span-mapping.v2.no-thinking`;
-кандидат: `statement-span-mapping.v7.explicit-per-row-currency`.
+проверен 2026-10-19. Текущий production prompt: `statement-span-mapping.v10.lexical-records` (S1.1);
+исторические v2/v7/v8 не являются текущим runtime profile.
 
-Один activation smoke использует только два поставляемых synthetic PDF
-(columns/cards): ≤4 calls, whole-plan reserve ≤32000 micros ($0.032) в прежнем
+Исторический pre-S1 activation smoke использовал два synthetic PDF
+(columns/cards): ≤4 calls, reserve ≤32000 micros ($0.032). Текущий separately
+accepted S1/S1.1/S1.2 smoke: ≤2 calls / $0.14 aggregate, 300 s/run, прежний
 ledger. Это ceiling одного запуска, не сумма фактических расходов серии probes.
 Лимит/fees не увеличивались. Raw PDF/images и личные документы провайдеру не
 передавались; smoke не создаёт import draft или financial events. Go проверяет
@@ -147,3 +149,12 @@ Jev выключен.
 Отклонённые v8 результаты сохранены отдельно в `/tmp/grace-statement-v8-test.log`
 (unit/web PASS), `/tmp/grace-statement-v8-bank.log` (plan-boundary FAIL) и live
 run выше. Они не переименованы в PASS и не относятся к финальной prompt policy.
+
+## S1.1 release — 2026-10-19
+
+[PR #73](https://github.com/QahNaaRlN/grace/pull/73) → `ef782ec`; PR CI
+`39253076844`, main CI `39254418192`, Delivery `39255451276` PASS.
+Run `39255669019` internal health PASS, activation FAIL; текущий baseline
+выключен. [Public-source replay](../research/statement-quality/s11-description-offline.json)
+сопоставил missing separator с service без нового inference. Cards NOT_RUN;
+полная AC12 qualification, Jev/cascade и owner private functional test открыты.

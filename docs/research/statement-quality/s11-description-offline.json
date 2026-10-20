@@ -1,0 +1,46 @@
+{
+  "baselineRun": "39255669019",
+  "candidateInstruction": " Preserve all printed fragments of each transaction description in source order, including standalone punctuation separators such as plus or minus signs inside that description. Numeric lexical eligibility is not a financial role: a separator printed within description text belongs to that row.description, not service or a monetary field. Do not include neighboring amounts, dates, currency tokens or page titles in the description.",
+  "cases": [
+    {
+      "candidateInputBytes": 9060,
+      "currentInputBytes": 8626,
+      "descriptionMatchesSource": [
+        true,
+        false
+      ],
+      "fitsAccepted90k": true,
+      "fixture": "columns",
+      "missingDescriptionRefs": [
+        "p2-b8-l1-w3"
+      ],
+      "missingSeparatorInService": true,
+      "sourceUnchanged": true,
+      "spans": 46
+    },
+    {
+      "candidateInputBytes": 9401,
+      "currentInputBytes": 8967,
+      "fitsAccepted90k": true,
+      "fixture": "cards",
+      "sourceUnchanged": true,
+      "spans": 57
+    }
+  ],
+  "databaseWrites": 0,
+  "goVersion": "go1.27.2",
+  "limitation": "Exact public-source diagnosis and candidate byte bounds only; candidate model behavior UNVERIFIED. No repaired mapping is scored as a model response.",
+  "providerCalls": 0,
+  "sourceHashes": {
+    "Dockerfile.pdf-extractor": "e17066f027214aa74d6e010486ef6f3edfb57b273f31ae1e67ee8e965fde5879",
+    "docs/research/statement-quality/s11-smoke-2026-10-19-locators.json": "e05c3cdda6b9ca80c6900ca4395d98922ba6593782aa80429cc3bb9e1fed4379",
+    "internal/pdfextract/testdata/cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6",
+    "internal/pdfextract/testdata/columns.pdf": "097c3d35d4dd9787457b13f61bd524ff83c18d969ce50b93f7c8cecfeb569c8c",
+    "internal/statementextract/lexical.go": "ea95713b11a6e1c03e46e32bc9e74c2806ea357e876ea0c7d301fe0237ba812f",
+    "internal/statementextract/plan.go": "2918a7ab2b1c27938ab19dfa46e22d2c82f9af745bc9ef6c3858e2394687cd79",
+    "internal/statementextract/schema.go": "000763493446237c731f305e7491ed4f57d776a6c149e6897f3bf679fce91600",
+    "scripts/research/probe-statement-description.sh": "9f213386e18d7f60d290af686f228180538d2583d2ebc21fea4cbc1fcc67637f",
+    "scripts/research/statement-description-replay.go": "c0f88d9936930aa02b8d87f1e4b5ea4063b0c00a930ff0030a9f68ea525f83da"
+  },
+  "version": "statement-description-replay.offline.v1"
+}

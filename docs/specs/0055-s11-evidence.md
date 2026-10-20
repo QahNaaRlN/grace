@@ -3,7 +3,11 @@
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Accepted contract: [S1.1 lexical grounding](0055-s11-lexical-grounding.md); прямое решение владельца «Утвердить S1.1, один smoke и включение при PASS».
 - Implementation branch: `codex/statement-lexical-grounding`, база accepted planning PR #72 / main `49152ad`.
-- Production по-прежнему `711a13d`, Statement AI disabled: direct read-only runtime check `39250755164` PASS 2026-10-19 12:16:28 UTC / 17:16:28 +05:00. Нового платного S1.1 smoke ещё не было.
+- Implementation integrated: [PR #73](https://github.com/QahNaaRlN/grace/pull/73), merge `ef782ec3d3ad2772aa758856744763c288b7a99d`, 2026-10-19 12:44:28 UTC / 17:44:28 +05:00. PR CI `39253076844` — все 5 jobs PASS. Main CI `39254418192` и exact-release Delivery/runtime проверяются отдельно.
+- Production `ef782ec`: main CI `39254418192` (5/5), Delivery `39255451276` (4/4) PASS. Post-merge `make test` / `go vet` / `git diff --check` PASS, primary clean.
+- Один разрешённый S1.1 smoke использован: deploy `39255669019`, internal health PASS 2026-10-19 **12:55:14 UTC / 17:55:14 +05:00**, activation FAIL 12:55:19 UTC. Columns 2 rows, единственный scorer code `record_description`; cards NOT_RUN. AI false.
+- Read-only `39255943568` PASS: direct `statement_ai_runtime_disabled` 12:56:16 UTC, readiness без unknown usage blocker. Standalone public/auth smoke PASS: `/`, `/login`, `/api/meta` 200; protected routes 401. Никаких платных повторов.
+
 
 ## Изменения
 
@@ -31,7 +35,7 @@ S1 policies/token/byte/call/timeout/allowance/fees и explicit confirmation со
 | L4 | `TestActivationRealHelperSmoke`: actual pinned helper → delivered-tuples-only positive fake → canonicalizer → Go → strengthened scorer/report roundtrip. Оба baseline PASS; missing coverage, wrong FX, swapped record descriptions FAIL. SQL `TestStatementRealPDFFakeProviderLifecycle` сохраняет отсутствие finance writes до confirmation и replay safety |
 | L5 | `TestScoreCatchesLostClockAndAvailableAsClosing` также отвергает title/foreign-record descriptions; требуемые totals 19/20. `TestActivationReportRejectsLegacyIncompleteChangedEvidence` отвергает scorer-version/profile/report mutations; summary не принимает старый version. Diagnostic сохраняет возможность read-only historical reports |
 | L6 | Команды `make test`, `make test-integration`, `make test-production`, `go vet ./cmd/... ./internal/...`, `git diff --check`. Generated TS получен штатным `npm run generate:api`, DTO вручную не дублировались. Focused Go, real-helper/bank, 84 structural gates и все пять перечисленных обязательных команд **PASS** локально (завершённые exit 0). Exact-head CI проверяется перед merge |
-| L7 | **NOT_RUN** в этом implementation snapshot: новый один S1.1 smoke отдельно утверждён, но ещё не выполнялся. Обязательны оба full strengthened PASS, точный release CI/Delivery/deploy/runtime/public checks; до них flag false |
+| L7 | **FAIL**: live run `39255669019` columns `record_description`; cards NOT_RUN, enable/runtime post-check skipped. CI/Delivery/internal health PASS, direct read-only flag false и public/auth PASS. Один разрешённый run использован, нового S1.1 paid retry нет |
 
 Real-helper test/probe runtime network=none/read-only UID10001 для provider-free
 квалификатора и structural cases; disposable SQL suite имеет только свою network.
@@ -58,3 +62,15 @@ SPEC-0056 model registry по-прежнему не qualified. При live FAIL 
 `aeac32d` (production S1 sources без S1.1), как указано в его source hashes.
 Для текущего product использовать actual planner runner и `s11-evidence`,
 не смешивать baseline prototype со snapshot новой реализации.
+
+## Диагноз единственного live FAIL
+
+[Sanitized locators](../research/statement-quality/s11-smoke-2026-10-19-locators.json)
+и [source-hashed replay](../research/statement-quality/s11-description-offline.json),
+0 provider calls / 0 SQL: первая description exact; во второй только дефис
+`p2-b8-l1-w3` помещён в service. Финансовые поля и coverage columns прошли,
+но полное описание — самостоятельный обязательный критерий. Это улучшение
+наблюдаемого случая, не доказательство устойчивости модели или cards quality.
+Никакой автоматической починки/ослабления scorer. [S1.2](0055-s12-description-separators.md)
+отдельно принят владельцем для узкого prompt amendment, regression и одного
+нового bounded smoke; его семантический результат пока UNVERIFIED.
