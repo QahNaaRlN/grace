@@ -48,6 +48,8 @@ test-production:
 	python3 scripts/research/test-screening-s18-inspection.py
 	python3 scripts/research/test-screening-source-ci.py
 	python3 scripts/research/test-screening-workflow-modes.py
+	python3 scripts/research/test-statement-s19-diagnosis.py
+	go test ./scripts/research/s19-replay
 	python3 scripts/research/test-screening-s16-inspection.py
 	python3 scripts/research/test-screening-s16-reconciliation.py
 	./scripts/test-statement-activation.sh

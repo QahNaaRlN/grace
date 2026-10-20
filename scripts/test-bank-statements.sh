@@ -44,6 +44,15 @@ docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-
  -v "${statement_test_binary}.activation:/run/activation.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
  -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
  -w /src/internal/statementqualification alpine:3.22 /run/activation.test -test.run '^(TestActivationRealHelperSmoke|TestTurnoverRolesRealHelper|TestScreeningRealHelperThreeCases)$' -test.v
+# S1.9 operator replay uses the same pinned helper, no TCP/SQL privileges.
+CGO_ENABLED=0 go test -c -tags=integration -o "${statement_test_binary}.s19" ./scripts/research/s19-replay
+chmod 755 "${statement_test_binary}.s19"
+docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-new-privileges:true \
+ --network=none --memory=512m --pids-limit=16 \
+ -v "${statement_test_binary}.s19:/run/s19.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
+ -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
+ -w /src/scripts/research/s19-replay alpine:3.22 /run/s19.test -test.run '^TestS19RealHelperReplay$' -test.v
+rm -f "${statement_test_binary}.s19"
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -p 1 -tags=integration ./internal/imports ./internal/statementextract -run Statement -count=1 -v
 statement_compose exec -T postgres pg_dump -U grace -d grace > /tmp/grace-statement-restore-$$.sql
