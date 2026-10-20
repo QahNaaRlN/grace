@@ -20,6 +20,12 @@ on:
         default: none
         type: choice
         options: [none, inspect, apply]
+      reconcile_screening_s16_usage:
+        description: Сверить или учесть единственный S1.6; без inference и деплоя
+        required: false
+        default: none
+        type: choice
+        options: [none, inspect, apply]
       statement_screening_only:
         description: One authorized S1.4 candidate screening, no deploy or model activation
         required: false
@@ -47,7 +53,7 @@ concurrency:
 
 jobs:
   screen-statement:
-    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
+    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') }}
     name: One bounded candidate screening
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -100,7 +106,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
   screen-statement-s16:
-    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') }}
     name: Один ограниченный прогон S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -165,7 +171,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s16.py
 
   inspect-statement:
-    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -224,8 +230,39 @@ jobs:
         run: |
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
 
+  reconcile-statement-s16:
+    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    name: Сверка единственного расхода S1.6
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - name: Настройка SSH с проверенным ключом сервера
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Сверка приватного отчёта и точный учёт
+        env:
+          RECONCILE_MODE: ${{ inputs.reconcile_screening_s16_usage }}
+        run: |
+          set -eu
+          script="/opt/grace/shared/statement-reconcile-s16-$GITHUB_RUN_ID.py"
+          trap 'ssh grace-deploy@195.133.195.190 "rm -f $script"' EXIT
+          scp scripts/ops-reconcile-statement-screening-s16.py "grace-deploy@195.133.195.190:$script"
+          case "$RECONCILE_MODE" in inspect) flag='' ;; apply) flag='--apply' ;; *) exit 2 ;; esac
+          ssh grace-deploy@195.133.195.190 "python3 $script $flag"
+      - name: Итоговая проверка ledger без раскрытия значений
+        if: always()
+        run: |
+          ssh grace-deploy@195.133.195.190 'python3 - 9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f' < scripts/research/inspect-statement-screening-s16.py
+
   deploy:
-    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20

@@ -11,7 +11,7 @@ for match in re.finditer(r'^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|
     condition = re.search(r'^    if: \$\{\{ (.*?) \}\}\s*$', match[2], re.M)
     if condition:
         conditions[match[1]] = condition[1]
-assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'inspect-statement', 'deploy'}
+assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'inspect-statement', 'reconcile-statement-s16', 'deploy'}
 
 def selected(values):
     active = []
@@ -24,15 +24,19 @@ def selected(values):
     return active
 
 count = 0
-for old, new, inspect, reconcile, action in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable']):
-    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action)
+for old, new, inspect, reconcile, action, recovery in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply']):
+    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery)
     active = selected(values)
     assert len(active) <= 1, (values, active)
-    expected_new = new and not old and not inspect and reconcile in ('', 'none') and action in ('', 'preserve')
+    expected_new = recovery in ('', 'none') and new and not old and not inspect and reconcile in ('', 'none') and action in ('', 'preserve')
     assert ('screen-statement-s16' in active) == expected_new, (values, active)
     if new:
         assert active == (['screen-statement-s16'] if expected_new else []), (values, active)
-    if not any((old, new, inspect)) and reconcile in ('', 'none'):
+    expected_recovery = recovery in ('inspect', 'apply') and not any((old, new, inspect)) and reconcile in ('', 'none') and action in ('', 'preserve')
+    assert ('reconcile-statement-s16' in active) == expected_recovery, (values, active)
+    if recovery in ('inspect', 'apply'):
+        assert active == (['reconcile-statement-s16'] if expected_recovery else []), (values, active)
+    if not any((old, new, inspect)) and reconcile in ('', 'none') and recovery in ('', 'none'):
         assert active == ['deploy']
     count += 1
 for key in ('statement_screening_only', 'statement_screening_s16_only'):
