@@ -44,6 +44,9 @@ test-integration:
 test-production:
 	./scripts/test-statement-screening.sh
 	./scripts/test-statement-screening-s16.sh
+	./scripts/test-statement-screening-s18.sh
+	python3 scripts/research/test-screening-s18-inspection.py
+	python3 scripts/research/test-screening-source-ci.py
 	python3 scripts/research/test-screening-workflow-modes.py
 	python3 scripts/research/test-screening-s16-inspection.py
 	python3 scripts/research/test-screening-s16-reconciliation.py
