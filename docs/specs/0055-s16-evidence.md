@@ -53,3 +53,12 @@ Runtime-флаг/production policy не переключались; shared ledge
 платные запросы. Ручной импорт сохраняется. Для восстановления учёта подготовлен
 [отдельный контракт](0055-s16-reconciliation.md) без inference и без изменения
 transport/alias допуска. Исторический S1.4 report и его reconciliation неизменны.
+
+
+## Восстановление учёта после отдельного утверждения
+
+2026-10-21 02:13:09 +05:00: [сверка и exact settlement](0055-s16-reconciliation-evidence.md)
+успешны. Расход подтверждён metadata и учтён; shared uncertain block снят.
+Предыдущие записи unknown/uncertain описывают состояние сразу после smoke.
+Report/marker сохранены, FAIL selected_model и quality UNVERIFIED остаются.
+Новых inference, paid retry, deployment и переключения модели не было.

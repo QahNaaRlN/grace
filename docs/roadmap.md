@@ -1,10 +1,12 @@
-Текущее ограничение — **2026-10-21 01:59:30 +05:00**:
-[S1.6](specs/0055-s16-evidence.md) выполнен один раз, **FAIL selected_model** до
-первой оценки. HTTP200, приватный ID сохранён; расход unknown, shared ledger
-uncertain блокирует платные AI calls. Cards/RU не отправлялись. Image/health
-сохранены, деплоя и изменения policy/flags нет, повтор не разрешён.
-Следующий [контракт восстановления учёта](specs/0055-s16-reconciliation.md)
-— draft/not_started, только GET metadata и точная settlement, без inference.
+Текущее состояние — **2026-10-21 02:13:09 +05:00**:
+расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.
+[Сверка и settlement](specs/0055-s16-reconciliation-evidence.md) выполнены
+без нового inference; одна reservation settled, остальные строки не изменялись.
+[S1.6](specs/0055-s16-evidence.md) остаётся **FAIL selected_model** до
+первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
+Production policy/model/flags сохранены, деплоя и paid retry нет.
+Следующий отдельный этап — совместимость selected_model; изменения transport,
+новый платный smoke и переключение модели этим решением не разрешены.
 
 Интеграция — **2026-10-21**: [PR №78](https://github.com/QahNaaRlN/grace/pull/78)
 слит в main (`29a28a7`); S1.3/S1.4/S1.5 интегрированы, не deployed.
@@ -25,7 +27,7 @@ Statement AI runtime flag enabled и production-модель сохранены;
 
 # Roadmap Grace
 
-Актуализация: **2026-10-20** (Asia/Yekaterinburg; UTC отдельно в evidence).
+Актуализация: **2026-10-21** (Asia/Yekaterinburg; UTC отдельно в evidence).
 **Production `ec15861`: review repair PR #76 deployed** в 17:44:58 +05:00 /
 12:44:58 UTC. Main CI `39423345963`, Delivery `39424344690`,
 [deploy `39424505774`](https://github.com/QahNaaRlN/grace/actions/runs/39424505774) PASS:

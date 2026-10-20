@@ -19,6 +19,7 @@ row = {'id': uid, 'owner_id': '22222222-2222-2222-2222-222222222222', 'model': r
 generation = {'id': ident, 'model': report['policy']['model'], 'provider_name': 'Google', 'is_byok': False, 'created_at': '2026-10-20T16:41:53Z', 'total_cost': '0.0010001'}
 assert m.validate(report, row, [ident], {ident: generation}) == 1001
 assert m.micros('0') == 0
+assert m.micros('0.00100000000000000000000000000000000001') == 1001
 cases = [
     ('wrong_profile', lambda r, u, g: r['profile'].update(Calls=4)),
     ('missing_calls', lambda r, u, g: r.pop('calls')),
@@ -29,6 +30,7 @@ cases = [
     ('wrong_http', lambda r, u, g: r['failure'].update(httpStatus=201)),
     ('wrong_version', lambda r, u, g: r.update(version='other')),
     ('wrong_marker', lambda r, u, g: u.update(generation_id='other')),
+    ('extreme_precision', lambda r, u, g: g.update(total_cost='1e-10000000')),
     ('nonfinite', lambda r, u, g: g.update(total_cost='NaN')),
     ('model', lambda r, u, g: g.update(model='other/model')),
     ('provider', lambda r, u, g: g.update(provider_name='other')),
@@ -54,7 +56,7 @@ for name, mutate in cases:
         raise AssertionError('mismatch accepted: ' + name)
 settled = dict(row, status='settled', actual_micros=1001)
 assert m.validate(report, settled, [ident], {ident: generation}) == 1001
-print('Screening reconciliation offline match/mismatch/ceil/replay checks PASS')
+print('S1.6: совпадение, отказы, точный ceil и replay PASS')
 
 canonical = dict(generation, model=m.CANONICAL_MODEL)
 try:
@@ -72,7 +74,7 @@ for slug in ['other/model', 'google/gemini-3.1-flash-lite-NEW']:
         pass
     else:
         raise AssertionError('different canonical model accepted')
-print('Exact official alias/canonical mapping checks PASS')
+print('Точная официальная alias/canonical пара PASS')
 
 import tempfile
 import os

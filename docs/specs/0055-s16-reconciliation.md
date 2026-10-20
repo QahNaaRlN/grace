@@ -1,13 +1,20 @@
 # SPEC-0055 / S1.6: восстановление учёта единственного запроса
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: not_started.
+- Статус: accepted; implementation_status: local_verified.
 - Принят владельцем 2026-10-21: «Утвердить сверку и восстановление учёта».
   Разрешены реализация, read-only сверка и точный settlement одной reservation.
 - Основание: [S1.6 evidence](0055-s16-evidence.md), run `39496554051`,
   source `9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f`.
 - Цель: подтвердить фактический расход через GET metadata и учесть его ровно
   в одной uncertain reservation. Никакого нового inference или повтора smoke.
+
+## Результат исполнения
+
+Расход подтверждён read-only и учтён exact settlement 2026-10-21 02:13:09 +05:00;
+общий uncertain block снят. [Критерии и подтверждения](0055-s16-reconciliation-evidence.md).
+R1–R4 PASS: offline проверки, live inspect/apply/read-only replay, make test,
+make test-production и diff check. Интеграция и деплой не выполнялись.
 
 ## Зафиксированная проблема
 

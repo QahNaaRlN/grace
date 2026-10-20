@@ -1,8 +1,12 @@
-Текущее ограничение — **2026-10-21 01:59:30 +05:00**: единственный S1.6
-остановился до первой оценки с `selected_model`. HTTP200, ID сохранён приватно,
-расход пока не подтверждён, shared ledger uncertain блокирует платные calls.
-[Исполнение](0055-s16-evidence.md); [восстановление учёта](0055-s16-reconciliation.md)
-— draft/not_started, без inference. Повторов и изменения production policy нет.
+Текущее состояние — **2026-10-21 02:13:09 +05:00**:
+расход единственного S1.6 подтверждён и учтён, shared uncertain block снят.
+[Сверка и settlement](0055-s16-reconciliation-evidence.md) выполнены
+без нового inference; одна reservation settled, остальные строки не изменялись.
+[S1.6](0055-s16-evidence.md) остаётся **FAIL selected_model** до
+первой оценки, quality UNVERIFIED; cards/RU не отправлены, разрешение израсходовано.
+Production policy/model/flags сохранены, деплоя и paid retry нет.
+Следующий отдельный этап — совместимость selected_model; изменения transport,
+новый платный smoke и переключение модели этим решением не разрешены.
 
 Интеграция — **2026-10-21**: PR №78 слит, `29a28a7`; S1.3/S1.4/S1.5 в main.
 [Post-merge evidence](0055-pr78-postmerge.md): main CI 5/5 PASS, Delivery PASS,

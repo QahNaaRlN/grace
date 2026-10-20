@@ -50,7 +50,10 @@ def micros(value):
     require(value is not None and not isinstance(value, bool), 'generation_cost_unknown')
     n = decimal.Decimal(str(value))
     require(n.is_finite() and n >= 0 and n <= 10, 'generation_cost_invalid')
-    return int((n*1000000).to_integral_value(rounding=decimal.ROUND_CEILING))
+    require(n == 0 or n.adjusted() >= -1000, 'generation_cost_precision_invalid')
+    with decimal.localcontext() as context:
+        context.prec = max(28, len(n.as_tuple().digits)+6)
+        return int((n*1000000).to_integral_value(rounding=decimal.ROUND_CEILING))
 
 def canonical_model(catalog):
     matches = [m for m in catalog.get('data', []) if m.get('id') == MODEL]
