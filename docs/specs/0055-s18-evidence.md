@@ -70,3 +70,10 @@ Private report/marker: `/opt/grace/shared/statement-screening-s18-gemini31-ident
 Следующий шаг — бесплатный разбор сохранённого синтетического trace/reasons;
 изменения prompt/scorer/transport и новый платный запуск требуют отдельного
 контракта. S1.8 таких исправлений не разрешает.
+
+## Интеграция
+
+PR №80 слит владельцем 2026-10-21 03:24:55 +05:00, `5e9116e`.
+[Post-merge evidence](0055-pr80-postmerge.md): local make test/vet/diff PASS,
+main CI39507934933 все5/5 PASS. Delivery39508797773 пока IN_PROGRESS.
+Implementation integrated; live FAIL17/19 сохранён. Новых inference/деплоя нет.

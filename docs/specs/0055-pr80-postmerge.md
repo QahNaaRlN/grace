@@ -1,6 +1,6 @@
 # SPEC-0055: слияние PR №80 и post-merge проверки
 
-Дата: 2026-10-21, Asia/Yekaterinburg. Срез: 03:31:17 +05:00.
+Дата: 2026-10-21, Asia/Yekaterinburg. Срез: 03:33 +05:00.
 
 [PR №80](https://github.com/QahNaaRlN/grace/pull/80) слит владельцем
 2026-10-21 03:24:55 +05:00 / 2026-10-20 22:24:55 UTC.
@@ -14,16 +14,16 @@ head PR `6b48499bcf90c3a643faab9db7f061a4433d81b9`.
 | Local Go vet | `go vet ./cmd/... ./internal/...` exit0 |
 | Whitespace / primary | `git diff --check` exit0, основная копия clean после тестов |
 | CI PR-head | [39506573585](https://github.com/QahNaaRlN/grace/actions/runs/39506573585) SUCCESS |
-| CI merge | [39507934933](https://github.com/QahNaaRlN/grace/actions/runs/39507934933) IN_PROGRESS: Quality и три image builds SUCCESS, PostgreSQL integration выполняется. Общий PASS пока не заявлен |
-| Delivery merge | На момент среза ещё не появился; UNVERIFIED. Предыдущий Delivery39503724048 относится к №79, не к №80 |
+| CI merge | [39507934933](https://github.com/QahNaaRlN/grace/actions/runs/39507934933) SUCCESS: все 5/5 jobs, включая PostgreSQL integration |
+| Delivery merge | [39508797773](https://github.com/QahNaaRlN/grace/actions/runs/39508797773) IN_PROGRESS на exact merge SHA; публикация образов ещё не подтверждена |
 
 Журналы: `/tmp/grace-pr80-postmerge-test.log`,
 `/tmp/grace-pr80-postmerge-vet.log`, `/tmp/grace-pr80-postmerge-ci.log`.
 Первый запуск make test в sandbox остановился до выполнения Go; повтор с
 доступом к локальным кешам завершён exit0. Это не отказ продуктового теста.
 
-S1.8 operator-код и исторический результат достижимы из main. До завершения
-merge CI полный post-merge статус остаётся pending. [S1.8 live](0055-s18-evidence.md)
+S1.8 operator-код и исторический результат интегрированы в main; локальные
+post-merge gates и CI5/5 PASS. Delivery остаётся отдельным pending gate. [S1.8 live](0055-s18-evidence.md)
 остаётся FAIL columns17/19, authorization consumed, cards/RU не отправлены.
 Эта интеграционная проверка не является новым smoke или production qualification.
 Новых inference, production workflow dispatch, deployment и переключений нет.
