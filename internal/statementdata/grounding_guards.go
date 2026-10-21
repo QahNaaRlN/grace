@@ -100,11 +100,8 @@ func descriptionIssue(row Row, index int, g groundingEvidence) string {
 	if !g.check(ev) {
 		return "description_evidence_unverified"
 	}
-	for i := 1; i < len(ev.Spans); i++ {
-		a, b := ev.Spans[i-1], ev.Spans[i]
-		if samePrintedLine(a, b) && b.Word != a.Word+1 {
-			return "description_evidence_gap"
-		}
+	if _, _, ok := firstDescriptionGap(ev); ok {
+		return "description_evidence_gap"
 	}
 	return ""
 }
@@ -197,4 +194,32 @@ func ApplyGroundingChecks(d *Document, r *Review) {
 			}
 		}
 	}
+}
+
+// firstDescriptionGap is shared by admission and its structural explanation.
+func firstDescriptionGap(ev Evidence) (Span, Span, bool) {
+	for i := 1; i < len(ev.Spans); i++ {
+		a, b := ev.Spans[i-1], ev.Spans[i]
+		if samePrintedLine(a, b) && b.Word != a.Word+1 {
+			return a, b, true
+		}
+	}
+	return Span{}, Span{}, false
+}
+
+// DescriptionGapPositions exposes only source ordinals after the production checks.
+func DescriptionGapPositions(d Document, row Row, index int) (int, int, bool) {
+	g := newGroundingEvidence(&d)
+	if descriptionIssue(row, index, g) != "description_evidence_gap" {
+		return 0, 0, false
+	}
+	ev, ok := uniqueEvidence(row.Evidence, fmt.Sprintf("row_%d:description", index+1))
+	if !ok || !g.check(ev) {
+		return 0, 0, false
+	}
+	a, b, ok := firstDescriptionGap(ev)
+	if !ok {
+		return 0, 0, false
+	}
+	return g.positions[a.ID] + 1, g.positions[b.ID] + 1, true
 }

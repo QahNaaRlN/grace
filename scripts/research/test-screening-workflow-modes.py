@@ -11,7 +11,7 @@ for match in re.finditer(r'^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|
     condition = re.search(r'^    if: \$\{\{ (.*?) \}\}\s*$', match[2], re.M)
     if condition:
         conditions[match[1]] = condition[1]
-assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'compare-statement-s114', 'diagnose-statement-s112', 'deploy'}
+assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'compare-statement-s114', 'diagnose-statement-s112', 'diagnose-statement-s115', 'deploy'}
 
 def selected(values):
     active = []
@@ -24,9 +24,14 @@ def selected(values):
     return active
 
 count = 0
-for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis, observed in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True], [False, True]):
-    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis, statement_comparison_s114_only=observed)
+for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis, observed, saved in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True]):
+    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis, statement_comparison_s114_only=observed, diagnose_statement_s115_only=saved)
     active = selected(values)
+    if saved:
+        expected=not any((old,new,inspect,identity,diagnose,comparison,diagnosis,observed)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
+        assert active == (['diagnose-statement-s115'] if expected else []), (values,active)
+        count+=1
+        continue
     if observed:
         expected=not any((old,new,inspect,identity,diagnose,comparison,diagnosis)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
         assert active == (['compare-statement-s114'] if expected else []), (values,active)
@@ -62,7 +67,7 @@ for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparis
     if not any((old, new, inspect, identity, diagnose)) and reconcile in ('', 'none') and recovery in ('', 'none'):
         assert active == ['deploy']
     count += 1
-for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only', 'statement_comparison_s114_only'):
+for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only', 'statement_comparison_s114_only', 'diagnose_statement_s115_only'):
     # Описание имеет восемь пробелов отступа, граница входного параметра — шесть.
     block = re.search(r'      '+key+r':\n(.*?)(?=^      [a-z_]+:|^permissions:)', source, re.M | re.S)[1]
     assert 'default: false' in block and 'type: boolean' in block
@@ -105,3 +110,11 @@ for name in ('statement-comparison-s114.sh','inspect-statement-comparison-s114.p
 assert 'sha256sum grace-statement-admin grace-s114-replay *.pdf SOURCE_SHA run.sh inspect.py inspect-statement-comparison-s111.py > SHA256SUMS' in s114
 assert '^[0-9a-f]{40}$' in s114
 print('S1.14 exact-source/full-manifest/default-off/mixed-input isolation PASS')
+
+s115=source.split('  diagnose-statement-s115:\n',1)[1].split('  diagnose-statement-s112:\n',1)[0]
+assert s115.count('test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"')==2
+assert s115.count('verify-screening-source-ci.py "$GITHUB_SHA"')==2
+assert 'sha256sum verifier context.json SOURCE_SHA run-s115-diagnosis.py s115-bootstrap.py > SHA256SUMS' in s115
+assert s115.index('sha256sum -c SHA256SUMS') < s115.index('python3 "$bundle/run-s115-diagnosis.py"')
+assert all(x not in s115 for x in ('scp ', 'docker exec', 'statement-comparison-s114.sh', 'openrouter', 'GRACE_AI_'))
+print('S1.15 exhaustive mode isolation, exact source, five-job CI and complete manifest PASS')

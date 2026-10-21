@@ -82,6 +82,16 @@ on:
         default: false
         type: boolean
 
+      diagnose_statement_s115_only:
+        description: 'S1.15 read-only saved P6 diagnosis (separate exact-source approval required)'
+        required: false
+        type: boolean
+        default: false
+      diagnosis_s115_authorized_sha:
+        description: 'Owner-approved exact S1.15 verifier SHA; does not authorize provider calls'
+        required: false
+        type: string
+        default: ''
 permissions:
   actions: read
   contents: read
@@ -93,7 +103,7 @@ concurrency:
 
 jobs:
   screen-statement:
-    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: One bounded candidate screening
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -146,7 +156,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
   screen-statement-s16:
-    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: Один ограниченный прогон S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -211,7 +221,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s16.py
 
   screen-statement-s18:
-    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: Один ограниченный прогон S1.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -277,7 +287,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s18.py
 
   compare-statement-s111:
-    if: ${{ inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: S1.11 separately authorized synthetic comparison
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -333,7 +343,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$GITHUB_SHA'"
 
   compare-statement-s114:
-    if: ${{ inputs.statement_comparison_s114_only && !inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only }}
+    if: ${{ inputs.statement_comparison_s114_only && !inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only && !inputs.diagnose_statement_s115_only }}
     name: S1.14 separately authorized observed comparison
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -395,7 +405,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$GITHUB_SHA'"
 
   diagnose-statement-s19:
-    if: ${{ inputs.diagnose_statement_s19_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.diagnose_statement_s19_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: Бесплатная диагностика сохранённого S1.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -438,7 +448,7 @@ jobs:
           if-no-files-found: error
 
   inspect-statement:
-    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -498,7 +508,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
 
   reconcile-statement-s16:
-    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: Сверка единственного расхода S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -529,7 +539,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - 9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f' < scripts/research/inspect-statement-screening-s16.py
 
   deploy:
-    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -652,8 +662,80 @@ jobs:
         if: always()
         run: ssh grace-deploy@195.133.195.190 'docker logout ghcr.io || true'
 
+  diagnose-statement-s115:
+    if: ${{ inputs.diagnose_statement_s115_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only && !inputs.statement_comparison_s114_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    name: S1.15 read-only saved P6 diagnosis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify reviewed exact verifier source and CI five jobs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIAGNOSTIC_SHA: ${{ inputs.diagnosis_s115_authorized_sha }}
+        run: |
+          set -eu
+          printf '%s\n' "$DIAGNOSTIC_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/s115-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/s115-ci.json"
+      - name: Offline privacy and pinned public contexts; seal complete manifest
+        run: |
+          set -eu
+          go test ./internal/statementqualification ./scripts/research/s115-diagnose
+          python3 scripts/research/test-statement-s115-diagnosis.py
+          python3 scripts/research/test-screening-workflow-modes.py
+          bundle="$RUNNER_TEMP/grace-s115"
+          mkdir -m 0700 "$bundle"
+          scripts/research/prepare-statement-s115.sh --prepare > "$bundle/context.json"
+          CGO_ENABLED=0 go build -trimpath -o "$bundle/verifier" ./scripts/research/s115-diagnose
+          cp scripts/research/run-s115-diagnosis.py scripts/research/s115-bootstrap.py "$bundle/"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          (cd "$bundle" && sha256sum verifier context.json SOURCE_SHA run-s115-diagnosis.py s115-bootstrap.py > SHA256SUMS)
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: One fixed saved P6 read via sealed memfd
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIAGNOSTIC_SHA: ${{ inputs.diagnosis_s115_authorized_sha }}
+        run: |
+          set -eu
+          test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/s115-ci.json"
+          bundle="$RUNNER_TEMP/grace-s115"
+          test "$(cat "$bundle/SOURCE_SHA")" = "$GITHUB_SHA"
+          (cd "$bundle" && sha256sum -c SHA256SUMS)
+          python3 "$bundle/run-s115-diagnosis.py" "$bundle/verifier" "$bundle/context.json" > "$RUNNER_TEMP/s115-result.json"
+          "$bundle/verifier" validate < "$RUNNER_TEMP/s115-result.json" > "$RUNNER_TEMP/s115-verified.json"
+          cat "$RUNNER_TEMP/s115-verified.json"
+      - name: Retain closed diagnosis and manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: statement-s115-sanitized
+          path: |
+            ${{ runner.temp }}/s115-verified.json
+            ${{ runner.temp }}/grace-s115/SHA256SUMS
+            ${{ runner.temp }}/grace-s115/SOURCE_SHA
+          retention-days: 7
+          if-no-files-found: error
+
   diagnose-statement-s112:
-    if: ${{ inputs.diagnose_statement_s112_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s114_only }}
+    if: ${{ inputs.diagnose_statement_s112_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s114_only && !inputs.diagnose_statement_s115_only }}
     name: S1.12 read-only saved C6 diagnosis
     runs-on: ubuntu-latest
     timeout-minutes: 15
