@@ -1,21 +1,23 @@
-# S1.14 / P6: проект решения об одном observed synthetic comparison
+# S1.14 / P6: решение об одном observed synthetic comparison
 
-- Статус: draft execution decision; acceptance record: отсутствует.
+- Статус: accepted execution decision; acceptance record: 2026-10-21, прямое «+»
+  на конкретное предложение одного P6/source301afd6, до6POST/$0.2085 provider.
+- Approval recorded: 2026-10-21 14:55:24 UTC / 19:55:24 Asia/Yekaterinburg.
 - Дата: 2026-10-21, Asia/Yekaterinburg; acceptance owner: владелец Grace.
-- Live status: NOT_AUTHORIZED / NOT_STARTED. Ни metadata GET, ни SSH/VPS,
+- Live status: AUTHORIZED_ONE_RUN / NOT_STARTED. Ни metadata GET, ни SSH/VPS,
   workflow dispatch, provider inference или deployment при подготовке не выполнялись.
 - Основание подготовки: «идем дальше» после offline P1–P5 и PR №91.
   Это открывает интеграцию и подготовку следующего решения, не paid execution.
 - Основание реализации: [accepted S1.14](0055-s114-observed-comparison.md),
   [P1–P5 evidence](0055-s114-evidence.md), [post-merge №91](0055-pr91-postmerge.md).
-- **Предложенный exact source SHA:** `301afd6bedc4a19559e731471336bbc4e2f74075`,
+- **Разрешённый exact source SHA:** `301afd6bedc4a19559e731471336bbc4e2f74075`,
   implementation head [PR №91](https://github.com/QahNaaRlN/grace/pull/91), уже достижимый из main.
 - Source ref: `codex/statement-observed-comparison`, закреплён на SHA выше;
   source worktree `statement-observed-comparison` сохраняется чистым.
-- Это кандидат source, **не** already-authorized source. Принятие P1–P5,
-  merge PR №91, публикация ref и слияние этого документа не разрешают P6.
+- Source разрешён отдельно прямым ответом владельца «+» на exact предложение.
+  Принятие P1–P5, merge/ref сами по себе не являются этим разрешением.
 
-## Предлагаемое решение
+## Принятое решение
 
 Разрешить **одну** новую campaign authorization `s114-comparison-20261021`
 на exact source выше, только при успешных post-merge/local/CI gates и runtime
@@ -154,12 +156,15 @@ pure generation; при n<=3 не заявлять p95. При incomplete — co
 UNVERIFIED. Даже PASS3/3 обеих пар не даёт production qualification/activation
 или подтверждения финансовых данных пользователя. Production adoption отдельно.
 
-## Требуемое решение владельца
+## Запись решения владельца
 
-Acceptance record отсутствует. Конкретный предлагаемый ответ:
+Владелец ответил **«+»** на конкретное предложение:
 
-> Разрешаю один P6 на 301afd6bedc4a19559e731471336bbc4e2f74075,
-> authorization s114-comparison-20261021, до6POST/$0.2085 provider,
-> при обязательном preflight и прежнем shared budget, без retry/deploy/model switch.
+> Разрешаете один запуск на 301afd6bedc4a19559e731471336bbc4e2f74075,
+> до 6 POST / $0.2085 provider, с обязательным preflight и прежним бюджетом,
+> без retry, deployment и смены модели?
 
-До такого отдельного решения live_status остаётся NOT_AUTHORIZED.
+Это отдельный approval P6, не расширение offline acceptance P1–P5.
+Разрешён один dispatch с preflight и возможной campaign authorization
+`s114-comparison-20261021`. Повтор после отказа/FAIL и смена source не разрешены.
+Acceptance commit фиксируется до первого dispatch; результат записывается отдельно.

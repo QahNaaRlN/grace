@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.14: контролируемое сравнение с сохранённым alias-proposal
 
-- Статус: accepted; implementation_status: integrated (offline; PR91; local post-merge PASS); live_status: not_authorized.
+- Статус: accepted; implementation_status: integrated (offline; PR91; local post-merge PASS); live_status: authorized_one_run.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «принимаю» на offline P1–P5; P6 не разрешён.
 - Основание: «работаем дальше» после предложения подготовить отдельную спецификацию
@@ -9,8 +9,8 @@
 - Spec branch: `codex/statement-observed-comparison-spec`.
 - Implementation branch: `codex/statement-observed-comparison`; code commit
   `9db80afc57c42fd283e1b6daf46d9e1efe027d01`; [P1–P5 evidence](0055-s114-evidence.md).
-- Разрешённый live source SHA: отсутствует. [Предложение P6](0055-s114-p6-run-decision.md)
-  на integrated301afd6/CI5/5 — draft; [post-merge и main CI limitation](0055-pr91-postmerge.md).
+- Разрешённый live source SHA: `301afd6bedc4a19559e731471336bbc4e2f74075`. [Решение P6](0055-s114-p6-run-decision.md)
+  на integrated301afd6/CI5/5 принято отдельно прямым «+»; [post-merge и main CI limitation](0055-pr91-postmerge.md).
 
 ## Проблема и пользовательский результат
 
@@ -242,7 +242,7 @@ gates, точные команды и результаты фиксируютс�
 ## Открытые решения
 
 1. Offline P1–P5 приняты 2026-10-21 прямым «принимаю»; acceptance commit предшествует коду.
-2. Live P6: NOT_AUTHORIZED. Потребует отдельного решения на exact реализованном SHA,
-   фиксированный новый identity и предел до6POST/$0.2085 provider.
+2. Live P6: AUTHORIZED_ONE_RUN, 2026-10-21, прямое «+» на source301afd6,
+   authorization s114-comparison-20261021 и предел до6POST/$0.2085 provider; без retry/deploy/model switch.
 3. Свежая runtime/provider readiness: UNVERIFIED до отдельно разрешённого preflight.
    Несовместимость pins возвращает контракт на review, не расширяет scope.
