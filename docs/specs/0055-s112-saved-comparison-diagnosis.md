@@ -1,15 +1,15 @@
 # SPEC-0055 / S1.12: read-only диагностика сохранённого C6
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: draft; implementation_status: not_started; diagnosis_status: not_run.
+- Статус: accepted; implementation_status: not_started; diagnosis_status: not_run.
 - Основание подготовки: «работаем дальше» после предложения разобрать сохранённый
   C6 trace без новых платных вызовов. Это разрешение подготовки и доступных чтений;
-  acceptance нового operator contract этим документом не заявляется.
+  acceptance записан ниже отдельным прямым решением владельца.
 - Worktree: `statement-comparison-diagnosis-spec`, branch
   `codex/statement-comparison-diagnosis-spec`, база `8fc5b12` (documentation PR №85).
 - Executed campaign source: `012f604033de9c6a75bf531b8f715323d0fda57d`.
 - Зависимости: [S1.11](0055-s111-model-comparison.md),
-  [C6 evidence](0055-s111-c6-evidence.md); пакет документации №85 ещё не интегрирован.
+  [C6 evidence](0055-s111-c6-evidence.md); интеграция пакета документации №85 — prerequisite реализации.
 
 ## Проблема и ожидаемый результат
 
@@ -134,10 +134,11 @@ read-only diagnostic dispatch R5. Технический сбой не откр�
 | R4 | Exhaustive actual workflow conditions, default false/exclusivity и provider/SQL/paid/deploy absence; make test, relevant production mocks, go vet, git diff --check PASS |
 | R5 | Один read-only dispatch на reviewed diagnostic SHA: artifacts unchanged; стадия и numeric accounting проверены либо честно UNVERIFIED, inference=0 |
 
-## Решение, требуемое до реализации
+## Решение владельца
 
-Предлагается принять **S1.12 R1–R5: ограниченную реализацию и один бесплатный
-read-only diagnostic dispatch**, с разрешённой закрытой публикацией numeric
+Владелец 2026-10-21 ответил «утверждаю» на S1.12 R1–R5. Приняты
+**ограниченная реализация и один бесплатный read-only diagnostic dispatch**, с разрешённой закрытой публикацией numeric
 cost/latency только этого synthetic C6. Production-код поведения продукта,
 новый paid run и исправление причины этим решением не разрешаются.
-До принятия implementation_status остаётся not_started.
+Acceptance фиксируется до кода; implementation_status остаётся not_started
+до отдельного implementation worktree от main.

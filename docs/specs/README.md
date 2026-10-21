@@ -1,5 +1,5 @@
-Следующий кандидат — [S1.12](0055-s112-saved-comparison-diagnosis.md), **draft / not_started**:
-read-only диагностика сохранённого C6, без inference. Требует отдельного принятия R1–R5;
+Следующий кандидат — [S1.12](0055-s112-saved-comparison-diagnosis.md), **accepted / not_started**:
+read-only диагностика сохранённого C6, без inference. R1–R5 приняты прямым «утверждаю»;
 точный guard canonicalization может оказаться невосстановимым из-за отсутствия raw proposal.
 
 Следующий контракт — [S1.11](0055-s111-model-comparison.md), **accepted / integrated**, 2026-10-21:
