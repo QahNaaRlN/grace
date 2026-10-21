@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.13: наблюдаемость canonicalization без нового inference
 
-- Статус: accepted; implementation_status: not_started; live_status: not_authorized.
+- Статус: accepted; implementation_status: implemented (offline); live_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю, приступай» на O1–O5 offline.
 - Основание подготовки: «приступай к формированию спеки». Разрешена подготовка
@@ -8,7 +8,8 @@
 - Worktree: `statement-protocol-observability-spec`, branch
   `codex/statement-protocol-observability-spec`.
 - База: main `f4fc56a0db711f6e44e0d87cf71495c0da2ac20d`, PR №87.
-- Implementation branch / commit: отсутствуют.
+- Implementation branch: `codex/statement-protocol-observability`; code commit
+  `5f0a55aa2304e73bfcfdfd1d0814e29f3d1563e6`; [O1–O5 evidence](0055-s113-evidence.md).
 
 ## Проблема и пользовательский результат
 
