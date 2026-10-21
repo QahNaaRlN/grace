@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.11: ограниченное сравнение моделей после grounding guards
 
-- Статус: accepted; implementation_status: not_started; live_status: not_started.
+- Статус: accepted; implementation_status: local_verified (C1–C5 PASS); live_status: not_started.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю»
   в ответ на предложение принять offline C1–C5. Разрешены C1–C5; C6 не разрешён.
@@ -10,7 +10,10 @@
   маршрутов, новых правил кампании и суммы расходов.
 - Worktree: `statement-model-comparison`, ветка `codex/statement-model-comparison`.
 - База: main `2fe0d79041e3177c36cb7b2e6d5a5d2347cb9509`, PR №82 / accepted S1.10.
-- Implementation branch/commit: отсутствуют; этот worktree документационный.
+- Implementation branch: `codex/statement-comparison-implementation`, отдельный worktree
+  `statement-comparison-implementation` от main `11f26f8` (PR №83).
+- Implementation commit: `133ec1293cd93c94b1a52bad1aaad96257fec6db`.
+- [C1–C5 evidence](0055-s111-evidence.md): offline PASS; C6 NOT_AUTHORIZED / NOT_RUN.
 
 ## Проблема и пользовательский результат
 
@@ -212,4 +215,5 @@ summary sentinel, workflow mutual exclusion, no financial writes/image changes.
 profile и новый comparison report. Принятие фиксируется до реализации в main. После реализации, CI и предъявления exact SHA
 отдельно разрешить или отклонить **C6: одна кампания, до6 вызовов/$0.2085 provider**.
 Это небольшое предварительное сравнение, а не расширенная qualification.
-Текущий документационный пакет не исполняет ни C1–C5, ни C6 и не меняет production.
+Offline C1–C5 реализованы и проверены; C6 остаётся NOT_AUTHORIZED / NOT_RUN.
+Runtime production не менялся. CI implementation head и интеграция реализации — отдельные gates.
