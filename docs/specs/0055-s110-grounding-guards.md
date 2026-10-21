@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.10: непрерывность описания и роли книжных остатков
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: local_verified (G1–G5 PASS).
+- Статус: accepted; implementation_status: integrated (PR №82, `2fe0d79`; G1–G5 и post-merge local/CI5/5/Delivery PASS).
 - Acceptance record: 2026-10-21, прямое «Утвердить S1.10 и offline-реализацию».
   Разрешены G1–G5, external inference=0; без deployment/model switch.
 - Worktree: `statement-grounding-guards`, ветка `codex/statement-grounding-guards`.
@@ -10,8 +10,9 @@
 ## Результат реализации
 
 [G1–G5 evidence](0055-s110-evidence.md): Go guards и retained read/preview/confirm
-проверены unit/real-helper/SQL/HTTP, без внешних inference. PR №82, интеграция и
-CI head отдельно. S1.8 historical FAIL сохранён; улучшение LLM не заявляется.
+проверены unit/real-helper/SQL/HTTP, без внешних inference. PR №82 слит;
+[post-merge evidence](0055-pr82-postmerge.md): local gates, CI5/5 и Delivery4/4 PASS.
+S1.8 historical FAIL сохранён; улучшение LLM не заявляется, deployment не выполнялся.
 
 ## Проблема и пользовательский результат
 

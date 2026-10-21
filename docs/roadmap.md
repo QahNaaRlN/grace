@@ -1,9 +1,17 @@
-Следующий контракт — [S1.10](specs/0055-s110-grounding-guards.md), **accepted / local_verified**, 2026-10-21:
+Следующий контракт — [S1.11](specs/0055-s111-model-comparison.md), **accepted / not_started**, 2026-10-21:
+предложено сравнение Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception
+на одинаковых columns/cards/RU с S1.10 guards. Offline C1–C5 приняты прямым «одобряю»;
+C6 отдельно: одна кампания до6 calls/$0.2085 provider при прежнем shared budget/fees.
+[Свежие metadata](research/statement-quality/model-shortlist-2026-10-21.md) прочитаны без inference; обе пары unqualified,
+прежняя baseline EU-пара отсутствует в публичном snapshot. Live/deployment нет.
+
+Текущий пакет — [S1.10](specs/0055-s110-grounding-guards.md), **accepted / integrated**, 2026-10-21:
 общие Go-проверки внутренних пропусков description и ролей opening/closing
 book balance, актуальная проверка retained reviews перед confirmation и новая
 qualification/scorer version. Inference=0, без prompt/model/deployment изменений.
 Владелец принял G1–G5; реализация и offline/SQL/HTTP проверки PASS.
-[Подтверждения](specs/0055-s110-evidence.md). Интеграция PR №82 и CI final head отдельно.
+[Подтверждения](specs/0055-s110-evidence.md). PR №82 слит (`2fe0d79`); post-merge local gates, merge CI5/5 и Delivery4/4 PASS.
+[Post-merge evidence](specs/0055-pr82-postmerge.md).
 PR №81 слит (`5981449`, 04:04:03 +05:00); [post-merge evidence](specs/0055-pr81-postmerge.md):
 local gates PASS, source/head/main CI все5/5 PASS, Delivery39513380470 PASS.
 
