@@ -1,10 +1,10 @@
 # SPEC-0055 / S1.13: наблюдаемость canonicalization без нового inference
 
-- Статус: draft; implementation_status: not_started; live_status: not_authorized.
+- Статус: accepted; implementation_status: not_started; live_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю, приступай» на O1–O5 offline.
 - Основание подготовки: «приступай к формированию спеки». Разрешена подготовка
-  документа; принятие S1.13, реализация или новый run этим не заявляются.
+  документа; последующее принятие O1–O5 записано до кода. Live run не разрешён.
 - Worktree: `statement-protocol-observability-spec`, branch
   `codex/statement-protocol-observability-spec`.
 - База: main `f4fc56a0db711f6e44e0d87cf71495c0da2ac20d`, PR №87.
@@ -255,15 +255,15 @@ writer/summary/inspector, а не вручную созданные призна
 Для offline envelope используются только явно помеченные synthetic fixtures;
 они не подменяют отсутствующий исходный C6 response.
 
-## Открытые решения и предлагаемое принятие
+## Решение владельца
 
-Предлагается принять **S1.13 O1–O5 только offline**, включая private typed snapshot
+Владелец прямо принял **S1.13 O1–O5 только offline**, включая private typed snapshot
 с указанными лимитами, новый envelope и закрытую диагностику без изменения guards.
-Выбранные version/limits/error priority требуют owner review вместе с остальным
-контрактом; несовместимое изменение возвращается на review до реализации.
+Выбранные version/limits/error priority включены в принятие; несовместимое
+изменение возвращается на review до реализации.
 
 Новый платный эксперимент не включён и не спроектирован как автоматическое
 продолжение: позднее потребуется отдельный контракт campaign/call count/caps,
 новая authorization, exact source и отдельное прямое разрешение владельца.
 Оригинальный C6 `s111-comparison-20261021` остаётся consumed.
-До принятия: implementation_status=not_started, live_status=not_authorized.
+На момент принятия: implementation_status=not_started, live_status=not_authorized.
