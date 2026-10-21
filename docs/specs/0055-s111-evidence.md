@@ -8,8 +8,10 @@
 `11f26f8cf40a74f2dd7502ff25e1d0b9be836706`.
 Implementation source `133ec1293cd93c94b1a52bad1aaad96257fec6db`;
 worktree `statement-comparison-implementation`, branch
-`codex/statement-comparison-implementation`. Status: local_verified.
-**C6 NOT_AUTHORIZED / NOT_RUN; live quality/latency UNVERIFIED.**
+`codex/statement-comparison-implementation`. Status: integrated (PR №84, merge012f604);
+[post-merge evidence](0055-pr84-postmerge.md): local, main CI5/5 и Delivery4/4 PASS.
+**C6 отдельно разрешён и выполнен: FAIL `qualification_protocol_failed`, один вызов A/columns.**
+[Live evidence](0055-s111-c6-evidence.md); quality/latency UNVERIFIED, повтор не разрешён.
 
 ## Критерии и исполняемое evidence
 
@@ -20,7 +22,7 @@ worktree `statement-comparison-implementation`, branch
 | C3 | PASS: `go test ./internal/statementqualification -run Comparison -count=1`: порядок ABABAB, максимум6Complete, один reserve208500/settle, known quality failures продолжают, unknown/protocol/invalid cost/duplicate IDs останавливают, unknown не становится0; reserve failure POST0, cancellation и settlement failure не дают PASS. Shared block проверяется перед каждым вызовом. `TestStatementComparisonSharedLedger` на PostgreSQL: exact campaign anchor/reservation, чужой uncertain запрещает call, собственный settle600 не снимает чужой block, zero financial writes; transaction rollback сохраняет исходный budget |
 | C4 | PASS: `sh scripts/test-statement-comparison-s111.sh`; `python3 scripts/research/test-screening-workflow-modes.py`; `python3 scripts/research/test-statement-comparison-s111.py`; `go test ./cmd/statement-admin -run Comparison -count=1`. Новый source authorization, replay/cross-SHA/orphan/symlink failures POST0; success и failure расходуют marker. Исторические synthetic S1.4/S1.6/S1.8/S1.9 artifacts неизменны. **4096 реальных сочетаний workflow conditions**, default=false/exclusive jobs/exact-source CI5jobs/bundle hashes. Inspector читает точный reservation UUID через BEGIN READ ONLY, проверяет policy/profile/proofs/known-uncertain/cost; sentinel и файл-byte/mtime/mode immutability PASS. Public Go summary не выводит private text/cost/IDs |
 | C5 | PASS: `TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` (Go, 88 Web файлов/334 теста, lint/FSD/Prettier/build/Jev); финальный `make test-go`; `TMPDIR=/tmp make test-production`; `scripts/test-bank-statements.sh`; `go test -race ./internal/assistant ./internal/statementqualification -run Comparison -count=1`; `go vet ./cmd/... ./internal/... ./scripts/research/s19-replay`; `go vet -tags=integration ./internal/statementqualification ./internal/imports`; staged `git diff --check`. External inference=0, production workflow dispatch=0, deployment/model switch=0 |
-| C6 | NOT_AUTHORIZED / NOT_RUN. Ни одной реальной model request; metadata snapshot остаётся ранее прочитанным public GET evidence. Offline synthetic PASS не является качеством A/B, production qualification или разрешением C6 |
+| C6 | Отдельное разрешение исполнено: [run39587559021](https://github.com/QahNaaRlN/grace/actions/runs/39587559021), FAIL до score; A/columns attempted, остальные5 not_sent. Known billing/settled, image/health preserved. [Live evidence](0055-s111-c6-evidence.md); quality/latency UNVERIFIED |
 
 ## Реализация и границы
 
@@ -83,5 +85,14 @@ Web-код не менялся. При staged check удалён один traili
 [Delivery39567640692](https://github.com/QahNaaRlN/grace/actions/runs/39567640692) SUCCESS.
 Это CI документационного PR №83, **не CI реализации**. Implementation final-head
 checks публикуются в отдельном PR; до их завершения full CI PASS не заявляется.
-Runtime/production health в этой сессии не проверялась: сохранность image/health
-проверена только локальными runner mocks, не выдана за production evidence.
+На этапе offline реализации runtime/production health не проверялась: тогда
+сохранность image/health проверялась только runner mocks. Последующий отдельный
+C6 дал runtime evidence, приведённое в [live report](0055-s111-c6-evidence.md).
+
+Финальный implementation head6ff1d5e: [CI39569026738](https://github.com/QahNaaRlN/grace/actions/runs/39569026738)5/5 PASS.
+Main merge012f604: [CI39586026230](https://github.com/QahNaaRlN/grace/actions/runs/39586026230)5/5 PASS,
+[Delivery39587087205](https://github.com/QahNaaRlN/grace/actions/runs/39587087205)4/4 PASS;
+локальные post-merge make test/vet/test-production/diff check PASS.
+[Решение C6](0055-s111-c6-run-decision.md) отдельно принято владельцем и исполнено
+на source012f604: один вызов, FAIL protocol; разрешение израсходовано.
+Offline evidence выше не пересчитано в live PASS.

@@ -1,9 +1,10 @@
 # SPEC-0055 / S1.11: ограниченное сравнение моделей после grounding guards
 
-- Статус: accepted; implementation_status: local_verified (C1–C5 PASS); live_status: not_started.
+- Статус: accepted; implementation_status: integrated (PR №84, merge012f604; C1–C5/post-merge PASS); live_status: failed_protocol (authorization consumed).
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю»
-  в ответ на предложение принять offline C1–C5. Разрешены C1–C5; C6 не разрешён.
+  в ответ на предложение принять offline C1–C5. Это принятие разрешило C1–C5. Последующий отдельный C6 approval и результат
+  записаны в [решении](0055-s111-c6-run-decision.md) и [live evidence](0055-s111-c6-evidence.md).
 - Основание подготовки: «Подтверждаю, приступить к работе по выбранной программе»
   после программы post-merge №82 → контракт сравнения → запуск после утверждения.
   Это разрешает подготовку, но не является принятием ранее не предъявленных
@@ -13,7 +14,7 @@
 - Implementation branch: `codex/statement-comparison-implementation`, отдельный worktree
   `statement-comparison-implementation` от main `11f26f8` (PR №83).
 - Implementation commit: `133ec1293cd93c94b1a52bad1aaad96257fec6db`.
-- [C1–C5 evidence](0055-s111-evidence.md): offline PASS; C6 NOT_AUTHORIZED / NOT_RUN.
+- [C1–C5 evidence](0055-s111-evidence.md): offline PASS; отдельный C6 FAIL protocol, quality UNVERIFIED.
 
 ## Проблема и пользовательский результат
 
@@ -215,5 +216,10 @@ summary sentinel, workflow mutual exclusion, no financial writes/image changes.
 profile и новый comparison report. Принятие фиксируется до реализации в main. После реализации, CI и предъявления exact SHA
 отдельно разрешить или отклонить **C6: одна кампания, до6 вызовов/$0.2085 provider**.
 Это небольшое предварительное сравнение, а не расширенная qualification.
-Offline C1–C5 реализованы и проверены; C6 остаётся NOT_AUTHORIZED / NOT_RUN.
-Runtime production не менялся. CI implementation head и интеграция реализации — отдельные gates.
+Offline C1–C5 реализованы и проверены. [PR №84 post-merge](0055-pr84-postmerge.md):
+exact-head/main CI5/5, local и Delivery4/4 PASS.
+[Отдельный C6 decision](0055-s111-c6-run-decision.md) принят прямым «разрешаю»:
+одна кампания на source012f604. [Live результат](0055-s111-c6-evidence.md):
+FAIL `qualification_protocol_failed` после A/columns, до score; остальные5 не отправлены.
+Known billing/settled, image/health preserved; сравнение quality/cost/latency UNVERIFIED.
+Authorization consumed; новые вызовы, исправления и production adoption этим решением не открыты.

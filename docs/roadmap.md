@@ -1,10 +1,14 @@
-Следующий контракт — [S1.11](specs/0055-s111-model-comparison.md), **accepted / local_verified**, 2026-10-21:
+Следующий контракт — [S1.11](specs/0055-s111-model-comparison.md), **accepted / integrated**, 2026-10-21:
 предложено сравнение Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception
 на одинаковых columns/cards/RU с S1.10 guards. Offline C1–C5 приняты прямым «одобряю» и реализованы;
-[C1–C5 evidence](specs/0055-s111-evidence.md): local PASS, current-head CI и интеграция отдельно;
-C6 отдельно: одна кампания до6 calls/$0.2085 provider при прежнем shared budget/fees.
+[C1–C5 evidence](specs/0055-s111-evidence.md): PR №84 слит (`012f604`);
+[post-merge evidence](specs/0055-pr84-postmerge.md): local/CI5/5/Delivery4/4 PASS;
+[C6 decision](specs/0055-s111-c6-run-decision.md) отдельно принят и исполнен: один вызов A/columns,
+FAIL `qualification_protocol_failed` до score; остальные5 не отправлены.
+[Live evidence](specs/0055-s111-c6-evidence.md): known billing/settled, image/health preserved;
+quality/latency UNVERIFIED, authorization consumed, без повтора.
 [Свежие metadata](research/statement-quality/model-shortlist-2026-10-21.md) прочитаны без inference; обе пары unqualified,
-прежняя baseline EU-пара отсутствует в публичном snapshot. Live/deployment нет.
+прежняя baseline EU-пара отсутствует в публичном snapshot. Deployment/model switch не выполнялись.
 
 Текущий пакет — [S1.10](specs/0055-s110-grounding-guards.md), **accepted / integrated**, 2026-10-21:
 общие Go-проверки внутренних пропусков description и ролей opening/closing
