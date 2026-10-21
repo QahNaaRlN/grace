@@ -47,3 +47,19 @@ func TestScreeningSummaryModelClassesStayClosed(t *testing.T) {
 		}
 	}
 }
+
+func TestGroundingSummaryClosedCodes(t *testing.T) {
+	allowed := []string{"description_evidence_gap", "description_evidence_unverified", "book_balance_role_unverified", "openingBookBalance:book_balance_role_unverified", "closingBookBalance:book_balance_role_unverified", "row_1:description_evidence_gap", "row_5000:description_evidence_unverified"}
+	for _, code := range allowed {
+		got := screeningPublicCodes([]string{code})
+		if len(got) != 1 || got[0] != code {
+			t.Fatal("closed code lost", code, got)
+		}
+	}
+	for _, code := range []string{"row_0:description_evidence_gap", "row_5001:description_evidence_gap", "row_01:description_evidence_gap", "row_99999999999999999999:description_evidence_gap", "row_1:PRIVATE-error", "PRIVATE:book_balance_role_unverified", "openingBookBalance:book_balance_role_unverified:gen-PRIVATE", "row_1:description_evidence_gap\nPRIVATE"} {
+		raw, _ := json.Marshal(screeningPublicCodes([]string{code}))
+		if string(raw) != `["unknown"]` {
+			t.Fatal("unclosed code leaked", string(raw))
+		}
+	}
+}

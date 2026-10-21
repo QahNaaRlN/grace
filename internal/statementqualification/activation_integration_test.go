@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -184,7 +185,7 @@ func TestActivationRealHelperSmoke(t *testing.T) {
 						t.Fatal("missing negative score", report)
 					}
 					result := report.Results[0]
-					if result.Rows != 2 || result.Checks != 19 || result.Correct != 18 || len(result.Codes) != 1 || result.Codes[0] != "record_description" || len(result.Validation) != 0 || len(result.Coverage) != 0 {
+					if result.Rows != 2 || result.Checks != 19 || result.Correct != 16 || !reflect.DeepEqual(result.Codes, []string{"record_description", "row_issues", "blockers"}) || !reflect.DeepEqual(result.Validation, []string{"row_2:description_evidence_gap"}) || len(result.Coverage) != 0 {
 						t.Fatal("separator omission changed financial/coverage assertions or escaped", result)
 					}
 				}

@@ -10,7 +10,7 @@ import (
 )
 
 const ScreeningReportVersion = "statement.screening.v3.gemini31-identity"
-const ScreeningScorerVersion = "statement-screening.v1.19-20-23"
+const ScreeningScorerVersion = "statement-screening.v2.grounding19-20-23"
 const ScreeningMaxMicros int64 = 161700
 
 func ScreeningNames() []string { return []string{"columns", "cards", "turnover-roles-ru"} }
