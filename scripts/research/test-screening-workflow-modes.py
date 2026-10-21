@@ -11,7 +11,7 @@ for match in re.finditer(r'^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|
     condition = re.search(r'^    if: \$\{\{ (.*?) \}\}\s*$', match[2], re.M)
     if condition:
         conditions[match[1]] = condition[1]
-assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'diagnose-statement-s112', 'deploy'}
+assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'compare-statement-s114', 'diagnose-statement-s112', 'deploy'}
 
 def selected(values):
     active = []
@@ -24,9 +24,14 @@ def selected(values):
     return active
 
 count = 0
-for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True]):
-    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis)
+for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis, observed in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True], [False, True]):
+    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis, statement_comparison_s114_only=observed)
     active = selected(values)
+    if observed:
+        expected=not any((old,new,inspect,identity,diagnose,comparison,diagnosis)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
+        assert active == (['compare-statement-s114'] if expected else []), (values,active)
+        count+=1
+        continue
     if diagnosis:
         expected=not any((old,new,inspect,identity,diagnose,comparison)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
         assert active == (['diagnose-statement-s112'] if expected else []), (values,active)
@@ -57,7 +62,7 @@ for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparis
     if not any((old, new, inspect, identity, diagnose)) and reconcile in ('', 'none') and recovery in ('', 'none'):
         assert active == ['deploy']
     count += 1
-for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only'):
+for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only', 'statement_comparison_s114_only'):
     # Описание имеет восемь пробелов отступа, граница входного параметра — шесть.
     block = re.search(r'      '+key+r':\n(.*?)(?=^      [a-z_]+:|^permissions:)', source, re.M | re.S)[1]
     assert 'default: false' in block and 'type: boolean' in block
@@ -76,7 +81,7 @@ assert 'diagnose-statement-s19.py' in s19 and 'replay-statement-s19.sh' in s19
 assert all(x not in s19 for x in ('scp ', 'screening-s18.sh', 'openrouter', 'reconcile-', 'GRACE_AI_'))
 assert source.count('group: production') == 1
 
-comparison_job=source.split('  compare-statement-s111:\n',1)[1].split('  diagnose-statement-s19:\n',1)[0]
+comparison_job=source.split('  compare-statement-s111:\n',1)[1].split('  compare-statement-s114:\n',1)[0]
 assert comparison_job.count('test "$AUTHORIZED_SHA" = "$GITHUB_SHA"') == 2
 assert 'verify-screening-source-ci.py "$GITHUB_SHA"' in comparison_job
 assert 'inspect-statement-comparison-s111.py' in comparison_job
@@ -91,3 +96,12 @@ assert s112.count('test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"')==2
 assert 'verify-screening-source-ci.py "$GITHUB_SHA"' in s112
 assert 's112-bootstrap' not in source  # executed only inside the fixed-host wrapper
 print('S1.12 default-off, exhaustive exclusivity and exact-source gates PASS')
+
+s114=source.split('  compare-statement-s114:\n',1)[1].split('  diagnose-statement-s19:\n',1)[0]
+assert s114.count('test "$AUTHORIZED_SHA" = "$GITHUB_SHA"')==2
+assert 'comparison_s114_authorized_sha' in s114 and 'inputs.comparison_authorized_sha' not in s114
+for name in ('statement-comparison-s114.sh','inspect-statement-comparison-s114.py','inspect-statement-comparison-s111.py','grace-s114-replay','verify-screening-source-ci.py'):
+    assert name in s114
+assert 'sha256sum grace-statement-admin grace-s114-replay *.pdf SOURCE_SHA run.sh inspect.py inspect-statement-comparison-s111.py > SHA256SUMS' in s114
+assert '^[0-9a-f]{40}$' in s114
+print('S1.14 exact-source/full-manifest/default-off/mixed-input isolation PASS')

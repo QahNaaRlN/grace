@@ -59,7 +59,10 @@ type ComparisonReport struct {
 
 func comparisonDigest(r ComparisonReport) string { r.Digest = ""; return statementextract.Hash(r) }
 func comparisonPrepare(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner) (ComparisonReport, []statementextract.Plan, error) {
-	r := ComparisonReport{Version: ComparisonReportVersion, Authorization: ComparisonAuthorization, Profile: ComparisonProfile(), Candidates: statementextract.ComparisonCandidates(), Time: time.Now().UTC(), Tuples: []ComparisonTuple{}}
+	return comparisonPrepareFor(ctx, samples, reasoners, legacyComparison)
+}
+func comparisonPrepareFor(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, campaign comparisonCampaign) (ComparisonReport, []statementextract.Plan, error) {
+	r := ComparisonReport{Version: ComparisonReportVersion, Authorization: campaign.authorization(), Profile: ComparisonProfile(), Candidates: statementextract.ComparisonCandidates(), Time: time.Now().UTC(), Tuples: []ComparisonTuple{}}
 	fail := func(code string) (ComparisonReport, []statementextract.Plan, error) {
 		r.Error = code
 		return r, nil, errors.New(code)
@@ -127,9 +130,12 @@ func RunComparison(ctx context.Context, samples []Sample, reasoners [2]statement
 	return runComparison(ctx, samples, reasoners, meter, nil)
 }
 func runComparison(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter, observations []ComparisonObservation) (report ComparisonReport, err error) {
+	return runComparisonFor(ctx, samples, reasoners, meter, observations, legacyComparison)
+}
+func runComparisonFor(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter, observations []ComparisonObservation, campaign comparisonCampaign) (report ComparisonReport, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 900*time.Second)
 	defer cancel()
-	report, plans, err := comparisonPrepare(ctx, samples, reasoners)
+	report, plans, err := comparisonPrepareFor(ctx, samples, reasoners, campaign)
 	defer func() {
 		report.FinishedAt = time.Now().UTC()
 		if err != nil {

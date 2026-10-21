@@ -39,12 +39,15 @@ func observedDigest(e ObservedComparisonReport) string {
 
 // Called only by the synthetic operator path. Product/legacy runners do not capture.
 func RunObservedComparison(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter) (ObservedComparisonReport, error) {
+	return runObservedComparisonFor(ctx, samples, reasoners, meter, legacyComparison)
+}
+func runObservedComparisonFor(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter, campaign comparisonCampaign) (ObservedComparisonReport, error) {
 	observations := make([]ComparisonObservation, 6)
 	for i := range observations {
 		observations[i] = ComparisonObservation{Ordinal: i + 1, Stage: "not_reached", CaptureStatus: "not_reached"}
 	}
-	r, err := runComparison(ctx, samples, reasoners, meter, observations)
-	e := ObservedComparisonReport{Version: ObservedComparisonVersion, Report: r, Observations: observations}
+	r, err := runComparisonFor(ctx, samples, reasoners, meter, observations, campaign)
+	e := ObservedComparisonReport{Version: campaign.version(), Report: r, Observations: observations}
 	trimObservedSnapshots(&e)
 	return e, err
 }
@@ -121,9 +124,12 @@ func trimObservedSnapshots(e *ObservedComparisonReport) {
 	e.Digest = observedDigest(*e)
 }
 func ValidateObservedComparison(e ObservedComparisonReport, now time.Time) error {
+	return validateObservedComparisonFor(e, now, legacyComparison)
+}
+func validateObservedComparisonFor(e ObservedComparisonReport, now time.Time, campaign comparisonCampaign) error {
 	fail := errors.New("invalid_observed_comparison")
 	raw, err := json.Marshal(e)
-	if err != nil || len(raw) >= ComparisonArtifactLimit || !observedJSONBounds(raw) || e.Version != ObservedComparisonVersion || e.Digest != observedDigest(e) || len(e.Observations) != 6 || ValidateComparisonReport(e.Report, now) != nil {
+	if err != nil || len(raw) >= ComparisonArtifactLimit || !observedJSONBounds(raw) || e.Version != campaign.version() || e.Digest != observedDigest(e) || len(e.Observations) != 6 || validateComparisonReportFor(e.Report, now, campaign) != nil {
 		return fail
 	}
 	for i, o := range e.Observations {
@@ -170,6 +176,9 @@ func ValidateObservedComparison(e ObservedComparisonReport, now time.Time) error
 
 // Both formats remain explicit. A bare v1 has no inferred observation data.
 func DecodeComparisonArtifact(reader io.Reader) (ComparisonReport, *ObservedComparisonReport, error) {
+	return decodeComparisonArtifactFor(reader, legacyComparison, true)
+}
+func decodeComparisonArtifactFor(reader io.Reader, campaign comparisonCampaign, allowBare bool) (ComparisonReport, *ObservedComparisonReport, error) {
 	raw, err := io.ReadAll(io.LimitReader(reader, ComparisonArtifactLimit+1))
 	if err != nil || len(raw) > ComparisonArtifactLimit {
 		return ComparisonReport{}, nil, errors.New("invalid_comparison_artifact")
@@ -180,18 +189,21 @@ func DecodeComparisonArtifact(reader io.Reader) (ComparisonReport, *ObservedComp
 	if json.Unmarshal(raw, &header) != nil {
 		return ComparisonReport{}, nil, errors.New("invalid_comparison_artifact")
 	}
-	if header.Version == ComparisonReportVersion {
+	if allowBare && header.Version == ComparisonReportVersion {
 		r, err := DecodeComparisonReport(bytes.NewReader(raw))
 		return r, nil, err
 	}
 	var e ObservedComparisonReport
-	if header.Version != ObservedComparisonVersion || !observedJSONBounds(raw) || decodeOperatorReport(bytes.NewReader(raw), &e) != nil || ValidateObservedComparison(e, time.Now().UTC()) != nil {
+	if header.Version != campaign.version() || !observedJSONBounds(raw) || decodeOperatorReport(bytes.NewReader(raw), &e) != nil || validateObservedComparisonFor(e, time.Now().UTC(), campaign) != nil {
 		return ComparisonReport{}, nil, errors.New("invalid_comparison_artifact")
 	}
 	return e.Report, &e, nil
 }
 func EncodeObservedComparison(w io.Writer, e ObservedComparisonReport) error {
-	if ValidateObservedComparison(e, time.Now().UTC()) != nil {
+	return encodeObservedComparisonFor(w, e, legacyComparison)
+}
+func encodeObservedComparisonFor(w io.Writer, e ObservedComparisonReport, campaign comparisonCampaign) error {
+	if validateObservedComparisonFor(e, time.Now().UTC(), campaign) != nil {
 		return errors.New("comparison_artifact_unverified")
 	}
 	raw, err := json.Marshal(e)
@@ -211,7 +223,7 @@ func PublicComparisonObservations(e *ObservedComparisonReport, now time.Time) ([
 	if e == nil {
 		return nil, true
 	}
-	if ValidateObservedComparison(*e, now) != nil {
+	if validateKnownObservedComparison(*e, now) != nil {
 		return nil, false
 	}
 	out := make([]ComparisonObservation, len(e.Observations))
@@ -234,7 +246,7 @@ func ReplayComparisonObservation(e *ObservedComparisonReport, index int, documen
 	if e == nil {
 		return ComparisonReplay{Status: "unavailable_legacy"}
 	}
-	if ValidateObservedComparison(*e, now) != nil || index < 0 || index >= 6 {
+	if validateKnownObservedComparison(*e, now) != nil || index < 0 || index >= 6 {
 		return unavailable
 	}
 	o := e.Observations[index]

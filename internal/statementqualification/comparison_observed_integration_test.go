@@ -3,8 +3,11 @@
 package statementqualification
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -81,5 +84,83 @@ func TestObservedRealHelperReplay(t *testing.T) {
 	mismatched.Extractor = "old"
 	if ReplayComparisonObservation(&full, 0, mismatched, time.Now()).Verified {
 		t.Fatal("hash mismatch repaired")
+	}
+}
+
+func TestS114RealHelperReplay(t *testing.T) {
+	socket := os.Getenv("TEST_PDF_EXTRACTOR_SOCKET")
+	if socket == "" {
+		t.Skip("isolated helper required")
+	}
+	helper, err := pdfextract.NewClient(socket)
+	if err != nil {
+		t.Fatal(err)
+	}
+	samples := []Sample{}
+	for _, name := range ScreeningNames() {
+		raw, err := os.ReadFile("../pdfextract/testdata/" + name + ".pdf")
+		if err != nil {
+			t.Fatal(err)
+		}
+		doc, err := helper.Extract(context.Background(), raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		samples = append(samples, Sample{name, doc, FixtureHash(name)})
+	}
+	cs := statementextract.ComparisonCandidates()
+	a, b := &comparisonFixtureReasoner{candidate: cs[0]}, &comparisonFixtureReasoner{candidate: cs[1]}
+	full, err := RunS114Comparison(context.Background(), samples, [2]statementextract.Reasoner{a, b}, &fakeMeter{})
+	if err != nil || !full.Report.Passed || ValidateS114Comparison(full, time.Now()) != nil {
+		t.Fatal("S114 positive", err)
+	}
+	for i, tuple := range full.Report.Tuples {
+		if tuple.Result.Correct != []int{19, 20, 23}[i/2] || !ReplayComparisonObservation(&full, i, samples[i/2].Document, time.Now()).Verified {
+			t.Fatal("S114 real helper replay", i)
+		}
+	}
+	verifyS114ReplayCLI(t, full, socket)
+	for _, code := range []string{"unknown_alias", "duplicate_alias", "non_numeric_money_selection"} {
+		rs, a, b := observedReasoners(code)
+		e, err := RunS114Comparison(context.Background(), samples, rs, &fakeMeter{})
+		replay := ReplayComparisonObservation(&e, 0, samples[0].Document, time.Now())
+		if err == nil || a.calls != 1 || b.calls != 0 || !replay.Verified || replay.Diagnostic.Code != code {
+			t.Fatal("S114 guard replay", code)
+		}
+		verifyS114ReplayCLI(t, e, socket)
+	}
+}
+
+func verifyS114ReplayCLI(t *testing.T, e ObservedComparisonReport, socket string) {
+	t.Helper()
+	binary := os.Getenv("TEST_S114_REPLAY_BINARY")
+	if binary == "" {
+		t.Fatal("actual replay CLI binary required")
+	}
+	var private bytes.Buffer
+	if err := EncodeS114Comparison(&private, e); err != nil {
+		t.Fatal(err)
+	}
+	command := exec.Command(binary, "-", "/src/internal/pdfextract/testdata", socket)
+	command.Stdin = &private
+	raw, err := command.Output()
+	if err != nil {
+		t.Fatalf("actual S114 replay CLI failed: %T %v", err, err)
+	}
+	var output struct {
+		ProviderCalls int                `json:"providerCalls"`
+		Results       []ComparisonReplay `json:"results"`
+	}
+	if json.Unmarshal(raw, &output) != nil || output.ProviderCalls != 0 || len(output.Results) != 6 {
+		t.Fatal("CLI shape")
+	}
+	for i, result := range output.Results {
+		captured := e.Observations[i].Snapshot != nil
+		if result.Verified != captured || (captured && result.Status != "matched") || (!captured && result.Status != "unavailable_capture") {
+			t.Fatal("CLI did not replay captured tuples", i)
+		}
+	}
+	if bytes.Contains(raw, []byte("PRIVATE")) || bytes.Contains(raw, []byte("snapshot")) {
+		t.Fatal("CLI privacy")
 	}
 }

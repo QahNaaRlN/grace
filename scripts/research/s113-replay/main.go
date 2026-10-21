@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -18,16 +19,34 @@ import (
 )
 
 func run(args []string) error {
-	if len(args) != 3 || !filepath.IsAbs(args[0]) || !filepath.IsAbs(args[1]) {
+	if len(args) != 3 || (args[0] != "-" && !filepath.IsAbs(args[0])) || !filepath.IsAbs(args[1]) {
 		return fmt.Errorf("arguments")
 	}
-	f, e := os.Open(args[0])
-	if e != nil {
-		return e
+	f := os.Stdin
+	var e error
+	if args[0] != "-" {
+		f, e = os.Open(args[0])
+		if e != nil {
+			return e
+		}
+		defer f.Close()
 	}
-	defer f.Close()
-	report, observed, e := statementqualification.DecodeComparisonArtifact(f)
-	if e != nil || statementqualification.ValidateComparisonReport(report, time.Now().UTC()) != nil {
+	raw, e := io.ReadAll(io.LimitReader(f, statementqualification.ComparisonArtifactLimit+1))
+	if e != nil || len(raw) > statementqualification.ComparisonArtifactLimit {
+		return fmt.Errorf("artifact")
+	}
+	var header struct {
+		Version string `json:"version"`
+	}
+	if json.Unmarshal(raw, &header) != nil {
+		return fmt.Errorf("artifact")
+	}
+	decode := statementqualification.DecodeComparisonArtifact
+	if args[0] == "-" || header.Version == statementqualification.S114ObservedComparisonVersion {
+		decode = statementqualification.DecodeS114ComparisonArtifact
+	}
+	report, observed, e := decode(bytes.NewReader(raw))
+	if e != nil || observed == nil && statementqualification.ValidateComparisonReport(report, time.Now().UTC()) != nil {
 		return fmt.Errorf("artifact")
 	}
 	results := []statementqualification.ComparisonReplay{}
