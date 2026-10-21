@@ -1,3 +1,7 @@
+Следующий кандидат — [S1.12](0055-s112-saved-comparison-diagnosis.md), **draft / not_started**:
+read-only диагностика сохранённого C6, без inference. Требует отдельного принятия R1–R5;
+точный guard canonicalization может оказаться невосстановимым из-за отсутствия raw proposal.
+
 Следующий контракт — [S1.11](0055-s111-model-comparison.md), **accepted / integrated**, 2026-10-21:
 предложено сравнение Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception
 на одинаковых columns/cards/RU с S1.10 guards. Offline C1–C5 приняты прямым «одобряю» и реализованы;
