@@ -104,13 +104,41 @@ def command(args):
     result=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,timeout=15)
     require(result.returncode==0);return result.stdout.strip()
 
+def verify_observed(raw,source):
+    # The exact-source binary is already staged by the existing one-shot runner.
+    # comparison-summary returns before config/key/SQL/provider constructors.
+    api=command(['docker','ps','-q','--filter','label=com.docker.compose.project=grace-production','--filter','label=com.docker.compose.service=api'])
+    require(re.fullmatch(r'[a-f0-9]+',api))
+    binary='/tmp/grace-statement-comparison-'+source+'/grace-statement-admin'
+    result=subprocess.run(['docker','exec','-i',api,binary,'-mode=comparison-summary'],input=raw,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15)
+    require(result.returncode==0 and len(result.stdout)<=32768)
+    out=json.loads(result.stdout,object_pairs_hook=unique)
+    require(out.get('reportShapeVerified') is True and out.get('observationsVerified') is True and out.get('observationUnavailableLegacy') is False)
+    observations=out.get('observations');require(isinstance(observations,list) and len(observations)==6)
+    for i,o in enumerate(observations):
+        require(set(o)<= {'ordinal','stage','captureStatus','diagnostic'} and type(o.get('ordinal')) is int and o.get('ordinal')==i+1)
+        require(o.get('stage') in ('not_reached','canonicalization_passed','canonicalization_failed') and o.get('captureStatus') in ('not_reached','captured','unavailable_limit','unavailable_report_limit'))
+        d=o.get('diagnostic')
+        if d is not None:
+            require(set(d)=={'version','stage','code','scope','field','ordinal','selectionIndex','role'})
+            require(d['version']=='statement.canonicalization-diagnostic.v1' and d['stage']=='canonicalization' and d['code'] in ('invalid_plan','unknown_alias','duplicate_alias','non_numeric_money_selection'))
+            require(d['scope'] in ('plan','header','row','header_label','service') and d['field'] in ('plan','operationDate','bookingDate','accountAmount','accountCurrency','transactionAmount','transactionCurrency','description','directionEvidence','openingBookDate','closingBookDate','openingBookBalance','closingBookBalance','availableBalanceObserved','debitTurnover','creditTurnover','currency','labels','spans'))
+            require(type(d['ordinal']) is int and d['ordinal']>=0 and type(d['selectionIndex']) is int and d['selectionIndex']>=0 and d['role'] in ('','unknown','openingBookBalance','closingBookBalance','availableBalanceObserved','debitTurnover','creditTurnover'))
+    return observations
+
 def main():
     out={'s111InspectionReadOnly':True}
     try:
         require(len(sys.argv)==2 and re.fullmatch(r'[0-9a-f]{40}',sys.argv[1]))
         marker=ROOT/('statement-comparison-'+RUN+'.started');report=ROOT/('statement-comparison-'+RUN+'.json')
         require(private_read(marker,128).decode().strip()==sys.argv[1])
-        data=json.loads(private_read(report,524288),object_pairs_hook=unique)
+        raw=private_read(report,524288)
+        data=json.loads(raw,object_pairs_hook=unique)
+        if data.get('version')=='statement.comparison.observed.v1':
+            observations=verify_observed(raw,sys.argv[1])
+            data=data['report']
+            out['observationsVerified']=True;out['observations']=observations;out['observationUnavailableLegacy']=False
+        else: out['observationUnavailableLegacy']=True
         out.update(summary(data,dt.datetime.now(dt.timezone.utc)))
         rid=data['reservationId'];require(str(uuid.UUID(rid))==rid)
         pg=command(['docker','ps','-q','--filter','label=com.docker.compose.project=grace-production','--filter','label=com.docker.compose.service=postgres']);require(re.fullmatch(r'[a-f0-9]+',pg))

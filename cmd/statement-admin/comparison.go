@@ -31,11 +31,11 @@ func (m comparisonMeter) Reserve(ctx context.Context, n int64, _ statementextrac
 }
 func comparisonMain(mode, dir string) {
 	if mode == "comparison-summary" {
-		r, e := statementqualification.DecodeComparisonReport(os.Stdin)
+		r, observed, e := statementqualification.DecodeComparisonArtifact(os.Stdin)
 		if e != nil {
 			fail("invalid_comparison_report")
 		}
-		out := comparisonSummary(r)
+		out := comparisonArtifactSummary(r, observed)
 		_ = json.NewEncoder(os.Stdout).Encode(out)
 		if out["reportShapeVerified"] != true {
 			os.Exit(1)
@@ -116,8 +116,10 @@ func comparisonMain(mode, dir string) {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"comparisonPreflight": true, "candidates": 2, "tuples": 6, "providerCalls": 0, "activationAuthorized": false})
 		return
 	}
-	report, e := statementqualification.RunComparison(ctx, samples, reasoners, comparisonMeter{meter{database.ForUsers(pool)}})
-	_ = json.NewEncoder(os.Stdout).Encode(report)
+	report, e := statementqualification.RunObservedComparison(ctx, samples, reasoners, comparisonMeter{meter{database.ForUsers(pool)}})
+	if statementqualification.EncodeObservedComparison(os.Stdout, report) != nil {
+		fail("comparison_artifact_unverified")
+	}
 	if e != nil {
 		os.Exit(1)
 	}
@@ -153,4 +155,18 @@ func (m comparisonMeter) ComparisonAllowed(ctx context.Context, id string) (bool
 	var ready bool
 	e := m.pool.QueryRow(ctx, "SELECT grace_statement_call_allowed($1::uuid)", id).Scan(&ready)
 	return ready, e
+}
+
+func comparisonArtifactSummary(r statementqualification.ComparisonReport, e *statementqualification.ObservedComparisonReport) map[string]any {
+	out := comparisonSummary(r)
+	observations, valid := statementqualification.PublicComparisonObservations(e, time.Now().UTC())
+	if !valid {
+		return map[string]any{"reportShapeVerified": false, "observationsVerified": false, "activationAuthorized": false, "error": "invalid_comparison_report"}
+	}
+	out["observationUnavailableLegacy"] = e == nil
+	if e != nil {
+		out["observationsVerified"] = true
+		out["observations"] = observations
+	}
+	return out
 }

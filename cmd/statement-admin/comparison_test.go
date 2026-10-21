@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/QahNaaRlN/grace/internal/statementdata"
 	"github.com/QahNaaRlN/grace/internal/statementextract"
 	"github.com/QahNaaRlN/grace/internal/statementqualification"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -77,5 +80,55 @@ func TestComparisonSummaryUsesOnlyClosedFields(t *testing.T) {
 	raw, _ = json.Marshal(comparisonSummary(report))
 	if strings.Contains(string(raw), "PRIVATE") {
 		t.Fatal("invalid report leak")
+	}
+}
+
+type observedSummaryFake struct{ summaryComparisonFake }
+
+func (f *observedSummaryFake) Complete(ctx context.Context, p statementextract.Policy, c statementextract.Chunk) (statementdata.Proposal, *statementextract.Billing, error) {
+	_, bill, err := f.summaryComparisonFake.Complete(ctx, p, c)
+	return statementdata.Proposal{Rows: []statementdata.RowMapping{{Description: statementdata.Selection{"PRIVATE-ALIAS"}}}, Service: []statementdata.ServiceMapping{{Reason: "PRIVATE-SERVICE"}}}, bill, err
+}
+
+type observedSummaryMeter struct{ summaryComparisonMeter }
+
+func (observedSummaryMeter) Reserve(context.Context, int64, statementextract.Policy) (string, error) {
+	return "11111111-2222-4333-8444-555555555555", nil
+}
+func TestObservedComparisonSummaryPrivatePipeline(t *testing.T) {
+	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "public", Page: 1, Block: 1, Line: 1, Word: 1, Text: "RUB", Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 20, YMax: 10}}}}
+	samples := []statementqualification.Sample{}
+	for _, n := range statementqualification.ScreeningNames() {
+		samples = append(samples, statementqualification.Sample{Name: n, Document: d, SHA256: statementqualification.FixtureHash(n)})
+	}
+	cs := statementextract.ComparisonCandidates()
+	rs := [2]statementextract.Reasoner{&observedSummaryFake{summaryComparisonFake{candidate: cs[0]}}, &observedSummaryFake{summaryComparisonFake{candidate: cs[1]}}}
+	report, err := statementqualification.RunObservedComparison(context.Background(), samples, rs, observedSummaryMeter{})
+	if err == nil {
+		t.Fatal("causal protocol failure required")
+	}
+	var artifact bytes.Buffer
+	if statementqualification.EncodeObservedComparison(&artifact, report) != nil {
+		t.Fatal("private artifact writer failed")
+	}
+	r, e, err := statementqualification.DecodeComparisonArtifact(bytes.NewReader(artifact.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := comparisonArtifactSummary(r, e)
+	if out["observationsVerified"] != true || out["reportShapeVerified"] != true || out["observationUnavailableLegacy"] != false {
+		t.Fatal("summary didn't validate envelope")
+	}
+	public, _ := json.Marshal(out)
+	for _, s := range []string{"PRIVATE", "snapshot", "costMicros", "actualMicros", "generationId", "reservationId"} {
+		if bytes.Contains(public, []byte(s)) {
+			t.Fatal("summary privacy failure")
+		}
+	}
+	if dir := os.Getenv("S113_TEST_EXPORT_DIR"); dir != "" {
+		// Offline test fixture only, used to exercise the actual Go CLI from Python.
+		if os.WriteFile(filepath.Join(dir, "observed.json"), artifact.Bytes(), 0600) != nil || os.WriteFile(filepath.Join(dir, "summary.json"), public, 0600) != nil {
+			t.Fatal("offline fixture export")
+		}
 	}
 }

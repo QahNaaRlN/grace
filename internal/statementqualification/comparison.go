@@ -123,7 +123,10 @@ func ComparisonPreflight(ctx context.Context, samples []Sample, reasoners [2]sta
 
 // RunComparison reserves all six tuples once. Only known, protocol-valid
 // proposals may continue after a deterministic quality/grounding failure.
-func RunComparison(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter) (report ComparisonReport, err error) {
+func RunComparison(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter) (ComparisonReport, error) {
+	return runComparison(ctx, samples, reasoners, meter, nil)
+}
+func runComparison(ctx context.Context, samples []Sample, reasoners [2]statementextract.Reasoner, meter Meter, observations []ComparisonObservation) (report ComparisonReport, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 900*time.Second)
 	defer cancel()
 	report, plans, err := comparisonPrepare(ctx, samples, reasoners)
@@ -212,7 +215,22 @@ func RunComparison(ctx context.Context, samples []Sample, reasoners [2]statement
 		if total > ComparisonMaxMicros {
 			return report, errors.New("qualification_cost_overrun")
 		}
-		part, e = statementextract.CanonicalComparisonProposal(plans[i], part)
+		if observations != nil {
+			observations[i].Snapshot = captureComparisonSnapshot(part)
+			observations[i].CaptureStatus = "captured"
+			if observations[i].Snapshot == nil {
+				observations[i].CaptureStatus = "unavailable_limit"
+			}
+			observations[i].Stage = "canonicalization_passed"
+			var detail *statementextract.CanonicalDiagnostic
+			part, detail, e = statementextract.CanonicalComparisonProposalDiagnostic(plans[i], part)
+			if e != nil {
+				observations[i].Stage = "canonicalization_failed"
+				observations[i].Diagnostic = detail
+			}
+		} else {
+			part, e = statementextract.CanonicalComparisonProposal(plans[i], part)
+		}
 		if e != nil {
 			tuple.Reason = "protocol_failed"
 			return report, errors.New("qualification_protocol_failed")

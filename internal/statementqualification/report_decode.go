@@ -80,3 +80,43 @@ func decodeOperatorReport(reader io.Reader, out any) error {
 	e = dec.Decode(out)
 	return e
 }
+
+// Additional structural bounds apply only to the new observed artifact.
+func observedJSONBounds(raw []byte) bool {
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	var walk func(int) bool
+	walk = func(depth int) bool {
+		if depth > 20 {
+			return false
+		}
+		t, e := dec.Token()
+		if e != nil {
+			return false
+		}
+		if d, ok := t.(json.Delim); ok {
+			count := 0
+			for dec.More() {
+				count++
+				if count > 5000 {
+					return false
+				}
+				if d == '{' {
+					if _, e = dec.Token(); e != nil {
+						return false
+					}
+				}
+				if !walk(depth + 1) {
+					return false
+				}
+			}
+			end, e := dec.Token()
+			return e == nil && (d == '{' && end == json.Delim('}') || d == '[' && end == json.Delim(']'))
+		}
+		return true
+	}
+	if !walk(0) {
+		return false
+	}
+	_, e := dec.Token()
+	return e == io.EOF
+}

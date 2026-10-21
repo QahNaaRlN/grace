@@ -1,7 +1,8 @@
-Следующий кандидат — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / not_started**:
+Следующий кандидат — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / implemented offline**:
 наблюдаемость canonicalization: bounded private alias-proposal до проверки,
 closed guard codes, versioned envelope и offline equivalence/replay/privacy.
-O1–O5 приняты прямым «одобряю, приступай»; новых paid/metadata/SSH/deploy calls пакет не разрешает.
+O1–O5 приняты прямым «одобряю, приступай»; [evidence](specs/0055-s113-evidence.md): local gates PASS.
+Новых paid/metadata/SSH/deploy calls пакет не разрешает; implementation exact-head CI фиксируется отдельно.
 
 Завершённый пакет — [S1.12](specs/0055-s112-saved-comparison-diagnosis.md), **accepted / integrated**:
 read-only диагностика сохранённого C6, без inference. R1–R5 приняты прямым «утверждаю»;
