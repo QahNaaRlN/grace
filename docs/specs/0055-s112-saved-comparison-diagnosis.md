@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.12: read-only диагностика сохранённого C6
 
 - Дата: 2026-10-21, Asia/Yekaterinburg.
-- Статус: accepted; implementation_status: implemented (R1–R4 offline PASS); diagnosis_status: not_run.
+- Статус: accepted; implementation_status: implemented (R1–R4 offline PASS); diagnosis_status: completed (R5 PASS; canonicalization guard UNVERIFIED).
 - Основание подготовки: «работаем дальше» после предложения разобрать сохранённый
   C6 trace без новых платных вызовов. Это разрешение подготовки и доступных чтений;
   acceptance записан ниже отдельным прямым решением владельца.
@@ -141,4 +141,5 @@ read-only diagnostic dispatch R5. Технический сбой не откр�
 cost/latency только этого synthetic C6. Production-код поведения продукта,
 новый paid run и исправление причины этим решением не разрешаются.
 Acceptance зафиксирован до кода; implementation worktree создан от main33cd15a.
-[R1–R4 evidence](0055-s112-evidence.md): offline PASS; R5 пока NOT_RUN.
+[R1–R5 evidence](0055-s112-evidence.md): offline/exact-source CI PASS; R5 SUCCESS,
+canonicalization / raw proposal missing / exact guard UNVERIFIED, providerCalls0.

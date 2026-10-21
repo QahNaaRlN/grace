@@ -56,7 +56,7 @@ runtime evidence этого запуска, отдельно от прежних
 Deployment/model/production policy switch и финансовые записи не выполнялись.
 Максимум решения был6POST/$0.2085 provider; фактически recordedCalls=1.
 Точная стоимость учтена и сверена inspector с ledger, однако публичный CI намеренно
-не выводит сумму и latency. Они **UNVERIFIED для этого отчёта**, не заменены нулём
+не выводит сумму и latency. На момент исходного отчёта они **UNVERIFIED**, не заменены нулём
 или cap. Shared uncertain block не установлен.
 
 Private report сохранён операторским runner:
@@ -64,7 +64,7 @@ Private report сохранён операторским runner:
 Read-only локальный SSH probe не смог прочитать файл: `Permission denied
 (publickey,password)`. Ключи/секреты не читались, server state не менялся.
 Публичный closed summary не различает точный отказ canonicalization и merge;
-конкретный guard и private trace остаются **UNVERIFIED**. Исправление причины
+на момент исходного отчёта конкретный guard и private trace оставались **UNVERIFIED**. Исправление причины
 и новый paid run требуют отдельного ограниченного решения; автоматического retry нет.
 
 ## Acceptance criteria и ограничения
@@ -93,3 +93,15 @@ offline Jev evaluation). Журнал `/tmp/grace-c6-final-make.log`; новых
 Относительные Markdown links изменённых документов проверены: PASS.
 Primary checkout и pinned source worktree остались чистыми. Код этого PR не меняется;
 accepted specification и критерии приведены выше.
+
+## Последующее read-only уточнение S1.12
+
+[Approved S1.12 R5](0055-s112-evidence.md),
+[run39593210426](https://github.com/QahNaaRlN/grace/actions/runs/39593210426),
+2026-10-21 16:37:47 +05:00, SUCCESS; providerCalls0, digest/hashes verified,
+report/marker unchanged. Установлено: **canonicalization**, raw alias proposal
+не сохранён. Exact guard остаётся **UNVERIFIED**, merge replay невозможен.
+Записанный C6 расход **1995micros = $0.001995 provider**, Complete latency
+**2931ms** (включая proof/network/decode, не чистая generation latency).
+Это чтение прежнего report, без новой SQL ledger verification/settlement.
+Первоначальный C6 FAIL/consumed, A0/3/B0/3 и no winner сохраняются.
