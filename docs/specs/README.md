@@ -1,4 +1,4 @@
-Следующий кандидат — [S1.15](0055-s115-saved-proposal-diagnosis.md), **draft / not_started**:
+Следующий кандидат — [S1.15](0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / not_started**:
 закрытая read-only диагностика saved P6 proposals: alias relation, description-gap
 и unmapped witnesses. D1–D4 offline ожидают принятия; D5 — отдельного exact-source
 read-only approval после реализации/CI. Новых model/metadata/SQL/SSH calls нет.

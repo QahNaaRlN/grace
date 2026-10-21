@@ -1,10 +1,10 @@
 # SPEC-0055 / S1.15: read-only диагностика сохранённых proposals P6
 
-- Статус: draft; implementation_status: not_started; execution_status: not_authorized.
+- Статус: accepted (D1–D4); implementation_status: not_started; execution_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: прямое «Приступай», 2026-10-21, после предъявления PR №93 и границы D1–D4/D5.
 - Основание подготовки: «работаем!» после P6 FAIL и публикации evidence.
-  Разрешена подготовка контракта; новая реализация/SSH/read-only run не начаты.
+  D1–D4 приняты последующим «Приступай»; D5/SSH/read-only run не разрешены.
 - База: main `868c0a4254bb32e08b07225dfb3672d9b7d5287b`, docs-only PR №92.
 - Spec branch: `codex/statement-saved-proposal-diagnosis-spec`.
 - Implementation branch/commit и разрешённый diagnostic source: отсутствуют.
@@ -254,7 +254,7 @@ production/integration gates; точные команды/результаты �
 
 ## Открытые решения
 
-1. Принятие D1–D4 отсутствует; production/tool implementation запрещена до acceptance.
+1. D1–D4 приняты владельцем; разрешена только offline-реализация и её проверки.
 2. D5 NOT_AUTHORIZED, diagnostic source ещё не существует; требуется отдельное
    exact-source read-only approval после offline evidence/CI.
 3. Какие relations/gap positions/unmapped tokens находятся в actual P6 — UNVERIFIED
