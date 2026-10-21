@@ -1,8 +1,9 @@
 # SPEC-0055 / S1.11: ограниченное сравнение моделей после grounding guards
 
-- Статус: draft; implementation_status: not_started; live_status: not_started.
+- Статус: accepted; implementation_status: not_started; live_status: not_started.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record конкретного контракта: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю»
+  в ответ на предложение принять offline C1–C5. Разрешены C1–C5; C6 не разрешён.
 - Основание подготовки: «Подтверждаю, приступить к работе по выбранной программе»
   после программы post-merge №82 → контракт сравнения → запуск после утверждения.
   Это разрешает подготовку, но не является принятием ранее не предъявленных
@@ -205,10 +206,10 @@ summary sentinel, workflow mutual exclusion, no financial writes/image changes.
 Точные команды новых CLI/tests и source SHA фиксируются в implementation evidence
 до live. Нынешние `screening`/S1.8 commands не являются реализацией C6.
 
-## Открытое решение владельца
+## Решение владельца и отдельный live gate
 
-Рекомендуется принять сначала **offline C1–C5**, включая synthetic-only Inception
-profile и новый comparison report. После реализации, CI и предъявления exact SHA
+Владелец принял **offline C1–C5**, включая synthetic-only Inception
+profile и новый comparison report. Принятие фиксируется до реализации в main. После реализации, CI и предъявления exact SHA
 отдельно разрешить или отклонить **C6: одна кампания, до6 вызовов/$0.2085 provider**.
 Это небольшое предварительное сравнение, а не расширенная qualification.
 Текущий документационный пакет не исполняет ни C1–C5, ни C6 и не меняет production.

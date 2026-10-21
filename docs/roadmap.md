@@ -1,6 +1,6 @@
-Следующий контракт — [S1.11](specs/0055-s111-model-comparison.md), **draft / not_started**, 2026-10-21:
+Следующий контракт — [S1.11](specs/0055-s111-model-comparison.md), **accepted / not_started**, 2026-10-21:
 предложено сравнение Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception
-на одинаковых columns/cards/RU с S1.10 guards. Offline C1–C5 требуют принятия;
+на одинаковых columns/cards/RU с S1.10 guards. Offline C1–C5 приняты прямым «одобряю»;
 C6 отдельно: одна кампания до6 calls/$0.2085 provider при прежнем shared budget/fees.
 [Свежие metadata](research/statement-quality/model-shortlist-2026-10-21.md) прочитаны без inference; обе пары unqualified,
 прежняя baseline EU-пара отсутствует в публичном snapshot. Live/deployment нет.
