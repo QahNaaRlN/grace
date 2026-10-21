@@ -1,6 +1,6 @@
-Следующий кандидат — [S1.14](specs/0055-s114-observed-comparison.md), **draft / not_started**:
+Следующий кандидат — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / not_started**:
 новая однократная synthetic comparison с S1.13 observations; offline P1–P5
-ожидают принятия, live P6 — отдельного exact-source approval. До6POST/$0.2085
+приняты прямым «принимаю», live P6 — отдельного exact-source approval. До6POST/$0.2085
 provider предложены, запуск не разрешён. Старое разрешение C6 consumed.
 
 Завершённый пакет — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / integrated offline**:

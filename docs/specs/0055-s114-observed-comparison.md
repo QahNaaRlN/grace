@@ -1,10 +1,10 @@
 # SPEC-0055 / S1.14: контролируемое сравнение с сохранённым alias-proposal
 
-- Статус: draft; implementation_status: not_started; live_status: not_authorized.
+- Статус: accepted; implementation_status: not_started; live_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «принимаю» на offline P1–P5; P6 не разрешён.
 - Основание: «работаем дальше» после предложения подготовить отдельную спецификацию
-  контролируемого повторного эксперимента. Разрешена подготовка кандидата.
+  контролируемого повторного эксперимента. P1–P5 приняты отдельным последующим решением до кода.
 - База: main `d63c16fe69e8edad22e869dfe5b8f58ee40ec01f`, PR №89.
 - Spec branch: `codex/statement-observed-comparison-spec`.
 - Implementation branch/commit и разрешённый live source SHA: отсутствуют.
@@ -238,7 +238,7 @@ gates, точные команды и результаты фиксируютс�
 
 ## Открытые решения
 
-1. Принятие владельцем offline P1–P5: отсутствует; production-код запрещён до него.
+1. Offline P1–P5 приняты 2026-10-21 прямым «принимаю»; acceptance commit предшествует коду.
 2. Live P6: NOT_AUTHORIZED. Потребует отдельного решения на exact реализованном SHA,
    фиксированный новый identity и предел до6POST/$0.2085 provider.
 3. Свежая runtime/provider readiness: UNVERIFIED до отдельно разрешённого preflight.
