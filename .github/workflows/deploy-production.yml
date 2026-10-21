@@ -56,6 +56,16 @@ on:
         required: false
         default: ''
         type: string
+      diagnose_statement_s112_only:
+        description: Read-only saved C6 diagnosis, zero inference and no deployment
+        required: false
+        default: false
+        type: boolean
+      diagnosis_authorized_sha:
+        description: Exact reviewed S1.12 diagnostic source SHA
+        required: false
+        default: ''
+        type: string
       inspect_statement_only:
         description: Check statement AI readiness without emitting secrets or budget values
         required: false
@@ -73,7 +83,7 @@ concurrency:
 
 jobs:
   screen-statement:
-    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: One bounded candidate screening
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -126,7 +136,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
   screen-statement-s16:
-    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: Один ограниченный прогон S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -186,12 +196,12 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
       - name: Чтение приватного итога S1.6 без значений расхода и ID
-        if: ${{ always() && (steps.s16-run.outcome == 'success' || steps.s16-run.outcome == 'failure') && !inputs.statement_comparison_s111_only }}
+        if: ${{ always() && (steps.s16-run.outcome == 'success' || steps.s16-run.outcome == 'failure') && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         run: |
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s16.py
 
   screen-statement-s18:
-    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ inputs.statement_screening_s18_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: Один ограниченный прогон S1.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -252,12 +262,12 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA'"
 
       - name: Чтение приватного итога S1.8 без значений расхода и ID
-        if: ${{ always() && (steps.s18-run.outcome == 'success' || steps.s18-run.outcome == 'failure') && !inputs.statement_comparison_s111_only }}
+        if: ${{ always() && (steps.s18-run.outcome == 'success' || steps.s18-run.outcome == 'failure') && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         run: |
           ssh grace-deploy@195.133.195.190 'python3 - '"$GITHUB_SHA" < scripts/research/inspect-statement-screening-s18.py
 
   compare-statement-s111:
-    if: ${{ inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    if: ${{ inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only }}
     name: S1.11 separately authorized synthetic comparison
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -313,7 +323,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$GITHUB_SHA'"
 
   diagnose-statement-s19:
-    if: ${{ inputs.diagnose_statement_s19_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s111_only }}
+    if: ${{ inputs.diagnose_statement_s19_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: Бесплатная диагностика сохранённого S1.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -345,7 +355,7 @@ jobs:
           scripts/research/replay-statement-s19.sh "$RUNNER_TEMP/s19-projection.json" > "$RUNNER_TEMP/s19-replay.json"
           cat "$RUNNER_TEMP/s19-replay.json"
       - name: Retain only sanitized diagnostic artifacts
-        if: ${{ always() && !inputs.statement_comparison_s111_only }}
+        if: ${{ always() && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         uses: actions/upload-artifact@v7
         with:
           name: statement-s19-sanitized
@@ -356,7 +366,7 @@ jobs:
           if-no-files-found: error
 
   inspect-statement:
-    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ (inputs.inspect_statement_only || inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
@@ -371,7 +381,7 @@ jobs:
           printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
       - name: Check readiness without exporting runtime values
-        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' && !inputs.statement_comparison_s111_only }}
+        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         run: |
           ssh grace-deploy@195.133.195.190 'bash -s' <<'REMOTE'
           set -eu
@@ -393,12 +403,12 @@ jobs:
           REMOTE
 
       - name: Diagnose fixed synthetic field locators without values
-        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' && !inputs.statement_comparison_s111_only }}
+        if: ${{ inputs.reconcile_screening_usage != 'inspect' && inputs.reconcile_screening_usage != 'apply' && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         run: |
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/diagnose-statement-smoke.py
 
       - name: Verify or settle only the fixed S1.4 uncertain reservation
-        if: ${{ inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply' && !inputs.statement_comparison_s111_only }}
+        if: ${{ inputs.reconcile_screening_usage == 'inspect' || inputs.reconcile_screening_usage == 'apply' && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         env:
           RECONCILE_IDS: ${{ secrets.GRACE_STATEMENT_SCREENING_GENERATION }}
           RECONCILE_MODE: ${{ inputs.reconcile_screening_usage }}
@@ -416,7 +426,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 -' < scripts/research/inspect-statement-screening.py
 
   reconcile-statement-s16:
-    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ (inputs.reconcile_screening_s16_usage == 'inspect' || inputs.reconcile_screening_s16_usage == 'apply') && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: Сверка единственного расхода S1.6
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -447,7 +457,7 @@ jobs:
           ssh grace-deploy@195.133.195.190 'python3 - 9e89ae08b7ec0b2b60d642b7f2c3d29a7f52598f' < scripts/research/inspect-statement-screening-s16.py
 
   deploy:
-    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only }}
+    if: ${{ !inputs.inspect_statement_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
     name: Deploy owner VPS
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -538,7 +548,7 @@ jobs:
             "/opt/grace/releases/$RELEASE_SHA/deploy.sh $RELEASE_SHA"
 
       - name: Apply explicit Statement AI activation after synthetic qualification
-        if: ${{ inputs.statement_action == 'enable' || inputs.statement_action == 'disable' && !inputs.statement_comparison_s111_only }}
+        if: ${{ inputs.statement_action == 'enable' || inputs.statement_action == 'disable' && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         env:
           STATEMENT_ACTION: ${{ inputs.statement_action }}
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
@@ -548,7 +558,7 @@ jobs:
             "/opt/grace/releases/$RELEASE_SHA/statement-ai.sh $STATEMENT_ACTION"
 
       - name: Verify enabled Statement AI in exact runtime image
-        if: ${{ inputs.statement_action == 'enable' && !inputs.statement_comparison_s111_only }}
+        if: ${{ inputs.statement_action == 'enable' && !inputs.statement_comparison_s111_only && !inputs.diagnose_statement_s112_only }}
         env:
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
         run: |
@@ -569,3 +579,65 @@ jobs:
       - name: Log out VPS from GHCR
         if: always()
         run: ssh grace-deploy@195.133.195.190 'docker logout ghcr.io || true'
+
+  diagnose-statement-s112:
+    if: ${{ inputs.diagnose_statement_s112_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.statement_comparison_s111_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') }}
+    name: S1.12 read-only saved C6 diagnosis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify reviewed exact diagnostic source and all CI jobs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIAGNOSTIC_SHA: ${{ inputs.diagnosis_authorized_sha }}
+        run: |
+          set -eu
+          test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/s112-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/s112-ci.json"
+      - name: Offline privacy, exclusivity and public pinned helper
+        run: |
+          set -eu
+          go test ./scripts/research/s112-diagnose -count=1
+          python3 scripts/research/test-statement-s112-diagnosis.py
+          python3 scripts/research/test-screening-workflow-modes.py
+          scripts/research/prepare-statement-s112.sh --prepare > "$RUNNER_TEMP/s112-context.json"
+          CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/s112-verifier" ./scripts/research/s112-diagnose
+      - name: Configure pinned SSH client
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Read only fixed C6 report through sealed memfd
+        env:
+          DIAGNOSTIC_SHA: ${{ inputs.diagnosis_authorized_sha }}
+        run: |
+          set -eu
+          test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"
+          python3 scripts/research/run-s112-diagnosis.py "$RUNNER_TEMP/s112-verifier" "$RUNNER_TEMP/s112-context.json" > "$RUNNER_TEMP/s112-projection.json"
+      - name: Local replay of retained canonical proposal or explicit UNVERIFIED
+        run: |
+          set -eu
+          "$RUNNER_TEMP/s112-verifier" replay "$RUNNER_TEMP/s112-context.json" < "$RUNNER_TEMP/s112-projection.json" > "$RUNNER_TEMP/s112-result.json"
+          cat "$RUNNER_TEMP/s112-result.json"
+      - name: Retain only sanitized diagnostic artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: statement-s112-sanitized
+          path: |
+            ${{ runner.temp }}/s112-projection.json
+            ${{ runner.temp }}/s112-result.json
+          retention-days: 7
+          if-no-files-found: error
