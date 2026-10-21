@@ -39,6 +39,10 @@ func (p *OpenRouterProvider) reservation(policy ModelPolicy, input, output int) 
 	if p.screeningDocument {
 		allowed = statementextract.ScreeningPolicyValid(pin)
 	}
+	if p.comparisonID != "" {
+		c, ok := statementextract.ComparisonCandidateByID(p.comparisonID)
+		allowed = ok && c.Policy == pin && !p.screeningDocument && time.Since(policy.VerifiedAt) <= 10*time.Minute
+	}
 	if !policy.Valid(time.Now()) || !allowed || policy.Vision || policy.ImageTokenUpperBound != 0 || input < 1 || input > statementextract.InputBound || output < 1 || output > statementextract.OutputBound {
 		return 0, errors.New("price_unknown")
 	}

@@ -29,9 +29,10 @@ func (f *fakeReasoner) Complete(context.Context, statementextract.Policy, statem
 }
 
 type fakeMeter struct {
-	reserves, settles int
-	actual            *int64
-	reserved          int64
+	allowedCalls, blockAfter int
+	reserves, settles        int
+	actual                   *int64
+	reserved                 int64
 }
 
 func (f *fakeMeter) Reserve(_ context.Context, n int64, _ statementextract.Policy) (string, error) {
@@ -122,4 +123,9 @@ func TestNewProfileReservesApprovedAggregateBeforeProvider(t *testing.T) {
 	if e == nil || reasoner.calls != 1 || meter.reserves != 1 || meter.reserved != 140000 || meter.settles != 1 {
 		t.Fatal(e, reasoner.calls, meter)
 	}
+}
+
+func (m *fakeMeter) ComparisonAllowed(context.Context, string) (bool, error) {
+	m.allowedCalls++
+	return m.blockAfter == 0 || m.allowedCalls <= m.blockAfter, nil
 }

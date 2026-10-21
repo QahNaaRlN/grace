@@ -11,9 +11,18 @@ import (
 // The protected report still uses a single unambiguous JSON document.
 func DecodeReport(reader io.Reader) (Report, error) {
 	var out Report
+	e := decodeOperatorReport(reader, &out)
+	return out, e
+}
+func DecodeComparisonReport(reader io.Reader) (ComparisonReport, error) {
+	var out ComparisonReport
+	e := decodeOperatorReport(reader, &out)
+	return out, e
+}
+func decodeOperatorReport(reader io.Reader, out any) error {
 	raw, e := io.ReadAll(io.LimitReader(reader, 524289))
 	if e != nil || len(raw) > 524288 {
-		return out, errors.New("invalid_qualification_report")
+		return errors.New("invalid_qualification_report")
 	}
 	tokens := json.NewDecoder(bytes.NewReader(raw))
 	var value func() error
@@ -61,13 +70,13 @@ func DecodeReport(reader io.Reader) (Report, error) {
 		return nil
 	}
 	if e = value(); e != nil {
-		return out, e
+		return e
 	}
 	if _, e = tokens.Token(); e != io.EOF {
-		return out, errors.New("trailing_report_data")
+		return errors.New("trailing_report_data")
 	}
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.DisallowUnknownFields()
-	e = dec.Decode(&out)
-	return out, e
+	e = dec.Decode(out)
+	return e
 }

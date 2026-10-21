@@ -45,7 +45,12 @@ func fail(code string) {
 func main() {
 	mode := flag.String("mode", "check", "check, policy, qualify (synthetic only), summary, or diagnostic")
 	screeningDir := flag.String("screening-dir", "", "operator-only directory containing the three exact public screening PDFs")
+	comparisonDir := flag.String("comparison-dir", "", "operator-only directory with the exact public comparison PDFs")
 	flag.Parse()
+	if *mode == "comparison" || *mode == "comparison-preflight" || *mode == "comparison-summary" {
+		comparisonMain(*mode, *comparisonDir)
+		return
+	}
 	if *mode == "screening" || *mode == "screening-preflight" || *mode == "screening-summary" {
 		screeningMain(*mode, *screeningDir)
 		return
