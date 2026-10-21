@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.11: ограниченное сравнение моделей после grounding guards
 
-- Статус: accepted; implementation_status: local_verified (C1–C5 PASS); live_status: not_started.
+- Статус: accepted; implementation_status: integrated (PR №84, merge012f604; C1–C5/post-merge PASS); live_status: not_started.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «одобряю»
   в ответ на предложение принять offline C1–C5. Разрешены C1–C5; C6 не разрешён.
@@ -216,4 +216,6 @@ profile и новый comparison report. Принятие фиксируется
 отдельно разрешить или отклонить **C6: одна кампания, до6 вызовов/$0.2085 provider**.
 Это небольшое предварительное сравнение, а не расширенная qualification.
 Offline C1–C5 реализованы и проверены; C6 остаётся NOT_AUTHORIZED / NOT_RUN.
-Runtime production не менялся. CI implementation head и интеграция реализации — отдельные gates.
+Runtime production не менялся. [PR №84 post-merge](0055-pr84-postmerge.md): exact-head/main CI5/5, local и
+Delivery4/4 PASS. [Конкретный C6 decision](0055-s111-c6-run-decision.md) остаётся
+draft: одна кампания требует отдельного owner approval на exact source.

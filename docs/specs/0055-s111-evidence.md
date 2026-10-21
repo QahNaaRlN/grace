@@ -8,7 +8,8 @@
 `11f26f8cf40a74f2dd7502ff25e1d0b9be836706`.
 Implementation source `133ec1293cd93c94b1a52bad1aaad96257fec6db`;
 worktree `statement-comparison-implementation`, branch
-`codex/statement-comparison-implementation`. Status: local_verified.
+`codex/statement-comparison-implementation`. Status: integrated (PR №84, merge012f604);
+[post-merge evidence](0055-pr84-postmerge.md): local, main CI5/5 и Delivery4/4 PASS.
 **C6 NOT_AUTHORIZED / NOT_RUN; live quality/latency UNVERIFIED.**
 
 ## Критерии и исполняемое evidence
@@ -85,3 +86,10 @@ Web-код не менялся. При staged check удалён один traili
 checks публикуются в отдельном PR; до их завершения full CI PASS не заявляется.
 Runtime/production health в этой сессии не проверялась: сохранность image/health
 проверена только локальными runner mocks, не выдана за production evidence.
+
+Финальный implementation head6ff1d5e: [CI39569026738](https://github.com/QahNaaRlN/grace/actions/runs/39569026738)5/5 PASS.
+Main merge012f604: [CI39586026230](https://github.com/QahNaaRlN/grace/actions/runs/39586026230)5/5 PASS,
+[Delivery39587087205](https://github.com/QahNaaRlN/grace/actions/runs/39587087205)4/4 PASS;
+локальные post-merge make test/vet/test-production/diff check PASS.
+C6 остаётся NOT_AUTHORIZED / NOT_RUN; [предлагаемое решение](0055-s111-c6-run-decision.md)
+закрепляет source012f604 и прежние до6POST/$0.2085 provider caps.
