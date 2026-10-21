@@ -294,3 +294,46 @@ func TestDescriptionUsesExtractorOrderWithoutInferringWritingDirection(t *testin
 		t.Fatal("retained reading direction inferred", r)
 	}
 }
+
+func TestDescriptionGapPositionsMatchAdmission(t *testing.T) {
+	for _, mode := range []string{"service", "unselected", "other_field", "consecutive", "cross_line", "bad_evidence"} {
+		t.Run(mode, func(t *testing.T) {
+			d, p := gapFixture("-")
+			if mode == "unselected" {
+				p.Service = nil
+			}
+			if mode == "other_field" {
+				p.Service = nil
+				p.Rows[0].DirectionEvidence = Selection{"desc3"}
+			}
+			if mode == "consecutive" {
+				p.Rows[0].Description = Selection{"desc1", "desc2", "desc3", "desc4", "desc5"}
+				p.Service = nil
+			}
+			if mode == "cross_line" {
+				for i := range d.Spans {
+					if d.Spans[i].ID == "desc4" || d.Spans[i].ID == "desc5" {
+						d.Spans[i].Line = 2
+						d.Spans[i].Word -= 3
+					}
+				}
+			}
+			review, err := ValidateProposal(d, p, []int{1}, true, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if mode == "bad_evidence" {
+				for i := range review.Rows[0].Evidence {
+					if review.Rows[0].Evidence[i].Role == "row_1:description" {
+						review.Rows[0].Evidence[i].Literal = "PRIVATE"
+					}
+				}
+			}
+			left, right, ok := DescriptionGapPositions(d, review.Rows[0], 0)
+			want := mode == "service" || mode == "unselected" || mode == "other_field"
+			if ok != want || ok && (left != 5 || right != 7) {
+				t.Fatal("predicate witness drift", left, right, ok)
+			}
+		})
+	}
+}

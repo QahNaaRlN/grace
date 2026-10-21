@@ -1,3 +1,9 @@
+Текущий пакет — [S1.15](specs/0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / local_verified**:
+закрытая read-only диагностика saved P6 proposals: alias relation, description-gap
+и unmapped witnesses. D1–D4 offline приняты прямым «Приступай»; D5 — отдельного exact-source
+read-only approval после review/integration/CI. [Offline evidence](specs/0055-s115-evidence.md);
+local gates PASS, exact-head CI отдельно. Новых model/metadata/live SQL/SSH calls нет.
+
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
 Offline acceptance «принимаю»; [implementation evidence](specs/0055-s114-evidence.md), implementation CI5/5 PASS.
@@ -388,7 +394,7 @@ Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары
 Production policy пока прежняя; новые платные вызовы этим поручением не запущены.
 
 2026-10-19 согласовано направление автоматического выбора модели для выписки.
-[SPEC-0056](specs/0056-statement-model-selection.md) — **draft**, реализация
+[SPEC-0056](specs/0056-statement-model-selection.md) — **accepted D1–D4**, реализация
 **not_started**: quality/privacy gates, выбор стоимости полного плана до
 consent, закреплённый маршрут без скрытого fallback. Сверка расхода
 SPEC-0055 завершена; исторические FAIL сохраняются. Statement AI включён для owner testing по отдельному accepted S1.2. Конкретный реестр квалифицированных моделей SPEC-0056 ещё не утверждён.
