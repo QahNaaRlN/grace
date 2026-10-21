@@ -1,7 +1,12 @@
-Следующий кандидат — [S1.14](0055-s114-observed-comparison.md), **accepted / implemented offline**:
-новая однократная synthetic comparison с S1.13 observations; offline P1–P5
-приняты прямым «принимаю»; [evidence](0055-s114-evidence.md), live P6 — отдельного exact-source approval. До6POST/$0.2085
-provider предложены, запуск не разрешён. Старое разрешение C6 consumed.
+Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
+P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).
+Offline acceptance «принимаю»; [implementation evidence](0055-s114-evidence.md), implementation CI5/5 PASS.
+[P6 execution decision](0055-s114-p6-run-decision.md) отдельно принят прямым «+»
+на integrated source301afd6/CI5/5; **EXECUTED / FAIL protocol, authorization consumed**.
+[Live evidence](0055-s114-p6-evidence.md):3POST, A/columns16/19, B/columns17/19,
+A/cards unknown_alias(operationDate,row1), captured+matched replay; остальные3 not_sent.
+5320micros ($0.00532 provider) known/settled, shared uncertain block=false,
+image/health preserved; no retry/deploy/model switch. Main push-CI/Delivery отдельно UNVERIFIED.
 
 Завершённый пакет — [S1.13](0055-s113-protocol-observability.md), **accepted / integrated offline**:
 PR №89, merge `d63c16f`; [post-merge evidence](0055-pr89-postmerge.md):
