@@ -23,6 +23,13 @@ import (
 // A single ledger row represents the fixed A+B campaign, never a per-model
 // allowance. The private report carries its exact reservation UUID.
 type comparisonMeter struct{ meter }
+type s114ComparisonMeter struct{ comparisonMeter }
+
+func (m s114ComparisonMeter) Reserve(ctx context.Context, n int64, _ statementextract.Policy) (string, error) {
+	var id string
+	err := m.pool.QueryRow(ctx, "SELECT grace_ai_reserve($1,'statement-comparison.s114','fixed-A-B','statement')::text", n).Scan(&id)
+	return id, err
+}
 
 func (m comparisonMeter) Reserve(ctx context.Context, n int64, _ statementextract.Policy) (string, error) {
 	var id string
@@ -30,12 +37,20 @@ func (m comparisonMeter) Reserve(ctx context.Context, n int64, _ statementextrac
 	return id, e
 }
 func comparisonMain(mode, dir string) {
-	if mode == "comparison-summary" {
-		r, observed, e := statementqualification.DecodeComparisonArtifact(os.Stdin)
+	s114 := mode == "comparison-s114" || mode == "comparison-s114-preflight" || mode == "comparison-s114-summary"
+	if mode == "comparison-summary" || mode == "comparison-s114-summary" {
+		decode := statementqualification.DecodeComparisonArtifact
+		if s114 {
+			decode = statementqualification.DecodeS114ComparisonArtifact
+		}
+		r, observed, e := decode(os.Stdin)
 		if e != nil {
 			fail("invalid_comparison_report")
 		}
 		out := comparisonArtifactSummary(r, observed)
+		if s114 {
+			out = s114ComparisonSummary(*observed)
+		}
 		_ = json.NewEncoder(os.Stdout).Encode(out)
 		if out["reportShapeVerified"] != true {
 			os.Exit(1)
@@ -81,7 +96,11 @@ func comparisonMain(mode, dir string) {
 			fail("comparison_provider_unavailable")
 		}
 	}
-	if _, e = statementqualification.ComparisonPreflight(ctx, samples, reasoners); e != nil {
+	preflight := statementqualification.ComparisonPreflight
+	if s114 {
+		preflight = statementqualification.S114ComparisonPreflight
+	}
+	if _, e = preflight(ctx, samples, reasoners); e != nil {
 		fail("comparison_preflight_failed")
 	}
 	pool, e := pgxpool.New(ctx, cfg.DatabaseURL)
@@ -107,7 +126,7 @@ func comparisonMain(mode, dir string) {
 		fail("comparison_requires_single_active_admin")
 	}
 	ctx = access.WithPrincipal(ctx, access.Principal{ID: ids[0], Role: "admin"})
-	if mode == "comparison-preflight" {
+	if mode == "comparison-preflight" || mode == "comparison-s114-preflight" {
 		var ready bool
 		e = pool.QueryRow(ctx, "SELECT grace_ai_remaining() >= $1 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain')", statementqualification.ComparisonMaxMicros).Scan(&ready)
 		if e != nil || !ready {
@@ -116,8 +135,17 @@ func comparisonMain(mode, dir string) {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"comparisonPreflight": true, "candidates": 2, "tuples": 6, "providerCalls": 0, "activationAuthorized": false})
 		return
 	}
-	report, e := statementqualification.RunObservedComparison(ctx, samples, reasoners, comparisonMeter{meter{database.ForUsers(pool)}})
-	if statementqualification.EncodeObservedComparison(os.Stdout, report) != nil {
+	baseMeter := comparisonMeter{meter{database.ForUsers(pool)}}
+	var operatorMeter statementqualification.Meter = baseMeter
+	run := statementqualification.RunObservedComparison
+	encode := statementqualification.EncodeObservedComparison
+	if s114 {
+		operatorMeter = s114ComparisonMeter{baseMeter}
+		run = statementqualification.RunS114Comparison
+		encode = statementqualification.EncodeS114Comparison
+	}
+	report, e := run(ctx, samples, reasoners, operatorMeter)
+	if encode(os.Stdout, report) != nil {
 		fail("comparison_artifact_unverified")
 	}
 	if e != nil {
@@ -125,7 +153,9 @@ func comparisonMain(mode, dir string) {
 	}
 }
 func comparisonSummary(r statementqualification.ComparisonReport) map[string]any {
-	valid := statementqualification.ValidateComparisonReport(r, time.Now().UTC()) == nil
+	return comparisonSummaryWithValidation(r, statementqualification.ValidateComparisonReport(r, time.Now().UTC()) == nil)
+}
+func comparisonSummaryWithValidation(r statementqualification.ComparisonReport, valid bool) map[string]any {
 	out := map[string]any{"reportShapeVerified": valid, "comparisonPassed": valid && r.Passed, "activationAuthorized": false, "error": statementqualification.ComparisonErrorCode(r.Error)}
 	if !valid {
 		return out
@@ -168,5 +198,27 @@ func comparisonArtifactSummary(r statementqualification.ComparisonReport, e *sta
 		out["observationsVerified"] = true
 		out["observations"] = observations
 	}
+	return out
+}
+
+func s114ComparisonSummary(e statementqualification.ObservedComparisonReport) map[string]any {
+	now := time.Now().UTC()
+	valid := statementqualification.ValidateS114Comparison(e, now) == nil
+	out := comparisonSummaryWithValidation(e.Report, valid)
+	if !valid {
+		return out
+	}
+	observations, ok := statementqualification.PublicComparisonObservations(&e, now)
+	if !ok {
+		return map[string]any{"reportShapeVerified": false, "activationAuthorized": false}
+	}
+	out["observationsVerified"] = true
+	out["observationUnavailableLegacy"] = false
+	out["observations"] = observations
+	metrics, err := statementqualification.S114ComparisonMetricsFor(e, now)
+	if err != nil {
+		return map[string]any{"reportShapeVerified": false, "activationAuthorized": false}
+	}
+	out["metrics"] = metrics
 	return out
 }

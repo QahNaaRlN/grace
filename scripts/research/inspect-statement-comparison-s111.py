@@ -51,7 +51,10 @@ def route_valid(route,c,start,finish):
     except (KeyError,TypeError,ValueError,AttributeError): return False
 
 def summary(data,now):
-    require(data.get('version')=='statement.comparison.v1.grounding' and data.get('authorization')==RUN and data.get('profile')==PROFILE and data.get('candidates')==POLICIES and data.get('maximumMicros')==208500 and digest(data.get('digest')))
+    return _summary(data,now,RUN)
+
+def _summary(data,now,authorization):
+    require(data.get('version')=='statement.comparison.v1.grounding' and data.get('authorization')==authorization and data.get('profile')==PROFILE and data.get('candidates')==POLICIES and data.get('maximumMicros')==208500 and digest(data.get('digest')))
     start,finish=stamp(data['time']),stamp(data['finishedAt']);require(start<=finish<=now and (finish-start).total_seconds()<=906)
     tuples=data.get('tuples');require(isinstance(tuples,list) and len(tuples)==6)
     require(data.get('error') in ERRORS and type(data.get('passed')) is bool)
@@ -92,9 +95,12 @@ def summary(data,now):
     return {'reportShapeVerified':True,'reportedPassed':data['passed'],'billingKnown':actual is not None,'recordedCalls':calls,'completedTuples':completed,'successfulA':successful[0],'successfulB':successful[1],'error':data['error'],'tuples':rows,'activationAuthorized':False}
 
 def usage_summary(row,data):
+    return _usage_summary(row,data,'statement-comparison.s111')
+
+def _usage_summary(row,data,ledger_model):
     rid=data.get('reservationId');require(isinstance(rid,str) and str(uuid.UUID(rid))==rid and row.get('id')==rid)
     require(str(uuid.UUID(row['owner_id']))==row['owner_id'])
-    require(row.get('purpose')=='statement' and row.get('model')=='statement-comparison.s111' and row.get('provider')=='fixed-A-B' and row.get('reserved_micros')==208500 and row.get('generation_id')=='statement-qualification:'+rid)
+    require(row.get('purpose')=='statement' and row.get('model')==ledger_model and row.get('provider')=='fixed-A-B' and row.get('reserved_micros')==208500 and row.get('generation_id')=='statement-qualification:'+rid)
     require(stamp(data['time'])<=stamp(row['created_at'])<=stamp(data['finishedAt']))
     known=type(data.get('actualMicros')) is int;status=row.get('status')
     require(status=='settled' and known and row.get('actual_micros')==data['actualMicros'] or status=='uncertain' and not known and row.get('actual_micros') is None)
@@ -105,12 +111,15 @@ def command(args):
     require(result.returncode==0);return result.stdout.strip()
 
 def verify_observed(raw,source):
+    return _verify_observed_summary(raw,source,'comparison-summary','/tmp/grace-statement-comparison-')['observations']
+
+def _verify_observed_summary(raw,source,mode,prefix):
     # The exact-source binary is already staged by the existing one-shot runner.
     # comparison-summary returns before config/key/SQL/provider constructors.
     api=command(['docker','ps','-q','--filter','label=com.docker.compose.project=grace-production','--filter','label=com.docker.compose.service=api'])
     require(re.fullmatch(r'[a-f0-9]+',api))
-    binary='/tmp/grace-statement-comparison-'+source+'/grace-statement-admin'
-    result=subprocess.run(['docker','exec','-i',api,binary,'-mode=comparison-summary'],input=raw,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15)
+    binary=prefix+source+'/grace-statement-admin'
+    result=subprocess.run(['docker','exec','-i',api,binary,'-mode='+mode],input=raw,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15)
     require(result.returncode==0 and len(result.stdout)<=32768)
     out=json.loads(result.stdout,object_pairs_hook=unique)
     require(out.get('reportShapeVerified') is True and out.get('observationsVerified') is True and out.get('observationUnavailableLegacy') is False)
@@ -124,7 +133,7 @@ def verify_observed(raw,source):
             require(d['version']=='statement.canonicalization-diagnostic.v1' and d['stage']=='canonicalization' and d['code'] in ('invalid_plan','unknown_alias','duplicate_alias','non_numeric_money_selection'))
             require(d['scope'] in ('plan','header','row','header_label','service') and d['field'] in ('plan','operationDate','bookingDate','accountAmount','accountCurrency','transactionAmount','transactionCurrency','description','directionEvidence','openingBookDate','closingBookDate','openingBookBalance','closingBookBalance','availableBalanceObserved','debitTurnover','creditTurnover','currency','labels','spans'))
             require(type(d['ordinal']) is int and d['ordinal']>=0 and type(d['selectionIndex']) is int and d['selectionIndex']>=0 and d['role'] in ('','unknown','openingBookBalance','closingBookBalance','availableBalanceObserved','debitTurnover','creditTurnover'))
-    return observations
+    return out
 
 def main():
     out={'s111InspectionReadOnly':True}

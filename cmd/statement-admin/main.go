@@ -47,7 +47,7 @@ func main() {
 	screeningDir := flag.String("screening-dir", "", "operator-only directory containing the three exact public screening PDFs")
 	comparisonDir := flag.String("comparison-dir", "", "operator-only directory with the exact public comparison PDFs")
 	flag.Parse()
-	if *mode == "comparison" || *mode == "comparison-preflight" || *mode == "comparison-summary" {
+	if *mode == "comparison-s114" || *mode == "comparison-s114-preflight" || *mode == "comparison-s114-summary" || *mode == "comparison" || *mode == "comparison-preflight" || *mode == "comparison-summary" {
 		comparisonMain(*mode, *comparisonDir)
 		return
 	}

@@ -10,8 +10,11 @@ import (
 // ValidateComparisonReport validates both complete failures and interrupted
 // campaigns. Successful admission is a separate predicate, never activation.
 func ValidateComparisonReport(r ComparisonReport, now time.Time) error {
+	return validateComparisonReportFor(r, now, legacyComparison)
+}
+func validateComparisonReportFor(r ComparisonReport, now time.Time, campaign comparisonCampaign) error {
 	fail := errors.New("invalid_comparison_report")
-	if r.Version != ComparisonReportVersion || r.Authorization != ComparisonAuthorization || r.Profile != ComparisonProfile() || !reflect.DeepEqual(r.Candidates, statementextract.ComparisonCandidates()) || r.Digest != comparisonDigest(r) || r.Time.IsZero() || r.Time.After(r.FinishedAt) || r.FinishedAt.After(now) || r.FinishedAt.Sub(r.Time) > 906*time.Second || len(r.Tuples) != 6 || r.MaximumMicros != ComparisonMaxMicros || r.ReservationID == "" || len(r.ReservationID) > 128 || ComparisonErrorCode(r.Error) != r.Error {
+	if r.Version != ComparisonReportVersion || r.Authorization != campaign.authorization() || r.Profile != ComparisonProfile() || !reflect.DeepEqual(r.Candidates, statementextract.ComparisonCandidates()) || r.Digest != comparisonDigest(r) || r.Time.IsZero() || r.Time.After(r.FinishedAt) || r.FinishedAt.After(now) || r.FinishedAt.Sub(r.Time) > 906*time.Second || len(r.Tuples) != 6 || r.MaximumMicros != ComparisonMaxMicros || r.ReservationID == "" || len(r.ReservationID) > 128 || ComparisonErrorCode(r.Error) != r.Error {
 		return fail
 	}
 	if len(r.Proofs) != 2 {
@@ -130,7 +133,10 @@ type ComparisonMetrics struct {
 }
 
 func ComparisonMetricsFor(r ComparisonReport, now time.Time) ([]ComparisonMetrics, error) {
-	if e := ValidateComparisonReport(r, now); e != nil {
+	return comparisonMetricsFor(r, now, legacyComparison)
+}
+func comparisonMetricsFor(r ComparisonReport, now time.Time, campaign comparisonCampaign) ([]ComparisonMetrics, error) {
+	if e := validateComparisonReportFor(r, now, campaign); e != nil {
 		return nil, e
 	}
 	out := []ComparisonMetrics{}
