@@ -5,14 +5,15 @@
 - Подготовлено: 2026-10-21, Asia/Yekaterinburg.
 - Основание: [accepted S1.11](0055-s111-model-comparison.md), offline C1–C5
   реализованы в [PR №84](https://github.com/QahNaaRlN/grace/pull/84).
-- Точный предлагаемый source SHA: `012f604033de9c6a75bf531b8f715323d0fda57d`,
+- Точный разрешённый source SHA: `012f604033de9c6a75bf531b8f715323d0fda57d`,
   merge №84. [Post-merge gates](0055-pr84-postmerge.md) обязательны перед запуском.
 - Source ref: `codex/statement-comparison-c6-source`, закреплён на exact SHA выше;
   worktree `statement-comparison-c6-source` сохраняется чистым.
-- Live status: AUTHORIZED / NOT_STARTED. Разрешена ровно одна указанная кампания
-  при обязательном preflight; retry/deployment/model switch не разрешены.
+- Live status: EXECUTED / FAIL `qualification_protocol_failed`; authorization consumed.
+  Один вызов A/columns, остальные5 не отправлены. Retry не разрешён;
+  [результат и ограничения evidence](0055-s111-c6-evidence.md).
 
-## Предлагаемое решение
+## Принятое решение
 
 Разрешить **ровно одну** кампанию C6, authorization
 `s111-comparison-20261021`, на указанном exact source при успешных local/CI gates
