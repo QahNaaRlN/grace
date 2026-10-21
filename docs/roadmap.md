@@ -1,4 +1,9 @@
-Следующий кандидат — [S1.12](specs/0055-s112-saved-comparison-diagnosis.md), **accepted / implemented**:
+Следующий кандидат — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / not_started**:
+наблюдаемость canonicalization: bounded private alias-proposal до проверки,
+closed guard codes, versioned envelope и offline equivalence/replay/privacy.
+O1–O5 приняты прямым «одобряю, приступай»; новых paid/metadata/SSH/deploy calls пакет не разрешает.
+
+Завершённый пакет — [S1.12](specs/0055-s112-saved-comparison-diagnosis.md), **accepted / integrated**:
 read-only диагностика сохранённого C6, без inference. R1–R5 приняты прямым «утверждаю»;
 точный guard canonicalization может оказаться невосстановимым из-за отсутствия raw proposal.
 [R1–R5 evidence](specs/0055-s112-evidence.md): local/CI5/5 PASS; R5 SUCCESS, providerCalls0.
