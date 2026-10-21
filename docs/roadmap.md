@@ -1,11 +1,12 @@
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
 Offline acceptance «принимаю»; [implementation evidence](specs/0055-s114-evidence.md), implementation CI5/5 PASS.
-[P6 execution decision](specs/0055-s114-p6-run-decision.md) — **accepted / AUTHORIZED_ONE_RUN**:
-предложен integrated source301afd6/CI5/5, до6POST/$0.2085 provider, прежние пары/fixtures/guards.
-Local post-merge gates PASS; main push-CI/Delivery отдельно UNVERIFIED.
-Отдельное exact-source разрешение получено прямым «+»; до POST обязателен runtime preflight;
-старое разрешение C6 consumed, новых provider/SSH/deploy вызовов нет.
+[P6 execution decision](specs/0055-s114-p6-run-decision.md) отдельно принят прямым «+»
+на integrated source301afd6/CI5/5; **EXECUTED / FAIL protocol, authorization consumed**.
+[Live evidence](specs/0055-s114-p6-evidence.md):3POST, A/columns16/19, B/columns17/19,
+A/cards unknown_alias(operationDate,row1), captured+matched replay; остальные3 not_sent.
+5320micros ($0.00532 provider) known/settled, shared uncertain block=false,
+image/health preserved; no retry/deploy/model switch. Main push-CI/Delivery отдельно UNVERIFIED.
 
 Завершённый пакет — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / integrated offline**:
 PR №89, merge `d63c16f`; [post-merge evidence](specs/0055-pr89-postmerge.md):

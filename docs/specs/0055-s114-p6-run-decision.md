@@ -4,8 +4,10 @@
   на конкретное предложение одного P6/source301afd6, до6POST/$0.2085 provider.
 - Approval recorded: 2026-10-21 14:55:24 UTC / 19:55:24 Asia/Yekaterinburg.
 - Дата: 2026-10-21, Asia/Yekaterinburg; acceptance owner: владелец Grace.
-- Live status: AUTHORIZED_ONE_RUN / NOT_STARTED. Ни metadata GET, ни SSH/VPS,
-  workflow dispatch, provider inference или deployment при подготовке не выполнялись.
+- Live status: EXECUTED / FAIL qualification_protocol_failed; authorization consumed.
+  [P6 live evidence](0055-s114-p6-evidence.md):3POST,5320micros known/settled;
+  A/cards unknown_alias точно replay; остальные3 not_sent. Retry не разрешён.
+  До approval при подготовке metadata/SSH/dispatch/inference/deploy не выполнялись.
 - Основание подготовки: «идем дальше» после offline P1–P5 и PR №91.
   Это открывает интеграцию и подготовку следующего решения, не paid execution.
 - Основание реализации: [accepted S1.14](0055-s114-observed-comparison.md),
@@ -167,4 +169,6 @@ UNVERIFIED. Даже PASS3/3 обеих пар не даёт production qualific
 Это отдельный approval P6, не расширение offline acceptance P1–P5.
 Разрешён один dispatch с preflight и возможной campaign authorization
 `s114-comparison-20261021`. Повтор после отказа/FAIL и смена source не разрешены.
-Acceptance commit фиксируется до первого dispatch; результат записывается отдельно.
+Acceptance commit1194a234f519fba03019074db5c220b4beb8a772 записан до dispatch.
+Один run39621334415/job119295262027 завершился FAIL; [результат](0055-s114-p6-evidence.md),
+authorization consumed; повтор и новый paid scope не разрешены.

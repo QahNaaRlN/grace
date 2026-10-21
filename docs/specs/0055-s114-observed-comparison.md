@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.14: контролируемое сравнение с сохранённым alias-proposal
 
-- Статус: accepted; implementation_status: integrated (offline; PR91; local post-merge PASS); live_status: authorized_one_run.
+- Статус: accepted; implementation_status: integrated (offline; PR91; local post-merge PASS); live_status: failed_protocol (authorization consumed).
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «принимаю» на offline P1–P5; P6 не разрешён.
 - Основание: «работаем дальше» после предложения подготовить отдельную спецификацию
@@ -242,7 +242,8 @@ gates, точные команды и результаты фиксируютс�
 ## Открытые решения
 
 1. Offline P1–P5 приняты 2026-10-21 прямым «принимаю»; acceptance commit предшествует коду.
-2. Live P6: AUTHORIZED_ONE_RUN, 2026-10-21, прямое «+» на source301afd6,
-   authorization s114-comparison-20261021 и предел до6POST/$0.2085 provider; без retry/deploy/model switch.
+2. Live P6: EXECUTED/FAIL,2026-10-21; отдельное «+» на source301afd6 записано1194a23
+   до dispatch. [Evidence](0055-s114-p6-evidence.md):3POST/5320micros known settled,
+   A/cards unknown_alias matched replay; permission consumed, retry/deploy/model switch не разрешены.
 3. Свежая runtime/provider readiness: UNVERIFIED до отдельно разрешённого preflight.
    Несовместимость pins возвращает контракт на review, не расширяет scope.
