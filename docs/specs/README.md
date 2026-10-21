@@ -1,7 +1,8 @@
-Следующий кандидат — [S1.15](0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / not_started**:
+Текущий пакет — [S1.15](0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / local_verified**:
 закрытая read-only диагностика saved P6 proposals: alias relation, description-gap
-и unmapped witnesses. D1–D4 offline ожидают принятия; D5 — отдельного exact-source
-read-only approval после реализации/CI. Новых model/metadata/SQL/SSH calls нет.
+и unmapped witnesses. D1–D4 offline приняты прямым «Приступай»; D5 — отдельного exact-source
+read-only approval после review/integration/CI. [Offline evidence](0055-s115-evidence.md);
+local gates PASS, exact-head CI отдельно. Новых model/metadata/live SQL/SSH calls нет.
 
 Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).

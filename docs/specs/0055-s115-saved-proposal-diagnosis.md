@@ -1,13 +1,14 @@
 # SPEC-0055 / S1.15: read-only диагностика сохранённых proposals P6
 
-- Статус: accepted (D1–D4); implementation_status: not_started; execution_status: not_authorized.
+- Статус: accepted (D1–D4); implementation_status: local_verified; execution_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое «Приступай», 2026-10-21, после предъявления PR №93 и границы D1–D4/D5.
 - Основание подготовки: «работаем!» после P6 FAIL и публикации evidence.
   D1–D4 приняты последующим «Приступай»; D5/SSH/read-only run не разрешены.
 - База: main `868c0a4254bb32e08b07225dfb3672d9b7d5287b`, docs-only PR №92.
 - Spec branch: `codex/statement-saved-proposal-diagnosis-spec`.
-- Implementation branch/commit и разрешённый diagnostic source: отсутствуют.
+- Implementation: `codex/statement-saved-proposal-diagnosis`, code `de770793bba711dada87446ddcd3a442b74f5d5f`; [D1–D4 evidence](0055-s115-evidence.md).
+- Разрешённый diagnostic source для D5: отсутствует; execution NOT_AUTHORIZED.
 
 ## Проблема и пользовательский результат
 
