@@ -3,7 +3,9 @@
 Дата: 2026-10-21, Asia/Yekaterinburg.
 [Принятый контракт](0055-s110-grounding-guards.md), acceptance `2a21d4f`
 предшествует production-коду. [PR №82](https://github.com/QahNaaRlN/grace/pull/82).
-Implementation status: local_verified; интеграция и deployment не выполнялись.
+Implementation status: integrated (PR №82, merge `2fe0d79`).
+[Post-merge evidence](0055-pr82-postmerge.md): exact-head CI, local gates,
+main CI5/5 и Delivery4/4 PASS, 2026-10-21 12:43 +05:00. Deployment не выполнялся.
 
 | ID | Исполняемое подтверждение |
 | --- | --- |
