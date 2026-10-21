@@ -9,6 +9,7 @@ import (
 )
 
 type Billing struct {
+	ComparisonRoute           *ComparisonRouteEvidence
 	ScreeningRoute            *ScreeningRouteEvidence
 	GenerationID              string
 	CostMicros                int64

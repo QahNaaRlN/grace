@@ -11,7 +11,7 @@ for match in re.finditer(r'^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|
     condition = re.search(r'^    if: \$\{\{ (.*?) \}\}\s*$', match[2], re.M)
     if condition:
         conditions[match[1]] = condition[1]
-assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'deploy'}
+assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'deploy'}
 
 def selected(values):
     active = []
@@ -24,9 +24,14 @@ def selected(values):
     return active
 
 count = 0
-for old, new, inspect, reconcile, action, recovery, identity, diagnose in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True]):
-    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose)
+for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True]):
+    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison)
     active = selected(values)
+    if comparison:
+        expected=not any((old,new,inspect,identity,diagnose)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
+        assert active == (['compare-statement-s111'] if expected else []), (values,active)
+        count+=1
+        continue
     assert len(active) <= 1, (values, active)
     expected_new = not diagnose and not identity and recovery in ('', 'none') and new and not old and not inspect and reconcile in ('', 'none') and action in ('', 'preserve')
     assert ('screen-statement-s16' in active) == expected_new, (values, active)
@@ -47,12 +52,12 @@ for old, new, inspect, reconcile, action, recovery, identity, diagnose in iterto
     if not any((old, new, inspect, identity, diagnose)) and reconcile in ('', 'none') and recovery in ('', 'none'):
         assert active == ['deploy']
     count += 1
-for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only'):
+for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only'):
     # Описание имеет восемь пробелов отступа, граница входного параметра — шесть.
     block = re.search(r'      '+key+r':\n(.*?)(?=^      [a-z_]+:|^permissions:)', source, re.M | re.S)[1]
     assert 'default: false' in block and 'type: boolean' in block
 assert 'cp deployments/production/statement-screening-s16.sh' in source
-s18 = source.split('  screen-statement-s18:\n',1)[1].split('  diagnose-statement-s19:\n',1)[0]
+s18 = source.split('  screen-statement-s18:\n',1)[1].split('  compare-statement-s111:\n',1)[0]
 assert 'cp deployments/production/statement-screening-s18.sh' in s18
 assert s18.count('python3 scripts/research/verify-screening-source-ci.py') == 2
 assert 'gh run view 39502669662 --json headSha,status,conclusion,jobs' in s18
@@ -65,3 +70,11 @@ s19 = source.split('  diagnose-statement-s19:\n',1)[1].split('  inspect-statemen
 assert 'diagnose-statement-s19.py' in s19 and 'replay-statement-s19.sh' in s19
 assert all(x not in s19 for x in ('scp ', 'screening-s18.sh', 'openrouter', 'reconcile-', 'GRACE_AI_'))
 assert source.count('group: production') == 1
+
+comparison_job=source.split('  compare-statement-s111:\n',1)[1].split('  diagnose-statement-s19:\n',1)[0]
+assert comparison_job.count('test "$AUTHORIZED_SHA" = "$GITHUB_SHA"') == 2
+assert 'verify-screening-source-ci.py "$GITHUB_SHA"' in comparison_job
+assert 'inspect-statement-comparison-s111.py' in comparison_job
+assert 'statement-comparison-s111.sh' in comparison_job
+assert 'SHA256SUMS' in comparison_job and 'inspect.py' in comparison_job
+print('S1.11 exact-source authorization, exclusive/default-off mode and complete bundle guards PASS')

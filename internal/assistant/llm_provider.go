@@ -72,6 +72,7 @@ type LLMMessage struct {
 	Content any    `json:"content"`
 }
 type LLMRequest struct {
+	comparisonProof      *statementextract.ComparisonIdentityProof
 	screeningProof       *statementextract.ScreeningIdentityProof
 	DisableReasoning     bool
 	Policy               ModelPolicy
@@ -88,7 +89,8 @@ func (e *ProviderProtocolError) Error() string          { return "provider_proto
 func (e *ProviderProtocolError) ProtocolReason() string { return e.Reason }
 
 type LLMResponse struct {
-	ScreeningDiagnostic *statementextract.ScreeningDiagnostic `json:"-"`
+	ComparisonRoute     *statementextract.ComparisonRouteEvidence `json:"-"`
+	ScreeningDiagnostic *statementextract.ScreeningDiagnostic     `json:"-"`
 	BillingKnown        bool
 	ID                  string
 	Model               string
@@ -107,6 +109,7 @@ type OpenRouterProvider struct {
 	client            HTTPDoer
 	statementDocument bool
 	screeningDocument bool
+	comparisonID      string
 }
 
 func NewOpenRouterProvider(key string, client HTTPDoer) (*OpenRouterProvider, error) {
@@ -143,12 +146,14 @@ func costMicros(value string) (int64, error) {
 
 func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (result LLMResponse, resultErr error) {
 	diagnostic := statementextract.ScreeningDiagnostic{Code: "request"}
+	var comparisonRoute *statementextract.ComparisonRouteEvidence
 	defer func() {
-		if !p.screeningDocument {
+		if !p.screeningDocument && p.comparisonID == "" {
 			return
 		}
 		diagnostic = diagnostic.Sanitize()
 		result.ScreeningDiagnostic = &diagnostic
+		result.ComparisonRoute = comparisonRoute
 		if resultErr != nil {
 			resultErr = &screeningDiagnosticError{cause: resultErr, detail: diagnostic}
 		}
@@ -160,6 +165,15 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		if in.screeningProof == nil || !in.screeningProof.ValidAt(observed) || in.Policy.Model != pin.Model || in.Policy.Provider != pin.Provider || in.Policy.DisplayProvider() != pin.ProviderName || in.Policy.InputMicrosPerMillion != pin.InputMicrosPerMillion || in.Policy.OutputMicrosPerMillion != pin.OutputMicrosPerMillion {
 			return LLMResponse{}, errors.New("provider_request")
 		}
+	}
+	if p.comparisonID != "" {
+		now := time.Now().UTC()
+		c, ok := statementextract.ComparisonCandidateByID(p.comparisonID)
+		if !ok || p.screeningDocument || in.comparisonProof == nil || !in.comparisonProof.ValidAt(now) || in.comparisonProof.Candidate != c || in.Policy.Model != c.Policy.Model || in.Policy.Provider != c.Policy.Provider || in.Policy.DisplayProvider() != c.Policy.ProviderName || in.Policy.InputMicrosPerMillion != c.Policy.InputMicrosPerMillion || in.Policy.OutputMicrosPerMillion != c.Policy.OutputMicrosPerMillion {
+			return LLMResponse{}, errors.New("provider_request")
+		}
+		proof := *in.comparisonProof
+		comparisonRoute = &statementextract.ComparisonRouteEvidence{Proof: &proof, ObservedAt: now, SelectedModelClass: "not_observed"}
 	}
 	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
@@ -269,8 +283,11 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 			diagnostic.Route.SelectedModelClass = selectedModelClass(out.Metadata)
 		}
 		diagnostic.CorrelationID = out.ID
+		if comparisonRoute != nil {
+			comparisonRoute.SelectedModelClass = comparisonSelectedClass(out.Metadata, in.comparisonProof)
+		}
 	}
-	if !decoded || out.ID == "" || out.Model != in.Policy.Model {
+	if !decoded || out.ID == "" || (out.Model != in.Policy.Model && !(p.comparisonID != "" && in.comparisonProof != nil && out.Model == in.comparisonProof.Candidate.Canonical)) {
 		return LLMResponse{}, &ProviderProtocolError{Reason: "envelope"}
 	}
 	// Routing slugs and response display names are distinct API fields. The
@@ -299,7 +316,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	for _, endpoint := range out.Metadata.Endpoints.Available {
 		if endpoint.Selected {
 			selected++
-			if endpoint.Model != in.Policy.Model && !(p.screeningDocument && in.screeningProof != nil && endpoint.Model == in.screeningProof.Canonical) {
+			if endpoint.Model != in.Policy.Model && !(p.screeningDocument && in.screeningProof != nil && endpoint.Model == in.screeningProof.Canonical) && !(p.comparisonID != "" && in.comparisonProof != nil && endpoint.Model == in.comparisonProof.Candidate.Canonical) {
 				diagnostic.Code = "selected_model"
 				return LLMResponse{}, errors.New("provider_protocol")
 			}

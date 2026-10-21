@@ -43,7 +43,7 @@ docker run --rm --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-
  --network=none --memory=512m --pids-limit=16 \
  -v "${statement_test_binary}.activation:/run/activation.test:ro" -v "$PWD:/src:ro" -v "$socket_volume:/run/grace-pdf:ro" \
  -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
- -w /src/internal/statementqualification alpine:3.22 /run/activation.test -test.run '^(TestActivationRealHelperSmoke|TestTurnoverRolesRealHelper|TestScreeningRealHelperThreeCases)$' -test.v
+ -w /src/internal/statementqualification alpine:3.22 /run/activation.test -test.run '^(TestActivationRealHelperSmoke|TestTurnoverRolesRealHelper|TestScreeningRealHelperThreeCases|TestComparisonRealHelperSixTuples)$' -test.v
 # S1.9 operator replay uses the same pinned helper, no TCP/SQL privileges.
 CGO_ENABLED=0 go test -c -tags=integration -o "${statement_test_binary}.s19" ./scripts/research/s19-replay
 chmod 755 "${statement_test_binary}.s19"

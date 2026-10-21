@@ -42,6 +42,8 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	./scripts/test-statement-comparison-s111.sh
+	python3 scripts/research/test-statement-comparison-s111.py
 	./scripts/test-statement-screening.sh
 	./scripts/test-statement-screening-s16.sh
 	./scripts/test-statement-screening-s18.sh
