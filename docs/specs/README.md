@@ -1,7 +1,11 @@
-Следующий кандидат — [S1.14](0055-s114-observed-comparison.md), **accepted / implemented offline**:
-новая однократная synthetic comparison с S1.13 observations; offline P1–P5
-приняты прямым «принимаю»; [evidence](0055-s114-evidence.md), live P6 — отдельного exact-source approval. До6POST/$0.2085
-provider предложены, запуск не разрешён. Старое разрешение C6 consumed.
+Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
+P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).
+Offline acceptance «принимаю»; [implementation evidence](0055-s114-evidence.md), implementation CI5/5 PASS.
+[P6 execution decision](0055-s114-p6-run-decision.md) — **draft / NOT_AUTHORIZED**:
+предложен integrated source301afd6/CI5/5, до6POST/$0.2085 provider, прежние пары/fixtures/guards.
+Local post-merge gates PASS; main push-CI/Delivery отдельно UNVERIFIED.
+До dispatch требуется отдельное exact-source разрешение и runtime preflight;
+старое разрешение C6 consumed, новых provider/SSH/deploy вызовов нет.
 
 Завершённый пакет — [S1.13](0055-s113-protocol-observability.md), **accepted / integrated offline**:
 PR №89, merge `d63c16f`; [post-merge evidence](0055-pr89-postmerge.md):
