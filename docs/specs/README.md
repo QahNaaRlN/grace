@@ -1,8 +1,12 @@
-Следующий кандидат — [S1.13](0055-s113-protocol-observability.md), **accepted / implemented offline**:
-наблюдаемость canonicalization: bounded private alias-proposal до проверки,
-closed guard codes, versioned envelope и offline equivalence/replay/privacy.
-O1–O5 приняты прямым «одобряю, приступай»; [evidence](0055-s113-evidence.md): local gates PASS.
-Новых paid/metadata/SSH/deploy calls пакет не разрешает; implementation exact-head CI фиксируется отдельно.
+Следующий кандидат — [S1.14](0055-s114-observed-comparison.md), **accepted / not_started**:
+новая однократная synthetic comparison с S1.13 observations; offline P1–P5
+приняты прямым «принимаю», live P6 — отдельного exact-source approval. До6POST/$0.2085
+provider предложены, запуск не разрешён. Старое разрешение C6 consumed.
+
+Завершённый пакет — [S1.13](0055-s113-protocol-observability.md), **accepted / integrated offline**:
+PR №89, merge `d63c16f`; [post-merge evidence](0055-pr89-postmerge.md):
+local gates, merge CI5/5 и Delivery PASS. Новых paid/metadata/SSH/deploy calls нет.
+O1–O5 приняты прямым «одобряю, приступай»; [implementation evidence](0055-s113-evidence.md).
 
 Завершённый пакет — [S1.12](0055-s112-saved-comparison-diagnosis.md), **accepted / integrated**:
 read-only диагностика сохранённого C6, без inference. R1–R5 приняты прямым «утверждаю»;
