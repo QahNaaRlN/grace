@@ -34,7 +34,8 @@ UNVERIFIED не скрывает другой VERIFIED. Fixed reader разре�
 и marker, O_NOFOLLOW/regular0600/size bounds, historical marker source301afd6,
 content/size/mode/mtime comparison до и после. Atime не является критерием.
 
-Новый memfd bootstrap исполняет verifier с env={}, без persistent files;
+Новый memfd bootstrap запускается с Python `-B` (без bytecode cache writes)
+и исполняет verifier с env={}, без persistent files;
 wrapper и Go boundary проверяют закрытую схему, exact keys и numeric/enum types.
 Ошибка, private stdout/stderr, timeout или integrity failure не экспортируют raw
 exception. Read-only persistentWritesRequested0 не означает отсутствие OS/SSH logs.

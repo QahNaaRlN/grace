@@ -119,7 +119,7 @@ os.Stdout.WriteString(`'''+good_projection.decode()+'''`)
         for mode in ('success','failed','timeout','schema','oversize'):
             def remote(args,**kwargs):
                 assert args[:3]==['ssh','-o','BatchMode=yes'] and 'StrictHostKeyChecking=yes' in args
-                assert args[-2]=='grace-deploy@195.133.195.190' and args[-1].startswith('python3 -c ')
+                assert args[-2]=='grace-deploy@195.133.195.190' and args[-1].startswith('python3 -B -c ')
                 assert kwargs['timeout']==75 and kwargs['stderr']==subprocess.DEVNULL
                 if mode=='timeout':raise subprocess.TimeoutExpired(args,75,output=b'PRIVATE')
                 return subprocess.CompletedProcess(args,1 if mode=='failed' else 0,out if mode=='success' else b' '*65537 if mode=='oversize' else b'PRIVATE')

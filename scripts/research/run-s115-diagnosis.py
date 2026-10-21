@@ -34,7 +34,7 @@ def main():
         bootstrap = Path(__file__).with_name('s115-bootstrap.py').read_text()
         result = subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
                                  '-o', 'ConnectTimeout=10', 'grace-deploy@195.133.195.190',
-                                 'python3 -c ' + shlex.quote(bootstrap)],
+                                 'python3 -B -c ' + shlex.quote(bootstrap)],
                                 input=envelope, stdout=subprocess.PIPE,
                                 stderr=subprocess.DEVNULL, timeout=75)
         if result.returncode != 0 or len(result.stdout) > 65536:
