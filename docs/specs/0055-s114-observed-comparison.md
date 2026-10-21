@@ -1,13 +1,15 @@
 # SPEC-0055 / S1.14: контролируемое сравнение с сохранённым alias-proposal
 
-- Статус: accepted; implementation_status: not_started; live_status: not_authorized.
+- Статус: accepted; implementation_status: implemented (offline; local gates PASS; exact-head CI pending); live_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-21, прямое «принимаю» на offline P1–P5; P6 не разрешён.
 - Основание: «работаем дальше» после предложения подготовить отдельную спецификацию
   контролируемого повторного эксперимента. P1–P5 приняты отдельным последующим решением до кода.
 - База: main `d63c16fe69e8edad22e869dfe5b8f58ee40ec01f`, PR №89.
 - Spec branch: `codex/statement-observed-comparison-spec`.
-- Implementation branch/commit и разрешённый live source SHA: отсутствуют.
+- Implementation branch: `codex/statement-observed-comparison`; code commit
+  `9db80afc57c42fd283e1b6daf46d9e1efe027d01`; [P1–P5 evidence](0055-s114-evidence.md).
+- Разрешённый live source SHA: отсутствует.
 
 ## Проблема и пользовательский результат
 
