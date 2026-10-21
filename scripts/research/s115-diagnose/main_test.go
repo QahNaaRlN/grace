@@ -168,3 +168,46 @@ func TestS115ClosedSchemaRejectsPrivateFields(t *testing.T) {
 		}
 	}
 }
+
+func TestS115ReaderRejectsMutationDuringDiagnosis(t *testing.T) {
+	raw, c := artifact(t)
+	for _, mode := range []string{"report_bytes", "report_mtime", "report_mode", "report_symlink", "marker_bytes"} {
+		t.Run(mode, func(t *testing.T) {
+			dir := t.TempDir()
+			marker := filepath.Join(dir, basename+".started")
+			report := filepath.Join(dir, basename+".json")
+			if os.WriteFile(marker, []byte(statementqualification.SavedDiagnosisSource+"\n"), 0600) != nil || os.WriteFile(report, raw, 0600) != nil {
+				t.Fatal("fixture")
+			}
+			calls := 0
+			read := func(path string, max int) (snapshot, error) {
+				s, err := readPrivate(path, max)
+				calls++
+				if calls == 2 {
+					var mutation error
+					switch mode {
+					case "report_bytes":
+						mutation = os.WriteFile(report, append(append([]byte{}, raw...), ' '), 0600)
+					case "report_mtime":
+						mutation = os.Chtimes(report, time.Unix(100, 0), time.Unix(100, 0))
+					case "report_mode":
+						mutation = os.Chmod(report, 0644)
+					case "report_symlink":
+						if mutation = os.Remove(report); mutation == nil {
+							mutation = os.Symlink(marker, report)
+						}
+					case "marker_bytes":
+						mutation = os.WriteFile(marker, []byte(strings.Repeat("f", 40)+"\n"), 0600)
+					}
+					if mutation != nil {
+						t.Fatal(mutation)
+					}
+				}
+				return s, err
+			}
+			if out, err := readReportUsing(dir, c, read); err == nil || out.ContextVerified || len(out.Tuples) != 0 {
+				t.Fatal("reader exported witnesses after concurrent artifact mutation")
+			}
+		})
+	}
+}

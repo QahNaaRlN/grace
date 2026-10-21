@@ -159,12 +159,18 @@ func project(raw []byte, c []publicContext) (statementqualification.SavedDiagnos
 	return statementqualification.DiagnoseSavedProposals(e, samples, time.Now().UTC())
 }
 func readReport(dir string, c []publicContext) (statementqualification.SavedDiagnosis, error) {
+	return readReportUsing(dir, c, readPrivate)
+}
+
+// The production caller always supplies readPrivate; the seam lets tests mutate
+// the real files between initial reads and final integrity checks deterministically.
+func readReportUsing(dir string, c []publicContext, read func(string, int) (snapshot, error)) (statementqualification.SavedDiagnosis, error) {
 	markerPath, reportPath := filepath.Join(dir, basename+".started"), filepath.Join(dir, basename+".json")
-	marker, err := readPrivate(markerPath, 128)
+	marker, err := read(markerPath, 128)
 	if err != nil || string(marker.Data) != statementqualification.SavedDiagnosisSource+"\n" {
 		return statementqualification.SavedDiagnosis{}, unavailable
 	}
-	report, err := readPrivate(reportPath, limit)
+	report, err := read(reportPath, limit)
 	if err != nil {
 		return statementqualification.SavedDiagnosis{}, unavailable
 	}
@@ -172,11 +178,11 @@ func readReport(dir string, c []publicContext) (statementqualification.SavedDiag
 	if err != nil {
 		return statementqualification.SavedDiagnosis{}, unavailable
 	}
-	ma, err := readPrivate(markerPath, 128)
+	ma, err := read(markerPath, 128)
 	if err != nil || !unchanged(marker, ma) {
 		return statementqualification.SavedDiagnosis{}, unavailable
 	}
-	ra, err := readPrivate(reportPath, limit)
+	ra, err := read(reportPath, limit)
 	if err != nil || !unchanged(report, ra) {
 		return statementqualification.SavedDiagnosis{}, unavailable
 	}
