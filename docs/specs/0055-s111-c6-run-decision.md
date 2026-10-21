@@ -1,6 +1,7 @@
 # S1.11 / C6: решение об одном synthetic comparison
 
-- Статус: draft execution decision; owner approval: отсутствует.
+- Статус: accepted execution decision; owner approval: 2026-10-21, прямое «разрешаю»
+  в ответ на конкретное предложение одного C6 на source012f604, до6POST/$0.2085 provider.
 - Подготовлено: 2026-10-21, Asia/Yekaterinburg.
 - Основание: [accepted S1.11](0055-s111-model-comparison.md), offline C1–C5
   реализованы в [PR №84](https://github.com/QahNaaRlN/grace/pull/84).
@@ -8,7 +9,8 @@
   merge №84. [Post-merge gates](0055-pr84-postmerge.md) обязательны перед запуском.
 - Source ref: `codex/statement-comparison-c6-source`, закреплён на exact SHA выше;
   worktree `statement-comparison-c6-source` сохраняется чистым.
-- Live status: NOT_AUTHORIZED / NOT_RUN. Этот документ не разрешает расходы.
+- Live status: AUTHORIZED / NOT_STARTED. Разрешена ровно одна указанная кампания
+  при обязательном preflight; retry/deployment/model switch не разрешены.
 
 ## Предлагаемое решение
 
@@ -87,7 +89,7 @@ Owner financial acceptance и production adoption остаются отдель�
 
 ## Запись решения владельца
 
-Пока отсутствует. Следующее предлагаемое утверждение:
+Владелец ответил «разрешаю» на следующее конкретное предложение:
 «Разрешаю один C6 на 012f604033de9c6a75bf531b8f715323d0fda57d,
 не более6 вызовов/$0.2085 provider, при обязательном preflight и прежнем shared
 бюджете, без deployment/model switch/retry».
