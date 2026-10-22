@@ -1,9 +1,9 @@
-# S1.15 / D5 — кандидат одного read-only запуска над saved P6
+# S1.15 / D5 — решение и operational receipt одного read-only запуска
 
-- Статус: **candidate; execution NOT_AUTHORIZED / NOT_EXECUTED**.
+- Статус: **accepted execution decision; EXECUTED / workflow SUCCESS; one-dispatch permission CONSUMED**.
 - Дата подготовки: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
-- Основание: поручение актуализировать разработку и следующий этап. Оно разрешает
-  подготовку этого решения, а не исполнение D5.
+- Основание: поручение актуализировать разработку и следующий этап. Первоначальное поручение разрешало
+  подготовку решения; после автоматического отказа исполнение открыто отдельным явным ответом владельца «разрешаю» на точное действие ниже.
 - Контракт: [accepted S1.15](0055-s115-saved-proposal-diagnosis.md), D1–D4 integrated;
   [offline evidence](0055-s115-evidence.md), [post-merge №94](0055-pr94-postmerge.md).
 - Предлагаемый verifier SHA: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`.
@@ -11,10 +11,10 @@
 - Source CI: [39639515724](https://github.com/QahNaaRlN/grace/actions/runs/39639515724),5/5 PASS;
   source интегрирован PR №94, merge17e3493; полный tree identical подтверждён.
   Merge CI39664307328=5/5 и Delivery39665622283=4/4 PASS.
-- Наличие и доступность private saved artifacts на2026-10-23: UNVERIFIED, VPS не читался.
-- Approval record: **отсутствует**. Ни merge, ни CI, ни D1–D4 acceptance не являются D5 approval.
+- При подготовке наличие private artifacts было UNVERIFIED. Workflow теперь выполнен; operational receipt и ссылка на закрытый CI report — [здесь](0055-s115-d5-execution-receipt.md).
+- Effective execution approval: **получено2026-10-23**: прямое «разрешаю» на отдельный вопрос об одном D5/source703b6c6, SSH-чтении private P6 на VPS Grace и closed report через CI, без model/SQL/data writes. Далее сохранён исторический контекст отказа. Ответ «влил PR, продолжить работу» был первоначально истолкован как approval (local commit7610661), но автоматическая проверка отклонила dispatch до запуска процесса: требуется явное согласование production workflow с SSH-чтением приватного P6 и передачей закрытого результата через CI. Первоначальная интерпретация была отозвана; последующее явное разрешение записано выше.
 
-## Предлагаемое решение владельца
+## Принятое решение владельца
 
 Разрешить **один** dispatch `deploy-production.yml` с единственным выбранным job
 `diagnose-statement-s115` на exact SHA/ref выше. Это fixed-host read-only diagnosis
@@ -53,11 +53,11 @@ model service reasons и arbitrary exceptions не публикуются.
 - Один dispatch; отказ/timeout/UNVERIFIED не разрешает повтор, chmod, repair,
   новое сохранение snapshot, иной source/path или новое обращение к модели.
 
-## Зафиксированные inputs кандидата
+## Исполненные логические inputs
 
-Это описание будущего dispatch; сейчас оно не исполняется. Перед будущим запуском
-исполнитель повторно проверяет ref/SHA, ancestry и CI exact source. Дрейф требует
-нового решения владельца, а не тихого обновления параметров.
+Ниже логические inputs одного выполненного dispatch. Для gh CLI transport
+boolean values переданы строками true/false; режимы/source не менялись. До запуска
+повторно проверены ref/SHA, ancestry и CI exact source. Permission использовано.
 
 ```json
 {
@@ -93,3 +93,39 @@ owner financial acceptance. P6 остаётся FAIL/permission consumed/known s
 
 Выводы становятся основанием отдельного bounded fix candidate; prompt/planner/
 alias/scorer repair, новый paid run, SPEC-0056 и deploy остаются отдельными gates.
+
+## Отказ автоматической проверки — 2026-10-23
+
+Попытка вызвать exec_command для единственного workflow dispatch отклонена
+на CreateProcess до выполнения shell. Dispatch_count=0, SSH/VPS/provider/metadata/
+SQL/environment writes=0. Автоматическая проверка сочла «продолжить работу»
+недостаточно явным approval именно чтения private P6 через SSH и CI projection.
+Альтернативного tool/API/прямого SSH, retry или indirect execution не выполнялось.
+Это отказ разрешения на запуск, а не diagnostic FAIL и не результат replay P6.
+
+Необходимый ответ владельца должен явно разрешить один D5 production workflow
+на `703b6c6ac960c21c0b7ab7bd84b3411459204c92` / указанном ref, чтение private P6
+на fixed VPS и публикацию только закрытой numeric/enum projection через CI,
+при прежних provider/metadata/SQL/persistent artifact/environment writes=0.
+После такого ответа перед единственным dispatch снова проверяются exact ref/CI.
+
+## Явное согласование после отказа — 2026-10-23
+
+Владелец ответил «разрешаю» на отдельный конкретный вопрос: один D5 на
+`703b6c6ac960c21c0b7ab7bd84b3411459204c92`, SSH-чтение private P6 на VPS Grace,
+передача закрытого отчёта через CI, без model/SQL/data writes. Это новое trusted
+human authorization, а не обход прежнего отказа. Разрешён ровно один описанный
+dispatch; no-retry и все ограничения исходного кандидата сохраняются.
+Перед dispatch повторно проверены remote ref703b6c6, ancestry, отсутствие runtime
+различий с main, source CI5/5 и отсутствие предыдущих operator runs.
+
+## Итог исполнения и publication boundary
+
+[Run39860669842](https://github.com/QahNaaRlN/grace/actions/runs/39860669842),
+head703b6c6/job120110244121 SUCCESS; остальные10 jobs skipped.
+[Operational receipt](0055-s115-d5-execution-receipt.md) не содержит private-derived
+projection/witness payload: результат публикуется только в закрытом CI artifact.
+Один dispatch использован, D5 завершён; retry/repair/new model calls не открыты.
+Историческое NOT_EXECUTED выше относится к моменту до явного approval/этого run.
+Перенос payload в repo был отдельно отклонён automatic review до CreateProcess;
+это не отменяет разрешённого CI execution и не является diagnostic failure.
