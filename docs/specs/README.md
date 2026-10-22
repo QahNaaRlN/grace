@@ -1,5 +1,11 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
+Следующий кандидат — [S1.16: допустимые alias во всех selections](0055-s116-alias-schema.md),
+**draft / implementation not_started**. Предложены exact delivered-alias enum,
+прежняя numeric eligibility, wire/bytes/consent проверки только offline.
+Владелец ещё не принял контракт; inference/SSH/deploy и новая campaign не разрешены.
+[PR №96 post-merge](0055-pr96-postmerge.md): receipt интегрирован в main `5b6ed20`.
+
 Текущий пакет — [S1.15](0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / integrated offline**:
 [PR №94](https://github.com/QahNaaRlN/grace/pull/94) слит, merge `17e3493`.
 Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
@@ -10,7 +16,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](0055-pr95-postmerge.md): main403f69d clean.
-Следующий этап — отдельное owner решение по закрытому evidence; новая реализация не начата.
+Следующий этап — review draft S1.16; новая реализация не начата. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).
