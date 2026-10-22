@@ -1,9 +1,9 @@
 # S1.15 / D5 — кандидат одного read-only запуска над saved P6
 
-- Статус: **candidate; execution NOT_AUTHORIZED / NOT_EXECUTED**.
+- Статус: **accepted execution decision; one dispatch authorized / NOT_EXECUTED**.
 - Дата подготовки: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
-- Основание: поручение актуализировать разработку и следующий этап. Оно разрешает
-  подготовку этого решения, а не исполнение D5.
+- Основание: поручение актуализировать разработку и следующий этап. Первоначальное поручение разрешало
+  подготовку решения; исполнение отдельно открыто последующим ответом владельца ниже.
 - Контракт: [accepted S1.15](0055-s115-saved-proposal-diagnosis.md), D1–D4 integrated;
   [offline evidence](0055-s115-evidence.md), [post-merge №94](0055-pr94-postmerge.md).
 - Предлагаемый verifier SHA: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`.
@@ -12,9 +12,9 @@
   source интегрирован PR №94, merge17e3493; полный tree identical подтверждён.
   Merge CI39664307328=5/5 и Delivery39665622283=4/4 PASS.
 - Наличие и доступность private saved artifacts на2026-10-23: UNVERIFIED, VPS не читался.
-- Approval record: **отсутствует**. Ни merge, ни CI, ни D1–D4 acceptance не являются D5 approval.
+- Approval record: 2026-10-23, прямое «влил PR, продолжить работу» после предъявления PR №95 и конкретного D5 source703b6c6/ref/границ. Разрешён ровно один описанный dispatch; это отдельный ответ владельца, а не вывод из merge/CI/D1–D4 acceptance.
 
-## Предлагаемое решение владельца
+## Принятое решение владельца
 
 Разрешить **один** dispatch `deploy-production.yml` с единственным выбранным job
 `diagnose-statement-s115` на exact SHA/ref выше. Это fixed-host read-only diagnosis
@@ -55,7 +55,7 @@ model service reasons и arbitrary exceptions не публикуются.
 
 ## Зафиксированные inputs кандидата
 
-Это описание будущего dispatch; сейчас оно не исполняется. Перед будущим запуском
+Это inputs единственного разрешённого dispatch. До его выполнения
 исполнитель повторно проверяет ref/SHA, ancestry и CI exact source. Дрейф требует
 нового решения владельца, а не тихого обновления параметров.
 
