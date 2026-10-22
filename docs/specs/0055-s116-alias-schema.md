@@ -1,10 +1,11 @@
 # SPEC-0055 / S1.16: допустимые alias во всех selections запроса
 
-- Статус: draft; implementation_status: not_started.
+- Статус: accepted; implementation_status: not_started.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
-- Основание подготовки: «влил PR» после предложения следующего ограниченного
-  контракта; это поручение продолжить документационный этап, не принятие S1.16.
+- Acceptance owner: владелец Grace; acceptance record: 2026-10-23,
+  прямое «принимаю» на контракт A1–A6 в PR №97 (review head `50f57dc`).
+- Основание подготовки: следующий ограниченный контракт после интеграции PR №96;
+  принятие A1–A6 зафиксировано отдельно выше.
 - База: main `5b6ed20e94f184bac0b8d8c930f4db76d9cb9a19`, PR №96.
 - Spec branch: `codex/statement-alias-schema-spec`.
 - Implementation branch/commit: отсутствуют.
@@ -31,8 +32,9 @@ current qualification profile и причинные offline/SQL/HTTP tests. Из
 `internal/statementqualification` допустимы только для проверки новой identity
 запроса и совместимости; новый runner/campaign/report format не вводится.
 
-На этапе этого draft меняются только документы. Принятие и интеграция спеки
-предшествуют отдельному implementation worktree от актуального main.
+В spec worktree меняются только документы. Контракт A1–A6 принят;
+интеграция принятой спеки в main предшествует отдельному implementation worktree.
+Acceptance не является выполнением A1–A6 или разрешением live experiment.
 
 ## Non-goals
 
@@ -118,7 +120,7 @@ Membership не доказывает финансовую роль или кор
 
 ### A3. Identity, consent и история
 
-Предлагаемая новая `PlannerVersion`: `statement-document-atom.v3.alias-enum`.
+Принятая новая `PlannerVersion`: `statement-document-atom.v3.alias-enum`.
 Template `ProposalSchema` меняется вместе с references, значит `SchemaHash`
 меняется содержательно. PromptVersion/текст SystemPrompt, AliasVersion,
 RedactionVersion и scorer version сохраняются. Actual request schema однозначно
@@ -185,8 +187,9 @@ PlannerVersion и SchemaHash меняют значения без изменен
 
 ## Критерии приёмки и исполняемое evidence реализации
 
-Все критерии пока NOT_RUN; команды ниже — требования будущей реализации,
-не заявление о наличии новых тестов или о её acceptance.
+Контракт A1–A6 принят, выполнение всех критериев пока NOT_RUN. Команды ниже —
+требования будущей реализации, не заявление о наличии новых тестов или о
+принятии реализации.
 
 | ID | Требование | Исполняемое evidence |
 | --- | --- | --- |
@@ -204,11 +207,21 @@ schema/messages bytes и versions/hashes, без D5-derived данных. Рез
 
 ## Открытые решения и следующие gates
 
-1. Владелец должен принять или скорректировать этот bounded A1–A6 контракт;
-   до этого production/tool code и новые тестовые harness не меняются.
-2. После acceptance и интеграции спеки — отдельная offline implementation.
+1. Контракт A1–A6 принят владельцем 2026-10-23 прямым «принимаю»;
+   повторное acceptance этого scope не требуется.
+2. После интеграции принятой спеки — отдельная offline implementation
+   в новом worktree от актуального main. До интеграции code/harness не меняются.
 3. Нужен ли новый live эксперимент, его модель/endpoint/corpus/ceiling/exact SHA
    и разрешение на передачу данных — отдельная спецификация/решение после
    offline evidence. Никакой live permission в S1.16 не подразумевается.
 4. Полнота description и семантика неразмеченных spans остаются отдельным
    кандидатом; schema membership не закрывает эти задачи.
+
+## Проверка документационного PR после принятия
+
+`TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` — PASS в spec worktree;
+log `/tmp/grace-s116-acceptance-make.log`: Go, 88 Web files/334 tests,
+ESLint/FSD/Prettier/build и offline Jev. `git diff --check`, проверка
+локальных ссылок и пустого runtime diff относительно main5b6ed20 — PASS.
+Это проверка docs-only изменения, не выполнение новых A1–A6; implementation
+по-прежнему not_started. Повторное принятие этого контракта не требуется.

@@ -11,10 +11,8 @@
 - Primary main fast-forward403f69d→5b6ed20; tracked/untracked status clean.
   Diff содержит только8 markdown docs; runtime/workflow/API/Web не менялись.
 - [Merge CI39863485987](https://github.com/QahNaaRlN/grace/actions/runs/39863485987)
-  на точном5b6ed20 при последнем capture: quality и3 image builds SUCCESS,
-  PostgreSQL integration in_progress (4/5 PASS). Exact-source validator правильно
-  возвращает UNVERIFIED до завершения всех5 jobs. Delivery status ещё не подтверждён.
-  Публикация images не является deployment.
+  на точном5b6ed20 первоначально был4/5 PASS (PostgreSQL integration выполнялся).
+  Последующее завершение CI/Delivery проверяется ниже; ранний capture исторический.
 
 ## Сохранённые границы
 
@@ -26,10 +24,11 @@ Private-derived payload не переносится в Git или PR body. Ис�
 
 ## Следующий документационный пакет
 
-[S1.16](0055-s116-alias-schema.md) — draft, implementation not_started.
+[S1.16](0055-s116-alias-schema.md) — accepted A1–A6, implementation not_started.
+Владелец принял контракт 2026-10-23 прямым «принимаю» на PR №97/head50f57dc.
 Основание контракта — public schema/planner/canonicalizer/transport code на
 5b6ed20; новый harness, product/tool code и live experiment не выполняются.
-Принятие спеки — отдельный owner gate перед реализацией.
+Acceptance gate закрыт; перед реализацией остаётся интеграция принятой спеки в main.
 
 ## Локальная проверка
 
@@ -43,3 +42,12 @@ Prettier/build и offline Jev. Первый sandbox launch завершился 
 изменённых документов — PASS. Feature diff только4 markdown docs; runtime diff
 feature→main пуст. Новое full integration для docs-only diff не заявляется;
 новые A1–A6 S1.16 остаются NOT_RUN, это ещё не implementation evidence.
+
+## Последующее завершение post-merge gates
+
+При фиксации acceptance S1.16 exact-source canonical validator подтвердил
+[CI39863485987](https://github.com/QahNaaRlN/grace/actions/runs/39863485987):
+head5b6ed20, completed/SUCCESS, все5 jobs SUCCESS без skipped.
+[Delivery39864527632](https://github.com/QahNaaRlN/grace/actions/runs/39864527632):
+тот же head5b6ed20, completed/SUCCESS, все4 jobs SUCCESS.
+Это публикация images; production deployment и runtime probes не выполнялись.
