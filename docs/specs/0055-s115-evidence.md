@@ -5,8 +5,9 @@
   прямое «Приступай» после PR №93 и явной границы D5. Acceptance commit `d43247f`.
 - Implementation: `de770793bba711dada87446ddcd3a442b74f5d5f`,
   branch `codex/statement-saved-proposal-diagnosis`, base main `868c0a4`.
-- Статус: **LOCAL_VERIFIED**, готово к review; integration/merge отдельно.
-  Exact-head CI5/5 подтверждается отдельно в PR, локальные PASS не заменяют CI.
+- Актуализация2026-10-23: **INTEGRATED_OFFLINE**, final head703b6c6, PR №94/merge17e3493.
+  Source CI5/5, merge CI5/5 и Delivery4/4 подтверждены в [post-merge evidence](0055-pr94-postmerge.md).
+  Ниже сохранён локальный implementation evidence2026-10-21.
 - **D5 NOT_AUTHORIZED / NOT_EXECUTED**. SSH/VPS, provider/metadata, live SQL,
   workflow dispatch, deploy, image/flag/model switch и ledger writes: **0**.
   Локальный bank suite использовал disposable PostgreSQL; это не live SQL.
@@ -97,6 +98,6 @@ TypeScript generation не нужна. S1.14 report/marker/source301/ref и perm
 
 ## Следующий gate
 
-Review actual diff, exact-head CI5/5, затем integration. После этого отдельно
-предъявить owner конкретный verifier SHA/ref для D5. D1–D4 acceptance не открывает
+Review/integration и exact-source/merge CI5/5 завершены PR №94.
+[D5 candidate](0055-s115-d5-run-decision.md) предъявляет owner конкретный703b6c6/ref; approval отсутствует. D1–D4 acceptance не открывает
 SSH/read-only run, provider calls, исправление proposal/prompt/scorer или новый P6.
