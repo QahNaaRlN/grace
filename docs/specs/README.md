@@ -7,6 +7,9 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Следующий этап — [D5: один read-only saved P6 run](0055-s115-d5-run-decision.md)
 на SHA `703b6c6`, ref `codex/statement-saved-proposal-diagnosis`: **candidate / NOT_AUTHORIZED**.
 Нужен отдельный owner approval; D5/SSH/provider/metadata/live SQL/dispatch/deploy не выполнялись.
+[PR №95 post-merge](0055-pr95-postmerge.md): main403f69d clean;
+automatic review отклонил D5 dispatch до запуска — требуется явное согласование private-read/CI projection.
+D5 не выполнялся.
 После результата — отдельный bounded fix по evidence, не автоматический новый paid run.
 
 Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
