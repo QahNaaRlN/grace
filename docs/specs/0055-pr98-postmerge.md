@@ -15,8 +15,8 @@
   completed/SUCCESS5/5 на exact81ef7e5: канонический validator проверил
   полный состав jobs, отсутствие skipped/failed/pending и совпадение SHA.
 - [Delivery39871261720](https://github.com/QahNaaRlN/grace/actions/runs/39871261720)
-  на том же81ef7e5 при capture queued; публикация images ещё не подтверждена.
-  Это отдельная публикация, не deployment.
+  на том же81ef7e5 завершён SUCCESS4/4; полный состав jobs проверен.
+  Первоначальный queued capture закрыт. Образы опубликованы; это не deployment.
 
 ## Проверки после слияния
 
