@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.16: допустимые alias во всех selections запроса
 
-- Статус: accepted; implementation_status: not_started.
+- Статус: accepted; implementation_status: verified (local; not integrated).
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-23,
   прямое «принимаю» на контракт A1–A6 в PR №97 (review head `50f57dc`).
@@ -8,7 +8,9 @@
   принятие A1–A6 зафиксировано отдельно выше.
 - База: main `5b6ed20e94f184bac0b8d8c930f4db76d9cb9a19`, PR №96.
 - Spec branch: `codex/statement-alias-schema-spec`.
-- Implementation branch/commit: отсутствуют.
+- Implementation branch: `codex/statement-alias-schema`; commit: `e44963915d1e1c976af0b5dbbe30e84415846086`.
+- Implementation base: main `a1cc07218da1aa9302f600d24c135aa67e09a1d6` (PR №97).
+- [Implementation evidence](0055-s116-evidence.md); A1–A6 acceptance и выполнение различаются.
 
 ## Проблема и пользовательский результат
 
@@ -32,8 +34,8 @@ current qualification profile и причинные offline/SQL/HTTP tests. Из
 `internal/statementqualification` допустимы только для проверки новой identity
 запроса и совместимости; новый runner/campaign/report format не вводится.
 
-В spec worktree меняются только документы. Контракт A1–A6 принят;
-интеграция принятой спеки в main предшествует отдельному implementation worktree.
+Контракт A1–A6 принят и интегрирован PR №97; offline implementation проверена
+в отдельном worktree от maina1cc072, ожидает review и интеграции.
 Acceptance не является выполнением A1–A6 или разрешением live experiment.
 
 ## Non-goals
@@ -187,9 +189,9 @@ PlannerVersion и SchemaHash меняют значения без изменен
 
 ## Критерии приёмки и исполняемое evidence реализации
 
-Контракт A1–A6 принят, выполнение всех критериев пока NOT_RUN. Команды ниже —
-требования будущей реализации, не заявление о наличии новых тестов или о
-принятии реализации.
+Контракт A1–A6 принят. Текущий результат выполнения и команды находятся в
+[implementation evidence](0055-s116-evidence.md); принятие реализации владельцем
+и live qualification этим документом не объявляются.
 
 | ID | Требование | Исполняемое evidence |
 | --- | --- | --- |
@@ -209,19 +211,20 @@ schema/messages bytes и versions/hashes, без D5-derived данных. Рез
 
 1. Контракт A1–A6 принят владельцем 2026-10-23 прямым «принимаю»;
    повторное acceptance этого scope не требуется.
-2. После интеграции принятой спеки — отдельная offline implementation
-   в новом worktree от актуального main. До интеграции code/harness не меняются.
+2. Интеграция принятой спеки выполнена PR №97. Offline implementation
+   проверена в `statement-alias-schema` от maina1cc072; review/merge ещё не выполнены.
 3. Нужен ли новый live эксперимент, его модель/endpoint/corpus/ceiling/exact SHA
    и разрешение на передачу данных — отдельная спецификация/решение после
    offline evidence. Никакой live permission в S1.16 не подразумевается.
 4. Полнота description и семантика неразмеченных spans остаются отдельным
    кандидатом; schema membership не закрывает эти задачи.
 
-## Проверка документационного PR после принятия
+## Историческая проверка документационного PR после принятия
 
 `TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` — PASS в spec worktree;
 log `/tmp/grace-s116-acceptance-make.log`: Go, 88 Web files/334 tests,
 ESLint/FSD/Prettier/build и offline Jev. `git diff --check`, проверка
 локальных ссылок и пустого runtime diff относительно main5b6ed20 — PASS.
-Это проверка docs-only изменения, не выполнение новых A1–A6; implementation
-по-прежнему not_started. Повторное принятие этого контракта не требуется.
+Это историческая проверка docs-only изменения; на той точке implementation
+был not_started. Текущий статус — в начале документа и implementation evidence.
+Повторное принятие этого контракта не требуется.

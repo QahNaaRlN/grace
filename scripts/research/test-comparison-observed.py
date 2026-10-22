@@ -13,6 +13,7 @@ import sys
 import tempfile
 
 sys.dont_write_bytecode=True
+from test_comparison_contracts import frozen_v2_overlay
 HERE=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('observed_inspector',HERE/'inspect-statement-comparison-s111.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
@@ -22,8 +23,19 @@ with tempfile.TemporaryDirectory(prefix='grace-s113-offline-') as tmp:
     root=Path(tmp);binary=root/'admin'
     env=dict(os.environ,S113_TEST_EXPORT_DIR=tmp)
     real_run(['go','test','./cmd/statement-admin','-run','^TestObservedComparisonSummaryPrivatePipeline$','-count=1'],env=env,check=True,stdout=subprocess.DEVNULL)
-    real_run(['go','build','-o',str(binary),'./cmd/statement-admin'],check=True,stdout=subprocess.DEVNULL)
+    current=json.loads((root/'observed.json').read_bytes())['report']
+    assert current['profile']['Planner']=='statement-document-atom.v3.alias-enum'
+    assert current['profile']!=m.PROFILE
+    try:
+        m._summary(current,dt.datetime.now(dt.timezone.utc),current['authorization'])
+        raise AssertionError('frozen inspector accepted current contract')
+    except ValueError:
+        pass
+    overlay=frozen_v2_overlay(root)
+    real_run(['go','test',*overlay,'./cmd/statement-admin','-run','^TestObservedComparisonSummaryPrivatePipeline$','-count=1'],env=env,check=True,stdout=subprocess.DEVNULL)
+    real_run(['go','build',*overlay,'-o',str(binary),'./cmd/statement-admin'],check=True,stdout=subprocess.DEVNULL)
     raw=(root/'observed.json').read_bytes();data=json.loads(raw);report=data['report']
+    assert report['profile']==m.PROFILE
     summary=real_run([str(binary),'-mode=comparison-summary'],input=raw,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
     assert json.loads(summary.stdout)==json.loads((root/'summary.json').read_bytes())
     assert all(s not in summary.stdout for s in (b'PRIVATE',b'snapshot',b'actualMicros',b'generationId',b'reservationId'))

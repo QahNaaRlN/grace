@@ -87,6 +87,16 @@ func TestScreeningRealHelperThreeCases(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
+		plan, err := statementextract.BuildScreeningPlan(d, statementextract.ScreeningPolicy())
+		if err != nil {
+			t.Fatal(err)
+		}
+		messages, _ := json.Marshal(statementextract.Messages(plan.Chunks[0]))
+		schema := statementextract.RequestSchema(plan.Chunks[0])
+		if statementextract.InputBytes(plan.Chunks[0]) != len(messages)+len(schema) {
+			t.Fatal("actual bytes mismatch")
+		}
+		t.Logf("S116_PUBLIC_SIZE name=%s spans=%d messages=%d schema=%d total=%d schemaHash=%s planHash=%s planner=%s", name, len(d.Spans), len(messages), len(schema), statementextract.InputBytes(plan.Chunks[0]), plan.SchemaHash, statementextract.Hash(plan), plan.PlannerVersion)
 		samples = append(samples, Sample{Name: name, Document: d, SHA256: FixtureHash(name)})
 		if name == "turnover-roles-ru" {
 			canonical, _ := turnoverFixture(t, d)

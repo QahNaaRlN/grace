@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -108,6 +109,7 @@ func TestStatementEnvelopeOverrunDoesNotReachTransport(t *testing.T) {
 }
 
 func TestStatementWireProfileRoundTripAboveLegacyTokenBounds(t *testing.T) {
+	var approvedPlan statementextract.Plan
 	calls := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
@@ -119,6 +121,14 @@ func TestStatementWireProfileRoundTripAboveLegacyTokenBounds(t *testing.T) {
 			t.Error("canonical map escaped to provider")
 		}
 		var body struct {
+			Messages       []LLMMessage `json:"messages"`
+			ResponseFormat struct {
+				Type       string `json:"type"`
+				JSONSchema struct {
+					Strict bool            `json:"strict"`
+					Schema json.RawMessage `json:"schema"`
+				} `json:"json_schema"`
+			} `json:"response_format"`
 			MaxTokens int `json:"max_tokens"`
 			Reasoning struct {
 				Enabled bool `json:"enabled"`
@@ -133,6 +143,25 @@ func TestStatementWireProfileRoundTripAboveLegacyTokenBounds(t *testing.T) {
 		}
 		if err = json.Unmarshal(raw, &body); err != nil || body.MaxTokens != 16000 || body.Reasoning.Enabled || len(body.Provider.Only) != 1 || body.Provider.Only[0] != "google-vertex/eu" || body.Provider.Fallback || !body.Provider.ZDR || body.Provider.Collection != "deny" || !body.Provider.Require {
 			t.Errorf("wire profile mismatch: %s", raw)
+		}
+		var gotSchema, wantSchema map[string]any
+		if json.Unmarshal(body.ResponseFormat.JSONSchema.Schema, &gotSchema) != nil || json.Unmarshal(statementextract.RequestSchema(approvedPlan.Chunks[0]), &wantSchema) != nil {
+			t.Fatal("missing wire schema")
+		}
+		if body.ResponseFormat.Type != "json_schema" || !body.ResponseFormat.JSONSchema.Strict || !reflect.DeepEqual(gotSchema, wantSchema) {
+			t.Error("HTTP schema differs from approved plan")
+		}
+		defs := gotSchema["$defs"].(map[string]any)
+		if !reflect.DeepEqual(defs["alias"].(map[string]any)["enum"], []any{"s0", "s1", "s2"}) || !reflect.DeepEqual(defs["moneySelection"].(map[string]any)["items"].(map[string]any)["enum"], []any{"s1"}) {
+			t.Error("wire alias/numeric membership differs")
+		}
+		expectedMessages := []LLMMessage{}
+		for _, m := range statementextract.Messages(approvedPlan.Chunks[0]) {
+			expectedMessages = append(expectedMessages, LLMMessage{Role: m["role"], Content: m["content"]})
+		}
+		messagesJSON, _ := json.Marshal(statementextract.Messages(approvedPlan.Chunks[0]))
+		if !reflect.DeepEqual(body.Messages, expectedMessages) || len(messagesJSON)+len(body.ResponseFormat.JSONSchema.Schema) != statementextract.InputBytes(approvedPlan.Chunks[0]) {
+			t.Error("wire messages/bytes differ from approved plan")
 		}
 		content := `{"rows":[{"operationDate":["s0"],"bookingDate":[],"accountAmount":["s1"],"accountCurrency":["s2"],"transactionAmount":[],"transactionCurrency":[],"description":[],"direction":"","directionEvidence":[]}],"header":{"openingBookDate":[],"closingBookDate":[],"openingBookBalance":[],"closingBookBalance":[],"availableBalanceObserved":[],"debitTurnover":[],"creditTurnover":[],"currency":[],"labels":{"openingBookBalance":[],"closingBookBalance":[],"availableBalanceObserved":[],"debitTurnover":[],"creditTurnover":[]}},"service":[]}`
 		json.NewEncoder(w).Encode(map[string]any{"id": "synthetic-wide-profile", "model": "google/gemini-2.5-flash", "provider": "Google", "openrouter_metadata": map[string]any{"requested": "google/gemini-2.5-flash", "strategy": "direct", "attempt": 1, "is_byok": false, "pipeline": []any{}, "endpoints": map[string]any{"available": []any{map[string]any{"model": "google/gemini-2.5-flash", "provider": "Google", "selected": true}}}}, "choices": []any{map[string]any{"finish_reason": "stop", "message": map[string]any{"content": content}}}, "usage": map[string]any{"prompt_tokens": 30000, "completion_tokens": 3000, "cost": json.Number("0.0165")}})
@@ -156,6 +185,7 @@ func TestStatementWireProfileRoundTripAboveLegacyTokenBounds(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
+	approvedPlan = plan
 	wire, bill, e := reasoner.Complete(context.Background(), policy, plan.Chunks[0])
 	if e != nil || calls != 1 || bill == nil || bill.CostMicros != 16500 || bill.InputTokens != 30000 || bill.OutputTokens != 3000 {
 		t.Fatal("new profile rejected verified bounded usage", e, calls, bill)

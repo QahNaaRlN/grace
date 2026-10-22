@@ -18,7 +18,7 @@ import (
 const (
 	PromptVersion         = "statement-span-mapping.v12.turnover-roles"
 	RedactionVersion      = "statement-allowlist.v4.financial-labels"
-	PlannerVersion        = "statement-document-atom.v2.lexical-grounding"
+	PlannerVersion        = "statement-document-atom.v3.alias-enum"
 	AliasVersion          = "statement-alias.source-order-base36.v2"
 	MaxInputBytes         = 90000
 	MaxPlanSpans          = 2000

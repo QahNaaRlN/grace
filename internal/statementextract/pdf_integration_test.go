@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -169,8 +170,18 @@ func TestStatementRealPDFFakeProviderLifecycle(t *testing.T) {
 	if fake.calls.Load() != 0 {
 		t.Fatal("provider called by upload/preview")
 	}
-	consent, e := orchestrator.Consent(ctx, source.ID, "real-pdf-consent", ConsentInput{source.Revision, p.ID, p.Hash})
-	if e != nil {
+	// Recreate the exact previous planner/schema identity on the same public
+	// document, as a stored preview and consent produced by the v2 binary.
+	oldPlan := p.Plan
+	oldPlan.PlannerVersion = "statement-document-atom.v2.lexical-grounding"
+	oldPlan.SchemaHash = "52a36f2b6159b7e9a3e2fc0509ba8c688142eebd12b60be1556d7165da56f0bf"
+	oldJSON, _ := json.Marshal(oldPlan)
+	oldHash := Hash(oldPlan)
+	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3,schema_hash=$4 WHERE id=$1", p.ID, oldJSON, oldHash, oldPlan.SchemaHash); e != nil {
+		t.Fatal(e)
+	}
+	var oldConsent string
+	if e = pool.QueryRow(ctx, "INSERT INTO statement_extraction_consents(statement_id,preview_id,preview_hash,creation_key,owner_id) VALUES($1,$2,$3,$4,$5) RETURNING id::text", source.ID, p.ID, oldHash, "s116-stored-v2-consent", access.BootstrapOwnerID).Scan(&oldConsent); e != nil {
 		t.Fatal(e)
 	}
 	// Real handler + middleware + tenant SQL path, with a slow fake provider
@@ -192,6 +203,40 @@ func TestStatementRealPDFFakeProviderLifecycle(t *testing.T) {
 	server.Start()
 	defer server.Close()
 	client := &http.Client{Transport: &http.Transport{DisableKeepAlives: true}, Timeout: 5 * time.Second}
+	usageBefore := count("ai_usage")
+	for _, tc := range []struct {
+		path, key string
+		input     any
+	}{
+		{"extraction-consents", "s116-v2-consent-rejected", ConsentInput{source.Revision, p.ID, oldHash}},
+		{"extractions", "s116-v2-extract-rejected", ExtractionInput{source.Revision, p.ID, oldHash, oldConsent}},
+	} {
+		payload, _ := json.Marshal(tc.input)
+		req, _ := http.NewRequest(http.MethodPost, server.URL+"/api/imports/statements/"+source.ID+"/"+tc.path, bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Idempotency-Key", tc.key)
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if resp.StatusCode != 409 || !strings.Contains(string(raw), "preview_changed") {
+			t.Fatalf("v2 contract not rejected: %d %s", resp.StatusCode, raw)
+		}
+	}
+	if fake.calls.Load() != 0 || count("ai_usage") != usageBefore || count("financial_events") != beforeEvents || count("postings") != beforePostings {
+		t.Fatal("obsolete consent reserved/called/wrote finance")
+	}
+	// A fresh current preview and explicit new consent are necessary.
+	p, e = orchestrator.Preview(ctx, source.ID, PreviewInput{ExpectedRevision: source.Revision})
+	if e != nil || p.Plan.PlannerVersion != PlannerVersion || p.Hash == oldHash {
+		t.Fatal("fresh v3 preview missing", e)
+	}
+	consent, e := orchestrator.Consent(ctx, source.ID, "real-pdf-consent", ConsentInput{source.Revision, p.ID, p.Hash})
+	if e != nil {
+		t.Fatal(e)
+	}
 	body, _ := json.Marshal(ExtractionInput{source.Revision, p.ID, p.Hash, consent.ID})
 	request, _ := http.NewRequest(http.MethodPost, server.URL+"/api/imports/statements/"+source.ID+"/extractions", bytes.NewReader(body))
 	request.Header.Set("Content-Type", "application/json")
@@ -224,6 +269,18 @@ func TestStatementRealPDFFakeProviderLifecycle(t *testing.T) {
 	}
 	if len(source.Review.Rows) != 2 || source.Review.Rows[0].AccountAmount.AmountMinor != 123456 || source.Review.Rows[0].AccountAmount.Currency != "RUB" || source.Review.Rows[0].OperationDate.Local != "2026-10-19" || source.Review.Rows[0].BookingDate.Local != "2026-10-20" || source.Review.Rows[0].TransactionAmount.AmountMinor != 1500 || source.Review.Rows[0].TransactionAmount.Currency != "USD" || source.Review.Rows[1].AccountAmount.AmountMinor != 200000 || source.Review.Rows[1].OperationDate.Local != "2026-10-21" || source.Review.Rows[1].BookingDate.Local != "2026-10-22" || source.Review.Reconciliation.RowCoverage.Status != "not_reviewed" {
 		t.Fatal("wire to canonical financial mapping wrong", source.Review)
+	}
+	// Historical reads stay available even when the preview has the old identity.
+	currentPlanJSON, _ := json.Marshal(p.Plan)
+	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3,schema_hash=$4 WHERE id=$1", p.ID, oldJSON, oldHash, oldPlan.SchemaHash); e != nil {
+		t.Fatal(e)
+	}
+	historical, e := orchestrator.Attempt(ctx, source.ID, attempt.ID)
+	if e != nil || historical.ID != attempt.ID || historical.Status != "completed" || historical.SchemaHash != oldPlan.SchemaHash || fake.calls.Load() != 1 {
+		t.Fatal("historical attempt forced new inference/current schema", e)
+	}
+	if _, e = pool.Exec(ctx, "UPDATE statement_extraction_previews SET plan=$2,plan_hash=$3,schema_hash=$4 WHERE id=$1", p.ID, currentPlanJSON, p.Hash, p.Plan.SchemaHash); e != nil {
+		t.Fatal(e)
 	}
 	source, e = repo.EditStatement(ctx, source.ID, "real-pdf-role-review", imports.StatementEdit{ExpectedRevision: source.Revision, AccountID: account, Retention: "delete_after_confirmation", RolesConfirmed: true, ReviewedPages: []int{1, 2}, Reason: "Owner reviewed two synthetic pages and separate monetary columns"})
 	if e != nil {
