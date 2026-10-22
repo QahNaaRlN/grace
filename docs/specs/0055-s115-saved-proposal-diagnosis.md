@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.15: read-only диагностика сохранённых proposals P6
 
-- Статус: accepted (D1–D4); implementation_status: integrated_offline; execution_status: not_authorized.
+- Статус: accepted (D1–D4); implementation_status: integrated_offline; execution_status: executed_read_only (one-dispatch permission consumed).
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое «Приступай», 2026-10-21, после предъявления PR №93 и границы D1–D4/D5.
 - Основание подготовки: «работаем!» после P6 FAIL и публикации evidence.
@@ -9,7 +9,7 @@
 - Spec branch: `codex/statement-saved-proposal-diagnosis-spec`.
 - Implementation: `codex/statement-saved-proposal-diagnosis`, code `de770793bba711dada87446ddcd3a442b74f5d5f`; [D1–D4 evidence](0055-s115-evidence.md).
 - Final implementation head: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`, integrated PR №94 / merge17e3493; [post-merge evidence](0055-pr94-postmerge.md).
-- [D5 candidate](0055-s115-d5-run-decision.md): exact703b6c6/ref предложены; разрешённого diagnostic source ещё нет, execution NOT_AUTHORIZED.
+- [D5 decision](0055-s115-d5-run-decision.md) отдельно принят прямым «разрешаю» на exact703b6c6/ref/private-read/CI scope; [workflow receipt](0055-s115-d5-execution-receipt.md): run39860669842 SUCCESS, permission CONSUMED; closed payload остаётся в CI.
 
 ## Проблема и пользовательский результат
 
@@ -257,7 +257,5 @@ production/integration gates; точные команды/результаты �
 ## Открытые решения
 
 1. D1–D4 приняты владельцем; разрешена только offline-реализация и её проверки.
-2. D5 NOT_AUTHORIZED: verifier source703b6c6 существует, интегрирован и имеет CI5/5;
-   [конкретный кандидат запуска](0055-s115-d5-run-decision.md) ожидает отдельного exact-source approval.
-3. Какие relations/gap positions/unmapped tokens находятся в actual P6 — UNVERIFIED
-   до D5. Их отсутствие в public summaries не восполняется догадкой или paid call.
+2. D5 отдельно разрешён и выполнен один раз на703b6c6, workflow SUCCESS; [receipt](0055-s115-d5-execution-receipt.md). Permission consumed.
+3. Payload результата доступен только в закрытом CI artifact; Git publication не разрешена. Следующий fix/paid run требует отдельного решения, ничего не repair автоматически.

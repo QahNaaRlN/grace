@@ -8,9 +8,9 @@
 - Актуализация2026-10-23: **INTEGRATED_OFFLINE**, final head703b6c6, PR №94/merge17e3493.
   Source CI5/5, merge CI5/5 и Delivery4/4 подтверждены в [post-merge evidence](0055-pr94-postmerge.md).
   Ниже сохранён локальный implementation evidence2026-10-21.
-- **D5 NOT_AUTHORIZED / NOT_EXECUTED**. SSH/VPS, provider/metadata, live SQL,
-  workflow dispatch, deploy, image/flag/model switch и ledger writes: **0**.
-  Локальный bank suite использовал disposable PostgreSQL; это не live SQL.
+- Последующий D5 отдельно разрешён и выполнен: [operational receipt](0055-s115-d5-execution-receipt.md), workflow39860669842 SUCCESS; payload только в закрытом CI artifact.
+  В исходной offline-реализации ниже VPS/provider/dispatch/deploy calls=0;
+  локальный bank suite использовал disposable PostgreSQL, не live SQL.
 
 ## Поведение
 
@@ -54,7 +54,7 @@ source/bootstrap/wrapper. Наличие workflow не является разр
 | D4 | PASS local | `go test ./scripts/research/s115-diagnose`; `python3 scripts/research/test-statement-s115-diagnosis.py`: writer→fixed reader→closed projection; actual sealed memfd/all seals/env poison, dual Go/Python schemas, private sentinel/success/error/timeout, wrong mode/source/symlink/orphan/partial/oversize/duplicate/case/null/UTF8; causal reader rejects report bytes/mtime/mode/symlink и marker mutation между initial/final reads |
 | D4 workflow | PASS local | `python3 scripts/research/test-screening-workflow-modes.py`:32,768 combinations; exact source, five-job CI check twice, complete manifest checked before sole SSH wrapper |
 | D4 real helper | PASS local | `scripts/research/prepare-statement-s115.sh --self-test`: exact3 public fixture hashes, pinned Poppler25.04.0/network=none; delivered-alias fake → actual S1.14 writer/decoder → replay/scorer equivalence16/19,17/19 → structural witnesses → actual verifier validate |
-| D5 | NOT_AUTHORIZED | Actual saved P6 relations/gap positions/unmapped witnesses остаются UNVERIFIED до отдельного exact-source approval и одного fixed-host read-only run |
+| D5 | EXECUTED / workflow SUCCESS | После отдельного «разрешаю» выполнен один run39860669842/source703b6c6; [operational receipt](0055-s115-d5-execution-receipt.md). Payload не копируется из CI в Git, permission consumed |
 
 ## Обязательные gates
 
@@ -99,5 +99,5 @@ TypeScript generation не нужна. S1.14 report/marker/source301/ref и perm
 ## Следующий gate
 
 Review/integration и exact-source/merge CI5/5 завершены PR №94.
-[D5 candidate](0055-s115-d5-run-decision.md) предъявляет owner конкретный703b6c6/ref; approval отсутствует. D1–D4 acceptance не открывает
-SSH/read-only run, provider calls, исправление proposal/prompt/scorer или новый P6.
+[D5](0055-s115-d5-execution-receipt.md) затем отдельно принят и выполнен на703b6c6; одно разрешение использовано.
+Следующее owner решение опирается на закрытый CI evidence; fix/new paid run/publication payload не открыты.

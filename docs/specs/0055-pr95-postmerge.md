@@ -19,7 +19,7 @@
   Для frozen source сохраняется подтверждённый [PR94 post-merge](0055-pr94-postmerge.md).
 - Workflow history с2026-10-21 16:50UTC повторно проверен: operator runs отсутствуют.
 
-## Подготовка D5 и отказ разрешения
+## Историческая подготовка D5 и отказ разрешения
 
 Зафиксированы exact inputs из [D5 candidate](0055-s115-d5-run-decision.md).
 Actual workflow matrix32768 combinations PASS; `selected(inputs)` выбирает ровно
@@ -36,7 +36,7 @@ persistent artifact/environment writes=0. Не было повторного dis
 API/tool, прямого SSH, обхода проверки, chmod, смены path/source или repair.
 Отказ разрешения — не diagnostic FAIL; actual P6 witnesses остаются UNVERIFIED.
 
-## Оставшееся действие
+## Исторический execution gate (впоследствии закрыт)
 
 Нужно явное подтверждение одного D5 на703b6c6/ref, включающего private P6 read
 на fixed VPS и передачу только allowlisted numeric/enum projection через CI.
@@ -49,3 +49,17 @@ Provider/metadata/SQL/writes=0 и no-retry ограничения исходно
 log `/tmp/grace-s115-d5-make.log`; `git diff --check` — PASS.
 Нового локального full integration для docs-only пакета не заявляется;
 полный integration frozen source подтверждён source CI5/5. Никаких runtime probes.
+
+## Последующее явное разрешение и workflow execution
+
+Владелец прямо ответил «разрешаю» на конкретный private-read/CI scope и exact703b6c6.
+Approval commit e5961a4; [run39860669842](0055-s115-d5-execution-receipt.md) завершён
+workflow SUCCESS, только D5 job; остальные10 jobs skipped. Прежний
+BLOCKED_PENDING_EXPLICIT_APPROVAL выше — historical capture, не текущий gate.
+Один dispatch использован. Closed payload сохранён только в CI: перенос в Git
+отклонён отдельной automatic review до CreateProcess и не выполнялся.
+
+Post-merge [CI39859170136](https://github.com/QahNaaRlN/grace/actions/runs/39859170136)
+на403f69d впоследствии завершён5/5 SUCCESS, повторно проверен canonical validator;
+[Delivery39860348646](https://github.com/QahNaaRlN/grace/actions/runs/39860348646)
+на том же head завершён4/4 SUCCESS, все jobs checked. Это публикация images, не deploy.
