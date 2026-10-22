@@ -1,12 +1,18 @@
 # Statement AI: проработка устойчивости и расширенного корпуса
 
+Актуальный development status (2026-10-23): S1.15 D1–D4 integrated PR №94,
+source/merge CI5/5 и Delivery4/4 PASS; [post-merge](../../specs/0055-pr94-postmerge.md).
+Следующий [D5 candidate](../../specs/0055-s115-d5-run-decision.md) — read-only saved P6,
+NOT_AUTHORIZED. Ниже исторический design study2026-10-19; его baseline/production
+snapshot не описывает текущий main или проверенный runtime2026-10-23.
+
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: design study accepted, 2026-10-19; implementation `not_started`.
 - Acceptance record: владелец ответил «Принимаю» на результат проработки / draft PR #68, revision `c63e7cd3f7ca355ee7470036919b948d0078b73f`. Приняты выводы и последовательность S1–S5; конкретные технические редакции и платные campaigns сохраняют свои gates.
 - Основание: владелец поручил «Приступай к проработке» устойчивости обоих layouts и более широкого корпуса.
 - Baseline: `8232976`, draft SPEC-0056 / PR #67; product code `7be572c`, draft PR #66. CI `39218772264` завершён PASS для всех пяти jobs; это не model qualification.
 - Исполнено сейчас: 32 offline planner probes, 0 model calls, 0 database writes; публичные synthetic PDF и layout-only mutations.
-- Production остаётся `1ada384`, Statement AI false. Billing reconciliation завершена ранее; в этой проработке production не менялся.
+- На историческом срезе2026-10-19: production `1ada384`, Statement AI false. Billing reconciliation завершена ранее; в этой проработке production не менялся.
 - Связи: [SPEC-0055](../../specs/0055-bank-statement-pdf-import.md), [activation evidence](../../specs/0055-activation-evidence.md), [draft SPEC-0056](../../specs/0056-statement-model-selection.md).
 
 ## Что установлено, а что остаётся гипотезой

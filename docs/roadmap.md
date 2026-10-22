@@ -1,8 +1,13 @@
-Текущий пакет — [S1.15](specs/0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / local_verified**:
-закрытая read-only диагностика saved P6 proposals: alias relation, description-gap
-и unmapped witnesses. D1–D4 offline приняты прямым «Приступай»; D5 — отдельного exact-source
-read-only approval после review/integration/CI. [Offline evidence](specs/0055-s115-evidence.md);
-local gates PASS, exact-head CI отдельно. Новых model/metadata/live SQL/SSH calls нет.
+Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
+
+Текущий пакет — [S1.15](specs/0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / integrated offline**:
+[PR №94](https://github.com/QahNaaRlN/grace/pull/94) слит, merge `17e3493`.
+Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
+[post-merge evidence](specs/0055-pr94-postmerge.md), [offline AC evidence](specs/0055-s115-evidence.md).
+Следующий этап — [D5: один read-only saved P6 run](specs/0055-s115-d5-run-decision.md)
+на SHA `703b6c6`, ref `codex/statement-saved-proposal-diagnosis`: **candidate / NOT_AUTHORIZED**.
+Нужен отдельный owner approval; D5/SSH/provider/metadata/live SQL/dispatch/deploy не выполнялись.
+После результата — отдельный bounded fix по evidence, не автоматический новый paid run.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
@@ -12,7 +17,7 @@ Offline acceptance «принимаю»; [implementation evidence](specs/0055-s1
 [Live evidence](specs/0055-s114-p6-evidence.md):3POST, A/columns16/19, B/columns17/19,
 A/cards unknown_alias(operationDate,row1), captured+matched replay; остальные3 not_sent.
 5320micros ($0.00532 provider) known/settled, shared uncertain block=false,
-image/health preserved; no retry/deploy/model switch. Main push-CI/Delivery отдельно UNVERIFIED.
+image/health preserved; no retry/deploy/model switch. Main CI/Delivery уточнены в [post-merge №94](specs/0055-pr94-postmerge.md); P6 FAIL сохранён.
 
 Завершённый пакет — [S1.13](specs/0055-s113-protocol-observability.md), **accepted / integrated offline**:
 PR №89, merge `d63c16f`; [post-merge evidence](specs/0055-pr89-postmerge.md):

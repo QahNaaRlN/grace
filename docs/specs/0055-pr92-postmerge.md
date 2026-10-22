@@ -29,3 +29,10 @@ Source P6 `301afd6bedc4a19559e731471336bbc4e2f74075` и frozen ref сохран�
 документационном этапе нет. [S1.15](0055-s115-saved-proposal-diagnosis.md) — новый
 **draft**, implementation/execution not_started/not_authorized. Подготовка
 контракта не является acceptance D1–D4 или разрешением D5.
+
+## Последующая актуализация 2026-10-23
+
+Исторический текст выше описывает состояние при подготовке. Merge CI39633259618
+и Delivery39634522696 на868c0a4 впоследствии завершились SUCCESS; перечень runs
+повторно прочитан в GitHub. S1.15 далее принят D1–D4 и интегрирован PR №94;
+[актуальное post-merge состояние](0055-pr94-postmerge.md). D5 остаётся NOT_AUTHORIZED.

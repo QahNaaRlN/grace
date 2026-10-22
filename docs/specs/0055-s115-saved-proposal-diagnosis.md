@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.15: read-only диагностика сохранённых proposals P6
 
-- Статус: accepted (D1–D4); implementation_status: local_verified; execution_status: not_authorized.
+- Статус: accepted (D1–D4); implementation_status: integrated_offline; execution_status: not_authorized.
 - Автор: Codex; дата: 2026-10-21, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое «Приступай», 2026-10-21, после предъявления PR №93 и границы D1–D4/D5.
 - Основание подготовки: «работаем!» после P6 FAIL и публикации evidence.
@@ -8,7 +8,8 @@
 - База: main `868c0a4254bb32e08b07225dfb3672d9b7d5287b`, docs-only PR №92.
 - Spec branch: `codex/statement-saved-proposal-diagnosis-spec`.
 - Implementation: `codex/statement-saved-proposal-diagnosis`, code `de770793bba711dada87446ddcd3a442b74f5d5f`; [D1–D4 evidence](0055-s115-evidence.md).
-- Разрешённый diagnostic source для D5: отсутствует; execution NOT_AUTHORIZED.
+- Final implementation head: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`, integrated PR №94 / merge17e3493; [post-merge evidence](0055-pr94-postmerge.md).
+- [D5 candidate](0055-s115-d5-run-decision.md): exact703b6c6/ref предложены; разрешённого diagnostic source ещё нет, execution NOT_AUTHORIZED.
 
 ## Проблема и пользовательский результат
 
@@ -256,7 +257,7 @@ production/integration gates; точные команды/результаты �
 ## Открытые решения
 
 1. D1–D4 приняты владельцем; разрешена только offline-реализация и её проверки.
-2. D5 NOT_AUTHORIZED, diagnostic source ещё не существует; требуется отдельное
-   exact-source read-only approval после offline evidence/CI.
+2. D5 NOT_AUTHORIZED: verifier source703b6c6 существует, интегрирован и имеет CI5/5;
+   [конкретный кандидат запуска](0055-s115-d5-run-decision.md) ожидает отдельного exact-source approval.
 3. Какие relations/gap positions/unmapped tokens находятся в actual P6 — UNVERIFIED
    до D5. Их отсутствие в public summaries не восполняется догадкой или paid call.
