@@ -2,6 +2,7 @@
 """Actual S1.14 Go engine/writer/CLI/replay + fixed Python inspector, offline only."""
 import contextlib
 import copy
+import datetime as dt
 import importlib.util
 import io
 import json
@@ -12,6 +13,7 @@ import sys
 import tempfile
 
 sys.dont_write_bytecode=True
+from test_comparison_contracts import frozen_v2_overlay
 here=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('s114_inspector',here/'inspect-statement-comparison-s114.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
@@ -21,9 +23,20 @@ with tempfile.TemporaryDirectory(prefix='grace-s114-test-') as tmp:
     root=Path(tmp);binary=root/'admin';replay=root/'replay'
     env=dict(os.environ,S114_TEST_EXPORT_DIR=tmp)
     real_run(['go','test','./cmd/statement-admin','-run','^TestS114SummaryPrivatePipeline$','-count=1'],env=env,check=True,stdout=subprocess.DEVNULL)
-    real_run(['go','build','-o',str(binary),'./cmd/statement-admin'],check=True,stdout=subprocess.DEVNULL)
-    real_run(['go','build','-o',str(replay),'./scripts/research/s113-replay'],check=True,stdout=subprocess.DEVNULL)
+    current=json.loads((root/'observed.json').read_bytes())['report']
+    assert current['profile']['Planner']=='statement-document-atom.v3.alias-enum'
+    assert current['profile']!=m.base.PROFILE
+    try:
+        m.base._summary(current,dt.datetime.now(dt.timezone.utc),current['authorization'])
+        raise AssertionError('frozen inspector accepted current contract')
+    except ValueError:
+        pass
+    overlay=frozen_v2_overlay(root)
+    real_run(['go','test',*overlay,'./cmd/statement-admin','-run','^TestS114SummaryPrivatePipeline$','-count=1'],env=env,check=True,stdout=subprocess.DEVNULL)
+    real_run(['go','build',*overlay,'-o',str(binary),'./cmd/statement-admin'],check=True,stdout=subprocess.DEVNULL)
+    real_run(['go','build',*overlay,'-o',str(replay),'./scripts/research/s113-replay'],check=True,stdout=subprocess.DEVNULL)
     raw=(root/'observed.json').read_bytes();data=json.loads(raw);report=data['report']
+    assert report['profile']==m.base.PROFILE
     summary=real_run([str(binary),'-mode=comparison-s114-summary'],input=raw,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
     assert json.loads(summary.stdout)==json.loads((root/'summary.json').read_bytes())
     assert all(secret not in summary.stdout for secret in (b'PRIVATE',b'snapshot',b'generationId',b'reservationId'))
