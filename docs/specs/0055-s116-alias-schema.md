@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.16: допустимые alias во всех selections запроса
 
-- Статус: accepted; implementation_status: verified (local; not integrated).
+- Статус: accepted; implementation_status: integrated (offline; PR98); post_merge_verification: PASS.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: 2026-10-23,
   прямое «принимаю» на контракт A1–A6 в PR №97 (review head `50f57dc`).
@@ -35,7 +35,8 @@ current qualification profile и причинные offline/SQL/HTTP tests. Из
 запроса и совместимости; новый runner/campaign/report format не вводится.
 
 Контракт A1–A6 принят и интегрирован PR №97; offline implementation проверена
-в отдельном worktree от maina1cc072, ожидает review и интеграции.
+в отдельном worktree от maina1cc072, интегрирована PR №98; post-merge gates
+зафиксированы [отдельно](0055-pr98-postmerge.md).
 Acceptance не является выполнением A1–A6 или разрешением live experiment.
 
 ## Non-goals
@@ -212,7 +213,9 @@ schema/messages bytes и versions/hashes, без D5-derived данных. Рез
 1. Контракт A1–A6 принят владельцем 2026-10-23 прямым «принимаю»;
    повторное acceptance этого scope не требуется.
 2. Интеграция принятой спеки выполнена PR №97. Offline implementation
-   проверена в `statement-alias-schema` от maina1cc072; review/merge ещё не выполнены.
+   проверена в `statement-alias-schema` от maina1cc072 и интегрирована PR №98.
+   [Post-merge evidence](0055-pr98-postmerge.md); новый [draft S1.17](0055-s117-alias-comparison.md)
+   не является разрешением следующей реализации или запуска.
 3. Нужен ли новый live эксперимент, его модель/endpoint/corpus/ceiling/exact SHA
    и разрешение на передачу данных — отдельная спецификация/решение после
    offline evidence. Никакой live permission в S1.16 не подразумевается.

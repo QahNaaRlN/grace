@@ -4,7 +4,8 @@
   2026-10-23 прямым «принимаю», интеграция [PR №97](0055-pr97-postmerge.md).
 - Base: `a1cc07218da1aa9302f600d24c135aa67e09a1d6`.
 - Branch: `codex/statement-alias-schema`, implementation commit: `e44963915d1e1c976af0b5dbbe30e84415846086`.
-- Status: verified locally / READY_FOR_REVIEW; owner acceptance реализации не объявляется.
+- Status: integrated offline, PR №98 / post-merge verification PASS.
+  Владелец подтвердил слияние; financial acceptance и live qualification не объявляются.
 
 ## Результат и границы
 
@@ -76,4 +77,6 @@ Implementation `e44963915d1e1c976af0b5dbbe30e84415846086`: production diff
 validators/operational inspectors/workflow/deployment diff отсутствует.
 Обязательные local gates завершены exit0, включая полный integration и полный
 повтор production gate. Новый PR/head CI проверяется отдельно после публикации;
-его SUCCESS заранее не заявляется. Следующий gate — review реализации и merge.
+его SUCCESS заранее не заявлялся. Последующая интеграция PR №98 и post-merge
+проверки — в [отдельном receipt](0055-pr98-postmerge.md). Следующий контракт
+[S1.17](0055-s117-alias-comparison.md) пока draft.
