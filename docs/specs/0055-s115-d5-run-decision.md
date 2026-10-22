@@ -1,9 +1,9 @@
 # S1.15 / D5 — кандидат одного read-only запуска над saved P6
 
-- Статус: **accepted execution decision; one dispatch authorized / NOT_EXECUTED**.
+- Статус: **candidate; execution BLOCKED_PENDING_EXPLICIT_APPROVAL / NOT_EXECUTED**.
 - Дата подготовки: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
 - Основание: поручение актуализировать разработку и следующий этап. Первоначальное поручение разрешало
-  подготовку решения; исполнение отдельно открыто последующим ответом владельца ниже.
+  подготовку решения; исполнение остаётся закрытым после автоматического отказа ниже.
 - Контракт: [accepted S1.15](0055-s115-saved-proposal-diagnosis.md), D1–D4 integrated;
   [offline evidence](0055-s115-evidence.md), [post-merge №94](0055-pr94-postmerge.md).
 - Предлагаемый verifier SHA: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`.
@@ -12,9 +12,9 @@
   source интегрирован PR №94, merge17e3493; полный tree identical подтверждён.
   Merge CI39664307328=5/5 и Delivery39665622283=4/4 PASS.
 - Наличие и доступность private saved artifacts на2026-10-23: UNVERIFIED, VPS не читался.
-- Approval record: 2026-10-23, прямое «влил PR, продолжить работу» после предъявления PR №95 и конкретного D5 source703b6c6/ref/границ. Разрешён ровно один описанный dispatch; это отдельный ответ владельца, а не вывод из merge/CI/D1–D4 acceptance.
+- Effective execution approval: **отсутствует**. Ответ «влил PR, продолжить работу» был первоначально истолкован как approval (local commit7610661), но автоматическая проверка отклонила dispatch до запуска процесса: требуется явное согласование production workflow с SSH-чтением приватного P6 и передачей закрытого результата через CI. Первоначальная интерпретация отозвана этой записью; отдельный прямой ответ владельца на точное действие ещё нужен.
 
-## Принятое решение владельца
+## Предлагаемое решение владельца
 
 Разрешить **один** dispatch `deploy-production.yml` с единственным выбранным job
 `diagnose-statement-s115` на exact SHA/ref выше. Это fixed-host read-only diagnosis
@@ -55,7 +55,7 @@ model service reasons и arbitrary exceptions не публикуются.
 
 ## Зафиксированные inputs кандидата
 
-Это inputs единственного разрешённого dispatch. До его выполнения
+Это inputs кандидата одного dispatch, ещё не разрешённого к исполнению. До его выполнения
 исполнитель повторно проверяет ref/SHA, ancestry и CI exact source. Дрейф требует
 нового решения владельца, а не тихого обновления параметров.
 
@@ -93,3 +93,18 @@ owner financial acceptance. P6 остаётся FAIL/permission consumed/known s
 
 Выводы становятся основанием отдельного bounded fix candidate; prompt/planner/
 alias/scorer repair, новый paid run, SPEC-0056 и deploy остаются отдельными gates.
+
+## Отказ автоматической проверки — 2026-10-23
+
+Попытка вызвать exec_command для единственного workflow dispatch отклонена
+на CreateProcess до выполнения shell. Dispatch_count=0, SSH/VPS/provider/metadata/
+SQL/environment writes=0. Автоматическая проверка сочла «продолжить работу»
+недостаточно явным approval именно чтения private P6 через SSH и CI projection.
+Альтернативного tool/API/прямого SSH, retry или indirect execution не выполнялось.
+Это отказ разрешения на запуск, а не diagnostic FAIL и не результат replay P6.
+
+Необходимый ответ владельца должен явно разрешить один D5 production workflow
+на `703b6c6ac960c21c0b7ab7bd84b3411459204c92` / указанном ref, чтение private P6
+на fixed VPS и публикацию только закрытой numeric/enum projection через CI,
+при прежних provider/metadata/SQL/persistent artifact/environment writes=0.
+После такого ответа перед единственным dispatch снова проверяются exact ref/CI.
