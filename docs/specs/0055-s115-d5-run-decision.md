@@ -1,9 +1,9 @@
 # S1.15 / D5 — кандидат одного read-only запуска над saved P6
 
-- Статус: **candidate; execution BLOCKED_PENDING_EXPLICIT_APPROVAL / NOT_EXECUTED**.
+- Статус: **accepted execution decision; one dispatch AUTHORIZED / NOT_EXECUTED**.
 - Дата подготовки: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
 - Основание: поручение актуализировать разработку и следующий этап. Первоначальное поручение разрешало
-  подготовку решения; исполнение остаётся закрытым после автоматического отказа ниже.
+  подготовку решения; после автоматического отказа исполнение открыто отдельным явным ответом владельца «разрешаю» на точное действие ниже.
 - Контракт: [accepted S1.15](0055-s115-saved-proposal-diagnosis.md), D1–D4 integrated;
   [offline evidence](0055-s115-evidence.md), [post-merge №94](0055-pr94-postmerge.md).
 - Предлагаемый verifier SHA: `703b6c6ac960c21c0b7ab7bd84b3411459204c92`.
@@ -12,9 +12,9 @@
   source интегрирован PR №94, merge17e3493; полный tree identical подтверждён.
   Merge CI39664307328=5/5 и Delivery39665622283=4/4 PASS.
 - Наличие и доступность private saved artifacts на2026-10-23: UNVERIFIED, VPS не читался.
-- Effective execution approval: **отсутствует**. Ответ «влил PR, продолжить работу» был первоначально истолкован как approval (local commit7610661), но автоматическая проверка отклонила dispatch до запуска процесса: требуется явное согласование production workflow с SSH-чтением приватного P6 и передачей закрытого результата через CI. Первоначальная интерпретация отозвана этой записью; отдельный прямой ответ владельца на точное действие ещё нужен.
+- Effective execution approval: **получено2026-10-23**: прямое «разрешаю» на отдельный вопрос об одном D5/source703b6c6, SSH-чтении private P6 на VPS Grace и closed report через CI, без model/SQL/data writes. Далее сохранён исторический контекст отказа. Ответ «влил PR, продолжить работу» был первоначально истолкован как approval (local commit7610661), но автоматическая проверка отклонила dispatch до запуска процесса: требуется явное согласование production workflow с SSH-чтением приватного P6 и передачей закрытого результата через CI. Первоначальная интерпретация была отозвана; последующее явное разрешение записано выше.
 
-## Предлагаемое решение владельца
+## Принятое решение владельца
 
 Разрешить **один** dispatch `deploy-production.yml` с единственным выбранным job
 `diagnose-statement-s115` на exact SHA/ref выше. Это fixed-host read-only diagnosis
@@ -55,7 +55,7 @@ model service reasons и arbitrary exceptions не публикуются.
 
 ## Зафиксированные inputs кандидата
 
-Это inputs кандидата одного dispatch, ещё не разрешённого к исполнению. До его выполнения
+Это inputs одного явно разрешённого dispatch. До его выполнения
 исполнитель повторно проверяет ref/SHA, ancestry и CI exact source. Дрейф требует
 нового решения владельца, а не тихого обновления параметров.
 
@@ -108,3 +108,13 @@ SQL/environment writes=0. Автоматическая проверка сочл
 на fixed VPS и публикацию только закрытой numeric/enum projection через CI,
 при прежних provider/metadata/SQL/persistent artifact/environment writes=0.
 После такого ответа перед единственным dispatch снова проверяются exact ref/CI.
+
+## Явное согласование после отказа — 2026-10-23
+
+Владелец ответил «разрешаю» на отдельный конкретный вопрос: один D5 на
+`703b6c6ac960c21c0b7ab7bd84b3411459204c92`, SSH-чтение private P6 на VPS Grace,
+передача закрытого отчёта через CI, без model/SQL/data writes. Это новое trusted
+human authorization, а не обход прежнего отказа. Разрешён ровно один описанный
+dispatch; no-retry и все ограничения исходного кандидата сохраняются.
+Перед dispatch повторно проверены remote ref703b6c6, ancestry, отсутствие runtime
+различий с main, source CI5/5 и отсутствие предыдущих operator runs.
