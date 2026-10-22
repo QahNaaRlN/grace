@@ -1,0 +1,44 @@
+{
+  "kind": "S1.16 public fixture size capture",
+  "implementationCommit": "e44963915d1e1c976af0b5dbbe30e84415846086",
+  "corpus": [
+    {
+      "name": "columns",
+      "spans": 46,
+      "messagesBytes": 6024,
+      "schemaBytes": 3299,
+      "inputBytes": 9323,
+      "schemaHash": "1a6e755395da69883666f3eb61471ad8c4257f7d465451a4ad0050fbd253c3c7",
+      "planHash": "e8e95b6eb04e457b17b9f973592248c5c15d7e4ecfebed95c9617626c1d6f336",
+      "plannerVersion": "statement-document-atom.v3.alias-enum"
+    },
+    {
+      "name": "cards",
+      "spans": 57,
+      "messagesBytes": 6369,
+      "schemaBytes": 3361,
+      "inputBytes": 9730,
+      "schemaHash": "1a6e755395da69883666f3eb61471ad8c4257f7d465451a4ad0050fbd253c3c7",
+      "planHash": "f0f25fe36340438e13ec088a90230a6499041cb26d82424b800c5b45bd86a4db",
+      "plannerVersion": "statement-document-atom.v3.alias-enum"
+    },
+    {
+      "name": "turnover-roles-ru",
+      "spans": 51,
+      "messagesBytes": 6270,
+      "schemaBytes": 3359,
+      "inputBytes": 9629,
+      "schemaHash": "1a6e755395da69883666f3eb61471ad8c4257f7d465451a4ad0050fbd253c3c7",
+      "planHash": "04c128c20d14fb619e730946fdb624bbd725f4b6be1ad1a1cf71d67687b3bc52",
+      "plannerVersion": "statement-document-atom.v3.alias-enum"
+    }
+  ],
+  "externalProviderCalls": 0,
+  "sourceHashes": {
+    "internal/statementextract/schema.go": "c04961f70c1f54cfc74c3153d4fcd2d570d6a1d638aa75da80b0feb2a65c344f",
+    "internal/statementextract/plan.go": "1803a375ad0d9699ddeda04425ca85f09ba2c2098f8129060bf80e0540e897d9",
+    "internal/statementextract/alias_schema_test.go": "49dac2795b34ba0065f56b3a3efd8f2f6c2b26d1afac2f8bd867a219971d5023",
+    "internal/assistant/statement_profile_test.go": "91d2fdbbd4cf028ffd7e1d843a7822f71d511a2ee1598db08a53bfe8112048f9",
+    "internal/statementqualification/turnover_roles_integration_test.go": "8e2aa2c1a65ade79c02d52fd2908ef4ed67e326918c708124f815b7c11cd79de"
+  }
+}
