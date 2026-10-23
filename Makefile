@@ -42,6 +42,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	./scripts/test-statement-clock-s119.sh
 	node scripts/research/check-workflow-syntax.mjs
 	go test ./scripts/research/s118-diagnose
 	python3 scripts/research/test-statement-s118-diagnosis.py

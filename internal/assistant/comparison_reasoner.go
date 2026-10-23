@@ -16,12 +16,13 @@ import (
 // ComparisonReasoner cannot be configured by an HTTP request or owner document.
 // Only the fixed synthetic operator CLI uses it; product constructors reject it.
 type ComparisonReasoner struct {
-	mu        sync.Mutex
-	candidate statementextract.ComparisonCandidate
-	provider  *OpenRouterProvider
-	client    HTTPDoer
-	base      string
-	proof     *statementextract.ComparisonIdentityProof
+	clockExactPrices bool
+	mu               sync.Mutex
+	candidate        statementextract.ComparisonCandidate
+	provider         *OpenRouterProvider
+	client           HTTPDoer
+	base             string
+	proof            *statementextract.ComparisonIdentityProof
 }
 
 func NewStatementComparisonReasoner(key, id string) (*ComparisonReasoner, error) {

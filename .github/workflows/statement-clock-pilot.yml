@@ -1,0 +1,88 @@
+name: 'S1.19: один clock pilot'
+on:
+  workflow_dispatch:
+    inputs:
+      authorized_source:
+        description: 'Полный source SHA из отдельного разрешения владельца'
+        required: true
+        type: string
+      execute_approved_pilot:
+        description: 'Один отдельно разрешённый pilot, максимум 6 POST / $0.3234 provider'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  clock-pilot:
+    if: ${{ inputs.execute_approved_pilot }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify exact authorized source and CI 5/5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/clock-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/clock-ci.json"
+      - name: Build fixed operator bundle
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-clock-s119-$GITHUB_SHA"
+          mkdir "$bundle"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-X main.sourceSHA=$GITHUB_SHA" -o "$bundle/grace-clock-pilot" ./cmd/statement-clock-pilot
+          "$bundle/grace-clock-pilot" -mode=check > "$bundle/MANIFEST.json"
+          cp internal/pdfextract/testdata/cards.pdf "$bundle/"
+          cp internal/statementextract/testdata/s119-cards-document.json "$bundle/cards-document.json"
+          cp deployments/production/statement-clock-s119.sh "$bundle/run.sh"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          chmod 755 "$bundle" "$bundle/grace-clock-pilot"
+          chmod 644 "$bundle/cards.pdf" "$bundle/cards-document.json" "$bundle/run.sh" "$bundle/SOURCE_SHA" "$bundle/MANIFEST.json"
+          (cd "$bundle" && sha256sum grace-clock-pilot cards.pdf cards-document.json SOURCE_SHA MANIFEST.json run.sh > SHA256SUMS)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: statement-s119-manifest
+          path: |
+            ${{ runner.temp }}/grace-statement-clock-s119-${{ github.sha }}/SHA256SUMS
+            ${{ runner.temp }}/grace-statement-clock-s119-${{ github.sha }}/SOURCE_SHA
+            ${{ runner.temp }}/grace-statement-clock-s119-${{ github.sha }}/MANIFEST.json
+          if-no-files-found: error
+      - name: Configure pinned SSH
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Execute approved pilot once
+        env:
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          bundle="$RUNNER_TEMP/grace-statement-clock-s119-$GITHUB_SHA"
+          remote="/tmp/grace-statement-clock-s119-$GITHUB_SHA"
+          ssh grace-deploy@195.133.195.190 "mkdir '$remote'"
+          scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
+          ssh grace-deploy@195.133.195.190 "sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$AUTHORIZED_SHA'"

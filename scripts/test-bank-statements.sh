@@ -86,6 +86,8 @@ rm -f "${statement_test_binary}.s112"
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -tags=integration ./cmd/statement-admin -run '^TestS11(4|7)StatementMeterSQL$' -count=1 -v
 TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
+ go test -tags=integration ./cmd/statement-clock-pilot -run '^TestClockMeterSQL$' -count=1 -v
+TEST_BANK_STATEMENTS=true TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/grace?sslmode=disable" \
  go test -p 1 -tags=integration ./internal/imports ./internal/statementextract -run Statement -count=1 -v
 statement_compose exec -T postgres pg_dump -U grace -d grace > /tmp/grace-statement-restore-$$.sql
 trap 'rm -f "$statement_test_binary" "${statement_test_binary}.activation" "${statement_test_binary}.s117-replay" "${statement_test_binary}.s114-replay" "${statement_test_binary}.s115" /tmp/grace-statement-restore-$$.sql; if [ -n "${s117_export:-}" ]; then rm -rf "$s117_export"; fi; cleanup' EXIT INT TERM
