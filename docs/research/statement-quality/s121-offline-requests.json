@@ -1,0 +1,119 @@
+{
+  "version": "statement.row-scoped-selection.offline-evidence.s121.v1",
+  "mode": "offline_fakes_on_public_pinned_helper_data",
+  "modelQuality": "UNVERIFIED",
+  "activationAuthorized": false,
+  "documents": [
+    {
+      "name": "columns",
+      "documentHash": "14fedad79043a4f191719c8b26d3f74c5e8e555e0fcc507a90132603005d88a1",
+      "originalPlanHash": "e8e95b6eb04e457b17b9f973592248c5c15d7e4ecfebed95c9617626c1d6f336",
+      "correct": 19,
+      "checks": 19,
+      "fakeCalls": 3,
+      "baselineChecks": 19,
+      "baselineInputBytes": 9323,
+      "totalCandidateInputBytes": 14103,
+      "requests": [
+        {
+          "stage": "grouping",
+          "rowOrdinal": 0,
+          "inputBytes": 6086,
+          "promptSha256": "15a3c21723fdf8e5d92784e12b2a9a6e8448308dfad3c12c772d600f448cc745",
+          "schemaSha256": "c5eddee6bff6915909832e86c88ee17ef05159da26fb6dca39d0b19640e198d9",
+          "requestHash": "37158602f2f2965cb7d65a0107414a3e752425cd8a026a4f2f0a775054498b22"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 1,
+          "inputBytes": 3953,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "af5ec9e104f27b05eed5cf7f4b256650363c0b529bde12a483718bf4aea98901",
+          "requestHash": "c73cb86bef78dd0c95819d9a2cddacee7155796a947eb211f4edaa84eba088cd"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 2,
+          "inputBytes": 4064,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "c83b1ad167c74aa2a8818054a88f71479c06b7fe1ac1a3f8a89598aadc2de9d0",
+          "requestHash": "33bc744706e7167260436f9f711d4caec55b282190b6c6b1c17d29c6f15c0b89"
+        }
+      ]
+    },
+    {
+      "name": "cards",
+      "documentHash": "ff6f0157ec84d773ed788efd67f4635e111425b5146ee2624e6e45aab538a4e9",
+      "originalPlanHash": "f0f25fe36340438e13ec088a90230a6499041cb26d82424b800c5b45bd86a4db",
+      "correct": 20,
+      "checks": 20,
+      "fakeCalls": 3,
+      "baselineChecks": 20,
+      "baselineInputBytes": 9730,
+      "totalCandidateInputBytes": 15353,
+      "requests": [
+        {
+          "stage": "grouping",
+          "rowOrdinal": 0,
+          "inputBytes": 6493,
+          "promptSha256": "15a3c21723fdf8e5d92784e12b2a9a6e8448308dfad3c12c772d600f448cc745",
+          "schemaSha256": "33ac921026b5f764818bcbf34cb800f886794e617662abe876b2f2d749001d15",
+          "requestHash": "f33b69ec36aed4d778074a2f9b84d9e9aba0e1f5310389b1b0e6f94709b75659"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 1,
+          "inputBytes": 4283,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "c5fef68b95fa544614bf80a26b38f76aab6200db112427ec3cd12f97808e617a",
+          "requestHash": "3a355acc3c52f3d15fec781497c57d8309a244c7347a0af19f4e0d9e4ac5377e"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 2,
+          "inputBytes": 4577,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "630c1d8ed5f636f4e174782b3bc1e3cb719a60650544fc9b7a458192047b1e92",
+          "requestHash": "81570715e13dbcda16b601355b86c890b547b0f05c978d4f6509fa81eea84139"
+        }
+      ]
+    },
+    {
+      "name": "turnover-roles-ru",
+      "documentHash": "61e9bbe6654c0e8df33f7690b1f8a5301c8f5bb71cb0a9628c6c8f91f5d23d97",
+      "originalPlanHash": "04c128c20d14fb619e730946fdb624bbd725f4b6be1ad1a1cf71d67687b3bc52",
+      "correct": 23,
+      "checks": 23,
+      "fakeCalls": 3,
+      "baselineChecks": 23,
+      "baselineInputBytes": 9629,
+      "totalCandidateInputBytes": 14387,
+      "requests": [
+        {
+          "stage": "grouping",
+          "rowOrdinal": 0,
+          "inputBytes": 6392,
+          "promptSha256": "15a3c21723fdf8e5d92784e12b2a9a6e8448308dfad3c12c772d600f448cc745",
+          "schemaSha256": "2528926d376754981bcfedfb1637c94ec6f8d022ccd3730b5b39429ec6115298",
+          "requestHash": "e878fb31691c0d44968760c823f47b3eaf6509b65b918caf596058a43cb0e741"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 1,
+          "inputBytes": 3975,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "afd95c70a9384aaee2bd693efe3b69b365c9832b1d8ba6209aef46832bf929af",
+          "requestHash": "4bdda6b1ebc09ba99c595d710488d7f292c73e41e7145e173efc0d416f7dfc38"
+        },
+        {
+          "stage": "row",
+          "rowOrdinal": 2,
+          "inputBytes": 4020,
+          "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
+          "schemaSha256": "3e17f1a8c166e4549f18e65bb0542e7c1ee9d2639d47646dbc1f455536ac12bf",
+          "requestHash": "451791d15966f33ca600628118f74ad9201cec32e7bf9246c015b9c1ce80372a"
+        }
+      ]
+    }
+  ]
+}

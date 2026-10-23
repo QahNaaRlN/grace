@@ -1,12 +1,12 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
 - Статус: **accepted D1–D3 offline**, 2026-10-24.
-- Implementation status на момент принятия: **not_started**; последующая реализация/evidence ведётся в этом же пакете.
+- Implementation status: **implemented offline in PR113; independent implementation acceptance pending**. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
 - Worktree / branch: `statement-row-selection-spec` / `codex/statement-row-selection-spec`.
-- Предлагается принять только D1–D3 offline. Платный эксперимент, reader/SSH,
+- Приняты только D1–D3 offline. Платный эксперимент, reader/SSH,
   изменение продуктового пути/activation и интеграция PR этим решением не открываются.
 
 ## Проблема, факты и гипотеза
@@ -225,7 +225,10 @@ Fresh metadata/route/fees/allowance и campaign cap для гипотетиче�
 Offline baseline сравнивает одинаковые публичные источники и полные текущие checks;
 не заявляет измеренный прирост качества/latency реальной модели.
 
-## Проверка подготовки проекта
+## Проверка подготовки проекта до принятия (история)
+
+Далее зафиксировано состояние proposal review80ac844 до принятия D1–D3;
+текущие результаты реализации находятся в последнем разделе.
 
 На неизменном baseline выполнены `TestClockCausalAndJudge` и
 `TestDescriptionBoundaryOmissionsRemainOutsideGapGuarantee` — PASS;
@@ -245,7 +248,7 @@ Private /var/tmp TMPDIR удалён trap. Все изменения этой в
 сохраняются как baseline evidence, без заявления D1–D3 PASS на их основании.
 Новый paid source или исполняемые grouping/row builders ещё не существуют.
 
-## Решение, предлагаемое владельцу
+## Условия принятого решения (исходная формулировка)
 
 Принять D1–D3 и разрешить их offline-реализацию/проверку в этой же ветке/пакете.
 Это станет accepted specification до первого изменения Go-кода; acceptance record
@@ -269,3 +272,87 @@ pilot/deploy и слияние PR113 этим решением не разреш
 Отдельно владелец принял отчёт и разрешил слить PR112/head60e0137;
 он интегрирован merge `911fbc63ab58c0570fc04ef4a1564e08f377f33a`.
 Принятие manual evidence не устанавливает H2 или AI qualification.
+
+## Реализация и исполняемое evidence D1–D3
+
+Приёмка контракта предшествует коду: spec review80ac844 → acceptance0441b21 →
+merge base PR112/main911fbc6 → implementation в той же ветке PR113.
+Статус реализации — готовящийся к независимому review offline candidate;
+реализация ещё не принята владельцем и не интегрирована.
+
+D1/D2: `internal/statementextract/row_scoped_selection.go` и
+`row_scoped_json.go`; два fixed prompts, request/schema/byte hashes, неизменные
+source aliases и redaction, ownership/header-context/subset/unused-context,
+strict UTF-8 JSON32KiB, null/missing/case/duplicate/unknown/trailing/depth/Unicode
+refusals. Unbound header label не считается действительным использованием context,
+как и в существующем merge. Никакого дополнения description/service/currency.
+
+D3: `internal/statementqualification/row_scoped_selection.go` — только две
+injected stage функции и fake meter в тестах. Default transport/runtime CLI/
+workflow отсутствует. Reserve максимум3×53900 до grouping, последовательный
+prefix, без retries; known bills settle один раз, unknown/duplicate/over-cap
+остаются uncertain. Panic до bill также не считается бесплатной доставкой.
+390s/120s/5s contexts передаются соответственно document/call/settlement;
+cooperative cancellation проверена. Принудительное завершение произвольной
+игнорирующей context Go-функции не обещается; live transport отсутствует.
+
+| AC | Команда / причинное evidence | Фактический результат |
+| --- | --- | --- |
+| D1 | `go test ./internal/statementextract -run '^TestRowScoped' -count=1 -v` | PASS: actual bytes/schema enums, скрытый текст/neighbor isolation, alias/source order, exact90000/90001 input и32768/32769 response, strict JSON, context money forbidden |
+| D2 | `./scripts/test-statement-clock-s119.sh` через существующий network=none pinned helper harness | Actual PDF hashes/Document hashes; correct controls columns19/19, cards20/20, RU23/23; все precision comparisons true |
+| D2 negatives | `TestRowScopedRealHelper`/`TestRowScopedOfflineCausalAndAccounting` | Prefix/suffix/separator, missing row, wrong FX/identifier/available-label получают actual unchanged scorer FAIL; owned description/clock omissions отклоняются до Review; missing currency проверяется без header fallback |
+| D2 context | `TestRowScopedUnboundLabelDoesNotUseContext` | Unbound label не маскирует context_unused; selectors не дополняются |
+| D3 | `go test ./internal/statementqualification -run '^TestRowScoped' -count=1 -v` | Reserve before call, call order/group→row1→row2, max3, cancel/deadline, protocol/capture/provider/billing/settlement refusals, private error sentinel не становится cause |
+| D3 late limit | `TestRowScopedOfflineLateRequestLimit` | Inline synthetic1900 spans, grouping79128 bytes; field request>90000 не доставлен, ровно1 call, fake known prefix10 сохранён; initial2001 spans отказ до reserve |
+| D3 uncertainty | `TestRowScopedPanicNeverSettlesFree` и unknown/duplicate/cost controls | Нет ложного zero/known settlement при неопределённой доставке; нет последующих calls |
+
+[Public request metadata](../research/statement-quality/s121-offline-requests.json)
+содержит все9 actual stage request hashes/bytes,3 Doc/Plan hashes и baseline inputs.
+Это только traces test fakes, не модельные ответы или private snapshots.
+
+| Layout | One-call fake baseline | Three-call fake candidate | Input bytes: base → sum candidate |
+| --- | --- | --- | --- |
+| columns | 19/19 | 19/19 | 9323 →14103 |
+| cards | 20/20 | 20/20 | 9730 →15353 |
+| turnover-roles-ru | 23/23 | 23/23 | 9629 →14387 |
+
+Оба fake controls представляют полную правильную mapping; равенство не является
+оценкой качества реальной модели и не подтверждает H2. Candidate требует больше
+requests/суммарных input bytes и втрое больший theoretical ceiling. Никакого
+заявления об эффективности или выигрыше над реальным v12 здесь нет.
+
+Первый RU fake control дал22/23: `availableBalanceObserved:field_label_required`.
+Fake не выбрал напечатанную подпись; исправлен именно его ответ и добавлен
+отдельный отрицательный missing_available_label control. Scorer/guards/golden
+не изменялись. Initial RED сохранён `/tmp/grace-s121-real-helper-red.log`;
+исправленная full pipeline проверка — production/named-helper log.
+
+Обязательные общие gates завершены с PASS/exit0 на окончательном runtime-коде:
+`make test` (`/tmp/grace-s121-make-test-final.log`),
+`make test-production` (`/tmp/grace-s121-production-final.log`),
+`make test-integration` (`/tmp/grace-s121-integration.log`),
+предметный `go test -race` (`/tmp/grace-s121-race-final.log`),
+`go vet` (`/tmp/grace-s121-vet.log`) и `git diff --check`.
+Exact-head CI фиксируется в PR113 до review/слияния; проход фокусных controls
+не подменяет общие gates. Дополнительный currency counterexample прошёл
+final named-helper suite (`/tmp/grace-s121-real-helper-final.log`); все три
+positive controls и их request fingerprints сохранились.
+
+Исполняемый product path, API/types, financial modules, существующие
+validators/scorer и frozen refs не меняются. Изменение прежнего helper harness —
+только включение `TestRowScopedRealHelper` рядом с `TestClockRealHelper`;
+нового операционного runner нет. Синтетические локальные SQL/backup suites входят
+в offline regression gates; запросов SQL/metadata/provider/SSH к VPS/production,
+новых model calls, deploy и финансовых записей пользователя нет.
+
+Ограничение масштаба: D1–D3 проверяет только два records/три calls.
+Схема «1 grouping + N row calls» без отдельной переработки дала бы97 calls для
+96 records из опубликованного [reference-исследования](0055-technical-contract.md),
+что выше нынешнего product MaxCalls32. Эти97 calls не планируются и не разрешены.
+До любой product-интеграции нужны отдельные решения о масштабировании,
+времени/стоимости и representative evidence; PASS маленьких fixtures их не заменяет.
+
+H2 **UNVERIFIED**, production/qualification не открыты. Полный corpus и owner
+functional acceptance по общей цели остаются нужны. После завершения D1–D3 —
+независимый review и остановка; слияние PR113 и новый live подход требуют
+своего решения владельца.
