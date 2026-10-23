@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
-- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 draft, P4 NOT_AUTHORIZED**, 2026-10-24.
+- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted offline, P4 NOT_AUTHORIZED**, 2026-10-24.
 - Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 not_started**. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
@@ -375,7 +375,7 @@ Exact-source CI40018452932/all5 и actual-main CI40019906935/all5 провере
 
 ## Предложение P1–P4: измерить H2 до инвестиций в масштабирование
 
-**Статус всего дополнения — draft. P1–P3 not_started; P4 NOT_AUTHORIZED.**
+**Статус дополнения — P1–P3 accepted offline; implementation not_started; P4 NOT_AUTHORIZED.**
 Это отдельное предлагаемое решение в том же S1.21 пакете. Принятие D1–D3
 и разрешение слить PR113 не разрешают следующие работы или вызовы.
 
@@ -578,3 +578,15 @@ checks, lint/FSD/format/build/offline Jev), `/tmp/grace-s121-pilot-proposal-make
 prompt/card identities и арифметика1661 spans/12 calls/646800 micros — PASS.
 Изменены только три Markdown файла. Это не P1–P3 implementation evidence и
 не измерение H2; CI нового draft проверяется отдельно после публикации.
+
+
+## Прямое принятие P1–P3 до реализации
+
+2026-10-24 владелец ответил **«Принять P1–P3 и готовить offline»** для
+[PR114](https://github.com/QahNaaRlN/grace/pull/114), review head
+`0a63faeb1694d054096307cbdeee7d215450cfab`. Приняты только P1–P3 и их
+подготовка в том же PR/пакете. До этого решения изменялись только Markdown;
+Go/CLI/workflow P1–P3 ещё отсутствуют. Acceptance record фиксируется до кода.
+P4 NOT_AUTHORIZED; реальные provider/metadata/SSH/VPS SQL, secrets/config VPS,
+deploy, увеличение бюджета и слияние PR114 не разрешены. Новый live source
+и manifest будут подготовлены только после offline реализации/gates/review.

@@ -10,7 +10,7 @@ read-only разбор сохранённого REJECT без новых model c
 Принят владельцем [S1.21 D1–D3](0055-s121-row-scoped-selection.md): сначала
 границы строк, затем поля каждой строки; **accepted offline / accepted implementation / integrated PR113, main05221d9**;
 actual-main CI40019906935/all5 и Delivery40021060286/all4 PASS.
-В том же пакете предложены **P1–P3 draft / code not_started**, измерение H2
+В том же пакете приняты **P1–P3 offline / code not_started**, подготовка измерения H2
 на прежнем public cards; P4 NOT_AUTHORIZED. Новый paid pilot/reader/activation не открыт.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
