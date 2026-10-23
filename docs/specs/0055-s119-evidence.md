@@ -1,4 +1,4 @@
-# S1.19 — offline C1–C4 integrated, live NOT_AUTHORIZED
+# S1.19 — offline C1–C4 integrated, live AUTHORIZED / NOT_RUN
 
 - Контракт: [accepted C1–C4](0055-s119-evidence-selection-candidate.md).
 - Owner acceptance: прямое «Принять, интегрировать и продолжить offline» на
@@ -242,3 +242,21 @@ E6 ref24f7322 и Q6 ref5fdd0f9 не изменены.
 пакета; отдельного readiness PR нет. После разрешённого pilot его approval,
 run и итоговое evidence будут добавлены здесь же для одного итогового review.
 Никакой запуск этим receipt не произведён: **NOT_AUTHORIZED / NOT_RUN**.
+
+
+## Отдельное разрешение владельца S1.19
+
+Receipt зафиксирован: 2026-10-23T16:02:48.626670+00:00.
+Прямой ответ владельца на exact-source запрос: **«Разрешаю один пилот S1.19»**.
+Предъявленный receipt: `2d285a65b2cf618e041b013eaad6c8e4c6f830e6`.
+Source `8da7f45b105105d6596032850893bb690febebd8`,
+ref `codex/statement-s119-pilot-source`; workflow `statement-clock-pilot.yml`,
+`authorized_source` равен этому SHA, `execute_approved_pilot=true`.
+Разрешён **один** workflow_dispatch,3 пары A/cards, максимум6 POST,
+provider cap323400 USD micros/$0.3234 плюс прежние fees в существующем бюджете.
+Включены SSH research execution и только новые marker/report и reserve/settle;
+без deploy, финансовых записей, старых private artifacts и повторов.
+Preflight refusal тоже расходует one-shot. Это не новое allowance.
+
+На момент этого receipt: **AUTHORIZED / NOT_RUN**. Run id и результат
+будут добавлены после единственного dispatch; source/ref не передвигаются.

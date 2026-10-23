@@ -8,7 +8,7 @@
 | Интеграция | S1.19 offline в main84266bd/PR107; source/merge CI5/5 и Delivery4/4 PASS — [evidence](specs/0055-s119-evidence.md) |
 | Качество моделей | E6:6 ответов canonicalization PASS, quality0/3 у A и B; обе пары unqualified — [результат](specs/0055-s117-e6-evidence.md) |
 | Причины | Q6 SUCCESS:6/6 tuples,22 failed checks и23 reasons VERIFIED;15 unknown объяснены — [evidence](specs/0055-s118-q6-evidence.md) |
-| Разрешения | E6/Q6 CONSUMED. Новый pilot NOT_AUTHORIZED / NOT_RUN |
+| Разрешения | E6/Q6 CONSUMED. S1.19 AUTHORIZED / NOT_RUN: прямое «Разрешаю один пилот S1.19» на source8da7f45 |
 | Production | В этой работе не опрашивался и не менялся; текущие health/image/flags не заявляются проверенными |
 | Финансовая граница | Deterministic Go guards/scorer, owner review и confirmation сохраняются; новые модели не активируются |
 
@@ -24,12 +24,12 @@ claims и coverage заменена до принятия. Владелец ра
 Программа: один candidate → offline проверка измерителя и запроса → один
 отдельно разрешённый парный pilot → KEEP_FOR_FURTHER_REVIEW / REJECT / INCONCLUSIVE
 и остановка. Предложение:3 пары, максимум6 POST, provider cap $0.3234 по repo
-policy; это **не разрешение расходовать средства**. Повтор/новая версия не автоматические.
+policy; отдельное разрешение владельца получено на этот source. Повтор/новая версия запрещены без нового решения.
 
 Принятая спецификация интегрирована после CI5/5; offline implementation
 пакет интегрирован PR107. Source8da7f45/ref `codex/statement-s119-pilot-source`,
 manifest и точные inputs подготовлены в том же evidence;
-exact-source live approval остаётся отдельным. Receipts и итоговый отчёт входят
+exact-source live approval получено и записано в том же evidence. Receipts и итоговый отчёт входят
 в пакет, без самостоятельного цикла спецификаций для каждой записи.
 
 Реальный public-helper causal pair теперь проверен сквозным pipeline:
