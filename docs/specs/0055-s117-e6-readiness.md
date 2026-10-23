@@ -2,6 +2,11 @@
 
 Дата: 2026-10-23, Asia/Yekaterinburg.
 
+Текущее состояние: YAML blocker устранён интеграцией №101. Source24f7322/CI5/5
+закреплён до одного E6; run39925874197 выполнен, quality FAIL, permission CONSUMED.
+[Receipt](0055-s117-e6-execution-receipt.md), [результат](0055-s117-e6-evidence.md).
+Ниже сохранён исторический readiness audit до исправления/dispatch.
+
 - Владелец: «влил PR, переходим к E6». Это подтверждает приёмку и интеграцию
   offline реализации и ранее данное отдельное разрешение E6.
 - Accepted contract: [S1.17](0055-s117-alias-comparison.md), E1–E5/E6 scopes сохранены.

@@ -5,12 +5,12 @@
 - Base: `94fd4abf4e2a97116d379474e4b692761ad061da`.
 - Ветка: `codex/statement-s117-comparison`.
 - Implementation commit: `220284f131029812f3ab918625606aa6fc7b9e0b`.
-- Статус: integrated offline, PR №100; подтверждено владельцем. E6 execution NOT_STARTED,
-  разрешение не использовано, live source/ref не выбран; readiness NOT_READY.
+- Статус: integrated offline, PR №100; подтверждено владельцем. E6 execution EXECUTED/FAIL quality,
+  permission CONSUMED; [closed outcome](0055-s117-e6-evidence.md).
 
 До E6 выявлен [YAML blocker](0055-s117-e6-readiness.md): E2 matrix и CI не
 проверяли синтаксис workflow. Прежние offline PASS сохранены как результаты
-конкретных проверок; readiness NOT_READY до интеграции исправления и нового CI.
+конкретных проверок; исторический readiness NOT_READY закрыт №101 и exact-source CI5/5 до E6.
 
 ## Результат и границы
 
@@ -41,7 +41,7 @@ model/key/SQL/config constructors в нём отсутствуют.
 | E3 | `go test ./internal/assistant -run TestS117CampaignActualHTTP -count=1`: actual local HTTP, all6 approved plans/messages/schema/enums/request hashes, ABABAB, one aggregate208500 reserve/settle, call_allowed before each POST, known/unknown/identity/protocol/shared-block/settlement and late-plan refusal | PASS local; только fake HTTP |
 | E4 | `python3 scripts/research/test-comparison-s117.py`: fake Complete→capture→writer→Go CLI→fixed inspector, exact UUID SQL query, corruption/privacy/read-only. `make test-integration` включает `TestS117RealHelperReplay`, actual replay executable и повтор Python inspector с original real-helper writer output; `TestS117StatementMeterSQL` использует disposable PostgreSQL | PASS local для новых S1.17 путей; scorer19/20/23, captured replay6/6, providerCalls0; fake SQL inspector и реальный SQL meter проверяются раздельно |
 | E5 | `make test`, `make test-production`, `make test-integration`, affected race, vet, diff; exact-head CI после публикации | PASS local: все обязательные команды exit0; exact-head CI проверяется в implementation PR |
-| E6 | Приёмка/integration E1–E5, immutable source/ref, его CI5/5 и preflight до однократного dispatch | NOT_STARTED; permission unused, readiness NOT_READY |
+| E6 | Приёмка/integration E1–E5, immutable source/ref, его CI5/5 и preflight до однократного dispatch | EXECUTED / quality FAIL; [E6 closed evidence](0055-s117-e6-evidence.md), permission CONSUMED |
 
 Overflow/known billing/stop semantics проверяются `TestS117ContextCaptureAndLegacyIsolation`:
 сравнение actual старого и нового runners, snapshot32768/report524288,

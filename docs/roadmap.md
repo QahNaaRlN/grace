@@ -1,13 +1,17 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
 Текущий пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
-**accepted / integrated offline, PR №100**. Владелец подтвердил слияние и переход
-к E6. [Post-merge №100](specs/0055-pr100-postmerge.md): main7651668 clean;
-source-head CI5/5 PASS, но найден YAML execution blocker в workflow.
-[E6 readiness](specs/0055-s117-e6-readiness.md): **NOT_DISPATCHED / NOT_READY**,
-разрешение UNUSED. Исправление имени job и обязательный YAML parser готовятся
-к интеграции; live source/ref ещё не закреплён. После исправления нужны его
-интеграция, exact-source CI5/5 и единственный preflight. SSH/metadata/inference0.
+**accepted / integrated offline, PR №100/№101; E6 EXECUTED / FAIL quality**.
+[YAML blocker](specs/0055-s117-e6-readiness.md) устранён №101 по прямому разрешению
+владельца после CI5/5; [post-merge](specs/0055-pr101-postmerge.md).
+[E6 receipt](specs/0055-s117-e6-execution-receipt.md) опубликован до одного
+[run39925874197](https://github.com/QahNaaRlN/grace/actions/runs/39925874197) на frozen24f7322/CI5/5.
+[Результат](specs/0055-s117-e6-evidence.md):6POST, canonicalization/capture/replay6/6,
+качество0/3 у обоих, A17/19–14/20–17/23, B17/19–18/20–19/23.
+10897 USD micros ($0.010897 provider) known/settled; shared uncertain=false,
+image/health preserved. Permission CONSUMED; повтор/deploy/model switch не открыты.
+Следующий возможный пакет — отдельная read-only диагностика coverage/clocks/turnover,
+пока не принята и не выполняется.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](specs/0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -29,7 +33,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — устранение YAML blocker до E6; offline реализация S1.17 интегрирована №100. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — фиксация quality FAIL E6; нового execution/repair scope нет. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).

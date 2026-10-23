@@ -9,7 +9,8 @@
   [CI39921086165](https://github.com/QahNaaRlN/grace/actions/runs/39921086165)
   SUCCESS5/5, canonical exact-source validation PASS.
 - Merge [CI39923250155](https://github.com/QahNaaRlN/grace/actions/runs/39923250155)
-  проверяется отдельно; текущий результат не подменяет source-head CI.
+  SUCCESS5/5 на exact7651668; canonical validation PASS отдельно от source-head CI.
+- Delivery39924246543 SUCCESS4/4 на7651668; это публикация образов, не deployment.
 - Primary main fast-forward94fd4ab→7651668, status clean. Permissions0700 сохранены.
   Feature work выполняется в отдельном worktree, primary не редактируется.
 
@@ -19,5 +20,6 @@ FAILURE, jobs0, ошибка YAML в имени нового job. Обычный
 его успех не означает готовность к E6. Deployment и E6 dispatch не выполнялись.
 
 [Readiness и узкое исправление](0055-s117-e6-readiness.md) фиксируют реальный
-blocker. Разрешение E6 подтверждено, UNUSED; source/ref ещё не закреплён.
+blocker. Исторический readiness отказ закрыт №101; [один E6 выполнен](0055-s117-e6-evidence.md),
+permission CONSUMED. До исправления source/ref не закреплялся.
 Нельзя повторно использовать старые P6/D5 либо обойти workflow gate ручным запуском.
