@@ -230,8 +230,9 @@ lint/FSD/Prettier/build/offline Jev; `git diff --check` PASS. Executable sources
 PR108 интегрирован merge `44e641369da55e8ae0b2e374370707cd14710e72`;
 [main CI39995240441](https://github.com/QahNaaRlN/grace/actions/runs/39995240441) 5/5,
 [Delivery39996404889](https://github.com/QahNaaRlN/grace/actions/runs/39996404889) 4/4.
-Только после этого создана implementation worktree/ветка
-`statement-clock-reject-diagnosis` / `codex/statement-clock-reject-diagnosis` из main44e6413.
+Implementation worktree/ветка `statement-clock-reject-diagnosis` /
+`codex/statement-clock-reject-diagnosis` создана из main44e6413 после интеграции
+принятого контракта и до кода. Main CI/Delivery выше подтверждены позднее.
 
 Разрешённый PR109 интегрирован отдельно: head `e0acf8ea8cc9e5a8b681fa0e2a2107ef331a1ca1`,
 [CI39990561103](https://github.com/QahNaaRlN/grace/actions/runs/39990561103) 5/5,
