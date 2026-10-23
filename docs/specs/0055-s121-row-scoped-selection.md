@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
-- Статус: **accepted D1–D3 offline**, 2026-10-24.
-- Implementation status: **implemented offline in PR113; independent implementation acceptance pending**. На момент принятия D1–D3 Go-кода не было.
+- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 draft, P4 NOT_AUTHORIZED**, 2026-10-24.
+- Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 not_started**. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
@@ -277,8 +277,8 @@ pilot/deploy и слияние PR113 этим решением не разреш
 
 Приёмка контракта предшествует коду: spec review80ac844 → acceptance0441b21 →
 merge base PR112/main911fbc6 → implementation в той же ветке PR113.
-Статус реализации — готовящийся к независимому review offline candidate;
-реализация ещё не принята владельцем и не интегрирована.
+Реализация D1–D3 отдельно принята владельцем и интегрирована PR113;
+прямое решение и фактические post-merge проверки приведены ниже.
 
 D1/D2: `internal/statementextract/row_scoped_selection.go` и
 `row_scoped_json.go`; два fixed prompts, request/schema/byte hashes, неизменные
@@ -357,6 +357,224 @@ validators/scorer и frozen refs не меняются. Изменение пр�
 времени/стоимости и representative evidence; PASS маленьких fixtures их не заменяет.
 
 H2 **UNVERIFIED**, production/qualification не открыты. Полный corpus и owner
-functional acceptance по общей цели остаются нужны. После завершения D1–D3 —
-независимый review и остановка; слияние PR113 и новый live подход требуют
-своего решения владельца.
+functional acceptance по общей цели остаются нужны. Независимая приёмка и
+интеграция D1–D3 выполнены отдельным решением; подготовка нового live этапа
+пока не разрешена. Предложение P1–P4 ниже не меняет принятые D1–D3 задним числом.
+
+
+## Приёмка и интеграция D1–D3
+
+2026-10-24 владелец ответил **«Принять реализацию и слить №113»** для source
+`f5024aa84acfc39434e8091f3f40d5f0e69db358`. Прямое решение сохранено в
+[PR113](https://github.com/QahNaaRlN/grace/pull/113) и merge commit
+`05221d9bb159aba55bf4142dd43d7917771ac522`; деревья source/merge совпадают.
+Exact-source CI40018452932/all5 и actual-main CI40019906935/all5 проверены
+`verify-screening-source-ci.py`. Delivery40021060286/all4 PASS: source guard и
+все три publish jobs. Main чистый. Deploy/новые model calls не выполнялись.
+Это закрывает D1–D3, но не H2 или functional acceptance всего импорта.
+
+## Предложение P1–P4: измерить H2 до инвестиций в масштабирование
+
+**Статус всего дополнения — draft. P1–P3 not_started; P4 NOT_AUTHORIZED.**
+Это отдельное предлагаемое решение в том же S1.21 пакете. Принятие D1–D3
+и разрешение слить PR113 не разрешают следующие работы или вызовы.
+
+### Проблема, результат и границы
+
+Сейчас правильные fake mappings выразимы, но нет ни одного ответа реальной
+модели по новому протоколу. Улучшение fake tests либо немедленная разработка
+batch planner не установят H2. Следующий полезный результат — один конечный
+эксперимент, который либо покажет полный correct candidate на прежнем public
+cards при измеренном преимуществе над fresh base, либо остановит этот вариант.
+
+Ограничение масштаба остаётся обязательным до product-интеграции. Оно не требует
+сначала реализовать 96-row planner ради проверки двухстрочной гипотезы.
+Публикуемые сведения о reference:1661 spans,5 pages,96 records;112305 bytes
+compact state **до** нынешней redaction/aliases. Это не размер actual нового
+request; private reference повторно не читается. Product MaxCalls32 — lifetime
+лимит документа, а нынешний accepted planner строит1 chunk/attempt, не32 чанка.
+97 вызовов для96 строк — арифметическая несовместимость прямого переноса,
+не предложенный plan и не доказательство невозможности любого масштабирования.
+
+Предлагается только A/cards, три пары base/candidate, один campaign, без
+нового corpus/модели/prompt tuning. Base — нынешний whole-document v12;
+candidate — неизменные D1/D2 grouping + отдельные row selections. Сохраняются
+32KiB raw stage response,90000 bytes,2000 spans, максимум2 rows/3 stage calls.
+P1–P3 после принятия разрешат **только offline-подготовку** исполняемого
+эксперимента; один P4 останется отдельным exact-source решением после CI.
+Default product path/plan/profile/consent/API/types/UI/financial writer,
+retention и исходники прежних кампаний не меняются. Масштабирование, private
+PDF, OCR, другие layouts и qualification не входят в этот эксперимент.
+
+### P1. Фиксированный wire и общее измерение
+
+Добавить отдельный operator adapter для уже принятых stage requests. Не менять
+literal prompts, alias/redaction rules, candidate A tuple или v12 base. Public
+PDF cards SHA256 `d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6`,
+Document hash `ff6f0157ec84d773ed788efd67f4635e111425b5146ee2624e6e45aab538a4e9`.
+Grouping request hash `f33b69ec36aed4d778074a2f9b84d9e9aba0e1f5310389b1b0e6f94709b75659`;
+prompt hashes и policy зафиксированы D1 выше. Остальные root/base/schema hashes
+будут в executable manifest и сверятся с actual builders, не назначаются вручную.
+
+Row requests строятся из **actual decoded grouping данного повторения**;
+их hashes заранее неизвестны и не заменяются hashes correct fake controls.
+Нет повторного использования grouping/row ответа между тремя candidate runs,
+подготовленной golden partition, ремонта description/service/currency или retries.
+Reasoner получает только доставленные redacted messages/schema; golden служит
+только измерителю после ответа. Base проходит прежнюю цепочку и прежний decoder,
+candidate — strict D1/D2 → canonical → merge → ValidateProposal → полный scorer.
+
+Общий bounded execution/measurement code можно выделить из нынешнего offline
+runner, сохранив его поведение и regression tests. Старый offline entry point
+остаётся только с fake wiring; live campaign получает отдельный operator entry
+point. Не добавлять arbitrary prompt/request/profile/model/fixture flags или
+универсальный provider bridge. Проверить actual HTTP bytes/route/schema, а не
+только вызов mock метода. Каждому stage соответствует bounded raw capture до
+strict decode; отказ не создаёт искусственный Review/score.
+
+Live adapter после P4 использует существующий OpenRouter transport и прежние
+EU/ZDR/deny/direct/attempt1/non-BYOK/empty-pipeline/no-fallback/reasoning-disabled
+проверки. Exact canonical/endpoint/prices/capabilities подтверждаются fresh
+metadata; историческая policy A не выдаётся за актуальную доступность или цену.
+Не менять старые adapters и frozen E6/Q6/S1.19/R4 grants.
+
+### P2. Одна campaign, учёт и закрытый результат
+
+Порядок шести document attempts: **base,candidate,candidate,base,base,candidate**,
+пары1–2,3–4,5–6. Base≤1 POST, candidate≤3 POST; всего≤12 POST, последовательно.
+Grouping/row failure прекращает данный candidate, пропущенные stages не
+объявляются успешными. Не повторять частичную пару и не менять порядок.
+
+Прежний ceiling A53900 micros/call даёт **646800 provider micros ($0.6468)**
+для всей campaign. Это верхний bound прежней конфигурации, не фактическая цена,
+не разрешённый расход и не увеличение общего бюджета. Перед первым POST —
+**одна** aggregate reserve всей campaign плюс прежние fees в существующем ledger.
+Per-document accounting не создаёт вторую внешнюю reserve/settle. Нет доступного
+allowance с fees — отказ до POST; остаток сейчас не проверяется и не предполагается.
+
+Проверять разрешённость reservation до каждого POST; generation IDs уникальны
+на всю campaign. Один final settle: сумма всех валидных известных bills, либо uncertain
+при неизвестном/невалидном bill; panic до bill не считается бесплатным.
+Валидный bill при protocol/route failure сохраняет known cost, а не становится0.
+Unknown billing/route/capture/timeout останавливает следующие calls. Нет
+финансовых events/postings/import decisions: SQL допускается только для
+существующих budget reserve/guard/settle после отдельного P4.
+
+Contexts:120s на call,390s на candidate document,1800s на campaign,5s на final
+settlement с WithoutCancel; cooperative cancellation плюс внешний process
+watchdog≤1830s. До39 public metadata GET (одна preflight тройка и максимум одна
+тройка перед каждым из12 POST), без retry/redirect; новых generation lookups нет.
+Проверять proof freshness перед каждым POST и сохранять фактически использованный
+proof. Параметры transport/input/output ограничений прежние; flags не поднимают cap.
+
+Private report≤1MiB: source/fixture/root/request identities, фактические stage
+responses≤32KiB, bills/route proofs, planned/actual/not_sent slots, stage/cause,
+полный20-check trace каждого измеримого document и precision actual rows,
+accounting, terminal decision и digest. Без Review checks отсутствуют с stage/cause;
+отсутствующая row/date precision имеет N/A/cause, не подставленное значение.
+Полный target требует всех4 действительных precision comparisons.
+Provider IDs/сырой response остаются
+только в новом защищённом report на VPS. Все исходы, включая refusal, сохраняются.
+
+Публичная closed projection содержит identities/hashes, полный список checks
+и precision, stage/cause при отсутствии Review, regressions, planned/actual
+calls, known/uncertain cost и settlement, решение и replay verdict. Никаких
+raw strings, source text, provider IDs, secrets или произвольных exception messages.
+Полный projection обязателен в первоначальном CI результате: отдельный R4 reader
+для объяснения уже разрешённого результата не планируется.
+Если process watchdog/SSH loss не оставил проверяемого report, итог
+unavailable/INCONCLUSIVE с известным phase/marker; неизвестные calls/cost — N/A,
+не0. Нельзя объявлять непрослеживаемый suffix not_sent или выдумывать settlement.
+Сохранённая reservation остаётся uncertain по прежним guards; допуск CONSUMED.
+Closed failure projection не выдаётся за replay фактически отсутствующих captures.
+
+Внутри того же единственного P4 на VPS независимо воспроизвести raw captures
+через pinned source document и неизменный pipeline, сверить каждое поле summary,
+счётчики и digest. Producer linkage/digest — проверка согласованности, не
+криптографическое доказательство происхождения. Закрытый CI artifact/summary
+разрешён только для этой новой campaign; старые private reports не читаются.
+
+### P3. Решение по полному качеству и causal tests
+
+Target candidate — **actual full20/20 PASS и все4 local_datetime precision**,
+обе строки/описания/валюты/coverage/blockers, во всех трёх повторениях.
+Рост только clocks/description count или формально полная partition не target.
+
+Предлагаемый конечный judge, после проверки source/route/capture/accounting:
+
+1. Infrastructure/protocol/capture/identity/billing/settlement uncertainty →
+   **INCONCLUSIVE**, с полным фактически выполненным prefix и остановкой.
+2. Валидно полученный semantic отказ D1/D2 (partition/subset/coverage/context),
+   либо complete candidate с любым failed check/неверной precision → **REJECT**.
+   Разрешена ранняя остановка при первом таком candidate: требование «все3 full
+   PASS» уже опровергнуто. Остальные slots явно not_sent/decisive_reject;
+   отсутствующие scores не достраиваются. Validator доказывает именно этот
+   достаточный отрицательный witness; это не partial KEEP и не complete campaign.
+3. **KEEP_FOR_SCALING_REVIEW** только при всех6 complete measurements, всех3
+   candidate full PASS и правильной precision, без base-PASS→candidate-FAIL,
+   и хотя бы одном fresh base хуже полного target. Иначе ceiling tie → INCONCLUSIVE.
+
+Успех CI workflow означает завершение процедуры, не quality PASS; итог
+читается только из проверенного decision/checks.
+REJECT/INCONCLUSIVE завершает вариант. KEEP означает лишь основание отдельно
+рассмотреть масштабирование/representative evaluation. Три повторения одного
+public PDF не являются тремя банками, latency distribution, qualification или
+owner functional acceptance. Нового paid повтора, модели, prompt appendix или
+product activation после любого исхода нет без нового прямого решения.
+
+Offline judge controls: perfect candidate+imperfect base, ceiling tie, one failed
+candidate check (включая prefix/suffix), incorrect precision, candidate semantic
+refusal, protocol failure, partial pair, uncertainty после known prefix,
+settlement failure; мутации каждой опубликованной метрики/digest/source/slot.
+Проверять actual pipeline и wire до scorer, а не изготовленный Review. Сохраняются
+все D1–D3 positive/negative controls на трёх layouts как regression baseline.
+
+### P4. Отдельный one-shot допуск на готовый exact source
+
+Сейчас **NOT_AUTHORIZED**. После отдельного принятия/реализации P1–P3,
+полных gates и review владелец сможет разрешить один workflow_dispatch
+`statement-row-pilot.yml` с `authorized_source=<40-hex SHA>` и
+`execute_approved_pilot=true` на опубликованном source ref. Результат подготовки
+включит фактический binary/manifest hashes, source CI5/5/main integration/Delivery,
+точные flags, paths и cap; сейчас такого executable source ещё нет.
+
+Предлагаемый P4 включает SSH staging только нового fixed operator bundle,
+один marker **до** preflight (отказ тоже расходует grant), новые marker/report,
+public metadata/≤12 model POST и budget reserve/settle, чтение/проверку только
+этого нового report и closed CI projection. Запуск использует production
+concurrency/environment guards и pinned host key; no deploy/flags/financial writes.
+Private user PDF и прежние payloads не читаются. Ни отказ CI/SSH/preflight,
+ни пустой/неопределённый результат не разрешают второй dispatch/POST retry.
+
+Принятие P1–P3 разрешит offline code, fake HTTP/local helper/disposable SQL tests
+в том же PR/пакете. Оно **не** разрешит P4, реальные metadata/SSH/SQL/provider calls,
+чтение secrets/config VPS, слияние implementation PR или следующий approach.
+Acceptance implementation/merge и P4 остаются конкретными отдельными решениями;
+receipts/report/replay evidence добавляются в этот же пакет без новых spec номеров.
+
+### AC и обязательные проверки предлагаемого дополнения
+
+| AC | Исполняемое evidence после принятия P1–P3 |
+| --- | --- |
+| P1 wire | Public pinned helper, actual fake HTTP body/request hashes; original base и actual-dependent grouping/row requests; neighbor/hidden/golden isolation; все прежние D1/D2 guards |
+| P2 caps | Порядок6 documents/≤12 POST/≤39 GET, one aggregate reserve/settle, generation uniqueness, earliest refusal/unknown cost/cancel/panic/late oversize; no retry/double budget |
+| P2 report | Full actual checks/precision и metadata captures → independent replay → closed projection; все mutation/source/digest/missing slots/cost inconsistencies отвергнуты |
+| P3 judge | Все перечисленные исходы; early REJECT с доказанным witness и not_sent suffix, никаких KEEP из частичного prefix/одного improved field |
+| P4 readiness | Check mode без env/key/network; fake wrapper SSH/marker/CI/exact-source/refusal tests; runtime flag false по умолчанию, marker расходуется на preflight отказе |
+| Regression | make test; make test-production; make test-integration; go vet; предметный race; git diff --check; exact-source CI5/5 перед implementation review |
+| Isolation | API/types/UI/migrations/financial semantics/default wiring/profile/limits/frozen refs unchanged; до P4 live provider/metadata/SSH/VPS SQL0 |
+
+### Открытое решение
+
+Принять **только P1–P3 offline** как дополнение к S1.21, оставив P4 отдельным
+exact-source допуском, или отклонить эксперимент. До решения code not_started.
+Предложение не обещает успех H2, доступный budget или поддержку96 records.
+Текущая проверка draft — document/source arithmetic; executable P1–P4 ещё нет.
+
+
+Проверка подготовки дополнения: `make test` PASS/exit0 (Go,89 Web suites/336
+checks, lint/FSD/format/build/offline Jev), `/tmp/grace-s121-pilot-proposal-make-test.log`;
+`go vet ./cmd/... ./internal/...`, `git diff --check`, локальные ссылки,
+prompt/card identities и арифметика1661 spans/12 calls/646800 micros — PASS.
+Изменены только три Markdown файла. Это не P1–P3 implementation evidence и
+не измерение H2; CI нового draft проверяется отдельно после публикации.
