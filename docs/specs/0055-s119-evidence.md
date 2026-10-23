@@ -1,4 +1,4 @@
-# S1.19 — offline C1–C4 local_verified, live NOT_AUTHORIZED
+# S1.19 — один pilot завершён, REJECT, разрешение CONSUMED
 
 - Контракт: [accepted C1–C4](0055-s119-evidence-selection-candidate.md).
 - Owner acceptance: прямое «Принять, интегрировать и продолжить offline» на
@@ -6,8 +6,8 @@
 - Implementation code: `4668d1309aea156d96b03938b56fd43a30a4470f`; branch `codex/statement-s119-clock-pilot`.
 - База: main `db65225c6d2cfc9052ccf4f7310ced61c5ba79d8`.
   Принятый контракт интегрирован **до** implementation worktree.
-- Статус: **local_verified offline / integration pending**.
-  Live pilot **NOT_AUTHORIZED / NOT_RUN**, эффект H1 **UNVERIFIED**.
+- Статус: **integrated offline; post-merge gates PASS**.
+  Live pilot **COMPLETED / REJECT**, разрешение **CONSUMED**; итог ниже.
 
 ## Интеграция принятого контракта
 
@@ -30,8 +30,8 @@ Primary clean/mode0700, новая implementation worktree от exact merge.
 | C2 | Actual pinned Poppler → delivered alias proposal → canonicalization → merge → validation → scorer; полный4/4 vs удалённые часы0/4; чужие часы/date-only/invented alias negatives; precision отдельно | PASS offline |
 | C3 offline | Exact A proof/price и reserve до POST; base/candidate/candidate/base/base/candidate;6 calls/cap323400; early-stop; known/unknown settlement; fixed one-shot включая другой SHA, fail и dangling symlink | PASS offline |
 | C3 storage |32768-byte typed snapshots без усечения; <=1MiB report; digest + replay completed snapshots; duplicate/case/unknown/trailing/oversize rejection; только closed summary | PASS offline |
-| C3 live | Новый research workflow default false; точный Source/CI5/5/main ancestry, manifest и отдельное разрешение до SSH/inference | NOT_AUTHORIZED / NOT_RUN |
-| C4 | KEEP / REJECT / ceiling tie / incomplete / N/A / non-clock regression matrices; report cannot substitute a forged score; прекращение после одного pilot | PASS judge, live decision NOT_RUN |
+| C3 live | Exact approved source8da7f45, CI5/5/main ancestry, один run39983522098 attempt1,6/6 completed, known/settled | PASS execution; CONSUMED |
+| C4 | Judge matrices, live private replay6/6, закрытый summary shapeVerified=true, decision=REJECT; остановка после одного pilot | REJECT; пакет завершён |
 
 Ключевые команды:
 
@@ -112,18 +112,239 @@ billingKnown=false; SQL независимо подтверждает status=unc
 race qualification/CLI — PASS (`/tmp/grace-s119-accounting-status-race.log`),
 полный vet — PASS. Request fingerprints/guards/SQL adapter не изменены.
 
-## Границы и следующее решение
+## Границы до live approval (историческая offline запись)
 
 Default product prompt/profile/consent, schema/planner/aliases/redaction,
 financial validators/scorer, API/OpenAPI/Web/migrations и старый deploy workflow
 не изменены. Exact-price restriction включается только новым research adapter;
 legacy comparison default сохраняется. Production constructors не выбирают его.
 
-External inference/metadata, SSH/VPS, production SQL, deploy, owner financial
+На offline этапе: external inference/metadata, SSH/VPS, production SQL, deploy, owner financial
 writes0. Private E6/P6/D5/closed stdout не читались. Ни одного нового workflow
 запуска не было; old E6 FAIL/Q6 SUCCESS и consumed permissions сохранены.
 
-Offline реализация ещё не интегрирована. После review/integration и exact-source
-CI5/5 в этом же пакете предъявляются source/ref/manifest/inputs для отдельного
-одного pilot. Новый draft/readiness PR для каждой записи не требуется.
+Offline реализация интегрирована PR107. Ниже зафиксированы source/ref/manifest/inputs
+того же исследовательского пакета; отдельная спецификация или readiness PR
+для этой записи не создаются.
 Ни live quality PASS, ни winner, ни production activation здесь не заявляются.
+
+
+## PR107: интеграция и подготовка до live approval (исторический receipt)
+
+Владелец слил [PR107](https://github.com/QahNaaRlN/grace/pull/107)
+2026-10-23 15:43:34 UTC / 20:43:34 +05:00.
+Merge `84266bd72ac10d569099e922cb826a8a01330252`;
+final head `8da7f45b105105d6596032850893bb690febebd8`.
+`git diff --exit-code <head> <merge>` PASS; head является предком merge.
+Primary fast-forward до merge, clean; frozen E6/Q6 refs сохранены.
+
+Exact source пилота — **`8da7f45b105105d6596032850893bb690febebd8`**,
+опубликованный fixed ref **`codex/statement-s119-pilot-source`**.
+Он больше не передвигается. Его [CI39965496366](https://github.com/QahNaaRlN/grace/actions/runs/39965496366)
+повторно проверен canonical `verify-screening-source-ci.py`: completed/success,
+exact SHA и все5 jobs PASS. [Merge CI39980740312](https://github.com/QahNaaRlN/grace/actions/runs/39980740312)
+SUCCESS5/5, exact SHA/full jobs проверены canonical validator отдельно от head.
+[Delivery39981953935](https://github.com/QahNaaRlN/grace/actions/runs/39981953935)
+SUCCESS4/4, exact merge SHA и все4 jobs проверены отдельно. Это публикация
+образов, не deployment.
+
+### Manifest и точные inputs (ещё не отправлены)
+
+[Manifest](../research/statement-quality/s119-pilot-manifest.json) получен
+из clean frozen source worktree следующими командами (только check):
+
+```sh
+source_sha=8da7f45b105105d6596032850893bb690febebd8
+bundle="/tmp/grace-s119-local-manifest-$source_sha"
+mkdir -p "$bundle"
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOTOOLCHAIN=go1.24.0 go build -trimpath -ldflags "-X main.sourceSHA=$source_sha" -o "$bundle/grace-clock-pilot" ./cmd/statement-clock-pilot
+"$bundle/grace-clock-pilot" -mode=check > "$bundle/MANIFEST.json"
+```
+
+Его SHA256:
+`2e4f3bfb766041086fa70009dbfdf5400603a3d85f15f4d4bb40e381811a25bf`.
+Local bundle6/6 checksums PASS. CI соберёт свой binary и опубликует только
+MANIFEST/SOURCE_SHA/SHA256SUMS; локальный binary digest не считается digest CI.
+Ни `-mode=run`, ни metadata/provider/SSH/VPS preflight не выполнялись.
+
+Workflow: `.github/workflows/statement-clock-pilot.yml`, один job `clock-pilot`;
+ref `codex/statement-s119-pilot-source`, inputs:
+
+```json
+{
+  "authorized_source": "8da7f45b105105d6596032850893bb690febebd8",
+  "execute_approved_pilot": true
+}
+```
+
+Это предъявленные параметры будущего dispatch, **не разрешение и не запуск**.
+До отдельного решения `execute_approved_pilot` не отправляется;
+workflow default остаётся false. Read-only GitHub list:0 запусков этого workflow.
+GitHub workflow id394220010 active; environment production существует,
+protection_rules=[] (только GitHub metadata, не состояние VPS).
+
+### Объём запрашиваемого разрешения
+
+Один workflow_dispatch, одна identity `s119-clock-pilot`, максимум6 POST:
+base/candidate/candidate/base/base/candidate,3 пары только A/cards.
+Repo policy: `google/gemini-3.1-flash-lite-20260507`, Google/`google-vertex/eu`,
+input/output100000/16000,120s на вызов; provider cap323400 USD micros **$0.3234**.
+Прежние fees и shared allowance сохраняются; разрешение не пополняет бюджет.
+Fresh exact model/route/capability/ZDR/price и доступный бюджет проверит только
+разрешённый job. Сейчас их runtime состояние **UNVERIFIED**; несовпадение — отказ.
+
+Разрешённый job загрузит только новый public bundle на Grace VPS и исполнит
+research binary в существующем API container, с записью отдельного one-shot
+marker/private report0600 и reserve/settle в существующем metering ledger.
+Изменения финансовых объектов не входят в pilot. Фиксированные файлы:
+`/opt/grace/shared/statement-s119-clock-pilot.started` и
+`/opt/grace/shared/statement-s119-clock-pilot.json`;
+temp bundle `/tmp/grace-statement-clock-s119-<source>` удаляется wrapper.
+Private proposals разбираются внутри того же job; GitHub получает закрытый
+summary и безопасный manifest, без payloads/идентификаторов.
+
+Marker/report общие для всех SHA этого pilot. Preflight refusal тоже расходует
+one-shot; протокол/route/timeout/unknown billing/settlement error останавливает
+весь pilot. После KEEP_FOR_FURTHER_REVIEW / REJECT / INCONCLUSIVE — отчёт и стоп,
+без rerun, другого prompt, модели, deployment или production activation.
+Старые private E6/P6/D5 и их локальные копии остаются закрыты.
+
+**Pre-dispatch receipt: NOT_AUTHORIZED / NOT_RUN.** Owner approval/run id,
+actual calls/cost/settlement и H1 decision пока отсутствуют и не выдумываются.
+
+
+### Локальные post-merge gates
+
+`TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` на clean primary84266bd — PASS,
+exit0: Go,88 Web files/334 tests, lint/FSD/Prettier/build/offline Jev.
+Log `/tmp/grace-s119-postmerge-test.log`.
+
+Первый `make test-production` на primary — FAIL: Docker helper uid10001
+не может читать fixture под primary0700, `TestS118VerifierRealHelperContext`,
+permission denied; log `/tmp/grace-s119-postmerge-production.log`.
+Права primary не ослаблялись. Повтор из отдельной worktree того же merge
+`statement-s119-pilot-evidence` — PASS, exit0, включая pinned helper,
+one-shot и остальные production/deployment/backup regression gates.
+Log `/tmp/grace-s119-postmerge-worktree-production.log`.
+Эти local gates не являются обращениями к production VPS.
+
+`TMPDIR=/tmp make test-integration` из этой worktree — PASS, exit0:
+все disposable PostgreSQL/API/helper suites, включая clock meter и uncertainty.
+Log `/tmp/grace-s119-postmerge-worktree-integration.log`.
+Ожидаемые отказные downgrade checks не скрывались.
+
+`go vet ./cmd/... ./internal/...` — PASS, exit0;
+`/tmp/grace-s119-postmerge-vet.log`. `git diff --check` — PASS.
+Primary clean84266bd/mode0700; frozen source worktree clean8da7f45;
+E6 ref24f7322 и Q6 ref5fdd0f9 не изменены.
+
+Подготовка публикуется в ветке `codex/statement-s119-pilot-evidence` того же
+пакета; отдельного readiness PR нет. После разрешённого pilot его approval,
+run и итоговое evidence будут добавлены здесь же для одного итогового review.
+Никакой запуск этим receipt не произведён: **NOT_AUTHORIZED / NOT_RUN**.
+
+
+## Отдельное разрешение владельца S1.19
+
+Receipt зафиксирован: 2026-10-23T16:02:48.626670+00:00.
+Прямой ответ владельца на exact-source запрос: **«Разрешаю один пилот S1.19»**.
+Предъявленный receipt: `2d285a65b2cf618e041b013eaad6c8e4c6f830e6`.
+Source `8da7f45b105105d6596032850893bb690febebd8`,
+ref `codex/statement-s119-pilot-source`; workflow `statement-clock-pilot.yml`,
+`authorized_source` равен этому SHA, `execute_approved_pilot=true`.
+Разрешён **один** workflow_dispatch,3 пары A/cards, максимум6 POST,
+provider cap323400 USD micros/$0.3234 плюс прежние fees в существующем бюджете.
+Включены SSH research execution и только новые marker/report и reserve/settle;
+без deploy, финансовых записей, старых private artifacts и повторов.
+Preflight refusal тоже расходует one-shot. Это не новое allowance.
+
+На момент этого receipt: **AUTHORIZED / NOT_RUN**. Run id и результат
+будут добавлены после единственного dispatch; source/ref не передвигаются.
+
+
+## Единственный dispatch S1.19
+
+[Run39983522098](https://github.com/QahNaaRlN/grace/actions/runs/39983522098),
+2026-10-23T16:03:13Z; workflow_dispatch, attempt1,
+source `8da7f45b105105d6596032850893bb690febebd8`,
+branch `codex/statement-s119-pilot-source`.
+Job `clock-pilot` id120516670549. Ref/SHA подтверждены read-only GitHub run list.
+Отправлен **один** dispatch; второго вызова или rerun не будет.
+Статус на момент записи: IN_PROGRESS; calls/billing/decision пока не заявляются.
+
+
+## Итог единственного live pilot — REJECT
+
+Run39983522098 / job120516670549 завершён **SUCCESS**, attempt1,
+2026-10-23T16:04:22Z. Это успех исполнения, не quality PASS.
+Exact source/head/ref и один workflow_dispatch подтверждены GitHub run metadata;
+source CI step, bundle build/upload, SSH step и единственный research job SUCCESS.
+Runtime binary source не заменялся; исходный ref8da7f45 сохранён.
+
+Закрытый [summary](../research/statement-quality/s119-pilot-summary.json)
+получен из stdout только нового разрешённого job, timestamp16:04:18.4775459Z:
+shapeVerified=true, recordedCalls=6, completed=6, error пуст,
+settlementRecorded=true, reservationSettled=true, billingKnown=true,
+activationAuthorized=false, **decision=REJECT**.
+Summary был построен после strict decode/digest/shape validation и повторного
+прогона всех completed private snapshots через штатный pipeline в том же job.
+Оператор не скачивал private report/proposals и не запускал дополнительный SSH.
+
+| Пара | Порядок | Base clocks | Candidate clocks |
+| --- | --- | --- | --- |
+| 1 | base → candidate |0/4|4/4|
+| 2 | candidate → base |0/4|4/4|
+| 3 | base → candidate |0/4|4/4|
+
+ClockCounts в фактическом порядке: `[0,4,4,0,0,4]`.
+Узкое улучшение clocks наблюдается во всех3 повторениях на одном cards PDF.
+Полный критерий C4 не выполнен: автоматический результат **REJECT** сохраняется.
+Из ветвления `DecideClock` при данных counts следует precision guard и/или non-clock
+регрессией; закрытый summary не экспортирует их коды/строки, поэтому конкретный
+дефект и число таких регрессий здесь **не установлены**. Их нельзя вывести из
+улучшения primary target или успеха workflow. Дополнительный reader/repair/run
+не выполнялся. Это ограничение публичного evidence, не INCONCLUSIVE вместо REJECT.
+
+Billing известен и settlement подтверждён валидированным summary. Валидатор
+report проверяет actual сумму по6 bills и cap323400; числовая actual сумма
+не экспортируется в этот summary и здесь не выдумывается. Прежний shared
+allowance/fees не увеличивались. Это accounting research calls, не финансовый импорт.
+
+В stdout также `clock_application_image_preserved`: текущие container/image
+сохранены между началом и концом research execution. Их конкретный digest,
+health и flags не экспортированы и не объявляются отдельно проверенными.
+Deploy/activation/миграций/финансовых записей в workflow нет.
+
+### Привязка безопасного CI artifact
+
+Artifact [12513539921](https://github.com/QahNaaRlN/grace/actions/runs/39983522098/artifacts/12513539921),
+`statement-s119-manifest`,1116 bytes; ZIP digest
+`876eb4a67f8684aa852f9b28cf7721a829af2dec859af6cf3de6266f637887d0`.
+Скачаны только3 безопасных файла: MANIFEST.json, SOURCE_SHA, SHA256SUMS.
+Manifest byte-for-byte равен предъявленному до approval; source совпадает.
+Пять доступных checksums проверены по public source/manifest/SOURCE_SHA.
+[Полный CI SHA256SUMS](../research/statement-quality/s119-pilot-ci-SHA256SUMS)
+содержит6 members. CI binary digest `7d52119d1206b4496eeec696872d5bdb3f2d01650d9790b3d26494809c602a75`
+зафиксирован runner; сам binary в artifact не включён и отдельно не скачивался.
+Его отличие от local build не скрывается: source/manifest совпали, CI bundle
+проверен wrapper до исполнения. Private report отсутствует среди artifacts.
+
+### Остановка
+
+Разрешение **CONSUMED**, ровно один dispatch,6 completed calls, без повторов.
+Один candidate и один pilot завершены. H1 в полном виде (clock gain без других
+ухудшений) не принята; общий quality PASS/qualification модели не заявляются.
+E6 quality FAIL и Q6 historical findings не меняются; старые private artifacts
+не читались. Candidate не активирован. Новый подход, reader или run не открыт.
+Итог публикуется в том же исследовательском пакете для review.
+
+
+## Проверка итогового evidence-пакета
+
+`TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` — PASS, exit0;
+`/tmp/grace-s119-final-evidence-test.log`,88 Web files/334 tests,
+Go/lint/FSD/Prettier/build/offline Jev.
+`git diff --check` — PASS. Новых code/API/schema изменений нет;
+полные post-merge production/integration/vet gates выше относятся к тому же коду.
+Public summary побайтно по полям сопоставлен с JSON line нового job;
+manifest совпадает с CI, run/source/attempt/один job проверены отдельно.

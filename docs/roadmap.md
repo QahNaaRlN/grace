@@ -1,7 +1,11 @@
 # Roadmap Grace
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).
-Следующий пакет — S1.19, один clock pilot; C1–C4 local_verified offline, integration pending; live gate отдельно.
+S1.19 завершён одним pilot: clock gain0/4→4/4 во всех3 парах, итог REJECT;
+разрешение CONSUMED, новый подход требует отдельного решения.
+Принят [S1.20 R1–R3](specs/0055-s120-clock-reject-diagnosis.md): read-only объяснение
+сохранённого REJECT; implementation not_started, offline-реализация после интеграции,
+новых model calls нет. Live R4 требует отдельного exact-source допуска.
 [Исторические записи S1–S1.18](specs/0055-development-history.md) отделены от текущего состояния.
 
 Последний документированный release snapshot: **2026-10-21**

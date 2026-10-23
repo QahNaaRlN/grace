@@ -1,0 +1,20 @@
+{
+  "version": "statement.clock-pilot.s119.v1",
+  "shapeVerified": true,
+  "activationAuthorized": false,
+  "decision": "REJECT",
+  "error": "",
+  "recordedCalls": 6,
+  "completed": 6,
+  "settlementRecorded": true,
+  "reservationSettled": true,
+  "billingKnown": true,
+  "clockCounts": [
+    0,
+    4,
+    4,
+    0,
+    0,
+    4
+  ]
+}
