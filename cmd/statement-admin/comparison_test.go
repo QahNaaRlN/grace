@@ -165,3 +165,36 @@ func TestS114SummaryPrivatePipeline(t *testing.T) {
 		}
 	}
 }
+
+func TestS117SummaryPrivatePipeline(t *testing.T) {
+	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}, Spans: []statementdata.Span{{ID: "public", Page: 1, Block: 1, Line: 1, Word: 1, Text: "RUB", Box: statementdata.Box{XMin: 1, YMin: 1, XMax: 20, YMax: 10}}}}
+	samples := []statementqualification.Sample{}
+	for _, n := range statementqualification.ScreeningNames() {
+		samples = append(samples, statementqualification.Sample{Name: n, Document: d, SHA256: statementqualification.FixtureHash(n)})
+	}
+	cs := statementextract.ComparisonCandidates()
+	rs := [2]statementextract.Reasoner{&observedSummaryFake{summaryComparisonFake{candidate: cs[0]}}, &observedSummaryFake{summaryComparisonFake{candidate: cs[1]}}}
+	e, err := statementqualification.RunS117Comparison(context.Background(), samples, rs, observedSummaryMeter{})
+	if err == nil {
+		t.Fatal("causal failure expected")
+	}
+	var raw bytes.Buffer
+	if statementqualification.EncodeS117Comparison(&raw, e) != nil {
+		t.Fatal("writer")
+	}
+	out := s117ComparisonSummary(e)
+	if out["reportShapeVerified"] != true || out["observationsVerified"] != true {
+		t.Fatal("summary")
+	}
+	public, _ := json.Marshal(out)
+	for _, secret := range []string{"PRIVATE", "snapshot", "generationId", "reservationId", "actualMicros"} {
+		if bytes.Contains(public, []byte(secret)) {
+			t.Fatal("private leak")
+		}
+	}
+	if dir := os.Getenv("S117_TEST_EXPORT_DIR"); dir != "" {
+		if os.WriteFile(filepath.Join(dir, "observed.json"), raw.Bytes(), 0600) != nil || os.WriteFile(filepath.Join(dir, "summary.json"), public, 0600) != nil {
+			t.Fatal("export")
+		}
+	}
+}

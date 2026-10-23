@@ -42,6 +42,9 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	go test ./scripts/research/s117-replay
+	./scripts/test-statement-comparison-s117.sh
+	python3 scripts/research/test-comparison-s117.py
 	go test ./scripts/research/s115-diagnose
 	python3 scripts/research/test-statement-s115-diagnosis.py
 	./scripts/test-statement-comparison-s114.sh

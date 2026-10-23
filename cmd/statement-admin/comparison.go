@@ -24,6 +24,13 @@ import (
 // allowance. The private report carries its exact reservation UUID.
 type comparisonMeter struct{ meter }
 type s114ComparisonMeter struct{ comparisonMeter }
+type s117ComparisonMeter struct{ comparisonMeter }
+
+func (m s117ComparisonMeter) Reserve(ctx context.Context, n int64, _ statementextract.Policy) (string, error) {
+	var id string
+	err := m.pool.QueryRow(ctx, "SELECT grace_ai_reserve($1,'statement-comparison.s117','fixed-A-B','statement')::text", n).Scan(&id)
+	return id, err
+}
 
 func (m s114ComparisonMeter) Reserve(ctx context.Context, n int64, _ statementextract.Policy) (string, error) {
 	var id string
@@ -37,11 +44,15 @@ func (m comparisonMeter) Reserve(ctx context.Context, n int64, _ statementextrac
 	return id, e
 }
 func comparisonMain(mode, dir string) {
+	s117 := mode == "comparison-s117" || mode == "comparison-s117-preflight" || mode == "comparison-s117-summary"
 	s114 := mode == "comparison-s114" || mode == "comparison-s114-preflight" || mode == "comparison-s114-summary"
-	if mode == "comparison-summary" || mode == "comparison-s114-summary" {
+	if mode == "comparison-summary" || mode == "comparison-s114-summary" || mode == "comparison-s117-summary" {
 		decode := statementqualification.DecodeComparisonArtifact
 		if s114 {
 			decode = statementqualification.DecodeS114ComparisonArtifact
+		}
+		if s117 {
+			decode = statementqualification.DecodeS117ComparisonArtifact
 		}
 		r, observed, e := decode(os.Stdin)
 		if e != nil {
@@ -50,6 +61,9 @@ func comparisonMain(mode, dir string) {
 		out := comparisonArtifactSummary(r, observed)
 		if s114 {
 			out = s114ComparisonSummary(*observed)
+		}
+		if s117 {
+			out = s117ComparisonSummary(*observed)
 		}
 		_ = json.NewEncoder(os.Stdout).Encode(out)
 		if out["reportShapeVerified"] != true {
@@ -100,6 +114,9 @@ func comparisonMain(mode, dir string) {
 	if s114 {
 		preflight = statementqualification.S114ComparisonPreflight
 	}
+	if s117 {
+		preflight = statementqualification.S117ComparisonPreflight
+	}
 	if _, e = preflight(ctx, samples, reasoners); e != nil {
 		fail("comparison_preflight_failed")
 	}
@@ -126,7 +143,7 @@ func comparisonMain(mode, dir string) {
 		fail("comparison_requires_single_active_admin")
 	}
 	ctx = access.WithPrincipal(ctx, access.Principal{ID: ids[0], Role: "admin"})
-	if mode == "comparison-preflight" || mode == "comparison-s114-preflight" {
+	if mode == "comparison-preflight" || mode == "comparison-s114-preflight" || mode == "comparison-s117-preflight" {
 		var ready bool
 		e = pool.QueryRow(ctx, "SELECT grace_ai_remaining() >= $1 AND NOT EXISTS(SELECT 1 FROM ai_usage WHERE status='uncertain')", statementqualification.ComparisonMaxMicros).Scan(&ready)
 		if e != nil || !ready {
@@ -143,6 +160,11 @@ func comparisonMain(mode, dir string) {
 		operatorMeter = s114ComparisonMeter{baseMeter}
 		run = statementqualification.RunS114Comparison
 		encode = statementqualification.EncodeS114Comparison
+	}
+	if s117 {
+		operatorMeter = s117ComparisonMeter{baseMeter}
+		run = statementqualification.RunS117Comparison
+		encode = statementqualification.EncodeS117Comparison
 	}
 	report, e := run(ctx, samples, reasoners, operatorMeter)
 	if encode(os.Stdout, report) != nil {
@@ -216,6 +238,28 @@ func s114ComparisonSummary(e statementqualification.ObservedComparisonReport) ma
 	out["observationUnavailableLegacy"] = false
 	out["observations"] = observations
 	metrics, err := statementqualification.S114ComparisonMetricsFor(e, now)
+	if err != nil {
+		return map[string]any{"reportShapeVerified": false, "activationAuthorized": false}
+	}
+	out["metrics"] = metrics
+	return out
+}
+
+func s117ComparisonSummary(e statementqualification.ObservedComparisonReport) map[string]any {
+	now := time.Now().UTC()
+	valid := statementqualification.ValidateS117Comparison(e, now) == nil
+	out := comparisonSummaryWithValidation(e.Report, valid)
+	if !valid {
+		return out
+	}
+	observations, ok := statementqualification.PublicComparisonObservations(&e, now)
+	if !ok {
+		return map[string]any{"reportShapeVerified": false, "activationAuthorized": false}
+	}
+	out["observationsVerified"] = true
+	out["observationUnavailableLegacy"] = false
+	out["observations"] = observations
+	metrics, err := statementqualification.S117ComparisonMetricsFor(e, now)
 	if err != nil {
 		return map[string]any{"reportShapeVerified": false, "activationAuthorized": false}
 	}
