@@ -5,6 +5,8 @@
 [S1.19: один эксперимент о полноте напечатанного времени](0055-s119-evidence-selection-candidate.md),
 **accepted C1–C4 / integrated offline; live REJECT, разрешение CONSUMED**;
 [evidence](0055-s119-evidence.md), повтор не открыт.
+Предложен [S1.20](0055-s120-clock-reject-diagnosis.md): **draft / implementation not_started**,
+read-only разбор сохранённого REJECT без новых model calls; acceptance/live gate не получены.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

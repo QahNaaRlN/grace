@@ -30,3 +30,9 @@ C4 не выполнен: **REJECT**. Точную precision/non-clock прич�
 
 Пакет завершён отчётом и остановкой. Автоматического v14/повтора/расширения нет;
 новый подход потребует отдельного решения. Продуктовый prompt/profile не менялся.
+
+
+Следующее предлагаемое решение — [S1.20: объяснение сохранённого REJECT](specs/0055-s120-clock-reject-diagnosis.md),
+**draft / implementation not_started**. Только сохранённые6 ответов, полные
+закрытые checks/precision/regressions/cost; model calls0. Принятие offline R1–R3
+и отдельный live R4 ещё не получены. Это предложение, не открытый reader/run.
