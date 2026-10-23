@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
 - Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted offline, P4 NOT_AUTHORIZED**, 2026-10-24.
-- Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 not_started**. На момент принятия D1–D3 Go-кода не было.
+- Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 implemented offline / acceptance pending**. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
@@ -375,7 +375,7 @@ Exact-source CI40018452932/all5 и actual-main CI40019906935/all5 провере
 
 ## Предложение P1–P4: измерить H2 до инвестиций в масштабирование
 
-**Статус дополнения — P1–P3 accepted offline; implementation not_started; P4 NOT_AUTHORIZED.**
+**Статус дополнения — P1–P3 accepted / implemented offline; acceptance implementation pending; P4 NOT_AUTHORIZED.**
 Это отдельное предлагаемое решение в том же S1.21 пакете. Принятие D1–D3
 и разрешение слить PR113 не разрешают следующие работы или вызовы.
 
@@ -602,3 +602,79 @@ fake SSH/Docker. Это прямое разрешение записать ис�
 (default execute=false, exact-source/CI guards, one-shot marker), не выполнить их.
 Workflow_dispatch, SSH/VPS, metadata/provider/SQL calls, чтение secrets, deploy,
 расходы и слияние PR114 остаются запрещены; P4 NOT_AUTHORIZED.
+
+
+## Реализация P1–P3 offline для приёмки PR114
+
+Принятый контракт P1–P3 реализован в том же пакете. Основания до соответствующих
+исходников: acceptance commit `a593a1ebd85ee89f15504938835958da08d29736` и отдельный
+receipt `88942fb` на создание двух операционных файлов **без запуска**.
+Независимая приёмка реализации и слияние PR114 ещё не разрешены.
+
+Фиксированный `cmd/statement-row-pilot` имеет default `check`: actual builders
+создают manifest без config/env/key/файлов пользователя/network. `run` закрыт
+exact-source и отдельным execute flag. Оператор не подключён к API/default wiring.
+`internal/assistant/row_pilot.go` принимает только заново построенные fixed
+base/grouping/actual-row requests; предыдущий правильный fake partition не
+используется в adapter. `runRowScoped` — прежний bounded core; offline entry
+сохранил fake wiring. Base messages/schema/bytes/policy отдельно сверены с v12.
+
+Campaign `internal/statementqualification/row_pilot*.go` владеет одной внешней
+reserve/settle; локальные измерители не пишут ledger. Перед каждым stage — budget
+и fresh route proof, generation ID уникален на все12 calls. Проверяются
+120/390/1800/5s contexts, 12 POST/39 GET/646800 micros caps. В wrapper внешний
+watchdog TERM1820s/KILL+10s. Нет retry и расширения бюджета. Capture сохраняется
+до stage decode; report≤1MiB, каждый raw≤32KiB. Private report повторно проигрывается
+через actual decoder/canonical/merge/ValidateProposal/scorer; digest, requests,
+полные checks, precision, slots и bills сравниваются, а не принимаются на веру.
+
+Closed projection сохраняет полный actual trace. Target остаётся20/20 и все4
+precision comparisons. Если baseline реально содержит одну строку, прежний scorer
+даёт14 checks; пропущенные позиции не дописываются как PASS или искусственные
+checks. Такая complete measurement может доказать улучшение к full candidate.
+Пустой baseline отвергает прежний decoder: protocol INCONCLUSIVE, без fabricated
+Review. `Comparable=false` у regression пары с неполным trace явно сохраняется;
+KEEP всё равно требует все3 full candidate и все6 complete measurements.
+Отсутствующий private report не получает replayVerified: calls/cost/settlement
+остаются JSON null. CLI `validate-public` допускает только finite closed DTO;
+сырой SSH stdout/stderr не печатается и не загружается в artifact.
+
+Созданы `.github/workflows/statement-row-pilot.yml` и
+`deployments/production/statement-row-s121.sh`. Единственный trigger — manual,
+execute=false по умолчанию; первый attempt, exact SHA/ancestor main/CI5-of-5,
+production environment/concurrency, fixed-source bundle SHA256SUMS, общий lock,
+marker до preflight, отказ на повтор/cross-source и закрытая проекция результата.
+Проверки использовали **только fake SSH/Docker**; workflow не запускался.
+
+Для будущего P4 потребуется приватный UUID существующего operator principal:
+workflow source ссылается на `PRODUCTION_STATEMENT_OPERATOR_OWNER_ID` и передаёт
+его только как ephemeral env `GRACE_STATEMENT_OPERATOR_OWNER_ID` внутрь operator.
+Значение не читалось, secret/config не создавались и наличие не проверено —
+**UNVERIFIED prerequisite до допуска P4**. Это сохраняет SQL только для прежних
+reserve/guard/settle; автоматического `SELECT users` для поиска владельца нет.
+Allowance, актуальные metadata/prices и доступность модели также не проверялись.
+Отсутствие UUID останавливает workflow до SSH; нельзя сознательно расходовать P4,
+пока необходимые приватные предпосылки не подтверждены отдельным решением.
+
+| AC принятого P1–P3 | Исполняемое offline evidence |
+| --- | --- |
+| P1 actual wire | `go test ./internal/assistant -run RowPilot`: httptest проверяет actual messages/schema/route/Bearer isolation/no reasoning/fallback, exact v12 base, dynamic grouping→row binding, cap13th POST и40th GET до network |
+| P2 campaign/accounting | `go test ./internal/statementqualification -run RowPilotCampaignAndReplay`: fixed6-slot order, aggregate reserve/settle; known/unknown/invalid/duplicate bills, route/capture/protocol/panic/cancel/settlement/early refusal |
+| P2 replay/closed result | `go test ./internal/statementqualification -run 'RowPilotReplayRejectsMutatedMetrics|RowPilotPublicSummaryMutations'`: actual raw replay и mutation checks/precision/request/raw/count/cost/source/slots/digest/keys, no aliases/private strings/invented zeroes |
+| P3 judge | Campaign fake controls: full candidate+imperfect base → KEEP12; tie → INCONCLUSIVE12; missing row baseline → KEEP12; prefix/suffix/currency/clock/semantic candidate failures → REJECT и stopped suffix; empty baseline/protocol/uncertainty → INCONCLUSIVE |
+| Pinned public pipeline | `./scripts/test-statement-clock-s119.sh`: actual pinned cards helper → fake12 campaign → same source replay → candidate20/20 и precision4/4 во всех3; прежние D1–D3 positive/negative controls на columns/cards/RU сохранены |
+| Locked CLI | `go test ./cmd/statement-row-pilot`: default check с deliberately invalid env, source/execute/argument refusal, malformed/private stdout → closed N/A |
+| One-shot wrapper/workflow | `./scripts/test-statement-row-s121-wrapper.sh`; `python3 scripts/research/test-statement-row-workflow.py`: actual shell blocks с fake SSH/scp/git/gh/Docker, first attempt/exact source/main/all5 CI guards; marker/repeat/cross-source/preflight/UUID/privacy/SSH loss |
+| Isolation | API/types/UI/migrations/product constructors/scorer/validators/frozen source refs не менялись; новые live provider/metadata/SSH/VPS SQL/secret reads/deploy/расходы0 |
+
+Общие local gates перед публикацией implementation head: **PASS**
+`make test` (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev),
+`make test-integration` (одноразовые локальные PostgreSQL/Docker),
+`make test-production`, `go vet ./cmd/... ./internal/...`,
+`git diff --check` и staged diff-check. YAML parser всех6 workflows PASS; generated API diff пуст.
+Exact-head CI публикуется и проверяется отдельно в PR114, эти local gates
+не выдаются за уже пройденный CI.
+Результаты выше — causal fake controls и public helper evidence, **не измерение H2**.
+H2, representative evaluation и надёжный AI-импорт остаются UNVERIFIED.
+После приёмки/интеграции нужен отдельный P4 exact-source допуск; этот отчёт его
+не открывает. После любого P4 результата — остановка, без автоматического повтора.

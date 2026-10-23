@@ -1,0 +1,110 @@
+name: 'S1.21: один row pilot'
+on:
+  workflow_dispatch:
+    inputs:
+      authorized_source:
+        description: 'Полный source SHA из отдельного разрешения владельца'
+        required: true
+        type: string
+      execute_approved_pilot:
+        description: 'Один отдельно разрешённый pilot, максимум 12 POST / $0.6468 provider'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  row-pilot:
+    if: ${{ inputs.execute_approved_pilot }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify exact authorized source and CI 5/5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/row-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/row-ci.json"
+      - name: Build fixed operator bundle
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-statement-row-s121-$GITHUB_SHA"
+          mkdir "$bundle"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-X main.sourceSHA=$GITHUB_SHA" -o "$bundle/grace-row-pilot" ./cmd/statement-row-pilot
+          "$bundle/grace-row-pilot" -mode=check > "$bundle/MANIFEST.json"
+          cp internal/pdfextract/testdata/cards.pdf "$bundle/"
+          cp internal/statementextract/testdata/s119-cards-document.json "$bundle/cards-document.json"
+          cp deployments/production/statement-row-s121.sh "$bundle/run.sh"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          chmod 755 "$bundle" "$bundle/grace-row-pilot"
+          chmod 644 "$bundle/cards.pdf" "$bundle/cards-document.json" "$bundle/run.sh" "$bundle/SOURCE_SHA" "$bundle/MANIFEST.json"
+          (cd "$bundle" && sha256sum grace-row-pilot cards.pdf cards-document.json SOURCE_SHA MANIFEST.json run.sh > SHA256SUMS)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: statement-s121-manifest
+          path: |
+            ${{ runner.temp }}/grace-statement-row-s121-${{ github.sha }}/SHA256SUMS
+            ${{ runner.temp }}/grace-statement-row-s121-${{ github.sha }}/SOURCE_SHA
+            ${{ runner.temp }}/grace-statement-row-s121-${{ github.sha }}/MANIFEST.json
+          if-no-files-found: error
+      - name: Configure pinned SSH
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Execute approved pilot once
+        env:
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+          OPERATOR_OWNER_ID: ${{ secrets.PRODUCTION_STATEMENT_OPERATOR_OWNER_ID }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          printf '%s' "$OPERATOR_OWNER_ID" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          bundle="$RUNNER_TEMP/grace-statement-row-s121-$GITHUB_SHA"
+          remote="/tmp/grace-statement-row-s121-$GITHUB_SHA"
+          result="$RUNNER_TEMP/s121-row-summary.json"
+          raw="$RUNNER_TEMP/s121-row-stdout.private"
+          err="$RUNNER_TEMP/s121-row-stderr.private"
+          trap 'rm -f "$raw" "$err"' EXIT
+          "$bundle/grace-row-pilot" -mode=validate-public -authorized-source="$AUTHORIZED_SHA" </dev/null > "$result" || true
+          ssh grace-deploy@195.133.195.190 "mkdir '$remote'"
+          scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
+          status=0
+          # Only this command enters the one-shot wrapper. No retries.
+          ssh grace-deploy@195.133.195.190 "GRACE_STATEMENT_OPERATOR_OWNER_ID='$OPERATOR_OWNER_ID' sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$AUTHORIZED_SHA'" 2>"$err" | head -c 1048577 > "$raw" || status=$?
+          validated=0
+          "$bundle/grace-row-pilot" -mode=validate-public -authorized-source="$AUTHORIZED_SHA" < "$raw" > "$result" || validated=$?
+          cat "$result"
+          test "$status" -eq 0
+          test "$validated" -eq 0
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: statement-s121-closed-result
+          path: ${{ runner.temp }}/s121-row-summary.json
+          if-no-files-found: warn

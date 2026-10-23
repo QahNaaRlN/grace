@@ -14,7 +14,7 @@
 | Accounting S1.19 | Сохранённые bills `[3032,3117,1437,2999,1446,1449]`, actual13480 USD micros ($0.01348), known/settled; без fresh SQL/fees/allowance proof |
 | Дополнительные действия R4 | Provider/metadata/SQL calls0, persistentWritesRequested0, activationAuthorized=false; новые model calls/deploy/flags/financial writes не выполнялись |
 | S1.21 | D1–D3 и реализация отдельно приняты, integrated PR113. Correct fake controls19/19,20/20,23/23; H2 UNVERIFIED, новый live не открыт |
-| Разрешения | E6/Q6/S1.19/R4 CONSUMED. D1–D3 offline приняты/интегрированы; P1–P3 accepted offline/code not_started, P4 NOT_AUTHORIZED; новый pilot/reader/activation не разрешён |
+| Разрешения | E6/Q6/S1.19/R4 CONSUMED. D1–D3 offline приняты/интегрированы; P1–P3 implemented offline/acceptance pending PR114, P4 NOT_AUTHORIZED; новый pilot/reader/activation не разрешён |
 
 R1–R3 приняты владельцем и интегрированы PR110 до R4. Exact source
 `1a6b74201db92ba37be750411ff7883d8216b602`, ref `codex/statement-s120-reader-source`,
@@ -41,7 +41,10 @@ f5024aa; merge05221d9 сохраняет решение. D1–D3 заверше�
 не доказана. В том же документе принято дополнение P1–P3 offline для одного
 измерения H2:3 пары A/cards,≤12 POST, прежний theoretical provider ceiling
 646800 micros плюс fees в существующем бюджете. P4 требует отдельного допуска
-на готовый source; разрешена только offline-подготовка P1–P3; pilot не разрешён.
+на готовый source. Offline-реализация P1–P3 подготовлена в PR114: fixed adapter/CLI,
+aggregate campaign, replay/closed result, manual workflow/wrapper; запуск не выполнялся.
+Acceptance/merge PR114 ещё не разрешены. UUID operator principal для будущего
+P4 — приватная UNVERIFIED prerequisite; secrets/config не читались и не создавались.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
 работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
 реальной модели. После любого результата — остановка, без автоматического повтора.
