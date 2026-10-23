@@ -17,7 +17,7 @@ export function useStatementMutations(statementId: string) {
   }
   const conflict = async (error: { code: string; message: string } | undefined) => {
     if (error?.code === 'revision_conflict') {
-      await cache.fetchQuery(bankStatementQueries.detail(statementId))
+      await cache.fetchQuery({ ...bankStatementQueries.detail(statementId), staleTime: 0 })
       throw new Error(
         'Источник изменён другим действием. Ввод сохранён; проверьте актуальное состояние и повторите сохранение.',
       )

@@ -15,7 +15,9 @@ beforeEach(() => {
 })
 it('retains source selection and reason at 409, reads the new revision and retries without invalidating on failure', async () => {
   const fixture = statementFixture()
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
+  })
   client.setQueryData(bankStatementQueries.detail(fixture.id).queryKey, fixture)
   const invalidate = vi.spyOn(client, 'invalidateQueries')
   get.mockResolvedValue({ data: { ...fixture, revision: 2 } })
