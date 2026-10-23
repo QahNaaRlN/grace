@@ -395,3 +395,13 @@ func ComposeRowScoped(d statementdata.Document, g RowGrouping, rows []statementd
 	_ = json.Unmarshal(raw, &out)
 	return out, nil
 }
+
+// BuildRowPilotBase preserves the current v12 messages/schema, with a separate
+// research request identity. No product planner or consent selects this entry.
+func BuildRowPilotBase(d statementdata.Document) (RowScopedRequest, error) {
+	p, e := rowScopedPlan(d)
+	if e != nil {
+		return RowScopedRequest{}, e
+	}
+	return rowScopedRequest("base", 0, p.Policy, p.Chunks[0], SystemPrompt, rowScopedSchema(p.Chunks[0]))
+}

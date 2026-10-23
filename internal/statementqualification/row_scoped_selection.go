@@ -44,7 +44,13 @@ type RowScopedOutcome struct {
 
 // RunRowScopedOffline is a bounded feasibility runner, not qualification or an
 // authorization token. It has no client/config/SQL/SSH/default transport wiring.
-func RunRowScopedOffline(ctx context.Context, s Sample, stages RowScopedStages, meter Meter) (out RowScopedOutcome, err error) {
+func RunRowScopedOffline(ctx context.Context, s Sample, stages RowScopedStages, meter Meter) (RowScopedOutcome, error) {
+	return runRowScoped(ctx, s, stages, meter)
+}
+
+// Shared bounded core. The offline entry retains fake-only wiring; the fixed
+// separately authorized campaign supplies its own guarded stage transport.
+func runRowScoped(ctx context.Context, s Sample, stages RowScopedStages, meter Meter) (out RowScopedOutcome, err error) {
 	out = RowScopedOutcome{Version: statementextract.RowScopedVersion, Status: "unavailable", Calls: []RowScopedCall{}}
 	fail := func(stage, cause, status string) error {
 		out.Status = status
