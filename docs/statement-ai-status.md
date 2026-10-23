@@ -5,7 +5,7 @@
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline в main84266bd/PR107; source/merge CI5/5 и Delivery4/4 PASS — [evidence](specs/0055-s119-evidence.md) |
+| Интеграция | main44e6413: S1.19 offline PR107, evidence/accepted S1.20 PR108 и review fix PR109; merge CI5/5 и Delivery4/4 PASS — [evidence](specs/0055-s119-evidence.md) |
 | S1.19 pilot | Run39983522098 SUCCESS,6/6 completed; base0/4 против candidate4/4 во всех3 парах; итог **REJECT** |
 | Качество моделей | S1.19 не дал принятого candidate; E6 quality0/3 у A и B, обе unqualified — [история](specs/0055-s117-e6-evidence.md) |
 | Причины | Q6 SUCCESS6/6 остаётся историческим evidence; конкретный reject-code S1.19 закрытый summary не экспортирует |
@@ -18,8 +18,7 @@
 реализован после интеграции контракта PR106 и интегрирован PR107.
 Offline causal/helper/HTTP/SQL/judge и полные gates PASS;
 [source/ref/manifest/approval/run/result](specs/0055-s119-evidence.md) входят
-в один пакет без отдельного readiness PR. Final evidence пока на review-ветке,
-не интегрировано в main.
+в один пакет без отдельного readiness PR. Final evidence интегрировано PR108/main44e6413.
 
 Гипотеза проверена одним candidate и одним отдельно разрешённым pilot на source
 `8da7f45b105105d6596032850893bb690febebd8`, ref `codex/statement-s119-pilot-source`.
@@ -33,7 +32,15 @@ C4 не выполнен: **REJECT**. Точную precision/non-clock прич�
 
 
 Следующий принятый offline-пакет — [S1.20: объяснение сохранённого REJECT](specs/0055-s120-clock-reject-diagnosis.md),
-**accepted R1–R3 offline / implementation not_started**. Только сохранённые6 ответов, полные
+**accepted R1–R3 offline / implementation verified offline, review pending**. Только сохранённые6 ответов, полные
 закрытые checks/precision/regressions/cost; model calls0. Владелец принял R1–R3 и разрешил интеграцию PR108/109 после CI5/5
 и последующую offline-реализацию. Live R4 NOT_AUTHORIZED / NOT_RUN;
-отдельный exact-source допуск предъявляется после готовности.
+отдельный exact-source допуск предъявляется после интеграции готовой реализации.
+
+R1–R3 реализованы на `codex/statement-clock-reject-diagnosis` после интеграции
+принятого контракта. Pure projection сохраняет все120 checks, precision,
+три pair diffs и cost; прежний decoder/replay неизменён. Fixed reader и
+sealed-memfd operator path проверены synthetic/hermetic tests; workflow default false.
+Полные local gates PASS; код ещё не интегрирован и требует review.
+[Evidence R1–R3](specs/0055-s120-clock-reject-diagnosis.md#интеграция-принятого-контракта-и-offline-evidence-r1r3).
+Истинная причина сохранённого REJECT остаётся UNVERIFIED до отдельно разрешённого R4.
