@@ -590,3 +590,15 @@ Go/CLI/workflow P1–P3 ещё отсутствуют. Acceptance record фик�
 P4 NOT_AUTHORIZED; реальные provider/metadata/SSH/VPS SQL, secrets/config VPS,
 deploy, увеличение бюджета и слияние PR114 не разрешены. Новый live source
 и manifest будут подготовлены только после offline реализации/gates/review.
+
+
+## Отдельное разрешение на запись операционных файлов без запуска
+
+2026-10-24, после отклонения автоматической проверкой записи workflow/wrapper,
+владелец отдельно ответил **«Разрешаю создать файлы без запуска»** на вопрос
+о создании `.github/workflows/statement-row-pilot.yml` и
+`deployments/production/statement-row-s121.sh` в worktree и проверке только с
+fake SSH/Docker. Это прямое разрешение записать исходники manual workflow
+(default execute=false, exact-source/CI guards, one-shot marker), не выполнить их.
+Workflow_dispatch, SSH/VPS, metadata/provider/SQL calls, чтение secrets, deploy,
+расходы и слияние PR114 остаются запрещены; P4 NOT_AUTHORIZED.
