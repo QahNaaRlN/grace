@@ -1,5 +1,9 @@
 # SPEC-0055 — implementation evidence
 
+Дополнительная проверка 2026-10-23: [привязка owner review к версии выписки](0055-owner-review-revision-evidence.md)
+— исправление AC6/AC10; local verification, integration pending. Исторический
+snapshot ниже не является текущим подтверждением model qualification.
+
 - Дата: 2026-10-19
 - Основание: [принятая SPEC-0055](0055-bank-statement-pdf-import.md) и
   [принятый технический контракт](0055-technical-contract.md), owner approval

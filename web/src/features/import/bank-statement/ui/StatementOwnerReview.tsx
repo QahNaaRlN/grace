@@ -17,17 +17,28 @@ export function StatementOwnerReview({ statement }: { statement: Statement }) {
   const [reason, setReason] = useState('')
   const [error, setError] = useState('')
   const [deleteRequested, setDeleteRequested] = useState(false)
+  const [editingRevision, setEditingRevision] = useState(statement.revision)
+  const stale = editingRevision !== statement.revision
+  function loadReview(source: Statement) {
+    setRetention(source.retention)
+    setRoles(source.rolesConfirmed)
+    setPages([...source.reviewedPages])
+    setEditingRevision(source.revision)
+    setReason('')
+    setError('')
+  }
   async function save() {
     try {
-      await edit.mutateAsync({
-        expectedRevision: statement.revision,
+      if (stale) return
+      const saved = await edit.mutateAsync({
+        expectedRevision: editingRevision,
         accountId: statement.accountId,
         retention,
         rolesConfirmed: roles,
         reviewedPages: pages,
         reason,
       })
-      setError('')
+      loadReview(saved)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Проверка не сохранена.')
     }
@@ -41,6 +52,18 @@ export function StatementOwnerReview({ statement }: { statement: Statement }) {
     )
   return (
     <div className="space-y-3">
+      {stale && (
+        <section className="space-y-3 rounded-xl border p-3">
+          <p role="status">
+            Источник изменился. Отметки и основание ниже относятся к предыдущей версии и не
+            подтверждают текущий черновик. Ввод сохранён. Загрузите актуальную проверку и заново
+            проверьте роли и страницы.
+          </p>
+          <Button variant="outline" onClick={() => loadReview(statement)} disabled={edit.isPending}>
+            Загрузить актуальную проверку
+          </Button>
+        </section>
+      )}
       <p className="text-sm">
         Срок проверки: {new Date(statement.expiresAt).toLocaleString('ru-RU')}. Резервные копии
         могут хранить оригинал до окончания их срока хранения.
@@ -91,7 +114,7 @@ export function StatementOwnerReview({ statement }: { statement: Statement }) {
           {error}
         </p>
       )}
-      <Button onClick={save} disabled={!reason.trim() || edit.isPending}>
+      <Button onClick={save} disabled={stale || !reason.trim() || edit.isPending}>
         Сохранить проверку
       </Button>
       <div>
