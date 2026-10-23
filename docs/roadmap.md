@@ -1,6 +1,15 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
-Текущий пакет — [S1.18: диагностика качества сохранённого E6](specs/0055-s118-saved-quality-diagnosis.md),
+Следующий пакет — [S1.19: offline-кандидат инструкций выбора evidence](specs/0055-s119-evidence-selection-candidate.md),
+**draft / implementation not_started**. Один research-only prompt candidate:
+clock completeness, single-use claims и coverage self-check; actual wire/bytes и
+причинные public/synthetic контрпримеры с прежними guards/scorer.
+Active product prompt/profile/consent и live campaign paths сохраняются.
+Принятие R1–R5 ещё не получено; live effect UNVERIFIED, нового run/SSH нет.
+[Post-merge №105](specs/0055-pr105-postmerge.md): результат Q6 интегрирован
+main1a5bbfb, head и merge CI5/5, Delivery4/4 PASS.
+
+Завершённый пакет — [S1.18: диагностика качества сохранённого E6](specs/0055-s118-saved-quality-diagnosis.md),
 **accepted Q1–Q5 / integrated offline, PR №104; Q6 EXECUTED / SUCCESS**.
 [Post-merge №104](specs/0055-pr104-postmerge.md): main438256b clean, head/merge CI5/5
 и Delivery4/4 PASS. [Q1–Q5 evidence](specs/0055-s118-evidence.md): все local gates PASS.
@@ -46,7 +55,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — фиксация SUCCESS диагностики Q6; quality FAIL E6 сохранён, новый run/repair не открыты. Закрытый evidence D5 остаётся вне Git.
+Результат Q6 интегрирован №105; следующий S1.19 пока draft. Quality FAIL E6 сохранён; новый run не открыт. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
