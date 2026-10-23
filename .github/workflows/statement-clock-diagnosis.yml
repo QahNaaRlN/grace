@@ -1,0 +1,95 @@
+name: 'S1.20: объяснить сохранённый REJECT'
+on:
+  workflow_dispatch:
+    inputs:
+      authorized_source:
+        description: 'Полный SHA готового reader из отдельного R4 разрешения'
+        required: true
+        type: string
+      execute_approved_diagnosis:
+        description: 'Один отдельно разрешённый разбор сохранённого S1.19'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  clock-diagnosis:
+    if: ${{ inputs.execute_approved_diagnosis }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify exact authorized source and CI 5/5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/s120-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/s120-ci.json"
+      - name: Build offline reader and manifest
+        run: |
+          set -eu
+          bundle="$RUNNER_TEMP/grace-s120-$GITHUB_SHA"
+          mkdir "$bundle"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-X main.readerSource=$GITHUB_SHA" -o "$bundle/reader" ./scripts/research/s120-diagnose
+          "$bundle/reader" -mode=check > "$bundle/MANIFEST.json"
+          cp internal/statementextract/testdata/s119-cards-document.json "$bundle/context.json"
+          cp scripts/research/run-s120-diagnosis.py scripts/research/s120-bootstrap.py scripts/research/verify-screening-source-ci.py "$bundle/"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          (cd "$bundle" && sha256sum reader context.json SOURCE_SHA MANIFEST.json run-s120-diagnosis.py s120-bootstrap.py verify-screening-source-ci.py > SHA256SUMS)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: statement-s120-manifest
+          path: |
+            ${{ runner.temp }}/grace-s120-${{ github.sha }}/MANIFEST.json
+            ${{ runner.temp }}/grace-s120-${{ github.sha }}/SOURCE_SHA
+            ${{ runner.temp }}/grace-s120-${{ github.sha }}/SHA256SUMS
+          if-no-files-found: error
+      - name: Configure pinned SSH
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Read approved saved report once
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+          EXECUTE_APPROVED: ${{ inputs.execute_approved_diagnosis }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$EXECUTE_APPROVED" = true
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          bundle="$RUNNER_TEMP/grace-s120-$GITHUB_SHA"
+          test "$(cat "$bundle/SOURCE_SHA")" = "$GITHUB_SHA"
+          (cd "$bundle" && sha256sum -c SHA256SUMS)
+          python3 "$bundle/verify-screening-source-ci.py" "$GITHUB_SHA" "$RUNNER_TEMP/s120-ci.json"
+          result="$RUNNER_TEMP/s120-closed.json"
+          result_status=0
+          python3 -B "$bundle/run-s120-diagnosis.py" "$bundle/reader" "$bundle/context.json" "$GITHUB_SHA" "$AUTHORIZED_SHA" "$EXECUTE_APPROVED" "$RUNNER_TEMP/s120-ci.json" > "$result" || result_status=$?
+          "$bundle/reader" -mode=validate -authorized-source="$GITHUB_SHA" < "$result"
+          sha256sum "$result"
+          exit "$result_status"

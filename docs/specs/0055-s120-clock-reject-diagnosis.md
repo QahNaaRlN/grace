@@ -1,11 +1,12 @@
 # SPEC-0055 / S1.20: объяснить сохранённый REJECT без новых model calls
 
-- Статус: **accepted R1–R3 offline**; implementation_status: **not_started**.
+- Статус: **accepted R1–R3 offline**; implementation_status: **verified offline / review pending**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое решение владельца ниже.
 - Proposal branch: `codex/statement-s119-pilot-evidence`, тот же PR108.
-- Implementation branch/commit: отсутствуют; реализация начинается после интеграции контракта.
-- Offline R1–R3 приняты; до реализации требуется интеграция. Live R4 отдельно:
+- Implementation branch: `codex/statement-clock-reject-diagnosis`; base main44e6413 после PR108.
+  Код проверен offline, ещё не интегрирован; exact head/CI у implementation PR.
+- Offline R1–R3 приняты и контракт интегрирован PR108 до реализации. Live R4 отдельно:
   **NOT_AUTHORIZED / NOT_RUN**, без переноса consumed E6/Q6/S1.19 permissions.
 
 ## Проблема и пользовательский результат
@@ -188,11 +189,10 @@ diagnosis_limit_exceeded, output_mismatch, unavailable_runtime.
 | R3 | SSH stub ровно1 subprocess, no persistent writes; default false/unauthorized/CI/source/limit отказ до SSH; private sentinel отсутствует в stdout/artifacts; closed schema и независимый C4 recompute |
 | R4 | Только отдельный exact-source grant: один run, status VERIFIED либо честный UNVERIFIED; report сохранён, provider/SQL/writes0, вывод без payload, остановка |
 
-После acceptance планируются `go test ./internal/statementqualification ./scripts/research/s120-diagnose`,
+Обязательные offline gates: `go test ./internal/statementqualification ./scripts/research/s120-diagnose`,
 hermetic Python bootstrap/SSH tests, existing pinned-helper causal gate,
 `make test`, `make test-production`, `make test-integration`, `go vet` и
-`git diff --check`. Новых reader/tests/workflow пока нет: эти команды — план,
-не evidence реализации. Offline fakes не заполняют R4 и не устанавливают причину
+`git diff --check`. Evidence реализации приведено в конце этого документа. Offline fakes не заполняют R4 и не устанавливают причину
 реального REJECT. Новые assertions используют actual report decode/replay,
 не фабрикуют Review или итоговый score. Недостижимые для текущего pipeline
 комбинации не превращаются в искусственный positive report ради теста ветки:
@@ -204,7 +204,8 @@ hermetic Python bootstrap/SSH tests, existing pinned-helper causal gate,
 на вопрос о принятии R1–R3 в PR108, review head
 `db1f8642b4d634ffd489346fa4e20fb880f7f281`, записи acceptance, слиянии PR108 и
 PR109 после exact-head CI5/5 и последующей offline-реализации reader.
-Это acceptance контракта; implementation_status остаётся **not_started**.
+Это acceptance контракта; на момент решения implementation_status оставался **not_started**.
+Ход последующей offline-реализации зафиксирован ниже.
 R4 — **NOT_AUTHORIZED / NOT_RUN**: чтение закрытого отчёта VPS требует
 отдельного разрешения на готовый exact source. Новый prompt/model pilot,
 повтор S1.19 или автоматическое слияние будущего implementation PR не разрешены.
@@ -214,8 +215,70 @@ R4 — **NOT_AUTHORIZED / NOT_RUN**: чтение закрытого отчёт�
 
 Существующий `go test ./internal/statementqualification -run '^TestClockCausalAndJudge$' -count=1 -v`
 — PASS, `/tmp/grace-s120-design-baseline.log`: подтверждены нынешний pipeline,
-clock gain/REJECT/non-clock regression/incomplete/N/A branches. Новый reader не создан.
+clock gain/REJECT/non-clock regression/incomplete/N/A branches. На момент подготовки draft новый reader ещё не был создан.
 `TMPDIR=<private /var/tmp> NODE_DISABLE_COMPILE_CACHE=1 VITEST_MAX_WORKERS=1 make test`
 — PASS, `/tmp/grace-s120-proposal-make-test.log`,88 Web files/334 tests плюс Go,
 lint/FSD/Prettier/build/offline Jev; `git diff --check` PASS. Executable sources
 не менялись. Private TMPDIR удалён; private report/VPS/provider не опрашивались.
+
+## Интеграция принятого контракта и offline evidence R1–R3
+
+Это отчёт исполнителя для review, не owner acceptance реализации и не R4.
+Спецификация принята до кода на review head `db1f8642b4d634ffd489346fa4e20fb880f7f281`.
+Запись acceptance — `603e112e340b65b9a1aabecaa8d26b0bb26510f7`,
+[CI39993532400](https://github.com/QahNaaRlN/grace/actions/runs/39993532400) 5/5.
+PR108 интегрирован merge `44e641369da55e8ae0b2e374370707cd14710e72`;
+[main CI39995240441](https://github.com/QahNaaRlN/grace/actions/runs/39995240441) 5/5,
+[Delivery39996404889](https://github.com/QahNaaRlN/grace/actions/runs/39996404889) 4/4.
+Только после этого создана implementation worktree/ветка
+`statement-clock-reject-diagnosis` / `codex/statement-clock-reject-diagnosis` из main44e6413.
+
+Разрешённый PR109 интегрирован отдельно: head `e0acf8ea8cc9e5a8b681fa0e2a2107ef331a1ca1`,
+[CI39990561103](https://github.com/QahNaaRlN/grace/actions/runs/39990561103) 5/5,
+merge `c09308920f29787d7812b9118292c0fbf0f4259b`,
+[main CI39993577486](https://github.com/QahNaaRlN/grace/actions/runs/39993577486) 5/5,
+[Delivery39994741222](https://github.com/QahNaaRlN/grace/actions/runs/39994741222) 4/4.
+Локальные post-merge `make test`, `make test-production`, `make test-integration`,
+`go vet`, diff-check на c093089 PASS (`/tmp/grace-s120-postmerge109-*.log`).
+PR108 добавил только документы; exact merge CI повторил полные gates.
+Delivery публикует образы; нового deploy/activation не было.
+
+| AC | Реализация и исполняемое evidence |
+| --- | --- |
+| R1 | `internal/statementqualification/clock_diagnosis.go`; прежние decoder/scorer/judge не изменены. `go test ./internal/statementqualification -run '^TestClockDiagnosis' -count=1 -v` PASS, `/tmp/grace-s120-r1.log`. Fake reasoner проходит настоящий RunClockPilot → Encode/Decode/replay; полные120 checks, shared failures, три пары включая reversed order, суммы bills и повторяемые bytes. Forged precision/score/digest/context/source/decision/unknown code отклонены |
+| R2 | `scripts/research/s120-diagnose`; `go test ./scripts/research/s120-diagnose` PASS, `/tmp/grace-s120-r1-r2.log`. Синтетические файлы0600: успешное чтение и неизменность bytes/inode/mode/mtime; missing/symlink/FIFO/directory/mode/oversize/partial/marker source; mutation/mtime/mode/replacement/symlink/remove между reads. Default/check и validate не вызывают private reader; неверный source/context останавливаются до него |
+| R3 | `python3 -B scripts/research/test-statement-s120-diagnosis.py` PASS, `/tmp/grace-s120-r3-final.log`:31 Go/Python parity cases, настоящий sealed memfd/пустой env, nonzero typed cause, stdout overflow/timeout, один SSH stub, отказы до SSH. Исполнен actual YAML guard с hermetic gh/git для source/ancestor/CI SHA/skipped job/rerun. `node scripts/research/check-workflow-syntax.mjs` PASS. Live SSH0 |
+| R4 | **NOT_AUTHORIZED / NOT_RUN**. Истинная причина S1.19 REJECT, фактическая сумма и наличие/состояние fixed VPS files остаются UNVERIFIED. Ни synthetic result, ни успешно собранный reader их не заменяют |
+
+`go test -race ./internal/statementqualification ./scripts/research/s120-diagnose`
+PASS (`/tmp/grace-s120-race.log`). Actual pinned helper gate в `make test-production`
+подтвердил тождество public JSON настоящему Poppler25.04.0/bbox-v1: good20/20,
+clocks4; date-only14/20, clocks0, coverage failure сохранён.
+
+Target/precision controls получены из настоящего pipeline и корректно дают
+`summary_mismatch`, когда отличаются от исторических `[0,4,4,0,0,4]`.
+Их реальные измерения отдельно проверяют вычисление нескольких reject causes.
+Precision-only failure при четырёх верных clocks текущий pipeline не производит;
+поддельная cached precision проверяется как отрицательный replay mismatch.
+Валидный synthetic REJECT с историческими clock counts возникает от non-clock
+регрессии. Это тест reader, не утверждение о причинах сохранённого live report.
+
+При review дополнительно закрыты два случая: Python больше не принимает UTF-16/BOM,
+отклоняемые Go; comparison manifest различает bool/int. Workflow явно запрещает
+`GITHUB_RUN_ATTEMPT != 1` до SSH. Финальные narrow parity/YAML gates повторены
+после этих изменений; ошибок полноценного gate не скрыто.
+
+Полные offline gates реализации: `make test` PASS (89 Web files/336 tests, Go,
+lint/FSD/format/build/offline Jev), `make test-production` PASS,
+`make test-integration` PASS, `go vet ./cmd/... ./internal/... ./scripts/research/s120-diagnose`
+PASS, `git diff --check` PASS. Логи: `/tmp/grace-s120-make-test.log`,
+`/tmp/grace-s120-production.log`, `/tmp/grace-s120-integration.log`, `/tmp/grace-s120-vet.log`.
+`make test` использовал private `/var/tmp` TMPDIR с удалением после завершения:
+унаследованный `/tmp/.git` не менялся. Disposable Docker suites завершены с cleanup.
+
+Reader не создаёт marker/report на VPS и не имеет path/producer override.
+Единственный workflow default false; вывод — закрытый diagnostic или enum failure.
+Реальный запуск потребует integration реализации, exact-source CI5/5,
+manifest/ref/inputs и отдельный R4 grant. Ни новой версии prompt, ни model calls,
+SQL/ledger/reserve/settle, финансовых записей или deploy этот пакет не выполнял.
+Исходный S1.19 **REJECT** сохранён; общая цель надёжного AI-импорта не закрыта.
