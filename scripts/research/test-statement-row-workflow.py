@@ -12,6 +12,7 @@ assert 'default: false' in workflow and 'if: ${{ inputs.execute_approved_pilot }
 assert 'workflow_dispatch:' in workflow and 'pull_request:' not in workflow
 assert 'PRODUCTION_STATEMENT_OPERATOR_OWNER_ID' in workflow
 assert 's119-cards-document.json' in workflow
+assert 'grace-deploy@' not in workflow
 
 def block(name):
     section = workflow.split('      - name: ' + name + '\n', 1)[1]
@@ -32,8 +33,9 @@ with tempfile.TemporaryDirectory(prefix='grace-s121-workflow-') as tmp:
     for tool, body in {
         'git': 'test "${ANCESTOR:-true}" = true\n',
         'gh': 'case "$*" in run\\ list*) echo 123 ;; run\\ view*) cat "$CI_FIXTURE" ;; *) exit 9 ;; esac\n',
-        'scp': 'echo scp >> "$COMMANDS"\n',
-        'ssh': '''echo ssh >> "$COMMANDS"
+        'scp': 'case "$3" in root@195.133.195.190:/tmp/grace-statement-row-s121-*) ;; *) exit 41 ;; esac\necho scp >> "$COMMANDS"\n',
+        'ssh': '''test "$1" = root@195.133.195.190
+echo ssh >> "$COMMANDS"
 case "$*" in *'mkdir '*) exit 0 ;; esac
 case "$FAKE_SSH" in private) echo '{"PRIVATE":"model raw"}' ;; loss) echo PRIVATE >&2; exit 255 ;; refusal) echo '{"error":"row_pilot_operator_owner_unavailable"}';exit 1 ;; *) exit 99 ;; esac
 ''',

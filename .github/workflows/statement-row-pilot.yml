@@ -92,11 +92,11 @@ jobs:
           err="$RUNNER_TEMP/s121-row-stderr.private"
           trap 'rm -f "$raw" "$err"' EXIT
           "$bundle/grace-row-pilot" -mode=validate-public -authorized-source="$AUTHORIZED_SHA" </dev/null > "$result" || true
-          ssh grace-deploy@195.133.195.190 "mkdir '$remote'"
-          scp -r "$bundle/." "grace-deploy@195.133.195.190:$remote/"
+          ssh root@195.133.195.190 "mkdir '$remote'"
+          scp -r "$bundle/." "root@195.133.195.190:$remote/"
           status=0
           # Only this command enters the one-shot wrapper. No retries.
-          ssh grace-deploy@195.133.195.190 "GRACE_STATEMENT_OPERATOR_OWNER_ID='$OPERATOR_OWNER_ID' sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$AUTHORIZED_SHA'" 2>"$err" | head -c 1048577 > "$raw" || status=$?
+          ssh root@195.133.195.190 "GRACE_STATEMENT_OPERATOR_OWNER_ID='$OPERATOR_OWNER_ID' sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$AUTHORIZED_SHA'" 2>"$err" | head -c 1048577 > "$raw" || status=$?
           validated=0
           "$bundle/grace-row-pilot" -mode=validate-public -authorized-source="$AUTHORIZED_SHA" < "$raw" > "$result" || validated=$?
           cat "$result"
