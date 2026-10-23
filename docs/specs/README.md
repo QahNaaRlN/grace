@@ -1,6 +1,14 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
-Текущий пакет — [S1.17: контролируемое сравнение после ограничения alias](0055-s117-alias-comparison.md),
+Следующий пакет — [S1.18: диагностика качества сохранённого E6](0055-s118-saved-quality-diagnosis.md),
+**draft / implementation not_started**. По поручению «влил PR, продолжай работу»
+подготовлен контракт Q1–Q5 offline; он ожидает review и явного принятия.
+Q6 — отдельный read-only запуск после реализации/integration/exact-source CI5/5
+и отдельного разрешения; сейчас NOT_AUTHORIZED / NOT_DISPATCHED. Новых paid calls,
+SSH, исправлений prompt/guards или production changes в этом пакете нет.
+[PR №102 post-merge](0055-pr102-postmerge.md): результаты E6 интегрированы2236c73.
+
+Завершённый пакет — [S1.17: контролируемое сравнение после ограничения alias](0055-s117-alias-comparison.md),
 **accepted / integrated offline, PR №100/№101; E6 EXECUTED / FAIL quality**.
 [YAML blocker](0055-s117-e6-readiness.md) устранён №101 по прямому разрешению
 владельца после CI5/5; [post-merge](0055-pr101-postmerge.md).
@@ -10,8 +18,7 @@
 качество0/3 у обоих, A17/19–14/20–17/23, B17/19–18/20–19/23.
 10897 USD micros ($0.010897 provider) known/settled; shared uncertain=false,
 image/health preserved. Permission CONSUMED; повтор/deploy/model switch не открыты.
-Следующий возможный пакет — отдельная read-only диагностика coverage/clocks/turnover,
-пока не принята и не выполняется.
+Предложенный контракт S1.18 приведён выше; диагностика ещё не принята и не выполняется.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -33,7 +40,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — фиксация quality FAIL E6; нового execution/repair scope нет. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — review S1.18; quality FAIL E6 зафиксирован, execution/repair scope не открыт. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).
