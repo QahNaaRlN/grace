@@ -12,7 +12,7 @@
 - Implementation base: main `db65225c6d2cfc9052ccf4f7310ced61c5ba79d8`, PR106;
   [C1–C4 offline evidence](0055-s119-evidence.md).
 - Spec branch: `codex/statement-s119-repair-spec`, PR №106 (merged).
-- Implementation branch: `codex/statement-s119-clock-pilot`; code `b9809d8319de4d6e0f45de79faf8abc0f2e5d6a4`.
+- Implementation branch: `codex/statement-s119-clock-pilot`; code `4668d1309aea156d96b03938b56fd43a30a4470f`.
 - Предыдущая редакция о clocks/claims/coverage заменена до принятия. Реализация
   начата после принятия и интеграции спецификации PR106/main db65225.
 

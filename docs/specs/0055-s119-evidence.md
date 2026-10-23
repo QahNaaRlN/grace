@@ -3,7 +3,7 @@
 - Контракт: [accepted C1–C4](0055-s119-evidence-selection-candidate.md).
 - Owner acceptance: прямое «Принять, интегрировать и продолжить offline» на
   PR106/c9b621d; разрешены фиксация принятия, merge после CI5/5 и offline работа.
-- Implementation code: `b9809d8319de4d6e0f45de79faf8abc0f2e5d6a4`; branch `codex/statement-s119-clock-pilot`.
+- Implementation code: `4668d1309aea156d96b03938b56fd43a30a4470f`; branch `codex/statement-s119-clock-pilot`.
 - База: main `db65225c6d2cfc9052ccf4f7310ced61c5ba79d8`.
   Принятый контракт интегрирован **до** implementation worktree.
 - Статус: **local_verified offline / integration pending**.
@@ -97,6 +97,20 @@ pinned helper; новый integration test проверяет полное ра�
 - Точная Go1.24.0 из CI: `GOTOOLCHAIN=go1.24.0 go test ./cmd/statement-clock-pilot ./internal/statementextract ./internal/statementqualification ./internal/assistant`
   — PASS; `/tmp/grace-s119-go124.log`.
 - `git diff --check` и actual workflow YAML parser (4 files) — PASS.
+
+## Точность статусов учёта
+
+Успех `Settle` с неизвестной суммой означает запись uncertainty, а не known
+settlement. Private/public fields разделены: `settlementRecorded` фиксирует
+успешную запись, `reservationSettled` true только при известной actual сумме.
+В unknown сценарии: settlementRecorded=true, reservationSettled=false,
+billingKnown=false; SQL независимо подтверждает status=uncertain и блокировку.
+Отдельный regression test не позволяет назвать такую резервацию settled.
+
+После этой правки: focused Go tests и точная Go1.24.0 — PASS
+(`/tmp/grace-s119-accounting-status-tests.log`, `/tmp/grace-s119-accounting-status-go124.log`),
+race qualification/CLI — PASS (`/tmp/grace-s119-accounting-status-race.log`),
+полный vet — PASS. Request fingerprints/guards/SQL adapter не изменены.
 
 ## Границы и следующее решение
 
