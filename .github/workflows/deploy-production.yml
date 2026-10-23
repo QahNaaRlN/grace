@@ -416,7 +416,7 @@ jobs:
 
   compare-statement-s117:
     if: ${{ inputs.statement_comparison_s117_only && !inputs.statement_comparison_s114_only && !inputs.statement_comparison_s111_only && !inputs.statement_screening_only && !inputs.statement_screening_s16_only && !inputs.statement_screening_s18_only && !inputs.diagnose_statement_s19_only && !inputs.inspect_statement_only && (inputs.reconcile_screening_usage == 'none' || inputs.reconcile_screening_usage == '') && (inputs.reconcile_screening_s16_usage == 'none' || inputs.reconcile_screening_s16_usage == '') && (inputs.statement_action == 'preserve' || inputs.statement_action == '') && !inputs.diagnose_statement_s112_only && !inputs.diagnose_statement_s115_only }}
-    name: S1.17: однократное сравнение на контракте v3
+    name: 'S1.17: однократное сравнение на контракте v3'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: production

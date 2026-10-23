@@ -42,6 +42,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	node scripts/research/check-workflow-syntax.mjs
 	go test ./scripts/research/s117-replay
 	./scripts/test-statement-comparison-s117.sh
 	python3 scripts/research/test-comparison-s117.py
