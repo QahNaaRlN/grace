@@ -1,19 +1,19 @@
 # SPEC-0055 / S1.17: контролируемое сравнение после ограничения alias
 
-- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: integrated_offline (PR №100); E6 readiness blocked by workflow YAML.
+- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: integrated_offline (PR №100/№101); E6 EXECUTED / FAIL quality, permission CONSUMED.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Владелец приёмки: владелец Grace; E1–E5 приняты 2026-10-23 прямым «да»
   на уточнение о принятии offline-контракта PR №99 (review head `cc90361`).
 - Отдельное разрешение E6 получено 2026-10-23: «Даю отдельное разрешение».
-  Оно не использовано: execution NOT_STARTED, source SHA ещё не выбран;
-  предварительные условия E1–E5/integration/exact-source CI/readiness обязательны.
+  Оно использовано одним run39925874197 на24f7322 после выполнения gates;
+  [E6 evidence](0055-s117-e6-evidence.md): quality FAIL, authorization CONSUMED.
 - Основание подготовки: продолжение после слияния PR №98; следующий контракт
   был предложен на review. Последующее принятие и отдельное разрешение E6
   зафиксированы выше; слияние S1.16 само по себе их не заменяло.
 - База: main `81ef7e543824b327d2a43ab88838a04bb58f1ed8`.
 - Ветка спецификации: `codex/statement-s116-postmerge-next`.
 - Реализация: `codex/statement-s117-comparison`, commit `220284f131029812f3ab918625606aa6fc7b9e0b`; [E1–E5 evidence](0055-s117-evidence.md).
-- Разрешённый live source/ref: не выбран; E6 permission unused, readiness NOT_READY.
+- Live source/ref: `24f73223b9b3370ca78c41d34e89edca9a276488` / `codex/statement-s117-e6-source`, frozen.
 - Владелец подтвердил слияние №100 и переход к E6; [readiness blocker](0055-s117-e6-readiness.md) выявлен до dispatch.
 
 ## Проблема и пользовательский результат
@@ -190,16 +190,17 @@ corrupt digest, exact SQL correlation, private sentinels на каждом пу�
 
 ### E6. Отдельный execution gate
 
-Владелец дал отдельное разрешение на один E6 заранее; оно ещё не использовано.
+Владелец дал отдельное разрешение на один E6 заранее; оно использовано одним run39925874197.
 Готовность остаётся обязательной: приёмка offline E1–E5, интеграция, фиксация
 immutable source SHA/ref и exact-source CI5/5. Перед dispatch эти evidence
 и конкретный SHA/ref должны быть записаны в execution receipt. Scope и caps
 остаются прежними; изменение scope или подмена уже закреплённого source
 возвращаются на review владельцу.
 
-Сейчас live SHA отсутствует; merge81ef7e5 — база, не executable S1.17.
-Dispatch-команда не подготовлена, execution NOT_STARTED. Повторное общее
-разрешение E6 не запрашивается; предварительные условия не обходятся.
+Live source24f7322 интегрирован №101 и прошёл свой CI5/5; frozen ref и gates
+записаны [до dispatch](0055-s117-e6-execution-receipt.md). E6 выполнен один раз:
+quality FAIL, canonicalization/replay6/6, cost10897micros settled. Permission
+CONSUMED; повтор/смена source или scope не разрешены.
 
 Будущий preflight включает SSH/VPS, fresh proofs, global AI/key/helper,
 единственного active admin, shared budget/uncertain, actual image/health и
@@ -233,7 +234,7 @@ unknown billing, settlement/storage failure и unavailable replay дают за�
 ## Критерии приёмки и исполняемые проверки
 
 E1–E5 приняты; текущее выполнение отражено в [implementation evidence](0055-s117-evidence.md). E6 отдельно разрешён,
-но prerequisites не выполнены и запуск не выполнялся.
+prerequisites записаны до исполнения; [E6 outcome](0055-s117-e6-evidence.md) — quality FAIL, permission CONSUMED.
 
 | ID | Требование | Исполняемое evidence |
 | --- | --- | --- |
@@ -247,9 +248,9 @@ E1–E5 приняты; текущее выполнение отражено в 
 ## Открытые решения
 
 1. Offline E1–E5 приняты. После интеграции этой принятой спеки в main —
-   реализация интегрирована №100; YAML blocker исправляется до E6.
-2. Отдельное разрешение E6 получено и не использовано. Exact source/ref,
-   integrated offline evidence, CI5/5 и preflight ещё отсутствуют; запуск не готов.
+   реализация и YAML fix интегрированы №100/№101.
+2. E6 выполнен один раз на frozen24f7322 после gates; quality FAIL, permission CONSUMED.
+   Повтор и production adoption не открыты.
 3. Полнота description и семантика неразмеченных spans остаются отдельным
    кандидатом. Этот контракт не разрешает их prompt/guard repair.
 
@@ -261,4 +262,5 @@ log `/tmp/grace-s117-acceptance-make.log`. `git diff --check`, ссылки
 документов и отсутствие runtime diff относительно main81ef7e5 — PASS.
 Это проверка docs-only acceptance, не выполнение новых E1–E5.
 Исторический docs-only result не является implementation evidence. Текущая реализация
-описана [отдельно](0055-s117-evidence.md); E6 не исполнялся, разрешение не использовано.
+описана [отдельно](0055-s117-evidence.md). На момент docs-only принятия E6 не исполнялся;
+текущий [E6 outcome](0055-s117-e6-evidence.md) — EXECUTED / quality FAIL, permission CONSUMED.

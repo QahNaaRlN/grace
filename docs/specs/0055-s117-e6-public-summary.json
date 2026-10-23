@@ -1,0 +1,379 @@
+{
+  "sourceSha": "24f73223b9b3370ca78c41d34e89edca9a276488",
+  "runId": 39925874197,
+  "jobId": 120321991496,
+  "summary": {
+    "activationAuthorized": false,
+    "billingKnown": true,
+    "comparisonPassed": false,
+    "error": "qualification_quality_failed",
+    "metrics": [
+      {
+        "falseAcceptances": 0,
+        "candidate": "A",
+        "attempted": 3,
+        "completed": 3,
+        "successful": 0,
+        "quality": "FAIL",
+        "efficiency": "undefined",
+        "knownCostMicros": 8524,
+        "costPerSuccessNumerator": null,
+        "costPerSuccessDenominator": 0,
+        "latenciesMs": [
+          2235,
+          2257,
+          1916
+        ]
+      },
+      {
+        "falseAcceptances": 0,
+        "candidate": "B",
+        "attempted": 3,
+        "completed": 3,
+        "successful": 0,
+        "quality": "FAIL",
+        "efficiency": "undefined",
+        "knownCostMicros": 2373,
+        "costPerSuccessNumerator": null,
+        "costPerSuccessDenominator": 0,
+        "latenciesMs": [
+          3847,
+          1875,
+          1359
+        ]
+      }
+    ],
+    "observationUnavailableLegacy": false,
+    "observations": [
+      {
+        "ordinal": 1,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 2,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 3,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 4,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 5,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 6,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      }
+    ],
+    "observationsVerified": true,
+    "reportShapeVerified": true,
+    "tuples": [
+      {
+        "candidate": "A",
+        "checks": 19,
+        "codes": [
+          "coverage",
+          "blockers"
+        ],
+        "correct": 17,
+        "coverage": [
+          "unknown"
+        ],
+        "falseAcceptance": false,
+        "name": "columns",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "source_coverage_incomplete"
+        ]
+      },
+      {
+        "candidate": "B",
+        "checks": 19,
+        "codes": [
+          "coverage",
+          "blockers"
+        ],
+        "correct": 17,
+        "coverage": [
+          "unknown"
+        ],
+        "falseAcceptance": false,
+        "name": "columns",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "source_coverage_incomplete"
+        ]
+      },
+      {
+        "candidate": "A",
+        "checks": 20,
+        "codes": [
+          "operation_clock",
+          "booking_clock",
+          "operation_clock",
+          "booking_clock",
+          "coverage",
+          "blockers"
+        ],
+        "correct": 14,
+        "coverage": [
+          "unknown"
+        ],
+        "falseAcceptance": false,
+        "name": "cards",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "source_coverage_incomplete"
+        ]
+      },
+      {
+        "candidate": "B",
+        "checks": 20,
+        "codes": [
+          "coverage",
+          "blockers"
+        ],
+        "correct": 18,
+        "coverage": [
+          "unknown"
+        ],
+        "falseAcceptance": false,
+        "name": "cards",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "source_coverage_incomplete"
+        ]
+      },
+      {
+        "candidate": "A",
+        "checks": 23,
+        "codes": [
+          "row_issues",
+          "row_issues",
+          "printed_debit_turnover",
+          "printed_credit_turnover",
+          "turnover",
+          "blockers"
+        ],
+        "correct": 17,
+        "coverage": [],
+        "falseAcceptance": false,
+        "name": "turnover-roles-ru",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      {
+        "candidate": "B",
+        "checks": 23,
+        "codes": [
+          "row_issues",
+          "row_issues",
+          "turnover",
+          "blockers"
+        ],
+        "correct": 19,
+        "coverage": [],
+        "falseAcceptance": false,
+        "name": "turnover-roles-ru",
+        "passed": false,
+        "reason": "quality_failed",
+        "state": "completed",
+        "validation": [
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    ]
+  },
+  "inspection": {
+    "s117InspectionReadOnly": true,
+    "reportShapeVerified": true,
+    "reportedPassed": false,
+    "billingKnown": true,
+    "recordedCalls": 6,
+    "completedTuples": 6,
+    "successfulA": 0,
+    "successfulB": 0,
+    "error": "qualification_quality_failed",
+    "tuples": [
+      {
+        "candidate": "A",
+        "name": "columns",
+        "state": "completed",
+        "reason": "quality_failed"
+      },
+      {
+        "candidate": "B",
+        "name": "columns",
+        "state": "completed",
+        "reason": "quality_failed"
+      },
+      {
+        "candidate": "A",
+        "name": "cards",
+        "state": "completed",
+        "reason": "quality_failed"
+      },
+      {
+        "candidate": "B",
+        "name": "cards",
+        "state": "completed",
+        "reason": "quality_failed"
+      },
+      {
+        "candidate": "A",
+        "name": "turnover-roles-ru",
+        "state": "completed",
+        "reason": "quality_failed"
+      },
+      {
+        "candidate": "B",
+        "name": "turnover-roles-ru",
+        "state": "completed",
+        "reason": "quality_failed"
+      }
+    ],
+    "activationAuthorized": false,
+    "observationsVerified": true,
+    "observations": [
+      {
+        "ordinal": 1,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 2,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 3,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 4,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 5,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      },
+      {
+        "ordinal": 6,
+        "stage": "canonicalization_passed",
+        "captureStatus": "captured"
+      }
+    ],
+    "metrics": [
+      {
+        "falseAcceptances": 0,
+        "candidate": "A",
+        "attempted": 3,
+        "completed": 3,
+        "successful": 0,
+        "quality": "FAIL",
+        "efficiency": "undefined",
+        "knownCostMicros": 8524,
+        "costPerSuccessNumerator": null,
+        "costPerSuccessDenominator": 0,
+        "latenciesMs": [
+          2235,
+          2257,
+          1916
+        ]
+      },
+      {
+        "falseAcceptances": 0,
+        "candidate": "B",
+        "attempted": 3,
+        "completed": 3,
+        "successful": 0,
+        "quality": "FAIL",
+        "efficiency": "undefined",
+        "knownCostMicros": 2373,
+        "costPerSuccessNumerator": null,
+        "costPerSuccessDenominator": 0,
+        "latenciesMs": [
+          3847,
+          1875,
+          1359
+        ]
+      }
+    ],
+    "reservationUnique": true,
+    "reservationSettled": true,
+    "reservationUncertain": false,
+    "ledgerMatchesReport": true,
+    "sharedUncertainBlock": false,
+    "replay": {
+      "providerCalls": 0,
+      "results": [
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        },
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        },
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        },
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        },
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        },
+        {
+          "stage": "canonicalization_passed",
+          "verified": true,
+          "status": "matched"
+        }
+      ]
+    },
+    "artifactsUnchanged": true
+  }
+}

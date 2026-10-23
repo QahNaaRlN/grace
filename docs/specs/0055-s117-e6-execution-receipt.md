@@ -7,7 +7,7 @@
   Отдельное разрешение E6 дано ранее: «Даю отдельное разрешение».
 - Дополнительно владелец явно ответил: «Разрешаю слить №101 после CI5/5
   и продолжить E6». PR №101 слит после канонической проверки CI5/5.
-- Текущий статус: AUTHORIZED / NOT_DISPATCHED, permission UNUSED до запроса dispatch.
+- Статус при записи до dispatch: AUTHORIZED / NOT_DISPATCHED, permission UNUSED до запроса dispatch.
 - PR №100 интегрирован7651668. YAML blocker исправлен [PR №101](https://github.com/QahNaaRlN/grace/pull/101),
   merge `9cf0d03322f0ab2e9875863a075231336a25e4b3`, 2026-10-23 08:34:04 UTC.
 - **Закреплённый executable source:** `24f73223b9b3370ca78c41d34e89edca9a276488`.
@@ -66,3 +66,15 @@ known/unknown cost, Complete latency, bytes/mode/mtime, image/health.
 Private snapshots, free text, UUID/generation/provider IDs и ключи не публикуются.
 Unavailable/missing capture остаётся UNVERIFIED; малый/неполный run не даёт winner/p95
 или production qualification. [Результат E6](0055-s117-e6-evidence.md) заполняется после run.
+
+## Запись единственного dispatch
+
+Pre-dispatch receipt опубликован коммитом `734daf1eb88ad5433a746fbe65f1fc87b595a611`
+до сетевого запроса. После него отправлен ровно один workflow_dispatch:
+[run39925874197](https://github.com/QahNaaRlN/grace/actions/runs/39925874197).
+Итоговый статус EXECUTED / FAIL qualification_quality_failed; permission CONSUMED.
+Source/ref остаются прежними. Повтор запроса не выполнялся.
+
+Run завершён FAILURE после6 completed tuples; [closed evidence](0055-s117-e6-evidence.md).
+Source/ref не менялись, повторов нет. Canonicalization/capture/replay6/6,
+качество0/3 у каждого candidate,10897 USD micros known/settled, image/health preserved.
