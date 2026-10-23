@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.17: контролируемое сравнение после ограничения alias
 
-- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: implemented_offline; review/integration pending.
+- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: integrated_offline (PR №100); E6 readiness blocked by workflow YAML.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Владелец приёмки: владелец Grace; E1–E5 приняты 2026-10-23 прямым «да»
   на уточнение о принятии offline-контракта PR №99 (review head `cc90361`).
@@ -14,6 +14,7 @@
 - Ветка спецификации: `codex/statement-s116-postmerge-next`.
 - Реализация: `codex/statement-s117-comparison`, commit `220284f131029812f3ab918625606aa6fc7b9e0b`; [E1–E5 evidence](0055-s117-evidence.md).
 - Разрешённый live source/ref: не выбран; E6 permission unused, readiness NOT_READY.
+- Владелец подтвердил слияние №100 и переход к E6; [readiness blocker](0055-s117-e6-readiness.md) выявлен до dispatch.
 
 ## Проблема и пользовательский результат
 
@@ -46,8 +47,9 @@ engine, private capture, canonicalizer, scorer, бюджет и transport.
 и не переносится на старые modes/markers или более широкий scope.
 
 Принятая спецификация интегрирована [PR №99](0055-pr99-postmerge.md) в main94fd4ab
-до создания нового implementation worktree. Offline реализация готовится к review;
-её интеграция и проверка exact source E6 остаются отдельными условиями.
+до создания нового implementation worktree. Offline реализация интегрирована №100;
+до E6 выявлен YAML blocker. Исправление должно быть интегрировано до выбора
+immutable source/ref и exact-source CI5/5.
 
 ## Non-goals
 
@@ -245,7 +247,7 @@ E1–E5 приняты; текущее выполнение отражено в 
 ## Открытые решения
 
 1. Offline E1–E5 приняты. После интеграции этой принятой спеки в main —
-   реализация выполнена в новом worktree; review/integration pending.
+   реализация интегрирована №100; YAML blocker исправляется до E6.
 2. Отдельное разрешение E6 получено и не использовано. Exact source/ref,
    integrated offline evidence, CI5/5 и preflight ещё отсутствуют; запуск не готов.
 3. Полнота description и семантика неразмеченных spans остаются отдельным

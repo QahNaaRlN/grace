@@ -5,8 +5,12 @@
 - Base: `94fd4abf4e2a97116d379474e4b692761ad061da`.
 - Ветка: `codex/statement-s117-comparison`.
 - Implementation commit: `220284f131029812f3ab918625606aa6fc7b9e0b`.
-- Статус: implemented offline; review/integration pending. E6 execution NOT_STARTED,
+- Статус: integrated offline, PR №100; подтверждено владельцем. E6 execution NOT_STARTED,
   разрешение не использовано, live source/ref не выбран; readiness NOT_READY.
+
+До E6 выявлен [YAML blocker](0055-s117-e6-readiness.md): E2 matrix и CI не
+проверяли синтаксис workflow. Прежние offline PASS сохранены как результаты
+конкретных проверок; readiness NOT_READY до интеграции исправления и нового CI.
 
 ## Результат и границы
 

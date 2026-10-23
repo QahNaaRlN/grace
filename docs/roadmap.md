@@ -1,13 +1,13 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
 Текущий пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
-**accepted E1–E5 / implemented offline, review/integration pending**.
-Принятая спека интегрирована [PR №99](specs/0055-pr99-postmerge.md), main94fd4ab.
-[Implementation evidence E1–E5](specs/0055-s117-evidence.md): новые offline пути проверены,
-полные local gates PASS; exact-head CI проверяется отдельно в implementation PR.
-Отдельное разрешение E6 получено и не использовано: после приёмки/integration
-реализации потребуются immutable source/ref, CI5/5 и preflight.
-Dispatch/metadata/SSH/inference пока не выполняются.
+**accepted / integrated offline, PR №100**. Владелец подтвердил слияние и переход
+к E6. [Post-merge №100](specs/0055-pr100-postmerge.md): main7651668 clean;
+source-head CI5/5 PASS, но найден YAML execution blocker в workflow.
+[E6 readiness](specs/0055-s117-e6-readiness.md): **NOT_DISPATCHED / NOT_READY**,
+разрешение UNUSED. Исправление имени job и обязательный YAML parser готовятся
+к интеграции; live source/ref ещё не закреплён. После исправления нужны его
+интеграция, exact-source CI5/5 и единственный preflight. SSH/metadata/inference0.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](specs/0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -29,7 +29,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — review offline реализации S1.17; post-merge S1.16 и интеграция спеки №99 закрыты. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — устранение YAML blocker до E6; offline реализация S1.17 интегрирована №100. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
