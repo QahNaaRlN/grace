@@ -8,10 +8,13 @@
 - Основание подготовки: «влил PR, продолжай работу» после предложения подготовить S1.18.
   Контракт Q1–Q5 впоследствии явно принят указанным выше решением.
   Q6 требует отдельного exact-source решения после реализации Q1–Q5.
-- Implementation status: not_started; Q6 execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
+- Implementation status: local_verified (Q1–Q5), integration pending; Q6 execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
 - База: main `2236c73c54058123de800f624f7cebc3a95bf41f`, интегрированный PR №102.
 - Ветка спецификации: `codex/statement-s118-diagnosis-spec`.
-- Implementation branch / commit: отсутствуют.
+- Implementation branch: `codex/statement-s118-quality-diagnosis`; commit `f604776e7bb97d42edfd211eda398796771b3e5f`.
+- [Q1–Q5 executable evidence](0055-s118-evidence.md); exact implementation CI отдельно.
+- Спецификация интегрирована PR №103 / main1b80430 до implementation worktree;
+  [post-merge evidence](0055-pr103-postmerge.md).
 - Зависимости: [SPEC-0055](0055-bank-statement-pdf-import.md),
   [S1.17](0055-s117-alias-comparison.md), [E6 evidence](0055-s117-e6-evidence.md).
 
@@ -39,7 +42,8 @@ capture и replay прошли6/6, качество0/3 у обеих модел�
 **Q6 execution** — один отдельно разрешаемый read-only запуск на VPS после
 реализации, review/integration и exact-source CI5/5. До этого SSH/VPS=0.
 Принятие Q1–Q5, слияние №102 и старое E6 permission не разрешают Q6.
-В текущем документационном пакете Q1–Q6 не исполняются.
+Q1–Q5 реализованы и проверены offline в указанном implementation commit;
+Q6 не исполнялся. Реальные saved E6 bytes в этой работе не читались.
 
 ## Non-goals
 
@@ -286,15 +290,15 @@ go vet ./cmd/... ./internal/...
 git diff --check
 ```
 
-Это offline/local gates без Q6 dispatch или paid calls. В текущем docs-only пакете
-проверяются документные ссылки, отсутствие runtime diff, make test и diff check;
-это не evidence реализации Q1–Q5 и не live quality PASS.
+Это offline/local gates без Q6 dispatch или paid calls. Результаты реализации
+Q1–Q5 перечислены в [evidence](0055-s118-evidence.md); они не означают Q6 execution
+или live quality PASS. CI конкретного implementation head проверяется отдельно.
 
 ## Открытые решения
 
-1. Q1–Q5 приняты. Интеграция принятой спецификации PR №103 в main ещё
-   не выполнена; implementation not_started до неё. Затем отдельный implementation
-   worktree от актуального main по [spec-first процессу](README.md#жизненный-цикл).
+1. Q1–Q5 приняты, спецификация интегрирована №103; offline implementation
+   подготовлен в отдельном worktree. Review/integration реализации и полный
+   exact-source CI5/5 остаются до рассмотрения Q6.
 2. Q6 exact source/ref/manifest и одно разрешение чтения — после реализации;
    сейчас отсутствуют и не выводятся из «продолжай работу».
 3. После диагноза — отдельное решение о минимальном ремонте. Новая paid campaign,

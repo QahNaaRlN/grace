@@ -43,6 +43,9 @@ test-integration:
 
 test-production:
 	node scripts/research/check-workflow-syntax.mjs
+	go test ./scripts/research/s118-diagnose
+	python3 scripts/research/test-statement-s118-diagnosis.py
+	./scripts/research/prepare-statement-s118.sh --self-test
 	go test ./scripts/research/s117-replay
 	./scripts/test-statement-comparison-s117.sh
 	python3 scripts/research/test-comparison-s117.py
