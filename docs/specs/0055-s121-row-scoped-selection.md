@@ -1,13 +1,13 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
-- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted offline, P4 NOT_AUTHORIZED**, 2026-10-24.
+- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted / integrated; P4 INCONCLUSIVE / CONSUMED**, 2026-10-24.
 - Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 accepted implementation / integrated PR114**, merge `8a3637bfae49cff58a6bd436cad006bc3f9e8372`. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
 - Worktree / branch: `statement-row-selection-spec` / `codex/statement-row-selection-spec`.
-- Приняты только D1–D3 offline. Платный эксперимент, reader/SSH,
-  изменение продуктового пути/activation и интеграция PR этим решением не открываются.
+- Первое решение принимало только D1–D3 offline; последующие отдельные решения
+  для P1–P3, root fix и одного P4 записаны ниже. P4 завершён, повтор/repair/activation не открыт.
 
 ## Проблема, факты и гипотеза
 
@@ -531,7 +531,7 @@ settlement failure; мутации каждой опубликованной м�
 
 ### P4. Отдельный one-shot допуск на готовый exact source
 
-Сейчас **NOT_AUTHORIZED**. После отдельного принятия/реализации P1–P3,
+На момент предложения **NOT_AUTHORIZED**; отдельный допуск и результат ниже. После принятия/реализации P1–P3,
 полных gates и review владелец сможет разрешить один workflow_dispatch
 `statement-row-pilot.yml` с `authorized_source=<40-hex SHA>` и
 `execute_approved_pilot=true` на опубликованном source ref. Результат подготовки
@@ -722,3 +722,93 @@ Offline evidence source correction: `python3 scripts/research/test-statement-row
 выдаются за живую проверку CI credential. Обязательный `make test` — **PASS** перед публикацией source correction:
 Go,89 Web suites/336 tests, lint/FSD/format/build/Jev; generated API diff пуст. Исправление principal реализует прямое
 уточнение владельца в рамках принятого S1.21 P1–P3, не новый подход к extraction.
+
+
+## Единственный P4: результат и границы evidence
+
+2026-10-24 владелец отдельно принял root fix PR115/source
+`023ad3820ce2a536ebaf7383b4863559ac769ece` и разрешил слияние. Merge
+`6dc08d36134163a787431e642b49d121fe1ac636`, дерево равно source;
+source CI40032845551/all5, actual-main CI40034156936/all5 и
+Delivery40035190465/all4 PASS, primary clean. Frozen ref
+`codex/statement-s121-row-pilot-source` закреплён на023ad38.
+
+Затем прямой ответ владельца **«Разрешаю один P4»** открыл только один dispatch
+`statement-row-pilot.yml`, ref выше, `authorized_source=023ad3820ce2a536ebaf7383b4863559ac769ece`,
+`execute_approved_pilot=true`. Receipt опубликован в [PR115](https://github.com/QahNaaRlN/grace/pull/115)
+**до** API dispatch. Приняты root SSH, новые marker/report, existing budget
+reserve/guard/settle, replay нового report,≤12 POST/39 metadata GET/$0.6468
+provider плюс прежние fees в существующем бюджете. Без deploy/financial records/
+старых private payloads/повторов; отказ также расходует допуск.
+
+[Run40035544723](https://github.com/QahNaaRlN/grace/actions/runs/40035544723),
+**attempt1**, exact source023ad38, event workflow_dispatch: completed/failure.
+Source/CI guards, build fixed bundle, manifest upload, pinned SSH configuration
+прошли; `Execute approved pilot once` завершился failure. Closed-result artifact
+успешно загружен. Из новых CI logs в памяти выделены только конечные сигналы
+`ssh_publickey_refused` и `step_exit_255`; raw logs не сохранялись. Это отказ
+аутентификации на SSH staging до wrapper. Точная причина непринятия CI credential
+не установлена; успешный локальный root agent при UUID setup не был проверкой CI key.
+Дополнительных SSH, исправления credentials или dispatch не выполнялось.
+
+[Исходная закрытая projection](../research/statement-quality/s121-pilot-summary.json)
+source-bound validator: **INCONCLUSIVE / row_pilot_report_unavailable**,
+`activationAuthorized=false`, `replayVerified=false`,
+`recordedCalls=null`, `actualMicros=null`, `settlementRecorded=null`.
+Оригинальный JSON точно равен типизированному validated output; SHA256 bytes
+`c8d6a8ffe7dac9312f117ba6e65646c19483c8000fedaa99365f773dc969f3c6`.
+**Calls/cost/settlement N/A, не0; качество/precision/checks/replay нового VPS report
+UNVERIFIED.** Нет manufactured Review или вывода REJECT о H2 из SSH failure.
+Grant **CONSUMED**, повтор не открыт.
+
+[Run/artifact evidence](../research/statement-quality/s121-pilot-execution.json)
+содержит attempt/job/step conclusions, исходные inputs, actual CI bundle hashes
+и declared GitHub archive digests. Artifact12537200785 (`statement-s121-closed-result`)
+и12537080980 (`statement-s121-manifest`) привязаны к этому run/source/ref;
+archive digests взяты из metadata, локальные ZIP hashes не сравнивались.
+Скачаны только эти новые closed/public artifacts; private VPS report не читался.
+[Actual CI manifest](../research/statement-quality/s121-pilot-manifest.json)
+совпал с approved manifest, SHA256
+`951d39f1c4a05b7fae5dc69054f329ad383d63b7ad432b3753ec8b8fa4aeb458`.
+Actual CI binary SHA256 `526b398aa2afd96211a13ede0ec5e5e839fb6b962c48bb084b7c62a6c4aba796`
+отличается от заранее обозначенного local candidate binary hash; source/manifest
+совпадают, local candidate hash не объявляется CI hash. Полные6 hashes в evidence.
+
+### AC и исполняемое evidence P4
+
+| Критерий | Evidence / результат |
+| --- | --- |
+| Один exact-source dispatch после отдельного допуска | Receipt PR115 до dispatch; run40035544723/attempt1/source023ad38; source/CI guard success. Допуск CONSUMED |
+| Manifest/source связь | SOURCE_SHA и MANIFEST.json из actual CI; byte equality approved manifest и6 unique SHA256SUMS проверены |
+| Закрытый результат при SSH loss/refusal | Exact-source `validate-public`: exit1 для refusal; original JSON равен validated output; hash выше |
+| Replay и полный quality result | **UNVERIFIED**: report unavailable/replayVerified=false; checks/precision не выдуманы |
+| Accounting | **N/A** по closed refusal; неизвестные recordedCalls/actualMicros/settlement не заменены нулями |
+| Остановка после отказа | Один dispatch, без дополнительного SSH/provider/budget attempt. Credential repair/новый P4 требуют отдельного решения |
+| Evidence-only handoff | `make test` PASS: Go,89 Web suites/336 tests, lint/FSD/format/build/Jev; `git diff --check` PASS. Exact-head CI — в PR отчёта |
+
+Повторяемая offline-проверка closed refusal из exact source, без runtime secrets/network/VPS
+(Go dependencies должны быть заранее в локальном cache):
+
+```sh
+set -eu
+s121_source=023ad3820ce2a536ebaf7383b4863559ac769ece
+s121_dir=$(mktemp -d)
+trap 'rm -rf "$s121_dir"' EXIT
+git archive "$s121_source" | tar -x -C "$s121_dir"
+(cd "$s121_dir" && CGO_ENABLED=0 GOPROXY=off GOSUMDB=off go build -buildvcs=false -trimpath -ldflags "-X main.sourceSHA=$s121_source" -o "$s121_dir/check" ./cmd/statement-row-pilot)
+s121_exit=0
+"$s121_dir/check" -mode=validate-public -authorized-source="$s121_source"   < docs/research/statement-quality/s121-pilot-summary.json > "$s121_dir/validated.json" || s121_exit=$?
+test "$s121_exit" -eq 1
+cmp docs/research/statement-quality/s121-pilot-summary.json "$s121_dir/validated.json"
+sha256sum docs/research/statement-quality/s121-pilot-summary.json
+```
+
+Exit1 здесь означает закрытый refusal, а не доказанный model outcome. Проверка
+равенства обязательна: один generic fallback с тем же exit не доказывал бы валидность
+исходного artifact. Manifest `executionAuthorized=false` описывает безопасный check
+mode, не отменяет исторический отдельный допуск выполненного dispatch.
+
+Следующее решение: отдельно подготовить CI root credential и проверить его по
+ограниченному контракту. Новый P4 потребует отдельного допуска после готовности;
+ни ремонт ключей, ни повтор, ни model activation данным отчётом не разрешены.
+H2 и общая цель надёжного AI PDF-импорта остаются **UNVERIFIED**.
