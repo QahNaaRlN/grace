@@ -651,7 +651,7 @@ func rowScopedDeliveredProposal(t *testing.T, c statementextract.Chunk, numeric 
 	p.Service = []statementdata.ServiceMapping{{Spans: service, Reason: "Explicit public fixture unused headings and identifiers"}}
 	return p
 }
-func rowScopedBaseline(t *testing.T, d statementdata.Document, name string) (Result, int) {
+func rowScopedBaseline(t *testing.T, d statementdata.Document, name string) (Result, []ScoringCheck, int) {
 	t.Helper()
 	plan, e := statementextract.BuildComparisonPlan(d, statementextract.ScreeningPolicy())
 	if e != nil {
@@ -683,9 +683,9 @@ func rowScopedBaseline(t *testing.T, d statementdata.Document, name string) (Res
 	if e != nil {
 		t.Fatal(e)
 	}
-	result, _ := ScreeningChecks(name, review)
+	result, checks := ScreeningChecks(name, review)
 	raw, _ := json.Marshal(request.Messages)
-	return result, len(raw) + len(request.Schema)
+	return result, checks, len(raw) + len(request.Schema)
 }
 
 func TestRowScopedPanicNeverSettlesFree(t *testing.T) {

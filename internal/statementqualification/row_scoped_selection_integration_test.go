@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -38,7 +39,7 @@ func TestRowScopedRealHelper(t *testing.T) {
 				t.Fatal(e)
 			}
 			before := d.Hash()
-			base, baseBytes := rowScopedBaseline(t, d, name)
+			base, baseChecks, baseBytes := rowScopedBaseline(t, d, name)
 			if !base.Passed {
 				t.Fatal("one-call base full golden", base)
 			}
@@ -55,6 +56,14 @@ func TestRowScopedRealHelper(t *testing.T) {
 				t.Fatal("source changed")
 			}
 			t.Logf("S121_PUBLIC name=%s documentHash=%s planHash=%s checks=%d/%d calls=%d precision=%v", name, before, good.PlanHash, good.Result.Correct, good.Result.Checks, f.calls, good.Precision)
+			trace, e := json.Marshal(struct {
+				BaselineChecks, CandidateChecks []ScoringCheck
+				Precision                       []RowScopedPrecision
+			}{baseChecks, good.Checks, good.Precision})
+			if e != nil {
+				t.Fatal(e)
+			}
+			t.Logf("S121_TRACE name=%s json=%s", name, trace)
 			totalBytes := 0
 			for _, request := range f.requests {
 				totalBytes += request.InputBytes

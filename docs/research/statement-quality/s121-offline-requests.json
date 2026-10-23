@@ -39,6 +39,250 @@
           "schemaSha256": "c83b1ad167c74aa2a8818054a88f71479c06b7fe1ac1a3f8a89598aadc2de9d0",
           "requestHash": "33bc744706e7167260436f9f711d4caec55b282190b6c6b1c17d29c6f15c0b89"
         }
+      ],
+      "baselineScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "fx_column",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "absent_book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "available_balance",
+          "Passed": true
+        }
+      ],
+      "candidateScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "fx_column",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "absent_book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "available_balance",
+          "Passed": true
+        }
+      ],
+      "precision": [
+        {
+          "RowOrdinal": 1,
+          "OperationMatches": true,
+          "BookingMatches": true
+        },
+        {
+          "RowOrdinal": 2,
+          "OperationMatches": true,
+          "BookingMatches": true
+        }
       ]
     },
     {
@@ -76,6 +320,262 @@
           "schemaSha256": "630c1d8ed5f636f4e174782b3bc1e3cb719a60650544fc9b7a458192047b1e92",
           "requestHash": "81570715e13dbcda16b601355b86c890b547b0f05c978d4f6509fa81eea84139"
         }
+      ],
+      "baselineScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "fx_column",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "opening_book_value",
+          "Passed": true
+        },
+        {
+          "Ordinal": 20,
+          "RowOrdinal": 0,
+          "Code": "closing_book_value",
+          "Passed": true
+        }
+      ],
+      "candidateScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "fx_column",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "booking_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "opening_book_value",
+          "Passed": true
+        },
+        {
+          "Ordinal": 20,
+          "RowOrdinal": 0,
+          "Code": "closing_book_value",
+          "Passed": true
+        }
+      ],
+      "precision": [
+        {
+          "RowOrdinal": 1,
+          "OperationMatches": true,
+          "BookingMatches": true
+        },
+        {
+          "RowOrdinal": 2,
+          "OperationMatches": true,
+          "BookingMatches": true
+        }
       ]
     },
     {
@@ -112,6 +612,298 @@
           "promptSha256": "84d296bcd7f0bfaf60eff7b9c74045b2c662feb8f2c5b6eb2d9271b1d211a7c5",
           "schemaSha256": "3e17f1a8c166e4549f18e65bb0542e7c1ee9d2639d47646dbc1f455536ac12bf",
           "requestHash": "451791d15966f33ca600628118f74ad9201cec32e7bf9246c015b9c1ce80372a"
+        }
+      ],
+      "baselineScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "absent_booking",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "absent_fx",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "absent_booking",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "absent_fx",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "printed_debit_turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "printed_credit_turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "available_balance",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "absent_book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 20,
+          "RowOrdinal": 0,
+          "Code": "absent_book_dates",
+          "Passed": true
+        },
+        {
+          "Ordinal": 21,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 22,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 23,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        }
+      ],
+      "candidateScorerChecks": [
+        {
+          "Ordinal": 1,
+          "RowOrdinal": 0,
+          "Code": "row_count",
+          "Passed": true
+        },
+        {
+          "Ordinal": 2,
+          "RowOrdinal": 1,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 3,
+          "RowOrdinal": 1,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 4,
+          "RowOrdinal": 1,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 5,
+          "RowOrdinal": 1,
+          "Code": "absent_booking",
+          "Passed": true
+        },
+        {
+          "Ordinal": 6,
+          "RowOrdinal": 1,
+          "Code": "absent_fx",
+          "Passed": true
+        },
+        {
+          "Ordinal": 7,
+          "RowOrdinal": 1,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 8,
+          "RowOrdinal": 1,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 9,
+          "RowOrdinal": 2,
+          "Code": "account_amount_currency",
+          "Passed": true
+        },
+        {
+          "Ordinal": 10,
+          "RowOrdinal": 2,
+          "Code": "direction",
+          "Passed": true
+        },
+        {
+          "Ordinal": 11,
+          "RowOrdinal": 2,
+          "Code": "operation_clock",
+          "Passed": true
+        },
+        {
+          "Ordinal": 12,
+          "RowOrdinal": 2,
+          "Code": "absent_booking",
+          "Passed": true
+        },
+        {
+          "Ordinal": 13,
+          "RowOrdinal": 2,
+          "Code": "absent_fx",
+          "Passed": true
+        },
+        {
+          "Ordinal": 14,
+          "RowOrdinal": 2,
+          "Code": "record_description",
+          "Passed": true
+        },
+        {
+          "Ordinal": 15,
+          "RowOrdinal": 2,
+          "Code": "row_issues",
+          "Passed": true
+        },
+        {
+          "Ordinal": 16,
+          "RowOrdinal": 0,
+          "Code": "printed_debit_turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 17,
+          "RowOrdinal": 0,
+          "Code": "printed_credit_turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 18,
+          "RowOrdinal": 0,
+          "Code": "available_balance",
+          "Passed": true
+        },
+        {
+          "Ordinal": 19,
+          "RowOrdinal": 0,
+          "Code": "absent_book_balances",
+          "Passed": true
+        },
+        {
+          "Ordinal": 20,
+          "RowOrdinal": 0,
+          "Code": "absent_book_dates",
+          "Passed": true
+        },
+        {
+          "Ordinal": 21,
+          "RowOrdinal": 0,
+          "Code": "turnover",
+          "Passed": true
+        },
+        {
+          "Ordinal": 22,
+          "RowOrdinal": 0,
+          "Code": "coverage",
+          "Passed": true
+        },
+        {
+          "Ordinal": 23,
+          "RowOrdinal": 0,
+          "Code": "blockers",
+          "Passed": true
+        }
+      ],
+      "precision": [
+        {
+          "RowOrdinal": 1,
+          "OperationMatches": true,
+          "BookingMatches": true
+        },
+        {
+          "RowOrdinal": 2,
+          "OperationMatches": true,
+          "BookingMatches": true
         }
       ]
     }

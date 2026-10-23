@@ -307,7 +307,9 @@ cooperative cancellation проверена. Принудительное зав
 | D3 uncertainty | `TestRowScopedPanicNeverSettlesFree` и unknown/duplicate/cost controls | Нет ложного zero/known settlement при неопределённой доставке; нет последующих calls |
 
 [Public request metadata](../research/statement-quality/s121-offline-requests.json)
-содержит все9 actual stage request hashes/bytes,3 Doc/Plan hashes и baseline inputs.
+содержит все9 actual stage request hashes/bytes,3 Doc/Plan hashes и baseline inputs,
+а также все baseline/candidate scorer checks и обе precision comparisons для
+каждого fixture из actual pipeline. Они сохраняются и в CI `S121_TRACE` log.
 Это только traces test fakes, не модельные ответы или private snapshots.
 
 | Layout | One-call fake baseline | Three-call fake candidate | Input bytes: base → sum candidate |
@@ -336,7 +338,9 @@ Fake не выбрал напечатанную подпись; исправле
 Exact-head CI фиксируется в PR113 до review/слияния; проход фокусных controls
 не подменяет общие gates. Дополнительный currency counterexample прошёл
 final named-helper suite (`/tmp/grace-s121-real-helper-final.log`); все три
-positive controls и их request fingerprints сохранились.
+positive controls и их request fingerprints сохранились. Полные checks/precision
+дополнительно сохранены из `/tmp/grace-s121-real-helper-trace.log`; этот узкий
+повтор проверяет только дополнение test evidence, runtime-код не менялся.
 
 Исполняемый product path, API/types, financial modules, существующие
 validators/scorer и frozen refs не меняются. Изменение прежнего helper harness —
