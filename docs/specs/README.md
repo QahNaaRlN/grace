@@ -1,12 +1,15 @@
-Актуализация: **2026-10-23**, Asia/Yekaterinburg.
+Актуализация: **2026-10-24**, Asia/Yekaterinburg.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на
-[одной status-странице](../statement-ai-status.md). Активный контракт —
+[одной status-странице](../statement-ai-status.md). Завершённый live-контракт —
 [S1.19: один эксперимент о полноте напечатанного времени](0055-s119-evidence-selection-candidate.md),
 **accepted C1–C4 / integrated offline; live REJECT, разрешение CONSUMED**;
 [evidence](0055-s119-evidence.md), повтор не открыт.
 Принят [S1.20 R1–R3](0055-s120-clock-reject-diagnosis.md): **accepted / integrated offline PR110**,
 read-only разбор сохранённого REJECT без новых model calls; контракт PR108 и реализация PR110 интегрированы; единственный R4 VERIFIED/replay6/6, grant CONSUMED; причина REJECT — non_clock_regression, новый repair не открыт.
+Принят владельцем [S1.21 D1–D3](0055-s121-row-scoped-selection.md): сначала
+границы строк, затем поля каждой строки; **accepted offline / implemented in PR113, acceptance pending**.
+Разрешена только offline feasibility реализация, без нового paid pilot/reader/activation.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.
