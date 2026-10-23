@@ -1,12 +1,8 @@
 # Statement AI: проработка устойчивости и расширенного корпуса
 
-Актуальный development status (2026-10-23): S1.15 D1–D4 integrated PR №94,
-source/merge CI5/5 и Delivery4/4 PASS; [post-merge](../../specs/0055-pr94-postmerge.md).
-[D5 operational receipt](../../specs/0055-s115-d5-execution-receipt.md): отдельно разрешённый
-workflow39860669842 на703b6c6 SUCCESS, одно разрешение использовано.
-Closed evidence остаётся только в CI, private-derived payload в Git не публикуется;
-следующее owner решение и fix/new paid run — отдельно. Ниже исторический design study2026-10-19; его baseline/production
-snapshot не описывает текущий main или проверенный runtime2026-10-23.
+Актуальная работа и следующий gate — [единая status-страница](../../statement-ai-status.md).
+Ниже исторический design study2026-10-19; его baseline/production snapshot
+не является проверкой текущего runtime.
 
 - Дата: 2026-10-19 (Asia/Yekaterinburg).
 - Статус: design study accepted, 2026-10-19; implementation `not_started`.

@@ -28,8 +28,9 @@ providerCalls0, persistentWritesRequested0. Permission CONSUMED; E6 quality FAIL
 сохранён. Слияние №105 не открывает новый read/inference или runtime changes.
 
 Следующий предложенный контракт — [S1.19](0055-s119-evidence-selection-candidate.md),
-draft / implementation not_started: один research-only prompt candidate и
-публичные offline проверки без изменения active prompt/guards/scorer.
+draft / implementation not_started: после ретроспективы выбран один clock-only
+парный pilot с измеримым решением и пределом одной попытки.
+[Текущий status](../statement-ai-status.md); старый широкий scope заменён до принятия.
 
 Проверки документной worktree от merge:
 

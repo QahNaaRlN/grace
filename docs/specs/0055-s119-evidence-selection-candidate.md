@@ -1,228 +1,201 @@
-# SPEC-0055 / S1.19: offline-кандидат инструкций выбора evidence
+# SPEC-0055 / S1.19: один эксперимент о полноте напечатанного времени
 
 - Статус: **draft**; implementation_status: **not_started**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: **отсутствует**.
-- Основание: продолжение после сообщения «Слил PR» о №105;
-  [post-merge №105](0055-pr105-postmerge.md).
-- База: main `1a5bbfbefecd6e8983a8c290f6e8c650c62351dc`.
-- Spec branch: `codex/statement-s119-repair-spec`.
-- Этот PR содержит контракт для рассмотрения. Реализация R1–R5 начинается
-  после явного принятия и интеграции принятой спецификации в main.
+- Владелец принял изменение программы прямым «Хорошо, измени дальнейшую работу
+  и продолжай» после ретроспективы. Конкретный контракт C1–C4 ниже предъявляется
+  на review; его acceptance record пока отсутствует.
+- База: main `1a5bbfbefecd6e8983a8c290f6e8c650c62351dc`, [PR105](0055-pr105-postmerge.md).
+- Ветка: `codex/statement-s119-repair-spec`, существующий PR №106.
+- Предыдущая редакция о clocks/claims/coverage заменена до принятия. Реализация
+  начинается после принятия этого scope и интеграции спецификации в main.
 
-## Проблема и ожидаемый результат
+## Проблема, гипотеза и полезный результат
 
-[Q6](0055-s118-q6-evidence.md) успешно объяснил сохранённый E6, но не исправил
-его quality FAIL. Все 6 tuples, 22 failed checks и 23 reason entries VERIFIED;
-15 public unknown сопоставлены. Публичные результаты позволяют выделить три
-семейства: потеря времени/точности, повторное использование evidence и пропуски
-coverage. Они не доказывают, что дополнительная инструкция улучшит модель.
+[Q6](0055-s118-q6-evidence.md) установил у A/cards четыре совпадения date и UTC,
+но четыре расхождения time/precision. Это не объяснение рассуждения модели.
+A — historical Gemini 3.1 Flash Lite / Google EU; B, columns и RU не исследуются
+в новом платном пилоте. [Исторический E6](0055-s117-e6-evidence.md) остаётся FAIL.
 
-Предлагается подготовить **один research-only кандидат prompt** и offline
-доказательства его точной передачи, размера и совместимости с прежними Go
-проверками. Результат — готовый к отдельному рассмотрению запрос и регрессионный
-пакет. Действующий product prompt и все live campaign paths сохраняются.
-Эффект на Gemini/Mercury остаётся **UNVERIFIED**; offline fake не является моделью.
+**H1:** отдельный шаг поиска часов рядом с уже выбранной датой увеличит число
+правильных operation/booking clock selections на неизменном public cards PDF
+относительно v12 без ухудшения остальных проверок этого документа.
 
-Такой объём выбран потому, что S1.18 установил типы ошибок, а качество ответа на
-новые инструкции ещё не измерено. Подключение кандидата к runtime, даже без
-деплоя, меняло бы общий prompt/profile и идентичность согласия до проверки гипотезы.
+Изменяется одна вещь: clock-only appendix в system message. Результат исследования
+— решение сохранить или отклонить этот вариант, либо зафиксировать отсутствие
+информативного сравнения. Отрицательный результат завершает пакет так же честно,
+как положительный. Передача prompt и успех fake не считаются подтверждением H1.
 
-## Доказанная исходная точка
+## Scope и non-goals
 
-Используются только public repository source и safe summary Q6:
+Один пакет C1–C4: фиксированные base/candidate requests, причинная проверка
+измерителя, подготовка одного ограниченного парного пилота и итоговое решение.
+Offline реализация и её отчёт ведутся вместе; receipts и final evidence входят
+в тот же исследовательский пакет без отдельных спецификаций для каждой записи.
+Отдельными решениями остаются принятие контракта и запуск на exact source.
 
-| Факт | Что он позволяет утверждать |
-| --- | --- |
-| A/cards:4 совпадения date и UTC,4 расхождения time и precision | Нужна проверка полноты date+clock selection; причина выбора моделью неизвестна |
-| Columns A/B и cards A/B:6/7/1/10 unmapped spans | Есть конкретные пропуски; их финансовая/service роль из счётчика не следует |
-| 13 entries `overlapping_evidence` в tuples4–6 | Есть пересечение evidence; entries включают row/blocker повторы, это не13 независимых дефектов |
-| 2 `invalid_source_rows`; A/RU: 2 расхождения printed amount при2 совпадениях currency | RU остаётся отдельным риском; числовое расхождение не устанавливает выбранную финансовую роль |
+Не входят исправления coverage/overlap/turnover, service catch-all, автоматический
+repair, подбор моделей/вариантов prompt, расширение corpus или лимитов,
+изменение financial guards/scorer, production prompt/profile/consent/API/UI/БД,
+финансовые записи, registry SPEC-0056, deployment и production model switch.
+Старые private E6/P6/D5 payloads, closed stdout и их локальные копии не читаются.
+E6/Q6 permissions остаются CONSUMED. Новый пилот пока **NOT_AUTHORIZED / NOT_RUN**.
 
-`internal/statementextract/plan.go` уже требует clock spans, полноты покрытия,
-раздельных ролей и service с reason. Поэтому кандидат уточняет процедуру
-самопроверки, а не вводит прежде отсутствовавшую финансовую проверку.
-`Messages` отправляет system prompt и compact tuples; `InputBytes` считает
-messages + actual request schema. `aliases.go` проверяет exact plan identity.
-`internal/statementdata/review.go` уже предъявляет single-use claims к датам,
-суммам, description и service; currency/labels/direction evidence имеют отдельное
-существующее правило sharing. Coverage считается по действительному used set.
-`internal/statementqualification/quality_checks.go` сравнивает компоненты дат и
-денег с независимым golden; scorer остаётся источником PASS/FAIL.
+## C1. Ровно два запроса и один изменяемый фактор
 
-## Scope и границы
-
-После принятия разрешаются R1–R5: чистый research-only builder в
-`scripts/research/s119-request/`, offline Go/HTTP/helper tests, локальный test
-script и подключение его к `make test-production`, implementation evidence.
-Файлы candidate builder имеют package без `main`; исполняемого runner нет.
-Изменения `internal/assistant` и `internal/statementqualification` допускаются
-только в тестах. Рабочие зависимости на candidate package отсутствуют.
-
-Не входят: переключение `statementextract.SystemPrompt`/`PromptVersion`,
-изменение schema/planner/alias/redaction, financial guards/scorer или прежнего corpus/golden,
-автоматическое дополнение или перенос IDs, service catch-all, repair/retry,
-финансовые записи, API/UI/БД, новый report/campaign/authorization/workflow input,
-модели/цены/budget, registry SPEC-0056, deployment или production flags.
-
-Запрещены external inference/metadata, workflow_dispatch, SSH/VPS и повторное
-чтение любых private E6/P6/D5 artifacts, closed stdout или сохранённых witnesses,
-включая локальные копии. Не создаются fixtures из private-derived материала.
-Оба прежних разрешения E6/Q6 остаются CONSUMED. Нового live этапа в S1.19 нет.
-
-## Контракт R1–R5
-
-### R1. Один кандидат и независимая identity
-
-Фиксированный candidate version:
-`statement-span-mapping.v13.evidence-selection-candidate`.
-Candidate system message — **точный текущий SystemPrompt v12** на базе выше,
-затем два LF и literal appendix R2. Базовый prompt закрепляется digest в тесте;
-при его изменении builder должен отказать, а не молча получить новую основу.
-Другие variants, параметризуемый prompt, owner text и поиск лучшей версии не входят.
-
-Фиксированные SHA256 UTF-8 bytes (без завершающего LF):
-
-- Base v12: `31c0496472f618aa9622918ab0013bbf87e8b5a59903bfd8fcbe40954a123819`.
-- Candidate v13: `17c661e349a7c94bb0b8fe217ee9319640c8ac56261caaf6a7f03b38a38de8c9`.
-
-Appendix берётся из блока R2 без внешних code fences и завершающего LF.
-Hashes вычислены из public source и literal текста; это не quality evidence.
-
-Чистый builder получает текущий Plan, созданный штатным BuildPlan/
-BuildScreeningPlan/BuildComparisonPlan из публичного документа. Он не загружает
-файлы, env или credentials и не вызывает providers. Принимается один chunk с
-Index 1, empty Context, от 1 до 2000 spans; plan должен иметь текущие версии,
-полную source-order alias/atom/chunk identity и прежний limits/bytes contract. Policy — только точная текущая product, screening
-или одна из двух comparison policies; произвольная модель/цена не допускается.
-Проверка не допускает изготовленного plan с одной лишь правильной строкой версии.
-Не вводить новый permissive validator в product code: research-only validation
-может использовать независимую проверку текущей формы с mutation tests.
-
-Выход — typed research request: candidate version, base prompt SHA256,
-candidate prompt SHA256, base plan hash, base request hash, candidate request
-hash, policy, messages, actual schema, input bytes. SHA256 prompt считается от UTF-8
-bytes; hashes plan/request — прежним `statementextract.Hash` contract.
-Оба request hash используют одну форму `{Policy, Messages, Schema}` из Q6;
-различаются только system content. Число bytes — JSON messages + schema,
-как в текущем InputBytes; это не wire HTTP total и не измеренные tokens.
-
-Policy, user message, schema и все IDs/значения byte-identical базовому request.
-Builder не меняет Plan.PromptVersion/PlanHash/consent и не выдаёт candidate за
-valid product plan. Input и source остаются неизменными. Повторный вызов
-детерминирован; результат deep copy без общего изменяемого backing storage.
-Лимиты 90000 bytes / 2000 spans / 100000 input bound / 16000 output bound сохраняются.
-Если candidate bytes превышают 90000, возвращается error без partial request;
-увеличивать лимиты, обрезать prompt/spans или разбивать документ нельзя.
-
-### R2. Точный appendix: clocks, claims и coverage
-
-Текст английский, как действующий model prompt; спецификация и отчёты русские.
-Appendix не запрашивает chain of thought, дополнительный ответ или новые keys:
+Base — текущие `BuildComparisonPlan` / `Messages` / `RequestSchema` для candidate A
+и public `cards.pdf`, hash `d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6`.
+Для base используется exact v12 SystemPrompt из указанной базы. Candidate — тот
+же prompt, затем два LF и literal appendix ниже (без завершающего LF):
 
 ```text
-Before emitting the existing JSON object, check these selections silently. Return only that JSON object; do not add an explanation, audit object, confidence, values or calculated facts.
-CLOCKS: For each operationDate and bookingDate, preserve every printed date and clock fragment belonging to that field in that record, including a clock on an adjacent line. Keep the printed precision. A printed date without a clock stays date-only. Never copy a neighboring record's clock, invent a clock or timezone, or reuse operationDate evidence to fill an unprinted bookingDate. Distinct printed operation and booking fields must use their own evidence.
-CLAIMS: Dates, monetary values, descriptions and service spans must not claim the same alias twice across those selections or records. A selected financial field must not also appear in service. Only the existing shared currency, heading/label and direction-evidence roles may reuse evidence as permitted by Go. Sharing a currency never permits sharing a date, amount or description. Never delete evidence from a valid field merely to hide a conflict.
-COVERAGE: Check the supplied aliases against the union of your actual field and service selections. Classify a residual alias only when its printed location and content establish its role. Keep all description fragments and internal separators in their own record. Use service with a specific truthful reason only for genuinely unused service content. Never place all residual aliases in service, invent a transaction, borrow a label or assign a financial role merely to obtain full coverage. Leave genuinely uncertain evidence visibly unresolved; an incomplete result must remain incomplete under Go validation.
+CLOCK SELECTION PROCEDURE: For each record, first locate the printed operation date and booking date separately. Then, before emitting JSON, inspect the adjacent lines in that same field and record for a printed clock. When both date and clock are printed, select their aliases together in the corresponding date array, in source order; a date-only selection is incomplete in that case. Preserve the printed precision. If no clock is printed, keep the field date-only. Never borrow a clock from another record or field, invent a clock or timezone, or copy operation evidence into an unprinted booking field. Perform this check silently and return only the existing JSON object.
 ```
 
-Это инструкция модели, а не новый Go алгоритм и не гарантия её соблюдения.
-Старые запреты на bank identifiers, доступный/book balance, turnover labels,
-суммы из row totals, injection и передачу приватных значений остаются в prefix.
-Исправление выбора printed turnover amounts не заявляется результатом S1.19.
+Version: `statement-span-mapping.v13.clock-selection-candidate`.
+SHA256 UTF-8 bytes (без завершающего LF):
 
-### R3. Wire evidence и отсутствие runtime подключения
+- Base v12: `31c0496472f618aa9622918ab0013bbf87e8b5a59903bfd8fcbe40954a123819`.
+- Candidate: `c417773a3ff5fd8c855b0701ca8be30606f07e910e0dff47eb2972a4cc18a187`.
 
-Тест передаёт результат R1 через существующий `ReasoningProvider.Complete` /
-OpenRouter HTTP serializer на **локальный httptest endpoint**, с synthetic
-credential и зафиксированным test policy. Проверяются фактические messages,
-exact schema/enum, response_format, limits, no tools/no fallback/ZDR options и
-прежний режим DisableReasoning. Создание альтернативного HTTP serializer
-или обход transport guards ради теста запрещены.
+Эти fingerprints закрепляются в реализации и evidence.
+При другой base identity отказ, а не автоматическая адаптация. Policy, schema,
+compact user tuples, aliases, порядок, document/plan hashes и transport options
+одинаковы. Request hashes различаются только system content. Candidate имеет
+отдельную research identity и не записывается в product Plan/consent.
 
-Проверка должна падать, если appendix исчез, вместо candidate отправлен base
-prompt, schema/IDs изменены или bytes считают только старый prompt. Тест endpoint
-не оценивает prompt как модель: ответ заранее определён или построен только
-по доставленным tuples и geometry, без golden/private lookup. Он подтверждает
-wire contract, не улучшение извлечения. Никакого production endpoint по умолчанию,
-внешнего DNS/HTTP или вызова CurrentPolicy с реальными metadata.
+Builder принимает Document и сам вызывает штатный BuildComparisonPlan с точной A
+policy; не вводит второй permissive validator произвольного Plan. Считает actual
+JSON messages + schema для каждого варианта. Предел90000 bytes/2000 spans,
+input100000/output16000 и timeout120s прежние; превышение — полный отказ без
+обрезания, chunking или добавления фактов. Никаких generic prompt overrides.
+Рабочий SystemPrompt/CurrentProfile, frozen E6/Q6 refs и legacy validators неизменны.
 
-Нет hook/interface/config, позволяющего product reasoner, CLI или campaign
-выбрать candidate. `CurrentProfile`, historical report formats/validators,
-active consent, workflow defaults/dispatch modes, frozen refs E6/Q6 и их bytes
-сохраняются. Мутации candidate identity не должны делать его допустимым
-product plan/consent или разрешением E6/Q6. Нет миграции/переподписания evidence.
+## C2. Измеритель, которому можно доверять
 
-### R4. Причинные offline контрпримеры
+Каждый typed raw proposal проходит actual canonicalization → merge →
+ValidateProposal → `ScreeningChecks("cards", review)`. Нельзя создавать Review,
+issues или итоговый score вручную. Golden доступен assertions/измерителю,
+но не fake или request builder. Невалидная структура/протокол не получает ноль
+баллов: сравнение недоступно, дальнейшие вызовы останавливаются.
 
-Источник — прежние public columns/cards/turnover-roles-ru PDF и небольшие новые
-**synthetic** документы для граничных случаев; hashes прежнего corpus/golden
-не меняются. Для PDF используется настоящий pinned Poppler helper без сети.
-Ответы fake используют только aliases действительно доставленного chunk;
-golden доступен только assertions. Каждый pair меняет один selection/fact и
-проходит actual canonicalization → merge → ValidateProposal → ScoreScreening,
-без подделки Review/issues или отредактированных saved reports.
+Primary metric — четыре actual scorer checks: operation_clock/booking_clock
+для двух строк, по одному boolean на поле. Дополнительно для каждого поля
+сравнивается precision с `local_datetime` по public golden; UTC остаётся пустым.
+Эти derived comparisons не меняют scorer version/его20 checks. Помимо primary
+metric сохраняются все исходные checks с ordinal/row/code/PASS и blockers.
+Для сравнимого target нужны ровно2 rows и4 соответствующих trace entries.
+При другом row count исходный quality FAIL сохраняется; target=N/A, не0/4.
+Quality campaign может завершить заданные вызовы, но pilot будет INCONCLUSIVE
+из-за несопоставимости. Только при2 rows исходный scorer обязан дать20 checks.
 
-| Семейство | Положительный и отрицательный контроль |
+Offline causal pair на настоящем pinned Poppler: корректный alias proposal и
+его копия, из которой убран только clock из четырёх date selections. Оба проходят
+всю цепочку; полный вариант даёт4/4 clock checks, урезанный0/4. Не замазывать
+возникший coverage FAIL. Ещё два отрицательных контроля: чужие часы и попытка
+придумать время при date-only source. Shared currency/финансовые guards прежние.
+
+Источники — public cards/columns PDF и synthetic граничные случаи. Golden/corpus
+не редактируются. Существующий S1.18 helper gate повторно выполнен при пересмотре
+программы; [evidence](../research/statement-quality/s119-offline-review.md).
+Его завершающий near-miss создаёт Review напрямую: это ограниченная проверка
+scorer, поэтому она **не заменяет** новый сквозной causal pair C2.
+
+## C3. Один заранее определённый парный пилот
+
+После offline gates, интеграции реализации, CI5/5 и отдельного разрешения на
+exact source — один pilot, **3 пары / максимум6 POST**, только A/cards:
+
+| Пара | Порядок |
 | --- | --- |
-| Clock | Полный date+clock сохраняет time/precision; удаление clock воспроизводит соответствующий score FAIL. Date-only без печатных часов не получает выдуманного времени; соседняя строка и чужой clock не становятся успехом |
-| Claims | Раздельные evidence для двух печатных полей проходят; один date/amount/description в двух claimed fields либо field+service даёт прежний overlap blocker. Повтор currency в header/rows остаётся допустимым |
-| Coverage | Корректно классифицированный публичный пример имеет matched coverage; удаление одного selection даёт точный unmapped count/coverage FAIL. Уверенно заданный service reason проверяется лишь как форма: matched coverage не доказывает истинность классификации |
-| Financial regression | Чужой turnover label, identifier вместо суммы, available вместо book, пропуск hidden numeric fragment, конфликт currency и description gap не становятся financial acceptance. Нельзя понижать критерии ради positive case |
+| 1 | base, candidate |
+| 2 | candidate, base |
+| 3 | base, candidate |
 
-На трёх неизменных PDF положительные вручную подготовленные alias proposals
-должны проходить прежние 19/20/23 checks. Они показывают достижимость правильной
-разметки и прохождение transport/guards; не показывают, что кандидат её генерирует.
-Если правильный пример не проходит guard, фиксируется FAIL и отдельное решение;
-guard/scorer нельзя ремонтировать внутри S1.19. Синтетический fixture вне трёх
-hashes не объявляется qualified через fixed-corpus scorer: для него evidence —
-actual validation и независимые assertions, отдельно от19/20/23.
+Запросы независимы, без conversation state, retry и адаптации после ответов.
+Внутри пары отличаются только инструкции C1. Sampling options одинаковы и
+фиксируются в manifest; никаких утверждений о полной детерминированности модели.
+Известный quality FAIL позволяет завершить заранее заданную последовательность;
+protocol/route/unknown billing/timeout/settlement failure прекращает весь pilot.
 
-В evidence отдельно указать, где Go отвергает ошибку, где её обнаруживает только
-scorer и где автоматического доказательства семантики нет. Residual финансовый
-span в service может закрыть coverage без доказательства роли: это ограничение
-должно остаться явным, новая service семантическая защита здесь не добавляется.
+Предлагаемый provider cap:6 ×53900 = **323400 USD micros ($0.3234)** по нынешней
+repo policy A (input275000/output1650000 micros за миллион и bounds100000/16000).
+Это расчёт конфигурации, не свежая цена и не разрешение на расход. Перед запуском
+нужны fresh exact-model/route/capability/ZDR proof и прежний shared budget с fees.
+Иная цена/модель/route — отказ, не незаметное расширение cap. Новое разрешение
+не обнуляет прошлый расход и не увеличивает allowance.
 
-### R5. Проверки, отчёт и следующий gate
+Вызовы используют существующие transport, route/billing guards, budget reserve/
+settle и fixed public fixture. Product constructor не выбирает candidate.
+Операторский путь фиксирован только на этот pilot; не создавать универсальный
+framework или добавлять очередной boolean mode в monolithic deploy workflow.
+Если нужен workflow, это один отдельный research job без deploy и соседних modes.
+Source CI validator и защита one-shot переиспользуются, legacy jobs не меняются.
+Конкретный source/ref, inputs, manifest и способ исполнения предъявляются до
+отдельного live approval; произвольный исходящий HTTP/SSH этим draft не разрешён.
 
-Предлагаемые исполняемые проверки (ещё **не реализованы/не выполнены**):
+Сохраняются private bounded typed proposals до canonicalization и outcomes всех
+отправленных вызовов, чтобы разбор завершился внутри того же разрешённого job.
+Фиксированная identity pilot — `s119-clock-pilot`; marker/report отдельны от
+E6/Q6 и общие для всех source SHA этого одного разрешения. Существующие
+storage0600/O_NOFOLLOW/no-clobber/digest правила сохраняются; никакого arbitrary
+path. Snapshot не более32768 bytes на ответ,6 snapshots; весь private report
+не более1048576 bytes. Capture failure/overflow — остановка, не усечение.
+В Git только safe
+counts/status/digests. Новая неисчерпанная identity не заимствует E6/Q6 authority.
+Отказ preflight тоже расходует one-shot; повтор требует нового решения.
 
-- `go test ./scripts/research/s119-request` — R1/R2, hashes/deep-copy/mutation,
-  candidate exact90000/90001 bytes и2000/2001 spans, invalid plan, legacy isolation.
-- `go test ./internal/assistant -run S119` — R3 actual localhost HTTP wire.
-- `./scripts/test-statement-s119-candidate.sh` — R4 pinned helper и guards/scorer;
-  добавить в `make test-production`; отсутствие helper не считается PASS/skip.
-- `make test`, `make test-production`, `make test-integration`,
-  `go test -race ./internal/statementdata ./internal/statementextract ./internal/statementqualification ./scripts/research/s119-request`,
-  `go vet ./cmd/... ./internal/... ./scripts/research/s119-request`, `git diff --check`.
+## C4. Решение и обязательная остановка
 
-Отчёт содержит R1–R5 с командами/exit status, точными source/digests/sizes на
-трёх PDF, positive/negative outcomes и source isolation diff. До выполнения
-статусы **NOT_RUN**, live effect **UNVERIFIED**. В Git только public/synthetic
-материал. Не читать или публиковать private artifacts для «проверки улучшения».
+При полном валидном pilot:
 
-## Приёмка и завершение
+- **KEEP_FOR_FURTHER_REVIEW**: candidate получил4/4 clocks и правильную precision
+  во всех3 ответах; хотя бы один base ответ хуже; candidate ни в одной паре не
+  ухудшил primary count и не превратил base-PASS любого из16 остальных checks в FAIL.
+- **REJECT**: candidate не достиг указанного target, ухудшил любой такой check
+  или выбрал неверную precision. Дополнительные baseline failures не скрываются.
+- **INCONCLUSIVE**: оба варианта уже идеальны по target либо campaign неполна
+  из-за protocol/route/billing/refusal. Нет переноса баллов между неполными парами.
 
-| AC | Исполняемое evidence после отдельного принятия |
+Порядок решения: неполнота/protocol refusal/target=N/A → INCONCLUSIVE;
+иначе ухудшение non-clock checks или недостигнутый candidate target → REJECT;
+иначе strict gain → KEEP_FOR_FURTHER_REVIEW, иначе ceiling tie → INCONCLUSIVE.
+Все predicates вычисляются на полной сравнимой campaign, не на её удобной части.
+Три ответа — три повторения на одном PDF, а не12 независимых samples или p95.
+Даже KEEP не квалифицирует модель, другие форматы, новый corpus или production.
+
+**Предел итераций: один candidate, один pilot.** После любого исхода работа над
+этим вариантом завершается отчётом. Нет v14, новых моделей, второго pilot или
+расширения scope по инерции. Следующий подход требует отдельного решения.
+
+## Приёмка и исполняемое evidence
+
+| AC | Требуемое evidence |
 | --- | --- |
-| R1 | Детерминированная отдельная request identity, точные границы и отказ на mutation/oversize |
-| R2 | Literal appendix и pinned v12 prefix, exact wire/body tests |
-| R3 | Настоящий serializer на localhost; runtime source/profile/consent/workflows unchanged |
-| R4 | Причинные good/bad pairs на real helper и synthetic cases, прежние 19/20/23, guards без изменений |
-| R5 | Полный bundle PASS и честный отчёт об ограничениях; внешних запросов0 |
+| C1 | Exact two requests/hashes/bytes; HTTP body через существующий serializer на localhost; unchanged schema/policy/user; oversize отказ |
+| C2 | Сквозной real-helper4/4→0/4 causal pair; precision/чужие часы/date-only negatives; judge matrices для всех C4 исходов |
+| C3 offline | Six-call order/cap/one-shot/early-stop проверены fake transport и fake meter; proof до POST; private capture bounded; production isolation |
+| C3 live | Отдельное exact-source разрешение, один run, known/settled accounting, no retry; сейчас NOT_AUTHORIZED / NOT_RUN |
+| C4 | Решение вычислено без ручной подмены; полный отчёт о всех попытках, limitations и остановке |
 
-Публикация/слияние draft не означает принятие R1–R5. Владелец отдельно принимает
-этот контракт; затем принятую версию интегрируют до implementation worktree.
-Окончание реализации — offline candidate ready for review, не model qualified.
-Продвижение candidate в active prompt/profile/consent и новый платный experiment
-требуют отдельного контракта и решения; в этом пакете таких этапов нет.
+В implementation evidence указываются реальные команды тестов, source/exit
+status. Обязательны `make test`, `make test-production`, `make test-integration`,
+`go vet ./cmd/... ./internal/...`, `git diff --check` и предметные race/HTTP/helper
+проверки изменённых модулей. Existing тесты переиспользуются; не дублировать их
+только ради номера S1.19. Offline PASS не заполняет строку C3 live.
 
-## Данные, API, UI и rollback
+## Данные, API, UI, ошибки и rollback
 
-Финансовое состояние, PostgreSQL/OpenAPI/generated types/UI не изменяются.
-Ручной импорт доступен по прежнему контракту. Candidate не сохраняется в owner
-state и не принимает private documents. Ошибки builder закрывают offline output;
-ошибки проверок не нормализуются в PASS и не разрешают retry.
-Rollback research-пакета — удаление builder/tests/test hook; product/ledger
-восстанавливать не требуется. Исходный E6 quality FAIL и Q6 SUCCESS сохраняются.
+API/OpenAPI/generated types/UI, PostgreSQL schema и финансовые записи не меняются.
+Runtime model/flags/images не переключаются; manual import сохраняется.
+Операторские metering/marker/report writes входят только в отдельно разрешённый
+pilot, не являются импортом финансов. До live approval внешних вызовов0.
+Rollback — убрать research candidate/entrypoint; product state не мигрируется.
+Ошибки не превращаются в PASS или основание автоматического повтора.
+
+## Открытое решение
+
+C1–C4 — конкретный пересмотренный контракт для принятия; offline implementation
+пока not_started. Пилот имеет собственный будущий exact-source gate. Один
+[актуальный status](../statement-ai-status.md) ссылается на этот документ;
+история сохранена отдельно и не задаёт следующие шаги.
