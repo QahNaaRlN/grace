@@ -11,7 +11,8 @@
 - [Exact-source CI39945454718](https://github.com/QahNaaRlN/grace/actions/runs/39945454718):
   SUCCESS5/5; canonical full job/SHA validation PASS. Source интегрирован №104;
   tree source5fdd0f9 и merge438256b byte-identical. Это отдельный CI источника,
-  не перенесённый PASS от спецификации или ещё выполняющегося merge workflow.
+  не перенесённый PASS от спецификации. Merge CI39947122855 впоследствии
+  отдельно подтверждён5/5 на438256b; Delivery39948123236 отдельно4/4 PASS.
 - Наличие/содержимое private artifact и его права на VPS: **UNVERIFIED**,
   до отдельного решения владельца не читаются.
 

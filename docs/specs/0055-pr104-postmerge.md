@@ -12,9 +12,11 @@
   SUCCESS5/5, exact SHA и полный набор jobs подтверждён canonical validator.
 - Merge `438256b08ba333c9d43075136324920b276bf0de`, tree byte-identical source head.
 - [Merge CI39947122855](https://github.com/QahNaaRlN/grace/actions/runs/39947122855)
-  проверяется отдельно; на первой проверке in_progress, PASS не переносится с head.
-- Delivery для exact438256b на первой проверке ещё не наблюдался;
-  публикация образов не является deployment. Deploy не запускался.
+  SUCCESS5/5 на exact438256b; canonical full jobs/SHA validation PASS
+  отдельно от source/head. При первой проверке был in_progress, итог проверен позже.
+- [Delivery39948123236](https://github.com/QahNaaRlN/grace/actions/runs/39948123236)
+  SUCCESS4/4 на exact438256b, все jobs completed/success проверены отдельно.
+  Публикация образов не является deployment. Deploy не запускался.
 
 Primary main fast-forward438256b, clean/mode0700. Документная работа в
 `statement-s118-q6-readiness` / `codex/statement-s118-q6-readiness` от merge438256b.
