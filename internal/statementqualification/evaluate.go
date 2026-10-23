@@ -231,9 +231,17 @@ func run(ctx context.Context, samples []Sample, reasoner statementextract.Reason
 // Score checks source values and separate clocks/FX/balances, never a model's
 // self-reported confidence. It is a small activation smoke, not full AC12.
 func Score(name string, r statementdata.Review) Result {
+	return scoreWithTrace(name, r, nil)
+}
+
+func scoreWithTrace(name string, r statementdata.Review, trace func(ScoringCheck)) Result {
 	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}, Validation: r.Reconciliation.Blockers, Coverage: r.Reconciliation.RowCoverage.Reasons}
+	rowOrdinal := 0
 	check := func(ok bool, code string) {
 		out.Checks++
+		if trace != nil {
+			trace(ScoringCheck{out.Checks, rowOrdinal, code, ok})
+		}
 		if ok {
 			out.Correct++
 		} else {
@@ -242,6 +250,7 @@ func Score(name string, r statementdata.Review) Result {
 	}
 	check(len(r.Rows) == 2, "row_count")
 	for i, row := range r.Rows {
+		rowOrdinal = i + 1
 		if i >= 2 {
 			break
 		}
@@ -281,6 +290,7 @@ func Score(name string, r statementdata.Review) Result {
 			check(row.TransactionAmount != nil && row.TransactionAmount.AmountMinor == 1500 && row.TransactionAmount.Currency == "USD", "fx_column")
 		}
 	}
+	rowOrdinal = 0
 	check(r.Reconciliation.Turnover.Status == "matched", "turnover")
 	check(r.Reconciliation.RowCoverage.Status == "matched", "coverage")
 	check(len(r.Reconciliation.Blockers) == 0, "blockers")

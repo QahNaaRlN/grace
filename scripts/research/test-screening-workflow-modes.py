@@ -11,7 +11,7 @@ for match in re.finditer(r'^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|
     condition = re.search(r'^    if: \$\{\{ (.*?) \}\}\s*$', match[2], re.M)
     if condition:
         conditions[match[1]] = condition[1]
-assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'compare-statement-s114', 'compare-statement-s117', 'diagnose-statement-s112', 'diagnose-statement-s115', 'deploy'}
+assert set(conditions) == {'screen-statement', 'screen-statement-s16', 'screen-statement-s18', 'inspect-statement', 'reconcile-statement-s16', 'diagnose-statement-s19', 'compare-statement-s111', 'compare-statement-s114', 'compare-statement-s117', 'diagnose-statement-s112', 'diagnose-statement-s115', 'diagnose-statement-s118', 'deploy'}
 
 compiled = {}
 for name, condition in conditions.items():
@@ -25,9 +25,14 @@ def selected(values):
             if eval(expression, {'__builtins__': {}}, {'values': values})]
 
 count = 0
-for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis, observed, saved, alias in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True]):
-    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis, statement_comparison_s114_only=observed, diagnose_statement_s115_only=saved, statement_comparison_s117_only=alias)
+for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparison, diagnosis, observed, saved, alias, quality in itertools.product([False, True], [False, True], [False, True], ['', 'none', 'inspect', 'apply'], ['', 'preserve', 'enable', 'disable'], ['', 'none', 'inspect', 'apply'], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True], [False, True]):
+    values = dict(statement_screening_only=old, statement_screening_s16_only=new, inspect_statement_only=inspect, reconcile_screening_usage=reconcile, statement_action=action, reconcile_screening_s16_usage=recovery, statement_screening_s18_only=identity, diagnose_statement_s19_only=diagnose, statement_comparison_s111_only=comparison, diagnose_statement_s112_only=diagnosis, statement_comparison_s114_only=observed, diagnose_statement_s115_only=saved, statement_comparison_s117_only=alias, diagnose_statement_s118_only=quality)
     active = selected(values)
+    if quality:
+        expected=not any((old,new,inspect,identity,diagnose,comparison,diagnosis,observed,saved,alias)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
+        assert active == (['diagnose-statement-s118'] if expected else []), (values,active)
+        count+=1
+        continue
     if alias:
         expected=not any((old,new,inspect,identity,diagnose,comparison,diagnosis,observed,saved)) and reconcile in ('','none') and recovery in ('','none') and action in ('','preserve')
         assert active == (['compare-statement-s117'] if expected else []), (values,active)
@@ -73,7 +78,7 @@ for old, new, inspect, reconcile, action, recovery, identity, diagnose, comparis
     if not any((old, new, inspect, identity, diagnose)) and reconcile in ('', 'none') and recovery in ('', 'none'):
         assert active == ['deploy']
     count += 1
-for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only', 'statement_comparison_s114_only', 'diagnose_statement_s115_only', 'statement_comparison_s117_only'):
+for key in ('statement_screening_only', 'statement_screening_s16_only', 'statement_screening_s18_only', 'diagnose_statement_s19_only', 'statement_comparison_s111_only', 'diagnose_statement_s112_only', 'statement_comparison_s114_only', 'diagnose_statement_s115_only', 'statement_comparison_s117_only', 'diagnose_statement_s118_only'):
     # Описание имеет восемь пробелов отступа, граница входного параметра — шесть.
     block = re.search(r'      '+key+r':\n(.*?)(?=^      [a-z_]+:|^permissions:)', source, re.M | re.S)[1]
     assert 'default: false' in block and 'type: boolean' in block
@@ -100,7 +105,7 @@ assert 'statement-comparison-s111.sh' in comparison_job
 assert 'SHA256SUMS' in comparison_job and 'inspect.py' in comparison_job
 print('S1.11 exact-source authorization, exclusive/default-off mode and complete bundle guards PASS')
 
-s112=source.split('  diagnose-statement-s112:\n',1)[1]
+s112=source.split('  diagnose-statement-s112:\n',1)[1].split('  diagnose-statement-s118:\n',1)[0]
 assert 'run-s112-diagnosis.py' in s112 and 's112-verifier" replay' in s112
 assert all(x not in s112 for x in ('scp ', 'docker exec', 'statement-comparison-s111.sh', 'openrouter', 'GRACE_AI_'))
 assert s112.count('test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"')==2
@@ -134,3 +139,15 @@ assert './scripts/research/s117-replay' in s117
 assert 'sha256sum grace-statement-admin grace-s117-replay *.pdf SOURCE_SHA run.sh inspect.py inspect-statement-comparison-s111.py > SHA256SUMS' in s117
 assert all(x not in s117 for x in ('statement_action.sh', 'docker compose up', 'reconcile-', 'diagnose-', 'GRACE_AI_'))
 print('S1.17 exact-source/default-off/complete-manifest/exhaustive mixed-mode isolation PASS')
+
+s118=source.split('  diagnose-statement-s118:\n',1)[1]
+assert s118.count('test "$DIAGNOSTIC_SHA" = "$GITHUB_SHA"')==2
+assert s118.count('verify-screening-source-ci.py "$GITHUB_SHA"')==2
+assert 'main.verifierSource=$GITHUB_SHA' in s118
+assert 'sha256sum verifier context.json SOURCE_SHA run-s118-diagnosis.py s118-bootstrap.py > SHA256SUMS' in s118
+assert s118.index('sha256sum -c SHA256SUMS') < s118.index('python3 "$bundle/run-s118-diagnosis.py"')
+assert '"$bundle/context.json" "$GITHUB_SHA"' in s118
+artifact=s118.split('uses: actions/upload-artifact@v7',1)[1]
+assert 's118-verified.json' not in artifact and 's118-result.json' not in artifact
+assert all(x not in s118 for x in ('scp ', 'docker exec', 'statement-comparison-s117.sh','openrouter','GRACE_AI_'))
+print('S1.18 exclusive/default-off/full manifest/compiled source/no witness artifact PASS')

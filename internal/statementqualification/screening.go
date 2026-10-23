@@ -55,12 +55,20 @@ func ValidateScreeningReport(r Report, now time.Time) error {
 	return nil
 }
 func ScoreScreening(name string, r statementdata.Review) Result {
+	return screeningWithTrace(name, r, nil)
+}
+
+func screeningWithTrace(name string, r statementdata.Review, trace func(ScoringCheck)) Result {
 	if name != "turnover-roles-ru" {
-		return Score(name, r)
+		return scoreWithTrace(name, r, trace)
 	}
 	out := Result{Name: name, Rows: len(r.Rows), Codes: []string{}, Validation: r.Reconciliation.Blockers, Coverage: r.Reconciliation.RowCoverage.Reasons}
+	rowOrdinal := 0
 	check := func(ok bool, code string) {
 		out.Checks++
+		if trace != nil {
+			trace(ScoringCheck{out.Checks, rowOrdinal, code, ok})
+		}
 		if ok {
 			out.Correct++
 		} else {
@@ -72,6 +80,7 @@ func ScoreScreening(name string, r statementdata.Review) Result {
 	}
 	check(len(r.Rows) == 2, "row_count")
 	for i, row := range r.Rows {
+		rowOrdinal = i + 1
 		if i >= 2 {
 			break
 		}
@@ -83,6 +92,7 @@ func ScoreScreening(name string, r statementdata.Review) Result {
 		check(row.Description == []string{"ТЕСТОВЫЙ МАГАЗИН - ПОКУПКА", "ТЕСТОВЫЙ ПЕРЕВОД - ПРОВЕРИТЬ СМЫСЛ"}[i], "record_description")
 		check(len(row.Issues) == 0, "row_issues")
 	}
+	rowOrdinal = 0
 	check(money(r.Header.DebitTurnover, 248600), "printed_debit_turnover")
 	check(money(r.Header.CreditTurnover, 310500), "printed_credit_turnover")
 	check(money(r.Header.AvailableBalanceObserved, 0), "available_balance")
