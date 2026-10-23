@@ -1,11 +1,14 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
 Текущий пакет — [S1.18: диагностика качества сохранённого E6](0055-s118-saved-quality-diagnosis.md),
-**accepted Q1–Q5 / local_verified offline, integration pending**. Спецификация
+**accepted Q1–Q5 / integrated offline, PR №104**. Спецификация
 принята прямым «принимаю» и интегрирована №103 в main1b80430 до implementation
 worktree. [Post-merge №103](0055-pr103-postmerge.md): head/merge CI5/5 и Delivery4/4 PASS.
 [Q1–Q5 evidence](0055-s118-evidence.md): codef604776, все local gates PASS;
-exact implementation CI отдельно. Реальные E6 artifacts не читались.
+final head5fdd0f9 CI5/5 PASS. [Post-merge №104](0055-pr104-postmerge.md):
+main438256b clean, source/head/merge status разделены. Реальные E6 artifacts не читались.
+[Q6 decision candidate](0055-s118-q6-run-decision.md): frozen5fdd0f9/ref,
+local public readiness/manifest PASS; требуется отдельное разрешение одного read-only run.
 Q6 — отдельный read-only запуск после реализации/integration/exact-source CI5/5
 и отдельного разрешения; сейчас NOT_AUTHORIZED / NOT_DISPATCHED. Новых paid calls,
 SSH, исправлений prompt/guards или production changes в этом пакете нет.
@@ -43,7 +46,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — review offline-реализации S1.18; quality FAIL E6 сохранён, Q6/repair не открыты. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — отдельное решение по Q6 S1.18; quality FAIL E6 сохранён, Q6/repair не открыты. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](0055-pr91-postmerge.md).

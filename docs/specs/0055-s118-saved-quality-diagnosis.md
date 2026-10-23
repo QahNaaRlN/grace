@@ -8,11 +8,15 @@
 - Основание подготовки: «влил PR, продолжай работу» после предложения подготовить S1.18.
   Контракт Q1–Q5 впоследствии явно принят указанным выше решением.
   Q6 требует отдельного exact-source решения после реализации Q1–Q5.
-- Implementation status: local_verified (Q1–Q5), integration pending; Q6 execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
+- Implementation status: integrated_offline (Q1–Q5, PR №104); Q6 execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
 - База: main `2236c73c54058123de800f624f7cebc3a95bf41f`, интегрированный PR №102.
 - Ветка спецификации: `codex/statement-s118-diagnosis-spec`.
 - Implementation branch: `codex/statement-s118-quality-diagnosis`; commit `f604776e7bb97d42edfd211eda398796771b3e5f`.
-- [Q1–Q5 executable evidence](0055-s118-evidence.md); exact implementation CI отдельно.
+- Final implementation head `5fdd0f93380b72f6f3bdad03715f9a83744cace5` интегрирован
+  PR №104 в main438256b; [post-merge evidence](0055-pr104-postmerge.md).
+- [Q1–Q5 executable evidence](0055-s118-evidence.md); exact source CI39945454718
+  SUCCESS5/5 подтверждён отдельно от source/merge CI спецификации.
+- [Q6 exact-source decision candidate](0055-s118-q6-run-decision.md): NOT_AUTHORIZED.
 - Спецификация интегрирована PR №103 / main1b80430 до implementation worktree;
   [post-merge evidence](0055-pr103-postmerge.md).
 - Зависимости: [SPEC-0055](0055-bank-statement-pdf-import.md),
@@ -296,9 +300,9 @@ Q1–Q5 перечислены в [evidence](0055-s118-evidence.md); они не
 
 ## Открытые решения
 
-1. Q1–Q5 приняты, спецификация интегрирована №103; offline implementation
-   подготовлен в отдельном worktree. Review/integration реализации и полный
-   exact-source CI5/5 остаются до рассмотрения Q6.
+1. Q1–Q5 приняты; спецификация интегрирована №103, реализация — №104.
+   Exact verifier source5fdd0f9/ref/CI5/5 и local manifest предъявлены
+   в отдельном Q6 candidate; это подготовка решения, не запуск.
 2. Q6 exact source/ref/manifest и одно разрешение чтения — после реализации;
    сейчас отсутствуют и не выводятся из «продолжай работу».
 3. После диагноза — отдельное решение о минимальном ремонте. Новая paid campaign,

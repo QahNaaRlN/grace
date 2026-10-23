@@ -4,7 +4,9 @@
 Владелец принял Q1–Q5 прямым «принимаю»; спецификация интегрирована №103 до
 implementation worktree. [Post-merge №103](0055-pr103-postmerge.md).
 Implementation commit `f604776e7bb97d42edfd211eda398796771b3e5f`, branch
-`codex/statement-s118-quality-diagnosis`; local_verified, integration pending.
+`codex/statement-s118-quality-diagnosis`; integrated offline №104 / main438256b.
+Final head5fdd0f9: [CI39945454718](https://github.com/QahNaaRlN/grace/actions/runs/39945454718)
+SUCCESS5/5, canonical exact-SHA/full-job check PASS; [post-merge](0055-pr104-postmerge.md).
 Q6 **NOT_AUTHORIZED / NOT_DISPATCHED**; никакой реальный E6 payload здесь не читался.
 
 ## Реализованный контракт и executable evidence
