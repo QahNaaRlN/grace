@@ -1,10 +1,15 @@
 # SPEC-0055 / S1.17: контролируемое сравнение после ограничения alias
 
-- Статус: draft; implementation_status: not_started.
+- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: not_started.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
-- Владелец приёмки: владелец Grace; запись о принятии отсутствует.
+- Владелец приёмки: владелец Grace; E1–E5 приняты 2026-10-23 прямым «да»
+  на уточнение о принятии offline-контракта PR №99 (review head `cc90361`).
+- Отдельное разрешение E6 получено 2026-10-23: «Даю отдельное разрешение».
+  Оно не использовано: execution NOT_STARTED, source SHA ещё не выбран;
+  предварительные условия E1–E5/integration/exact-source CI/readiness обязательны.
 - Основание подготовки: продолжение после слияния PR №98; следующий контракт
-  предлагается на review. Слияние S1.16 не является принятием S1.17.
+  был предложен на review. Последующее принятие и отдельное разрешение E6
+  зафиксированы выше; слияние S1.16 само по себе их не заменяло.
 - База: main `81ef7e543824b327d2a43ab88838a04bb58f1ed8`.
 - Ветка спецификации: `codex/statement-s116-postmerge-next`.
 - Ветка/коммит реализации и разрешённый live source SHA: отсутствуют.
@@ -26,7 +31,7 @@ latency с сохранёнными proposals и честным replay либо 
 
 ## Scope
 
-Предложены **E1–E5 offline**, только после принятия: новый фиксированный context,
+Приняты **E1–E5 offline**: новый фиксированный context,
 отдельные operator runner/summary/inspector/replay/workflow mode, проверки
 совместимости и причинные offline-тесты. Использовать существующие comparison
 engine, private capture, canonicalizer, scorer, бюджет и transport.
@@ -34,11 +39,13 @@ engine, private capture, canonicalizer, scorer, бюджет и transport.
 тесты, отдельные research runner/inspector/bundle scripts и workflow isolation.
 Общие helpers можно переиспользовать без изменения поведения legacy entry points.
 
-**E6 live** требует отдельного решения после приёмки и интеграции E1–E5,
-с immutable SHA/ref и полным CI5/5 на том же source. Принятие этой спеки
-или её merge само по себе не разрешает E6.
+**E6 live** получил отдельное разрешение владельца. Исполнение возможно только
+после приёмки и интеграции E1–E5, фиксации immutable SHA/ref, полного CI5/5
+на том же source и успешного preflight. Разрешение не является готовностью
+и не переносится на старые modes/markers или более широкий scope.
 
-Сейчас разрешена только подготовка draft и post-merge документов.
+Сейчас фиксируется принятие спецификации; по процессу Grace её интеграция
+в main предшествует новому implementation worktree. Код пока не меняется.
 
 ## Non-goals
 
@@ -48,7 +55,7 @@ scorer, финансовые guards и product API/Web не меняются. Н
 repair/retry/fallback, новые модели/endpoint/fixtures, произвольные report paths,
 смену production policy/flags, deployment, личные PDF или финансовые writes.
 Бюджет/fees/allowance не увеличиваются и не сбрасываются. SPEC-0056 отдельно.
-До отдельного E6 нет SSH/VPS, metadata GET, dispatch или inference.
+До готовности E1–E5 и фиксации exact source нет SSH/VPS, metadata GET, dispatch или inference.
 Старые P6/D5 artifacts и consumed permissions не переиспользуются; закрытые
 private-derived данные не переносятся в Git/PR/Actions artifacts.
 
@@ -179,10 +186,16 @@ corrupt digest, exact SQL correlation, private sentinels на каждом пу�
 
 ### E6. Отдельный execution gate
 
-После приёмки offline E1–E5, интеграции, current exact-source CI5/5 и предъявления
-immutable source SHA/ref владелец отдельно решает, разрешить ли один E6.
-До этого разрешённый live SHA отсутствует; merge81ef7e5 — база, не разрешённый
-executable S1.17. Никакого dispatch в данном draft не задано.
+Владелец дал отдельное разрешение на один E6 заранее; оно ещё не использовано.
+Готовность остаётся обязательной: приёмка offline E1–E5, интеграция, фиксация
+immutable source SHA/ref и exact-source CI5/5. Перед dispatch эти evidence
+и конкретный SHA/ref должны быть записаны в execution receipt. Scope и caps
+остаются прежними; изменение scope или подмена уже закреплённого source
+возвращаются на review владельцу.
+
+Сейчас live SHA отсутствует; merge81ef7e5 — база, не executable S1.17.
+Dispatch-команда не подготовлена, execution NOT_STARTED. Повторное общее
+разрешение E6 не запрашивается; предварительные условия не обходятся.
 
 Будущий preflight включает SSH/VPS, fresh proofs, global AI/key/helper,
 единственного active admin, shared budget/uncertain, actual image/health и
@@ -215,7 +228,8 @@ unknown billing, settlement/storage failure и unavailable replay дают за�
 
 ## Критерии приёмки и исполняемые проверки
 
-Все новые критерии NOT_RUN; они описывают будущую реализацию после принятия.
+E1–E5 приняты; выполнение критериев пока NOT_RUN. E6 отдельно разрешён,
+но prerequisites не выполнены и запуск не выполнялся.
 
 | ID | Требование | Исполняемое evidence |
 | --- | --- | --- |
@@ -228,8 +242,18 @@ unknown billing, settlement/storage failure и unavailable replay дают за�
 
 ## Открытые решения
 
-1. Принять или скорректировать только offline E1–E5. До этого code/tool/harness
-   не меняются, implementation not_started.
-2. Live E6 не принят; после offline приёмки потребует отдельного точного решения.
+1. Offline E1–E5 приняты. После интеграции этой принятой спеки в main —
+   реализация в новом worktree; implementation not_started.
+2. Отдельное разрешение E6 получено и не использовано. Exact source/ref,
+   integrated offline evidence, CI5/5 и preflight ещё отсутствуют; запуск не готов.
 3. Полнота description и семантика неразмеченных spans остаются отдельным
-   кандидатом. Этот draft не разрешает их prompt/guard repair.
+   кандидатом. Этот контракт не разрешает их prompt/guard repair.
+
+## Документационная проверка принятия
+
+`TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` — PASS в spec worktree:
+Go,88 Web files/334 tests, ESLint/FSD/Prettier/build и offline Jev;
+log `/tmp/grace-s117-acceptance-make.log`. `git diff --check`, ссылки
+документов и отсутствие runtime diff относительно main81ef7e5 — PASS.
+Это проверка docs-only acceptance, не выполнение новых E1–E5.
+Implementation not_started, E6 не исполнялся, разрешение не использовано.

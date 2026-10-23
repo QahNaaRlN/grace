@@ -214,8 +214,8 @@ schema/messages bytes и versions/hashes, без D5-derived данных. Рез
    повторное acceptance этого scope не требуется.
 2. Интеграция принятой спеки выполнена PR №97. Offline implementation
    проверена в `statement-alias-schema` от maina1cc072 и интегрирована PR №98.
-   [Post-merge evidence](0055-pr98-postmerge.md); новый [draft S1.17](0055-s117-alias-comparison.md)
-   не является разрешением следующей реализации или запуска.
+   [Post-merge evidence](0055-pr98-postmerge.md); [S1.17](0055-s117-alias-comparison.md) принята E1–E5 offline.
+   Её интеграция и технические prerequisites предшествуют коду/запуску.
 3. Нужен ли новый live эксперимент, его модель/endpoint/corpus/ceiling/exact SHA
    и разрешение на передачу данных — отдельная спецификация/решение после
    offline evidence. Никакой live permission в S1.16 не подразумевается.

@@ -79,4 +79,4 @@ validators/operational inspectors/workflow/deployment diff отсутствуе�
 повтор production gate. Новый PR/head CI проверяется отдельно после публикации;
 его SUCCESS заранее не заявлялся. Последующая интеграция PR №98 и post-merge
 проверки — в [отдельном receipt](0055-pr98-postmerge.md). Следующий контракт
-[S1.17](0055-s117-alias-comparison.md) пока draft.
+[S1.17](0055-s117-alias-comparison.md) принята E1–E5 offline, implementation not_started.

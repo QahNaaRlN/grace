@@ -38,10 +38,11 @@ Primary permissions сохраняются, product/workflow code не меня�
 
 ## Следующий этап
 
-[S1.17](0055-s117-alias-comparison.md) — draft, E1–E5 offline предложены на review;
-implementation not_started. E6 отдельно: ни запуск, ни SSH/fresh metadata,
-ни передача synthetic fixtures провайдерам сейчас не разрешены.
-Решение о необходимости/границах E6 принимается после offline evidence.
+[S1.17](0055-s117-alias-comparison.md) — E1–E5 offline приняты владельцем
+2026-10-23 прямым «да»; implementation not_started, интеграция спеки ещё нужна.
+Отдельное разрешение E6 также получено («Даю отдельное разрешение»), не использовано.
+Exact source и проверенная реализация пока отсутствуют; до готовности E1–E5/
+integration/CI5/5/preflight запуск/SSH/metadata/inference не выполняются.
 
 S1.16 подтверждает контракт offline, не real-model compliance или live quality.
 Исторический P6 FAIL и consumed permissions P6/D5 сохранены; private-derived

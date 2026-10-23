@@ -1,9 +1,10 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
-Следующий кандидат — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
-**draft / implementation not_started**. Предложены offline E1–E5 для нового fixed
-context на S1.16; E6 требует отдельного решения с exact source и доступом к VPS/провайдерам.
-Ни реализация S1.17, ни новый dispatch/metadata/inference не разрешены.
+Следующий пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
+**accepted E1–E5 / implementation not_started**. Владелец принял offline-контракт
+прямым «да» 2026-10-23; перед кодом требуется интеграция принятой спеки в main.
+Отдельное разрешение E6 получено и не использовано: exact source/integration/CI5/5
+и preflight ещё отсутствуют. Dispatch/metadata/SSH/inference пока не выполняются.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](specs/0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -25,7 +26,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — review draft S1.17; post-merge S1.16 закрыт. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — интеграция принятой S1.17, затем offline реализация; post-merge S1.16 закрыт. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).
