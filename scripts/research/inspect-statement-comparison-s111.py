@@ -54,7 +54,10 @@ def summary(data,now):
     return _summary(data,now,RUN)
 
 def _summary(data,now,authorization):
-    require(data.get('version')=='statement.comparison.v1.grounding' and data.get('authorization')==authorization and data.get('profile')==PROFILE and data.get('candidates')==POLICIES and data.get('maximumMicros')==208500 and digest(data.get('digest')))
+    return _summary_for_profile(data,now,authorization,PROFILE)
+
+def _summary_for_profile(data,now,authorization,profile):
+    require(data.get('version')=='statement.comparison.v1.grounding' and data.get('authorization')==authorization and data.get('profile')==profile and data.get('candidates')==POLICIES and data.get('maximumMicros')==208500 and digest(data.get('digest')))
     start,finish=stamp(data['time']),stamp(data['finishedAt']);require(start<=finish<=now and (finish-start).total_seconds()<=906)
     tuples=data.get('tuples');require(isinstance(tuples,list) and len(tuples)==6)
     require(data.get('error') in ERRORS and type(data.get('passed')) is bool)

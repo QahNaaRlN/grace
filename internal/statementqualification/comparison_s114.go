@@ -18,15 +18,22 @@ type comparisonCampaign uint8
 const (
 	legacyComparison comparisonCampaign = iota
 	s114Comparison
+	s117Comparison
 )
 
 func (c comparisonCampaign) authorization() string {
+	if c == s117Comparison {
+		return S117ComparisonAuthorization
+	}
 	if c == s114Comparison {
 		return S114ComparisonAuthorization
 	}
 	return ComparisonAuthorization
 }
 func (c comparisonCampaign) version() string {
+	if c == s117Comparison {
+		return S117ObservedComparisonVersion
+	}
 	if c == s114Comparison {
 		return S114ObservedComparisonVersion
 	}
@@ -58,6 +65,8 @@ func validateKnownObservedComparison(e ObservedComparisonReport, now time.Time) 
 	switch e.Version {
 	case ObservedComparisonVersion:
 		return ValidateObservedComparison(e, now)
+	case S117ObservedComparisonVersion:
+		return ValidateS117Comparison(e, now)
 	case S114ObservedComparisonVersion:
 		return ValidateS114Comparison(e, now)
 	default:
