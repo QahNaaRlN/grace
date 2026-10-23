@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.19: один эксперимент о полноте напечатанного времени
 
-- Статус: **accepted** (C1–C4 offline); implementation_status: **not_started**.
+- Статус: **accepted** (C1–C4 offline); implementation_status: **local_verified offline / integration pending**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Владелец принял изменение программы прямым «Хорошо, измени дальнейшую работу
   и продолжай» после ретроспективы.
@@ -8,10 +8,13 @@
   на C1–C4 PR106, review head `c9b621dc088402d8ef419e9427f818f64db02ff8`.
   Владелец разрешил зафиксировать принятие, слить PR после CI5/5 и продолжить
   offline-реализацию. Live pilot требует отдельного exact-source разрешения.
-- База: main `1a5bbfbefecd6e8983a8c290f6e8c650c62351dc`, [PR105](0055-pr105-postmerge.md).
-- Ветка: `codex/statement-s119-repair-spec`, существующий PR №106.
+- Spec base: main `1a5bbfbefecd6e8983a8c290f6e8c650c62351dc`, [PR105](0055-pr105-postmerge.md).
+- Implementation base: main `db65225c6d2cfc9052ccf4f7310ced61c5ba79d8`, PR106;
+  [C1–C4 offline evidence](0055-s119-evidence.md).
+- Spec branch: `codex/statement-s119-repair-spec`, PR №106 (merged).
+- Implementation branch: `codex/statement-s119-clock-pilot`; code `b9809d8319de4d6e0f45de79faf8abc0f2e5d6a4`.
 - Предыдущая редакция о clocks/claims/coverage заменена до принятия. Реализация
-  начинается после принятия этого scope и интеграции спецификации в main.
+  начата после принятия и интеграции спецификации PR106/main db65225.
 
 ## Проблема, гипотеза и полезный результат
 
@@ -198,6 +201,7 @@ Rollback — убрать research candidate/entrypoint; product state не ми
 
 ## Открытое решение
 
-C1–C4 offline приняты прямым решением выше; implementation пока not_started. Пилот имеет собственный будущий exact-source gate. Один
+C1–C4 offline приняты и local_verified; integration pending.
+[C1–C4 evidence](0055-s119-evidence.md). Пилот имеет отдельный будущий exact-source gate. Один
 [актуальный status](../statement-ai-status.md) ссылается на этот документ;
 история сохранена отдельно и не задаёт следующие шаги.
