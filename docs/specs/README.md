@@ -5,8 +5,8 @@
 [S1.19: один эксперимент о полноте напечатанного времени](0055-s119-evidence-selection-candidate.md),
 **accepted C1–C4 / integrated offline; live REJECT, разрешение CONSUMED**;
 [evidence](0055-s119-evidence.md), повтор не открыт.
-Принят [S1.20 R1–R3](0055-s120-clock-reject-diagnosis.md): **accepted offline / implementation verified offline, review pending**,
-read-only разбор сохранённого REJECT без новых model calls; контракт интегрирован PR108; код на review-ветке, live R4 NOT_AUTHORIZED.
+Принят [S1.20 R1–R3](0055-s120-clock-reject-diagnosis.md): **accepted / integrated offline PR110**,
+read-only разбор сохранённого REJECT без новых model calls; контракт PR108 и реализация PR110 интегрированы; единственный R4 VERIFIED/replay6/6, grant CONSUMED; причина REJECT — non_clock_regression, новый repair не открыт.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

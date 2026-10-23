@@ -1,13 +1,13 @@
 # SPEC-0055 / S1.20: объяснить сохранённый REJECT без новых model calls
 
-- Статус: **accepted R1–R3 offline**; implementation_status: **verified offline / review pending**.
+- Статус: **accepted R1–R3 offline**; implementation_status: **integrated offline (PR110)**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое решение владельца ниже.
 - Proposal branch: `codex/statement-s119-pilot-evidence`, тот же PR108.
 - Implementation branch: `codex/statement-clock-reject-diagnosis`; base main44e6413 после PR108.
-  Код проверен offline, ещё не интегрирован; exact head/CI у implementation PR.
+  Код принят владельцем и интегрирован PR110/main2979280; exact source/CI и R4 receipt ниже.
 - Offline R1–R3 приняты и контракт интегрирован PR108 до реализации. Live R4 отдельно:
-  **NOT_AUTHORIZED / NOT_RUN**, без переноса consumed E6/Q6/S1.19 permissions.
+  **VERIFIED / CONSUMED** по единственному R4 run ниже; E6/Q6/S1.19 permissions остаются consumed.
 
 ## Проблема и пользовательский результат
 
@@ -283,3 +283,119 @@ Reader не создаёт marker/report на VPS и не имеет path/produc
 manifest/ref/inputs и отдельный R4 grant. Ни новой версии prompt, ни model calls,
 SQL/ledger/reserve/settle, финансовых записей или deploy этот пакет не выполнял.
 Исходный S1.19 **REJECT** сохранён; общая цель надёжного AI-импорта не закрыта.
+
+
+## Принятие реализации, интеграция и R4 pre-dispatch receipt
+
+Владелец принял offline-реализацию прямым **«Принять реализацию и слить №110»**
+на review source `1a6b74201db92ba37be750411ff7883d8216b602`.
+Принятие сохранено в [PR110](https://github.com/QahNaaRlN/grace/pull/110)
+и merge commit `29792809f5e6435c93fe07a5170e7ed7135d38ca`.
+Source [CI39998179098](https://github.com/QahNaaRlN/grace/actions/runs/39998179098)
+и merge [CI39999830331](https://github.com/QahNaaRlN/grace/actions/runs/39999830331)
+SUCCESS5/5; [Delivery40001135152](https://github.com/QahNaaRlN/grace/actions/runs/40001135152)
+SUCCESS4/4. Canonical verifier и все jobs проверены отдельно по exact SHA.
+Локальные post-merge make test (89/336), test-production (31 parity cases/helper),
+test-integration, vet/diff-check PASS; `/tmp/grace-s120-postmerge-*.log`.
+Деревья merge/source совпадают: `701cc3b2b2a73af8ebe411c0433d18f5701b0472`.
+Main чистый0700; frozen E6/Q6/S1.19 refs сохранены.
+
+До этого receipt R4 не разрешался и не выполнялся. Далее владелец ответил
+**«Разрешаю один R4»** на exact-source вопрос:
+
+> Разрешаете один R4 на source 1a6b74201db92ba37be750411ff7883d8216b602,
+> ref codex/statement-s120-reader-source: один workflow_dispatch
+> statement-clock-diagnosis.yml с authorized_source=этот SHA и
+> execute_approved_diagnosis=true, один read-only SSH-разбор сохранённого
+> S1.19 на Grace VPS? Provider/metadata/SQL calls, новые прикладные VPS writes
+> и deploy — 0; в CI только закрытый diagnostic. Отказ тоже расходует допуск,
+> повторов нет. Отдельного разрешения требует принятый S1.20 R4.
+
+Receipt подготовлен 2026-10-23T18:16:50.556017+00:00, **до dispatch**. Статус: **AUTHORIZED / NOT_RUN**.
+
+- Frozen reader source `1a6b74201db92ba37be750411ff7883d8216b602`;
+  ref `codex/statement-s120-reader-source`, remote ref повторно проверен.
+  Source ancestor origin/main; exact-source CI5/5 повторно проверен.
+- Manifest: `docs/research/statement-quality/s120-reader-manifest.json`,
+  SHA256 `6c4b72a138fcee3a7ee9dcaed8d390ec0f03a43240f91a9f81aa167bf4f21be7`.
+  `-mode=check` не открывает private files.
+- Workflow `statement-clock-diagnosis.yml`;
+  `authorized_source=1a6b74201db92ba37be750411ff7883d8216b602`,
+  `execute_approved_diagnosis=true`; ровно один dispatch/run, attempt1.
+- Один SSH subprocess с pinned host, timeout75s. Только fixed S1.19 marker/report
+  `/opt/grace/shared/statement-s119-clock-pilot.started` и
+  `/opt/grace/shared/statement-s119-clock-pilot.json`, stable reads/0600,
+  без произвольных путей и private witness downloads. Их runtime состояние
+  до разрешённого запуска не опрашивалось.
+- Дополнительные provider/metadata/SQL/reserve/settle calls и новые прикладные
+  persistent VPS writes0. Никаких deploy/flags/prompt/model changes.
+  Только закрытая projection/digest либо enum UNVERIFIED; отказ расходует grant.
+- На момент подготовки receipt Actions metadata содержит **0 прежних R4 runs**.
+  После одного результата — запись outcome в этом же пакете и остановка.
+  Receipt не разрешает второй SSH/dispatch, новый report, repair или pilot.
+
+Это один пакет acceptance/source/approval/result. Отдельного readiness PR
+или новой спецификации для этой записи не создаётся; outcome добавляется сюда.
+
+
+## R4 outcome: VERIFIED, grant CONSUMED, остановка
+
+Единственный разрешённый [run40002091161](https://github.com/QahNaaRlN/grace/actions/runs/40002091161),
+job120580516254, **attempt1**, source/ref1a6b742/codex/statement-s120-reader-source,
+created **2026-10-23T18:17:32Z**, completed/success. Durable approval receipt
+`d4ca1af280363972bd423977a6a1dad310b59eaa` опубликован до dispatch;
+локальный intent имеет createdAt18:17:30.656135Z и dispatchCount1.
+До запуска Actions metadata содержала0 R4 runs; после — ровно этот один.
+
+Закрытый diagnostic имеет **VERIFIED**, replayVerified6, все120 checks/3 pairs,
+исторический **REJECT** и `rejectReasons=["non_clock_regression"]`.
+[Полная закрытая projection](../research/statement-quality/s120-diagnosis-summary.json),
+SHA256 `ecadd5ea938f485662c2dd9d9c25181454621a99d390f13f619bdd7ef920ad6a`,
+совпадает с напечатанным CI digest; compiled Go `-mode=validate` и независимый
+Python projection validator повторно подтвердили shape/source/decision/diffs/cost.
+Private report/snapshots/текст/values/IDs не скачивались и в Git не попадали.
+
+| Пара | Base → candidate | Clock и precision candidate | Non-clock regressions |
+| --- | --- | --- | --- |
+| 1, ordinals1→2 | 14/20 → 16/20 | clocks4/4, precision4/4 | Вторая строка: check13 `record_description`, check14 `row_issues`: base PASS → candidate FAIL |
+| 2, ordinals4→3 | 14/20 → 18/20 | clocks4/4, precision4/4 | Нет |
+| 3, ordinals5→6 | 14/20 → 18/20 | clocks4/4, precision4/4 | Нет |
+
+Проверки16 `coverage` и17 `blockers` FAIL **во всех шести ответах**, включая
+base; это общие дефекты, не новые pair regressions. Полных quality PASS нет.
+Candidate clock target и precision не являются причиной REJECT. Одной non-clock
+регрессии в первой паре достаточно для C4 REJECT; две другие пары её не отменяют.
+Коды показывают проверку, но не доказывают, какие слова/причины issues или spans
+повреждены: эти raw значения и детализация закрытым контрактом не экспортируются.
+Никакое конкретное внутреннее рассуждение модели здесь не приписывается.
+
+Сохранённые шесть callCostsMicros: `[3032,3117,1437,2999,1446,1449]`,
+сумма **13480 USD micros ($0.01348)** при maximum323400;
+billingKnown/settlementRecorded=true. Это accounting старого S1.19 report,
+без нового чтения SQL ledger, fees или проверки актуального allowance.
+Этот R4 сделал **provider/metadata/SQL calls0**, persistentWritesRequested0,
+activationAuthorized=false; дополнительная provider cost0.
+
+Скачан только публичный artifact `statement-s120-manifest`, id12522871258,
+1053 bytes ZIP, SHA256 `cfac7a19c3f6c7af12ec2b11231f30e26b06acc469b0e4b0c10015057197de41`.
+ZIP содержит ровно MANIFEST.json/SOURCE_SHA/SHA256SUMS. Manifest byte-for-byte
+совпадает с pre-approval manifest, SHA256
+`6c4b72a138fcee3a7ee9dcaed8d390ec0f03a43240f91a9f81aa167bf4f21be7`.
+[CI checksums](../research/statement-quality/s120-reader-ci-SHA256SUMS):
+reader binarySHA `8b03ee2c7b70aa0746b6e3117d3775792582b8eac271d9d3db43ca1ab35cad91`.
+Binary не скачивался; совпадение CI/local binary не заявляется.
+[Run receipt](../research/statement-quality/s120-run-receipt.json) содержит
+только публичные metadata/digests. Старое ограничение producer run linkage
+(не криптографическая аттестация исходного файла) сохраняется.
+
+R4 AC выполнен: один run/attempt1/SSH path, enum/closed validated output,
+fixed stable-read files/0600 и replay6/6, без новых прикладных VPS writes.
+Atime/SSH OS logging не объявляются прикладными записями. Исходные marker/report
+не изменялись reader; дополнительного SSH для проверки или ремонта не было.
+Deploy/flags/model/prompt/financial state не менялись.
+
+**Grant CONSUMED. Исследовательский пакет остановлен с этим результатом.**
+Ни повтор R4, ни новый prompt/repair/pilot этим результатом не разрешены.
+Следующее решение должно отдельно определить работу с сохранностью описания
+и общими coverage/blockers; S1.19 candidate остаётся REJECT/unqualified.
+Надёжный AI-импорт и owner functional acceptance по всей SPEC0055 ещё не доказаны.

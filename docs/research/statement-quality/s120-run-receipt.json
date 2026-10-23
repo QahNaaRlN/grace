@@ -1,0 +1,14 @@
+{
+  "headSha": "1a6b74201db92ba37be750411ff7883d8216b602",
+  "status": "completed",
+  "conclusion": "success",
+  "attempt": 1,
+  "createdAt": "2026-10-23T18:17:32Z",
+  "updatedAt": "2026-10-23T18:18:19Z",
+  "runId": 40002091161,
+  "jobId": 120580516254,
+  "approvalReceipt": "d4ca1af280363972bd423977a6a1dad310b59eaa",
+  "diagnosticSHA256": "ecadd5ea938f485662c2dd9d9c25181454621a99d390f13f619bdd7ef920ad6a",
+  "artifactId": 12522871258,
+  "artifactZipSHA256": "cfac7a19c3f6c7af12ec2b11231f30e26b06acc469b0e4b0c10015057197de41"
+}
