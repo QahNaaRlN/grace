@@ -1,0 +1,23 @@
+{
+  "release_sha": "",
+  "statement_action": "preserve",
+  "reconcile_screening_usage": "none",
+  "reconcile_screening_s16_usage": "none",
+  "statement_screening_only": false,
+  "statement_screening_s16_only": false,
+  "statement_screening_s18_only": false,
+  "diagnose_statement_s19_only": false,
+  "statement_comparison_s111_only": false,
+  "comparison_authorized_sha": "",
+  "diagnose_statement_s112_only": false,
+  "diagnosis_authorized_sha": "",
+  "statement_comparison_s114_only": false,
+  "comparison_s114_authorized_sha": "",
+  "inspect_statement_only": false,
+  "diagnose_statement_s115_only": false,
+  "diagnosis_s115_authorized_sha": "",
+  "statement_comparison_s117_only": false,
+  "comparison_s117_authorized_sha": "",
+  "diagnose_statement_s118_only": true,
+  "diagnosis_s118_authorized_sha": "5fdd0f93380b72f6f3bdad03715f9a83744cace5"
+}

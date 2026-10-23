@@ -1,0 +1,103 @@
+{
+  "runId": 39949603261,
+  "jobId": 120400553356,
+  "sourceSha": "5fdd0f93380b72f6f3bdad03715f9a83744cace5",
+  "contextVerified": true,
+  "artifactsUnchanged": true,
+  "providerCalls": 0,
+  "persistentWritesRequested": 0,
+  "tuples": [
+    {
+      "ordinal": 1,
+      "status": "VERIFIED",
+      "failedChecks": 2,
+      "verifiedChecks": 2,
+      "unverifiedChecks": 0,
+      "reasonEntries": 2,
+      "unknownPublicReasons": 1,
+      "verifiedReasons": 2,
+      "unverifiedReasons": 0,
+      "coverageStatus": "VERIFIED",
+      "totalUnmapped": 6
+    },
+    {
+      "ordinal": 2,
+      "status": "VERIFIED",
+      "failedChecks": 2,
+      "verifiedChecks": 2,
+      "unverifiedChecks": 0,
+      "reasonEntries": 2,
+      "unknownPublicReasons": 1,
+      "verifiedReasons": 2,
+      "unverifiedReasons": 0,
+      "coverageStatus": "VERIFIED",
+      "totalUnmapped": 7
+    },
+    {
+      "ordinal": 3,
+      "status": "VERIFIED",
+      "failedChecks": 6,
+      "verifiedChecks": 6,
+      "unverifiedChecks": 0,
+      "reasonEntries": 2,
+      "unknownPublicReasons": 1,
+      "verifiedReasons": 2,
+      "unverifiedReasons": 0,
+      "coverageStatus": "VERIFIED",
+      "totalUnmapped": 1
+    },
+    {
+      "ordinal": 4,
+      "status": "VERIFIED",
+      "failedChecks": 2,
+      "verifiedChecks": 2,
+      "unverifiedChecks": 0,
+      "reasonEntries": 7,
+      "unknownPublicReasons": 6,
+      "verifiedReasons": 7,
+      "unverifiedReasons": 0,
+      "coverageStatus": "VERIFIED",
+      "totalUnmapped": 10
+    },
+    {
+      "ordinal": 5,
+      "status": "VERIFIED",
+      "failedChecks": 6,
+      "verifiedChecks": 6,
+      "unverifiedChecks": 0,
+      "reasonEntries": 5,
+      "unknownPublicReasons": 3,
+      "verifiedReasons": 5,
+      "unverifiedReasons": 0
+    },
+    {
+      "ordinal": 6,
+      "status": "VERIFIED",
+      "failedChecks": 4,
+      "verifiedChecks": 4,
+      "unverifiedChecks": 0,
+      "reasonEntries": 5,
+      "unknownPublicReasons": 3,
+      "verifiedReasons": 5,
+      "unverifiedReasons": 0
+    }
+  ],
+  "verifiedTuples": 6,
+  "verifiedFailedChecks": 22,
+  "verifiedReasonEntries": 23,
+  "resolvedUnknownPublicReasons": 15,
+  "comparisonStatusCounts": {
+    "clockDateMatches": 4,
+    "clockTimeDiffers": 4,
+    "clockPrecisionDiffers": 4,
+    "clockUtcMatches": 4,
+    "printedAmountDiffers": 2,
+    "printedCurrencyMatches": 2
+  },
+  "reasonCodeCounts": {
+    "overlapping_evidence": 13,
+    "invalid_source_rows": 2,
+    "source_coverage_incomplete": 4,
+    "unmapped_spans": 4
+  }
+}
