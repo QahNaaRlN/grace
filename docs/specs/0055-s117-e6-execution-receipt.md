@@ -25,7 +25,8 @@
 Один workflow_dispatch `deploy-production.yml` на frozen ref выше, authorization
 `s117-comparison-20261023`. До6POST / **208500 USD micros ($0.2085 provider)**,
 по одному на tuple, порядок A-columns → B-columns → A-cards → B-cards → A-RU → B-RU.
-Shared $10 budget, fees, remaining/uncertain и historical rows не меняются.
+Shared $10 allowance и historical rows не сбрасываются и не переписываются;
+remaining/uncertain проверяются штатно, новые расходы учитываются reserve/settle.
 Provider cap не является fee-inclusive итогом.
 
 | ID | Request → canonical | Endpoint / provider | Max micros на PDF /3PDF |

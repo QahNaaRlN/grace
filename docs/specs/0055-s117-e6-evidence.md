@@ -53,7 +53,8 @@ Billing known; exact unique reservation из verified private report совпа�
 Reservation settled, reservationUncertain=false, ledgerMatchesReport=true,
 sharedUncertainBlock=false. Known cost не обнулён из-за quality FAIL.
 Расход ниже утверждённого208500 USD micros; provider cost не объявляется
-fee-inclusive итогом. Remaining/allowance не раскрывались и не изменялись.
+fee-inclusive итогом. Значение remaining не публиковалось; расход штатно учтён
+в shared ledger. Allowance не увеличивался и не сбрасывался.
 
 ## Сохранность и границы
 
@@ -67,7 +68,7 @@ actual container/image совпали до/после, readiness health успе
 Новые report/marker остаются в fixed private storage `/opt/grace/shared`.
 Старые P6/D5 artifacts не читались; private/free text/UUID/generation/provider IDs
 не попадали в публичные evidence. Новые финансовые записи, модель/flags,
-configuration/budget/guards, deployment/reconciliation не менялись.
+configuration/allowance/guards, deployment/reconciliation не менялись.
 Исторические permissions не переиспользовались. Отдельный E6 approval израсходован;
 новые inference, retry, repair или эксперимент этим результатом не открыты.
 
