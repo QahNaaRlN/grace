@@ -12,7 +12,10 @@ read-only разбор сохранённого REJECT без новых model c
 actual-main CI40019906935/all5 и Delivery40021060286/all4 PASS.
 В том же пакете приняты **P1–P3 accepted implementation / integrated PR114**, main8a3637b, подготовка измерения H2
 на прежнем public cards; отдельно разрешённая root UUID setup CONFIGURED;
-SSH principal source fix подготовлен на root по уточнению владельца. P4 NOT_AUTHORIZED. Новый paid pilot/reader/activation не открыт.
+SSH principal root принят и интегрирован PR115/main6dc08d3, CI40034156936/all5 и Delivery40035190465/all4 PASS.
+Единственный отдельно разрешённый P4/run40035544723 завершён **INCONCLUSIVE**:
+SSH public-key refusal, report unavailable, calls/cost/settlement N/A; grant **CONSUMED**.
+H2 UNVERIFIED, повтор/repair/activation не открыт; [отчёт](0055-s121-row-scoped-selection.md#единственный-p4-результат-и-границы-evidence).
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

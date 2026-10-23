@@ -1,0 +1,144 @@
+{
+  "version": "statement.row-pilot.s121.execution-evidence.v1",
+  "source": "023ad3820ce2a536ebaf7383b4863559ac769ece",
+  "ref": "codex/statement-s121-row-pilot-source",
+  "workflow": "statement-row-pilot.yml",
+  "inputs": {
+    "authorized_source": "023ad3820ce2a536ebaf7383b4863559ac769ece",
+    "execute_approved_pilot": "true"
+  },
+  "approval": {
+    "answer": "Разрешаю один P4",
+    "receiptURL": "https://github.com/QahNaaRlN/grace/pull/115",
+    "publishedBeforeDispatch": true,
+    "status": "CONSUMED"
+  },
+  "run": {
+    "id": 40035544723,
+    "url": "https://github.com/QahNaaRlN/grace/actions/runs/40035544723",
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "headSha": "023ad3820ce2a536ebaf7383b4863559ac769ece",
+    "status": "completed",
+    "conclusion": "failure",
+    "createdAt": "2026-10-23T22:44:32Z",
+    "updatedAt": "2026-10-23T22:45:11Z",
+    "jobID": 120693978411,
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/setup-go@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify exact authorized source and CI 5/5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build fixed operator bundle",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/upload-artifact@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Configure pinned SSH",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Execute approved pilot once",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Run actions/upload-artifact@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/setup-go@v7",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": 12537200785,
+      "name": "statement-s121-closed-result",
+      "declaredArchiveDigest": "sha256:9e8d5497b33f39c04c59f1b2461389d96d97c39bb5d9baff0af3f9f03203c7e5"
+    },
+    {
+      "id": 12537080980,
+      "name": "statement-s121-manifest",
+      "declaredArchiveDigest": "sha256:7e37f74473fcf6129508e3d0feb449f9aead97477a0a4086383a1b8b9be9216a"
+    }
+  ],
+  "publicSummarySha256": "c8d6a8ffe7dac9312f117ba6e65646c19483c8000fedaa99365f773dc969f3c6",
+  "ciBundleSha256": {
+    "grace-row-pilot": "526b398aa2afd96211a13ede0ec5e5e839fb6b962c48bb084b7c62a6c4aba796",
+    "cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6",
+    "cards-document.json": "eefde6959b1bbfe8c94e4559fee1103dfeac98d10c0f415f8673d97b661cdbdf",
+    "SOURCE_SHA": "493bf71aae5f608f37b1c3765713ecae136e4864c3b6e3749147de58685f2da0",
+    "MANIFEST.json": "951d39f1c4a05b7fae5dc69054f329ad383d63b7ad432b3753ec8b8fa4aeb458",
+    "run.sh": "570fac3e8b72213b5e2df87adbab9543c4e355304dfe2eb0e4424bbd783e3378"
+  },
+  "validation": {
+    "sourceBoundClosedRefusal": true,
+    "originalEqualsValidatedJSON": true,
+    "validatorExit": 1,
+    "manifestEqualsApprovedManifest": true,
+    "artifactSourceEqualsAuthorizedSource": true,
+    "ciFailureSignals": [
+      "ssh_publickey_refused",
+      "step_exit_255"
+    ],
+    "rawLogsSaved": false,
+    "privateVPSReportRead": false,
+    "strictPublicRefusalFields": true
+  },
+  "result": {
+    "version": "statement.row-pilot.s121.refusal.v1",
+    "source": "023ad3820ce2a536ebaf7383b4863559ac769ece",
+    "activationAuthorized": false,
+    "replayVerified": false,
+    "decision": "INCONCLUSIVE",
+    "error": "row_pilot_report_unavailable",
+    "recordedCalls": null,
+    "actualMicros": null,
+    "settlementRecorded": null
+  },
+  "modelHypothesis": "UNVERIFIED",
+  "repeatAuthorized": false,
+  "limitations": [
+    "Отказ на SSH staging; точная причина непринятия CI credential не установлена.",
+    "Calls/cost/settlement неизвестны: null, не ноль.",
+    "Archive digests взяты из metadata GitHub, локальные ZIP digests не сравнивались.",
+    "Local readiness binary и actual CI binary имеют разные hashes; source и manifest совпадают."
+  ]
+}
