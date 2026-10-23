@@ -1,10 +1,13 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
-Следующий пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
-**accepted E1–E5 / implementation not_started**. Владелец принял offline-контракт
-прямым «да» 2026-10-23; перед кодом требуется интеграция принятой спеки в main.
-Отдельное разрешение E6 получено и не использовано: exact source/integration/CI5/5
-и preflight ещё отсутствуют. Dispatch/metadata/SSH/inference пока не выполняются.
+Текущий пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
+**accepted E1–E5 / implemented offline, review/integration pending**.
+Принятая спека интегрирована [PR №99](specs/0055-pr99-postmerge.md), main94fd4ab.
+[Implementation evidence E1–E5](specs/0055-s117-evidence.md): новые offline пути проверены,
+полные local gates PASS; exact-head CI проверяется отдельно в implementation PR.
+Отдельное разрешение E6 получено и не использовано: после приёмки/integration
+реализации потребуются immutable source/ref, CI5/5 и preflight.
+Dispatch/metadata/SSH/inference пока не выполняются.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](specs/0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -13,7 +16,7 @@
 Принятая спека интегрирована PR №97 (`a1cc072`), реализация — PR №98 (`81ef7e5`).
 [Post-merge №98](specs/0055-pr98-postmerge.md): local/head/merge gates PASS; CI head и merge оба5/5. Delivery отдельно.
 [Evidence A1–A6](specs/0055-s116-evidence.md), [post-merge №97](specs/0055-pr97-postmerge.md).
-Inference/SSH/deploy и новая campaign не разрешены.
+Scope S1.16 не включал inference/SSH/deploy или новую campaign.
 [PR №96 post-merge](specs/0055-pr96-postmerge.md): receipt интегрирован в main `5b6ed20`.
 
 Текущий пакет — [S1.15](specs/0055-s115-saved-proposal-diagnosis.md), **accepted D1–D4 / integrated offline**:
@@ -26,7 +29,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — интеграция принятой S1.17, затем offline реализация; post-merge S1.16 закрыт. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — review offline реализации S1.17; post-merge S1.16 и интеграция спеки №99 закрыты. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).

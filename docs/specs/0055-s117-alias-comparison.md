@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.17: контролируемое сравнение после ограничения alias
 
-- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: not_started.
+- Статус: accepted; accepted_scope: E1–E5 offline; implementation_status: implemented_offline; review/integration pending.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Владелец приёмки: владелец Grace; E1–E5 приняты 2026-10-23 прямым «да»
   на уточнение о принятии offline-контракта PR №99 (review head `cc90361`).
@@ -12,7 +12,8 @@
   зафиксированы выше; слияние S1.16 само по себе их не заменяло.
 - База: main `81ef7e543824b327d2a43ab88838a04bb58f1ed8`.
 - Ветка спецификации: `codex/statement-s116-postmerge-next`.
-- Ветка/коммит реализации и разрешённый live source SHA: отсутствуют.
+- Реализация: `codex/statement-s117-comparison`, commit `220284f131029812f3ab918625606aa6fc7b9e0b`; [E1–E5 evidence](0055-s117-evidence.md).
+- Разрешённый live source/ref: не выбран; E6 permission unused, readiness NOT_READY.
 
 ## Проблема и пользовательский результат
 
@@ -44,8 +45,9 @@ engine, private capture, canonicalizer, scorer, бюджет и transport.
 на том же source и успешного preflight. Разрешение не является готовностью
 и не переносится на старые modes/markers или более широкий scope.
 
-Сейчас фиксируется принятие спецификации; по процессу Grace её интеграция
-в main предшествует новому implementation worktree. Код пока не меняется.
+Принятая спецификация интегрирована [PR №99](0055-pr99-postmerge.md) в main94fd4ab
+до создания нового implementation worktree. Offline реализация готовится к review;
+её интеграция и проверка exact source E6 остаются отдельными условиями.
 
 ## Non-goals
 
@@ -69,9 +71,9 @@ private-derived данные не переносятся в Git/PR/Actions artif
   закреплены за v2 и намеренно отвергают v3. Нельзя просто запустить прежний P6
   на новом binary или переписать PROFILE старого inspector.
 - S1.14 и S1.15 реализуют private snapshot, закрытый diagnostic и replay;
-  historical readers/source сохраняются. Нового campaign identity сейчас нет.
+  historical readers/source сохраняются. До этой реализации нового campaign identity не было.
 - Доступность, actual identity, цены, runtime readiness, remaining/uncertain
-  и actual image/health сейчас UNVERIFIED; в документационном этапе не читаются.
+  и actual image/health сейчас UNVERIFIED; в offline реализации не читаются.
 
 ## Предметная модель и инварианты
 
@@ -228,7 +230,7 @@ unknown billing, settlement/storage failure и unavailable replay дают за�
 
 ## Критерии приёмки и исполняемые проверки
 
-E1–E5 приняты; выполнение критериев пока NOT_RUN. E6 отдельно разрешён,
+E1–E5 приняты; текущее выполнение отражено в [implementation evidence](0055-s117-evidence.md). E6 отдельно разрешён,
 но prerequisites не выполнены и запуск не выполнялся.
 
 | ID | Требование | Исполняемое evidence |
@@ -238,12 +240,12 @@ E1–E5 приняты; выполнение критериев пока NOT_RUN
 | E3 | Exact policies/schema/order/caps и accounting | Fake HTTP + actual tuples/schema,6plans before reserve, one reserve/settle, continuation/stop, known/unknown и bounds |
 | E4 | Capture→writer→Go summary→inspector→replay с privacy | Real helper + disposable SQL, digest/overflow/error/immutability/sentinel tests, scorer19/20/23 и replay6/6 на fake cases |
 | E5 | Полная offline регрессия | `make test`, `make test-production`, `make test-integration`, affected race, `go vet ./cmd/... ./internal/...`, `git diff --check`; implementation report по каждому критерию и exact-head CI5/5 |
-| E6 | Один отдельно разрешённый execution либо preflight refusal | Только после отдельного approval: exact source/run/job IDs, до6POST/$0.2085, states/quality/diagnostics/replay/billing/image evidence; без retry |
+| E6 | Один отдельно разрешённый execution либо preflight refusal | После выполнения gate: exact source/run/job IDs, до6POST/$0.2085, states/quality/diagnostics/replay/billing/image evidence; без retry |
 
 ## Открытые решения
 
 1. Offline E1–E5 приняты. После интеграции этой принятой спеки в main —
-   реализация в новом worktree; implementation not_started.
+   реализация выполнена в новом worktree; review/integration pending.
 2. Отдельное разрешение E6 получено и не использовано. Exact source/ref,
    integrated offline evidence, CI5/5 и preflight ещё отсутствуют; запуск не готов.
 3. Полнота description и семантика неразмеченных spans остаются отдельным
@@ -256,4 +258,5 @@ Go,88 Web files/334 tests, ESLint/FSD/Prettier/build и offline Jev;
 log `/tmp/grace-s117-acceptance-make.log`. `git diff --check`, ссылки
 документов и отсутствие runtime diff относительно main81ef7e5 — PASS.
 Это проверка docs-only acceptance, не выполнение новых E1–E5.
-Implementation not_started, E6 не исполнялся, разрешение не использовано.
+Исторический docs-only result не является implementation evidence. Текущая реализация
+описана [отдельно](0055-s117-evidence.md); E6 не исполнялся, разрешение не использовано.
