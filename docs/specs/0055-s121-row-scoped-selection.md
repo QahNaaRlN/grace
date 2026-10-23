@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
 - Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted offline, P4 NOT_AUTHORIZED**, 2026-10-24.
-- Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 implemented offline / acceptance pending**. На момент принятия D1–D3 Go-кода не было.
+- Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 accepted implementation / integrated PR114**, merge `8a3637bfae49cff58a6bd436cad006bc3f9e8372`. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
@@ -375,7 +375,7 @@ Exact-source CI40018452932/all5 и actual-main CI40019906935/all5 провере
 
 ## Предложение P1–P4: измерить H2 до инвестиций в масштабирование
 
-**Статус дополнения — P1–P3 accepted / implemented offline; acceptance implementation pending; P4 NOT_AUTHORIZED.**
+**Статус дополнения — P1–P3 accepted / implemented offline; implementation accepted/integrated PR114; P4 NOT_AUTHORIZED.**
 Это отдельное предлагаемое решение в том же S1.21 пакете. Принятие D1–D3
 и разрешение слить PR113 не разрешают следующие работы или вызовы.
 
@@ -604,12 +604,13 @@ Workflow_dispatch, SSH/VPS, metadata/provider/SQL calls, чтение secrets, d
 расходы и слияние PR114 остаются запрещены; P4 NOT_AUTHORIZED.
 
 
-## Реализация P1–P3 offline для приёмки PR114
+## Offline-реализация P1–P3 перед приёмкой PR114
 
 Принятый контракт P1–P3 реализован в том же пакете. Основания до соответствующих
 исходников: acceptance commit `a593a1ebd85ee89f15504938835958da08d29736` и отдельный
 receipt `88942fb` на создание двух операционных файлов **без запуска**.
-Независимая приёмка реализации и слияние PR114 ещё не разрешены.
+На момент этого отчёта независимая приёмка и слияние PR114 ещё не были разрешены;
+последующее решение и интеграция зафиксированы ниже.
 
 Фиксированный `cmd/statement-row-pilot` имеет default `check`: actual builders
 создают manifest без config/env/key/файлов пользователя/network. `run` закрыт
@@ -678,3 +679,46 @@ Exact-head CI публикуется и проверяется отдельно 
 H2, representative evaluation и надёжный AI-импорт остаются UNVERIFIED.
 После приёмки/интеграции нужен отдельный P4 exact-source допуск; этот отчёт его
 не открывает. После любого P4 результата — остановка, без автоматического повтора.
+
+
+## Принятие PR114 и исправление SSH principal после уточнения владельца
+
+Владелец отдельно принял offline P1–P3 и разрешил слияние [PR114](https://github.com/QahNaaRlN/grace/pull/114)
+для source `8bb91173daeb54651a510b56ad5855b676813d7d`: source CI40028836083/all5,
+local gates PASS. Merge `8a3637bfae49cff58a6bd436cad006bc3f9e8372` имеет то же дерево;
+actual-main CI40030240181/all5 и Delivery40031275115/all4 PASS, без deploy.
+Предыдущие строки «acceptance pending»/«UUID UNVERIFIED» в implementation report
+описывают состояние перед последующими решениями; актуальный итог — здесь.
+
+После первой отдельно разрешённой UUID setup попытки под `grace-deploy`
+получен public-key authentication refusal: SQL0, secret writes0. Владелец уточнил
+**«используй root, учетной записи grace-deploy нет»** и отдельно разрешил одну
+попытку под root с прежними ограничениями. Результат: **CONFIGURED** — один root
+SSH, один read-only SELECT только `users WHERE role='admin' AND NOT disabled`,
+найден ровно один active admin; только GitHub production environment secret
+`PRODUCTION_STATEMENT_OPERATOR_OWNER_ID` записан через stdin и подтверждён по
+metadata name/updatedAt. UUID не выводился, в repo/файлы не сохранялся;
+существующие значения secrets не читались. БД/financial/budget/model metadata/
+provider/deploy/dispatch/P4 writes/calls0. Эти точечные UUID setup действия
+разрешены отдельно и не выдаются за P4; они не расходуют ещё не выданный P4 grant.
+
+Операционный source fix в том же S1.21 пакете меняет только три SSH/SCP адреса
+нового `statement-row-pilot.yml` на `root@195.133.195.190`. Literal prompts,
+requests/scorer/limits, wrapper/marker, default execute=false и exact-source/CI
+разрешения сохранены. Fake SSH/SCP checks теперь отвергают неверного пользователя
+и подтверждают root во всех трёх командах фактического workflow shell block.
+Исторические source refs/старые grants и соседние deploy workflows не изменены.
+По GitHub metadata подтверждено наличие UUID secret в environment production
+и `PRODUCTION_SSH_KEY` на repository level, откуда workflow его наследует.
+Live workflow не запускался; значение CI SSH credential не читалось и его
+root authentication не проверялась сетевым подключением. Root-доступ подтверждён только отдельно разрешённым
+локальным agent setup. Новый source fix требует review/integration до P4.
+**P4 NOT_AUTHORIZED**, H2 и надёжный AI-импорт по-прежнему UNVERIFIED.
+
+
+Offline evidence source correction: `python3 scripts/research/test-statement-row-workflow.py`,
+`./scripts/test-statement-row-s121-wrapper.sh`, YAML parser всех6 workflows и
+`git diff --check` — PASS. Эти проверки используют fake SSH/Docker; они не
+выдаются за живую проверку CI credential. Обязательный `make test` — **PASS** перед публикацией source correction:
+Go,89 Web suites/336 tests, lint/FSD/format/build/Jev; generated API diff пуст. Исправление principal реализует прямое
+уточнение владельца в рамках принятого S1.21 P1–P3, не новый подход к extraction.
