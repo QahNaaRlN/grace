@@ -111,6 +111,9 @@ func (r *ComparisonReasoner) currentProof(ctx context.Context) (*statementextrac
 			for _, s := range ep.Parameters {
 				params[s] = true
 			}
+			if r.clockExactPrices && (!exactClockPrice(ep.Pricing.Input, c.Policy.InputMicrosPerMillion) || !exactClockPrice(ep.Pricing.Output, c.Policy.OutputMicrosPerMillion)) {
+				return nil, fail
+			}
 			if ep.Name != c.Policy.ProviderName || ep.Status == nil || *ep.Status != 0 || !statementCapabilityFits(ep.Context, ep.Output, ep.Input, params) || !params["structured_outputs"] || !params["response_format"] || !params["max_tokens"] || !priceWithin(ep.Pricing.Input, c.Policy.InputMicrosPerMillion) || !priceWithin(ep.Pricing.Output, c.Policy.OutputMicrosPerMillion) {
 				return nil, fail
 			}

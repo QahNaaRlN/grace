@@ -1,7 +1,7 @@
 # Roadmap Grace
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).
-Следующий пакет — S1.19, один clock pilot; C1–C4 offline приняты, реализация не начата; live gate отдельно.
+Следующий пакет — S1.19, один clock pilot; C1–C4 local_verified offline, integration pending; live gate отдельно.
 [Исторические записи S1–S1.18](specs/0055-development-history.md) отделены от текущего состояния.
 
 Последний документированный release snapshot: **2026-10-21**
