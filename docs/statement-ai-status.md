@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено по единственному S1.20 R4 run40002091161, 2026-10-23 UTC.
+Обновлено после интеграции отчёта R4 PR111 и локальной проверки полного ручного импорта, 2026-10-23 UTC.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, принятый reader PR110/main2979280; source/main CI5/5, Delivery4/4 и post-merge gates PASS |
+| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110 и принятый отчёт PR111/main9899182; source/main CI5/5, Delivery4/4 и post-merge gates PASS |
 | S1.19 | Единственный pilot run39983522098:6/6 completed, clocks `[0,4,4,0,0,4]`, итог **REJECT**, без принятого candidate |
 | R4 | Единственный run40002091161/attempt1, source1a6b742, **VERIFIED**, replay6/6, все120 checks/3 pairs; разрешение **CONSUMED** |
 | Точная причина REJECT | Первая пара, candidate ordinal2, вторая строка: `record_description` и `row_issues` ухудшились с base PASS до candidate FAIL; `non_clock_regression` |
@@ -34,5 +34,8 @@ CI digest и повторные Go/Python validators совпали. Private pay
 Новый prompt, model call или ремонт candidate автоматически не начат.
 
 Manual path и deterministic Go guards независимы от AI. Исправление актуальности
-owner review PR109 интегрировано. Полный UI manual-import и owner functional
-acceptance не подменяются успешным diagnostic; надёжный AI-импорт ещё не доказан.
+owner review PR109 интегрировано. [Полный ручной UI-сценарий](specs/0055-manual-import-ui-evidence.md)
+проверен Codex на публичном columns.pdf без LLM: purchase+own transfer,
+confirmation/reload/повтор файла, events2/postings3 и точные остатки.
+Это ограниченное synthetic evidence; owner functional acceptance и надёжный
+AI-импорт ещё не доказаны.
