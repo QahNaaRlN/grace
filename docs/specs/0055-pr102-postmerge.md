@@ -37,11 +37,13 @@ Frozen E6 source24f7322/ref и старые worktrees не изменялись.
 10897 USD micros known/settled. Разрешение CONSUMED; новый inference не открыт.
 В этой работе ledger/runtime/private artifacts не перечитывались.
 
-По поручению подготовлен [draft S1.18](0055-s118-saved-quality-diagnosis.md):
+По поручению подготовлена [S1.18](0055-s118-saved-quality-diagnosis.md):
 Q1–Q5 offline diagnostic, Q6 отдельно разрешаемый fixed read-only run после
-реализации. Implementation not_started, Q6 NOT_AUTHORIZED/NOT_DISPATCHED.
+реализации. Q1–Q5 впоследствии приняты прямым «принимаю» 2026-10-23
+после предъявления PR №103 на2f05dca; принятие относится к контракту,
+implementation not_started до интеграции спецификации, Q6 NOT_AUTHORIZED/NOT_DISPATCHED.
 Никаких SSH/metadata/inference, paid retry, исправлений prompt/guards,
 SQL/ledger/production changes. Старые P6/D5 payloads не читались.
 
-Текущий diff документационный: draft, эта запись и два navigation docs.
-Слияние №102 не выдаётся за принятие ещё не предъявленного контракта S1.18.
+Текущий diff документационный: принятая спецификация, эта запись и два navigation docs.
+Принятие S1.18 зафиксировано отдельным решением; слияние №102 его не заменяло.

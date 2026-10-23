@@ -1,12 +1,14 @@
 # SPEC-0055 / S1.18: диагностика качества сохранённого E6
 
-- Статус: draft.
+- Статус: accepted (Q1–Q5 offline).
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: прямое «принимаю»,
+  2026-10-23, после предъявления [PR №103](https://github.com/QahNaaRlN/grace/pull/103)
+  на review head `2f05dca7f64085bb5cc80c8e6424f77dda9c44fb` и границы Q1–Q5/Q6.
 - Основание подготовки: «влил PR, продолжай работу» после предложения подготовить S1.18.
-  Это поручение сформировать контракт; конкретные Q1–Q5 ещё не предъявлялись
-  владельцу и не считаются принятыми. Q6 требует отдельного решения.
-- Implementation status: not_started; execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
+  Контракт Q1–Q5 впоследствии явно принят указанным выше решением.
+  Q6 требует отдельного exact-source решения после реализации Q1–Q5.
+- Implementation status: not_started; Q6 execution status: NOT_AUTHORIZED / NOT_DISPATCHED.
 - База: main `2236c73c54058123de800f624f7cebc3a95bf41f`, интегрированный PR №102.
 - Ветка спецификации: `codex/statement-s118-diagnosis-spec`.
 - Implementation branch / commit: отсутствуют.
@@ -27,7 +29,7 @@ capture и replay прошли6/6, качество0/3 у обеих модел�
 
 ## Scope
 
-**Q1–Q5 offline**, после явного принятия и интеграции спецификации: pure
+**Q1–Q5 offline приняты**, реализация после интеграции спецификации в main: pure
 диагностика6 сохранённых tuples на fixed v3 context; закрытый verifier/output;
 отдельный read-only runner и default-off workflow mode; causal/privacy/real-helper
 проверки. Допустимые области будущего diff: `internal/statementqualification`,
@@ -290,7 +292,9 @@ git diff --check
 
 ## Открытые решения
 
-1. Review и явное принятие Q1–Q5. До этого implementation not_started.
+1. Q1–Q5 приняты. Интеграция принятой спецификации PR №103 в main ещё
+   не выполнена; implementation not_started до неё. Затем отдельный implementation
+   worktree от актуального main по [spec-first процессу](README.md#жизненный-цикл).
 2. Q6 exact source/ref/manifest и одно разрешение чтения — после реализации;
    сейчас отсутствуют и не выводятся из «продолжай работу».
 3. После диагноза — отдельное решение о минимальном ремонте. Новая paid campaign,
