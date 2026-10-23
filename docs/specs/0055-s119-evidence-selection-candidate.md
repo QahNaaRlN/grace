@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.19: один эксперимент о полноте напечатанного времени
 
-- Статус: **accepted** (C1–C4 offline); implementation_status: **local_verified offline / integration pending**.
+- Статус: **accepted** (C1–C4 offline); implementation_status: **integrated offline**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Владелец принял изменение программы прямым «Хорошо, измени дальнейшую работу
   и продолжай» после ретроспективы.
@@ -201,7 +201,7 @@ Rollback — убрать research candidate/entrypoint; product state не ми
 
 ## Открытое решение
 
-C1–C4 offline приняты и local_verified; integration pending.
+C1–C4 offline приняты и интегрированы PR107.
 [C1–C4 evidence](0055-s119-evidence.md). Пилот имеет отдельный будущий exact-source gate. Один
 [актуальный status](../statement-ai-status.md) ссылается на этот документ;
 история сохранена отдельно и не задаёт следующие шаги.

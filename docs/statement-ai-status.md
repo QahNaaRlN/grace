@@ -5,7 +5,7 @@
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | Accepted S1.19 в main db65225/PR106; head/merge CI5/5, Delivery4/4 PASS — [evidence](specs/0055-s119-evidence.md) |
+| Интеграция | S1.19 offline в main84266bd/PR107; source/merge CI5/5 и Delivery4/4 PASS — [evidence](specs/0055-s119-evidence.md) |
 | Качество моделей | E6:6 ответов canonicalization PASS, quality0/3 у A и B; обе пары unqualified — [результат](specs/0055-s117-e6-evidence.md) |
 | Причины | Q6 SUCCESS:6/6 tuples,22 failed checks и23 reasons VERIFIED;15 unknown объяснены — [evidence](specs/0055-s118-q6-evidence.md) |
 | Разрешения | E6/Q6 CONSUMED. Новый pilot NOT_AUTHORIZED / NOT_RUN |
@@ -15,7 +15,7 @@
 Следующая гипотеза — **отдельный поиск напечатанных часов после выбора даты
 улучшит A/cards без ухудшения остальных checks**. Контракт
 [S1.19 C1–C4](specs/0055-s119-evidence-selection-candidate.md) — accepted C1–C4 offline,
-implementation local_verified offline / integration pending;
+implementation integrated offline;
 [evidence C1–C4](specs/0055-s119-evidence.md). Предыдущая идея одновременно ремонтировать clock,
 claims и coverage заменена до принятия. Владелец разрешил изменить программу
 после ретроспективы и принял конкретный C1–C4 прямым
@@ -27,11 +27,14 @@ claims и coverage заменена до принятия. Владелец ра
 policy; это **не разрешение расходовать средства**. Повтор/новая версия не автоматические.
 
 Принятая спецификация интегрирована после CI5/5; offline implementation
-пакет реализован и проверен, ожидает review/integration;
+пакет интегрирован PR107. Source8da7f45/ref `codex/statement-s119-pilot-source`,
+manifest и точные inputs подготовлены в том же evidence;
 exact-source live approval остаётся отдельным. Receipts и итоговый отчёт входят
 в пакет, без самостоятельного цикла спецификаций для каждой записи.
 
 Реальный public-helper causal pair теперь проверен сквозным pipeline:
 clocks4/4→0/4, полный score20/20→14/20, coverage FAIL сохранён.
-Полные test/production/integration/vet/race gates PASS; live effect UNVERIFIED.
+Полные offline gates PASS; post-merge test/production/integration/vet и diff-check
+повторены PASS (первый helper permission FAIL и успешный worktree repeat сохранены
+в evidence). Live effect UNVERIFIED.
 Offline fake/CI PASS не заменяют проверку H1 моделью и не повышают качество E6.

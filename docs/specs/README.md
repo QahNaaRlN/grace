@@ -1,9 +1,9 @@
 Актуализация: **2026-10-23**, Asia/Yekaterinburg.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на
-[одной status-странице](../statement-ai-status.md). Следующий контракт —
+[одной status-странице](../statement-ai-status.md). Активный контракт —
 [S1.19: один эксперимент о полноте напечатанного времени](0055-s119-evidence-selection-candidate.md),
-**accepted C1–C4 / local_verified offline, integration pending**;
+**accepted C1–C4 / integrated offline**;
 [evidence](0055-s119-evidence.md), live gate отдельно.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,

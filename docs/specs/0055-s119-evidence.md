@@ -1,4 +1,4 @@
-# S1.19 — offline C1–C4 local_verified, live NOT_AUTHORIZED
+# S1.19 — offline C1–C4 integrated, live NOT_AUTHORIZED
 
 - Контракт: [accepted C1–C4](0055-s119-evidence-selection-candidate.md).
 - Owner acceptance: прямое «Принять, интегрировать и продолжить offline» на
@@ -6,7 +6,7 @@
 - Implementation code: `4668d1309aea156d96b03938b56fd43a30a4470f`; branch `codex/statement-s119-clock-pilot`.
 - База: main `db65225c6d2cfc9052ccf4f7310ced61c5ba79d8`.
   Принятый контракт интегрирован **до** implementation worktree.
-- Статус: **local_verified offline / integration pending**.
+- Статус: **integrated offline; post-merge gates PASS**.
   Live pilot **NOT_AUTHORIZED / NOT_RUN**, эффект H1 **UNVERIFIED**.
 
 ## Интеграция принятого контракта
@@ -123,7 +123,122 @@ External inference/metadata, SSH/VPS, production SQL, deploy, owner financial
 writes0. Private E6/P6/D5/closed stdout не читались. Ни одного нового workflow
 запуска не было; old E6 FAIL/Q6 SUCCESS и consumed permissions сохранены.
 
-Offline реализация ещё не интегрирована. После review/integration и exact-source
-CI5/5 в этом же пакете предъявляются source/ref/manifest/inputs для отдельного
-одного pilot. Новый draft/readiness PR для каждой записи не требуется.
+Offline реализация интегрирована PR107. Ниже зафиксированы source/ref/manifest/inputs
+того же исследовательского пакета; отдельная спецификация или readiness PR
+для этой записи не создаются.
 Ни live quality PASS, ни winner, ни production activation здесь не заявляются.
+
+
+## PR107: интеграция и подготовка единственного пилота
+
+Владелец слил [PR107](https://github.com/QahNaaRlN/grace/pull/107)
+2026-10-23 15:43:34 UTC / 20:43:34 +05:00.
+Merge `84266bd72ac10d569099e922cb826a8a01330252`;
+final head `8da7f45b105105d6596032850893bb690febebd8`.
+`git diff --exit-code <head> <merge>` PASS; head является предком merge.
+Primary fast-forward до merge, clean; frozen E6/Q6 refs сохранены.
+
+Exact source пилота — **`8da7f45b105105d6596032850893bb690febebd8`**,
+опубликованный fixed ref **`codex/statement-s119-pilot-source`**.
+Он больше не передвигается. Его [CI39965496366](https://github.com/QahNaaRlN/grace/actions/runs/39965496366)
+повторно проверен canonical `verify-screening-source-ci.py`: completed/success,
+exact SHA и все5 jobs PASS. [Merge CI39980740312](https://github.com/QahNaaRlN/grace/actions/runs/39980740312)
+SUCCESS5/5, exact SHA/full jobs проверены canonical validator отдельно от head.
+[Delivery39981953935](https://github.com/QahNaaRlN/grace/actions/runs/39981953935)
+SUCCESS4/4, exact merge SHA и все4 jobs проверены отдельно. Это публикация
+образов, не deployment.
+
+### Manifest и точные inputs (ещё не отправлены)
+
+[Manifest](../research/statement-quality/s119-pilot-manifest.json) получен
+из clean frozen source worktree следующими командами (только check):
+
+```sh
+source_sha=8da7f45b105105d6596032850893bb690febebd8
+bundle="/tmp/grace-s119-local-manifest-$source_sha"
+mkdir -p "$bundle"
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOTOOLCHAIN=go1.24.0 go build -trimpath -ldflags "-X main.sourceSHA=$source_sha" -o "$bundle/grace-clock-pilot" ./cmd/statement-clock-pilot
+"$bundle/grace-clock-pilot" -mode=check > "$bundle/MANIFEST.json"
+```
+
+Его SHA256:
+`2e4f3bfb766041086fa70009dbfdf5400603a3d85f15f4d4bb40e381811a25bf`.
+Local bundle6/6 checksums PASS. CI соберёт свой binary и опубликует только
+MANIFEST/SOURCE_SHA/SHA256SUMS; локальный binary digest не считается digest CI.
+Ни `-mode=run`, ни metadata/provider/SSH/VPS preflight не выполнялись.
+
+Workflow: `.github/workflows/statement-clock-pilot.yml`, один job `clock-pilot`;
+ref `codex/statement-s119-pilot-source`, inputs:
+
+```json
+{
+  "authorized_source": "8da7f45b105105d6596032850893bb690febebd8",
+  "execute_approved_pilot": true
+}
+```
+
+Это предъявленные параметры будущего dispatch, **не разрешение и не запуск**.
+До отдельного решения `execute_approved_pilot` не отправляется;
+workflow default остаётся false. Read-only GitHub list:0 запусков этого workflow.
+GitHub workflow id394220010 active; environment production существует,
+protection_rules=[] (только GitHub metadata, не состояние VPS).
+
+### Объём запрашиваемого разрешения
+
+Один workflow_dispatch, одна identity `s119-clock-pilot`, максимум6 POST:
+base/candidate/candidate/base/base/candidate,3 пары только A/cards.
+Repo policy: `google/gemini-3.1-flash-lite-20260507`, Google/`google-vertex/eu`,
+input/output100000/16000,120s на вызов; provider cap323400 USD micros **$0.3234**.
+Прежние fees и shared allowance сохраняются; разрешение не пополняет бюджет.
+Fresh exact model/route/capability/ZDR/price и доступный бюджет проверит только
+разрешённый job. Сейчас их runtime состояние **UNVERIFIED**; несовпадение — отказ.
+
+Разрешённый job загрузит только новый public bundle на Grace VPS и исполнит
+research binary в существующем API container, с записью отдельного one-shot
+marker/private report0600 и reserve/settle в существующем metering ledger.
+Изменения финансовых объектов не входят в pilot. Фиксированные файлы:
+`/opt/grace/shared/statement-s119-clock-pilot.started` и
+`/opt/grace/shared/statement-s119-clock-pilot.json`;
+temp bundle `/tmp/grace-statement-clock-s119-<source>` удаляется wrapper.
+Private proposals разбираются внутри того же job; GitHub получает закрытый
+summary и безопасный manifest, без payloads/идентификаторов.
+
+Marker/report общие для всех SHA этого pilot. Preflight refusal тоже расходует
+one-shot; протокол/route/timeout/unknown billing/settlement error останавливает
+весь pilot. После KEEP_FOR_FURTHER_REVIEW / REJECT / INCONCLUSIVE — отчёт и стоп,
+без rerun, другого prompt, модели, deployment или production activation.
+Старые private E6/P6/D5 и их локальные копии остаются закрыты.
+
+**Pre-dispatch receipt: NOT_AUTHORIZED / NOT_RUN.** Owner approval/run id,
+actual calls/cost/settlement и H1 decision пока отсутствуют и не выдумываются.
+
+
+### Локальные post-merge gates
+
+`TMPDIR=/tmp VITEST_MAX_WORKERS=1 make test` на clean primary84266bd — PASS,
+exit0: Go,88 Web files/334 tests, lint/FSD/Prettier/build/offline Jev.
+Log `/tmp/grace-s119-postmerge-test.log`.
+
+Первый `make test-production` на primary — FAIL: Docker helper uid10001
+не может читать fixture под primary0700, `TestS118VerifierRealHelperContext`,
+permission denied; log `/tmp/grace-s119-postmerge-production.log`.
+Права primary не ослаблялись. Повтор из отдельной worktree того же merge
+`statement-s119-pilot-evidence` — PASS, exit0, включая pinned helper,
+one-shot и остальные production/deployment/backup regression gates.
+Log `/tmp/grace-s119-postmerge-worktree-production.log`.
+Эти local gates не являются обращениями к production VPS.
+
+`TMPDIR=/tmp make test-integration` из этой worktree — PASS, exit0:
+все disposable PostgreSQL/API/helper suites, включая clock meter и uncertainty.
+Log `/tmp/grace-s119-postmerge-worktree-integration.log`.
+Ожидаемые отказные downgrade checks не скрывались.
+
+`go vet ./cmd/... ./internal/...` — PASS, exit0;
+`/tmp/grace-s119-postmerge-vet.log`. `git diff --check` — PASS.
+Primary clean84266bd/mode0700; frozen source worktree clean8da7f45;
+E6 ref24f7322 и Q6 ref5fdd0f9 не изменены.
+
+Подготовка публикуется в ветке `codex/statement-s119-pilot-evidence` того же
+пакета; отдельного readiness PR нет. После разрешённого pilot его approval,
+run и итоговое evidence будут добавлены здесь же для одного итогового review.
+Никакой запуск этим receipt не произведён: **NOT_AUTHORIZED / NOT_RUN**.
