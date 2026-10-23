@@ -113,7 +113,8 @@ type ClockPublicSummary struct {
 	Error                string `json:"error"`
 	RecordedCalls        int    `json:"recordedCalls"`
 	Completed            int    `json:"completed"`
-	Settled              bool   `json:"settled"`
+	SettlementRecorded   bool   `json:"settlementRecorded"`
+	ReservationSettled   bool   `json:"reservationSettled"`
 	BillingKnown         bool   `json:"billingKnown"`
 	ClockCounts          []*int `json:"clockCounts"`
 }
@@ -126,7 +127,8 @@ func SummarizeClock(r ClockReport, d statementdata.Document) (ClockPublicSummary
 	out.ShapeVerified = true
 	out.Decision = r.Decision
 	out.Error = r.Error
-	out.Settled = r.Settled
+	out.SettlementRecorded = r.SettlementRecorded
+	out.ReservationSettled = r.SettlementRecorded && r.ActualMicros != nil
 	out.BillingKnown = r.ActualMicros != nil
 	for _, a := range r.Attempts {
 		if a.State != "not_sent" {

@@ -226,6 +226,13 @@ func TestClockPilotOrderAccountingAndStop(t *testing.T) {
 				if mode == "unknown" && m.actual != nil {
 					t.Fatal("unknown fabricated cost")
 				}
+				if mode == "unknown" {
+					summary, e := SummarizeClock(r, clockTestDocument(t))
+					if e != nil || summary.ReservationSettled || !summary.SettlementRecorded || summary.BillingKnown {
+						t.Fatal("uncertainty mislabeled settled", summary, e)
+					}
+				}
+
 			}
 		})
 	}

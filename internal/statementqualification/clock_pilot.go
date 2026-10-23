@@ -139,24 +139,24 @@ type ClockAttempt struct {
 	Measurement *ClockMeasurement         `json:"measurement,omitempty"`
 }
 type ClockReport struct {
-	Version       string                                    `json:"version"`
-	Authorization string                                    `json:"authorization"`
-	Source        string                                    `json:"source"`
-	Digest        string                                    `json:"digest"`
-	DocumentHash  string                                    `json:"documentHash"`
-	PlanHash      string                                    `json:"planHash"`
-	SchemaHash    string                                    `json:"schemaHash"`
-	Requests      []ClockRequestEvidence                    `json:"requests"`
-	Proof         *statementextract.ComparisonIdentityProof `json:"proof,omitempty"`
-	Time          time.Time                                 `json:"time"`
-	FinishedAt    time.Time                                 `json:"finishedAt"`
-	ReservationID string                                    `json:"reservationId"`
-	MaximumMicros int64                                     `json:"maximumMicros"`
-	ActualMicros  *int64                                    `json:"actualMicros"`
-	Settled       bool                                      `json:"settled"`
-	Attempts      []ClockAttempt                            `json:"attempts"`
-	Decision      string                                    `json:"decision"`
-	Error         string                                    `json:"error"`
+	Version            string                                    `json:"version"`
+	Authorization      string                                    `json:"authorization"`
+	Source             string                                    `json:"source"`
+	Digest             string                                    `json:"digest"`
+	DocumentHash       string                                    `json:"documentHash"`
+	PlanHash           string                                    `json:"planHash"`
+	SchemaHash         string                                    `json:"schemaHash"`
+	Requests           []ClockRequestEvidence                    `json:"requests"`
+	Proof              *statementextract.ComparisonIdentityProof `json:"proof,omitempty"`
+	Time               time.Time                                 `json:"time"`
+	FinishedAt         time.Time                                 `json:"finishedAt"`
+	ReservationID      string                                    `json:"reservationId"`
+	MaximumMicros      int64                                     `json:"maximumMicros"`
+	ActualMicros       *int64                                    `json:"actualMicros"`
+	SettlementRecorded bool                                      `json:"settlementRecorded"`
+	Attempts           []ClockAttempt                            `json:"attempts"`
+	Decision           string                                    `json:"decision"`
+	Error              string                                    `json:"error"`
 }
 type ClockReasoner interface {
 	CurrentPolicy(context.Context) (statementextract.Policy, error)
@@ -236,7 +236,7 @@ func RunClockPilot(ctx context.Context, s Sample, reasoner ClockReasoner, meter 
 		if meter.Settle(settleCtx, id, actual) != nil {
 			err = fail("clock_settlement_failed")
 		} else {
-			report.Settled = true
+			report.SettlementRecorded = true
 		}
 	}()
 	ids := map[string]bool{}
@@ -314,7 +314,7 @@ func ValidateClockReport(r ClockReport, d statementdata.Document) error {
 		return fail
 	}
 	if r.ReservationID == "" {
-		if r.ActualMicros != nil || r.Settled || r.Decision != ClockInconclusive || !wordIn(r.Error, "clock_preflight_failed clock_budget_unavailable") {
+		if r.ActualMicros != nil || r.SettlementRecorded || r.Decision != ClockInconclusive || !wordIn(r.Error, "clock_preflight_failed clock_budget_unavailable") {
 			return fail
 		}
 		for i, a := range r.Attempts {
@@ -388,11 +388,15 @@ func ValidateClockReport(r ClockReport, d statementdata.Document) error {
 	if total > ClockPilotMaxMicros || r.ActualMicros != nil && *r.ActualMicros != total {
 		return fail
 	}
+	if (r.Error == "clock_settlement_failed") == r.SettlementRecorded {
+		return fail
+	}
+
 	if r.ReservationID == "" || len(r.ReservationID) > 128 {
 		return fail
 	}
 	if r.Error == "" {
-		if attempted != 6 || len(ms) != 6 || !r.Settled || r.ActualMicros == nil || r.Decision != DecideClock(ms, true) {
+		if attempted != 6 || len(ms) != 6 || !r.SettlementRecorded || r.ActualMicros == nil || r.Decision != DecideClock(ms, true) {
 			return fail
 		}
 	} else {
