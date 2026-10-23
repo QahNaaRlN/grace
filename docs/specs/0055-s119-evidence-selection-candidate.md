@@ -45,7 +45,8 @@ repair, подбор моделей/вариантов prompt, расширен�
 изменение financial guards/scorer, production prompt/profile/consent/API/UI/БД,
 финансовые записи, registry SPEC-0056, deployment и production model switch.
 Старые private E6/P6/D5 payloads, closed stdout и их локальные копии не читаются.
-E6/Q6 permissions остаются CONSUMED. Новый пилот пока **NOT_AUTHORIZED / NOT_RUN**.
+E6/Q6 permissions остаются CONSUMED. Единственный отдельно разрешённый pilot завершён **REJECT**; разрешение CONSUMED,
+[итог](0055-s119-evidence.md). Нормативные условия C1–C4 ниже сохранены.
 
 ## C1. Ровно два запроса и один изменяемый фактор
 
@@ -181,7 +182,7 @@ counts/status/digests. Новая неисчерпанная identity не за�
 | C1 | Exact two requests/hashes/bytes; HTTP body через существующий serializer на localhost; unchanged schema/policy/user; oversize отказ |
 | C2 | Сквозной real-helper4/4→0/4 causal pair; precision/чужие часы/date-only negatives; judge matrices для всех C4 исходов |
 | C3 offline | Six-call order/cap/one-shot/early-stop проверены fake transport и fake meter; proof до POST; private capture bounded; production isolation |
-| C3 live | Отдельное exact-source разрешение, один run, known/settled accounting, no retry; сейчас NOT_AUTHORIZED / NOT_RUN |
+| C3 live | Отдельное exact-source разрешение, один run, known/settled accounting, no retry; итог REJECT, разрешение CONSUMED, см. evidence |
 | C4 | Решение вычислено без ручной подмены; полный отчёт о всех попытках, limitations и остановке |
 
 В implementation evidence указываются реальные команды тестов, source/exit
@@ -199,9 +200,10 @@ pilot, не являются импортом финансов. До live approv
 Rollback — убрать research candidate/entrypoint; product state не мигрируется.
 Ошибки не превращаются в PASS или основание автоматического повтора.
 
-## Открытое решение
+## Итог и закрытие пакета
 
-C1–C4 offline приняты и интегрированы PR107.
-[C1–C4 evidence](0055-s119-evidence.md). Пилот имеет отдельный будущий exact-source gate. Один
+C1–C4 offline приняты и интегрированы PR107. Единственный exact-source pilot
+разрешён владельцем и завершён REJECT; разрешение CONSUMED.
+[C1–C4/итоговое evidence](0055-s119-evidence.md). Повтор и новый подход не открыты. Один
 [актуальный status](../statement-ai-status.md) ссылается на этот документ;
 история сохранена отдельно и не задаёт следующие шаги.

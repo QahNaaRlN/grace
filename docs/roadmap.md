@@ -1,7 +1,8 @@
 # Roadmap Grace
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).
-Следующий шаг S1.19 — один отдельно разрешённый clock pilot; C1–C4 integrated offline.
+S1.19 завершён одним pilot: clock gain0/4→4/4 во всех3 парах, итог REJECT;
+разрешение CONSUMED, новый подход требует отдельного решения.
 [Исторические записи S1–S1.18](specs/0055-development-history.md) отделены от текущего состояния.
 
 Последний документированный release snapshot: **2026-10-21**
