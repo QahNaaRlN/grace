@@ -32,15 +32,20 @@ C4 не выполнен: **REJECT**. Точную precision/non-clock прич�
 
 
 Следующий принятый offline-пакет — [S1.20: объяснение сохранённого REJECT](specs/0055-s120-clock-reject-diagnosis.md),
-**accepted R1–R3 offline / implementation verified offline, review pending**. Только сохранённые6 ответов, полные
+**accepted R1–R3 / integrated offline PR110; R4 AUTHORIZED / NOT_RUN**. Только сохранённые6 ответов, полные
 закрытые checks/precision/regressions/cost; model calls0. Владелец принял R1–R3 и разрешил интеграцию PR108/109 после CI5/5
-и последующую offline-реализацию. Live R4 NOT_AUTHORIZED / NOT_RUN;
+и последующую offline-реализацию. Отдельный R4 grant «Разрешаю один R4» получен; live AUTHORIZED / NOT_RUN;
 отдельный exact-source допуск предъявляется после интеграции готовой реализации.
 
-R1–R3 реализованы на `codex/statement-clock-reject-diagnosis` после интеграции
+R1–R3 интегрированы PR110/main2979280 после принятия реализации владельцем и интеграции
 принятого контракта. Pure projection сохраняет все120 checks, precision,
 три pair diffs и cost; прежний decoder/replay неизменён. Fixed reader и
 sealed-memfd operator path проверены synthetic/hermetic tests; workflow default false.
-Полные local gates PASS; код ещё не интегрирован и требует review.
+Source/merge CI5/5, Delivery4/4 и полные local/post-merge gates PASS.
 [Evidence R1–R3](specs/0055-s120-clock-reject-diagnosis.md#интеграция-принятого-контракта-и-offline-evidence-r1r3).
 Истинная причина сохранённого REJECT остаётся UNVERIFIED до отдельно разрешённого R4.
+
+R4 pre-dispatch receipt и frozen source1a6/manifest/inputs сохранены в том же
+[S1.20 пакете](specs/0055-s120-clock-reject-diagnosis.md). Предыдущие NOT_AUTHORIZED
+записи описывают offline этап до отдельного решения владельца. Сейчас live result
+ещё отсутствует, причина REJECT не установлена; новых model calls не планируется.

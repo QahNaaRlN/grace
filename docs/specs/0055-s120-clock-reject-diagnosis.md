@@ -1,13 +1,13 @@
 # SPEC-0055 / S1.20: объяснить сохранённый REJECT без новых model calls
 
-- Статус: **accepted R1–R3 offline**; implementation_status: **verified offline / review pending**.
+- Статус: **accepted R1–R3 offline**; implementation_status: **integrated offline (PR110)**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
 - Acceptance owner: владелец Grace; acceptance record: прямое решение владельца ниже.
 - Proposal branch: `codex/statement-s119-pilot-evidence`, тот же PR108.
 - Implementation branch: `codex/statement-clock-reject-diagnosis`; base main44e6413 после PR108.
-  Код проверен offline, ещё не интегрирован; exact head/CI у implementation PR.
+  Код принят владельцем и интегрирован PR110/main2979280; exact source/CI и R4 receipt ниже.
 - Offline R1–R3 приняты и контракт интегрирован PR108 до реализации. Live R4 отдельно:
-  **NOT_AUTHORIZED / NOT_RUN**, без переноса consumed E6/Q6/S1.19 permissions.
+  **AUTHORIZED / NOT_RUN** по отдельному receipt ниже; E6/Q6/S1.19 permissions остаются consumed.
 
 ## Проблема и пользовательский результат
 
@@ -283,3 +283,56 @@ Reader не создаёт marker/report на VPS и не имеет path/produc
 manifest/ref/inputs и отдельный R4 grant. Ни новой версии prompt, ни model calls,
 SQL/ledger/reserve/settle, финансовых записей или deploy этот пакет не выполнял.
 Исходный S1.19 **REJECT** сохранён; общая цель надёжного AI-импорта не закрыта.
+
+
+## Принятие реализации, интеграция и R4 pre-dispatch receipt
+
+Владелец принял offline-реализацию прямым **«Принять реализацию и слить №110»**
+на review source `1a6b74201db92ba37be750411ff7883d8216b602`.
+Принятие сохранено в [PR110](https://github.com/QahNaaRlN/grace/pull/110)
+и merge commit `29792809f5e6435c93fe07a5170e7ed7135d38ca`.
+Source [CI39998179098](https://github.com/QahNaaRlN/grace/actions/runs/39998179098)
+и merge [CI39999830331](https://github.com/QahNaaRlN/grace/actions/runs/39999830331)
+SUCCESS5/5; [Delivery40001135152](https://github.com/QahNaaRlN/grace/actions/runs/40001135152)
+SUCCESS4/4. Canonical verifier и все jobs проверены отдельно по exact SHA.
+Локальные post-merge make test (89/336), test-production (31 parity cases/helper),
+test-integration, vet/diff-check PASS; `/tmp/grace-s120-postmerge-*.log`.
+Деревья merge/source совпадают: `701cc3b2b2a73af8ebe411c0433d18f5701b0472`.
+Main чистый0700; frozen E6/Q6/S1.19 refs сохранены.
+
+До этого receipt R4 не разрешался и не выполнялся. Далее владелец ответил
+**«Разрешаю один R4»** на exact-source вопрос:
+
+> Разрешаете один R4 на source 1a6b74201db92ba37be750411ff7883d8216b602,
+> ref codex/statement-s120-reader-source: один workflow_dispatch
+> statement-clock-diagnosis.yml с authorized_source=этот SHA и
+> execute_approved_diagnosis=true, один read-only SSH-разбор сохранённого
+> S1.19 на Grace VPS? Provider/metadata/SQL calls, новые прикладные VPS writes
+> и deploy — 0; в CI только закрытый diagnostic. Отказ тоже расходует допуск,
+> повторов нет. Отдельного разрешения требует принятый S1.20 R4.
+
+Receipt подготовлен 2026-10-23T18:16:50.556017+00:00, **до dispatch**. Статус: **AUTHORIZED / NOT_RUN**.
+
+- Frozen reader source `1a6b74201db92ba37be750411ff7883d8216b602`;
+  ref `codex/statement-s120-reader-source`, remote ref повторно проверен.
+  Source ancestor origin/main; exact-source CI5/5 повторно проверен.
+- Manifest: `docs/research/statement-quality/s120-reader-manifest.json`,
+  SHA256 `6c4b72a138fcee3a7ee9dcaed8d390ec0f03a43240f91a9f81aa167bf4f21be7`.
+  `-mode=check` не открывает private files.
+- Workflow `statement-clock-diagnosis.yml`;
+  `authorized_source=1a6b74201db92ba37be750411ff7883d8216b602`,
+  `execute_approved_diagnosis=true`; ровно один dispatch/run, attempt1.
+- Один SSH subprocess с pinned host, timeout75s. Только fixed S1.19 marker/report
+  `/opt/grace/shared/statement-s119-clock-pilot.started` и
+  `/opt/grace/shared/statement-s119-clock-pilot.json`, stable reads/0600,
+  без произвольных путей и private witness downloads. Их runtime состояние
+  до разрешённого запуска не опрашивалось.
+- Дополнительные provider/metadata/SQL/reserve/settle calls и новые прикладные
+  persistent VPS writes0. Никаких deploy/flags/prompt/model changes.
+  Только закрытая projection/digest либо enum UNVERIFIED; отказ расходует grant.
+- На момент подготовки receipt Actions metadata содержит **0 прежних R4 runs**.
+  После одного результата — запись outcome в этом же пакете и остановка.
+  Receipt не разрешает второй SSH/dispatch, новый report, repair или pilot.
+
+Это один пакет acceptance/source/approval/result. Отдельного readiness PR
+или новой спецификации для этой записи не создаётся; outcome добавляется сюда.

@@ -4,9 +4,8 @@
 S1.19 завершён одним pilot: clock gain0/4→4/4 во всех3 парах, итог REJECT;
 разрешение CONSUMED, новый подход требует отдельного решения.
 Принят [S1.20 R1–R3](specs/0055-s120-clock-reject-diagnosis.md): read-only объяснение
-сохранённого REJECT; контракт интегрирован PR108, R1–R3 реализованы и проверены offline
-на review-ветке `codex/statement-clock-reject-diagnosis`,
-новых model calls нет. Live R4 требует отдельного exact-source допуска.
+сохранённого REJECT; контракт PR108 и R1–R3 PR110 интегрированы, проверены до/после merge,
+новых model calls нет. Отдельный exact-source допуск R4 получен; AUTHORIZED / NOT_RUN, outcome ещё отсутствует.
 [Исторические записи S1–S1.18](specs/0055-development-history.md) отделены от текущего состояния.
 
 Последний документированный release snapshot: **2026-10-21**
