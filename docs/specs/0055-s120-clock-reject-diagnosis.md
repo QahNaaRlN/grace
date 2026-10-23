@@ -1,11 +1,11 @@
 # SPEC-0055 / S1.20: объяснить сохранённый REJECT без новых model calls
 
-- Статус: **draft**; implementation_status: **not_started**.
+- Статус: **accepted R1–R3 offline**; implementation_status: **not_started**.
 - Автор: Codex; дата: 2026-10-23, Asia/Yekaterinburg.
-- Acceptance owner: владелец Grace; acceptance record: отсутствует.
+- Acceptance owner: владелец Grace; acceptance record: прямое решение владельца ниже.
 - Proposal branch: `codex/statement-s119-pilot-evidence`, тот же PR108.
-- Implementation branch/commit: отсутствуют; production-код по draft запрещён.
-- Offline R1–R3 требуют принятия и интеграции. Live R4 отдельно:
+- Implementation branch/commit: отсутствуют; реализация начинается после интеграции контракта.
+- Offline R1–R3 приняты; до реализации требуется интеграция. Live R4 отдельно:
   **NOT_AUTHORIZED / NOT_RUN**, без переноса consumed E6/Q6/S1.19 permissions.
 
 ## Проблема и пользовательский результат
@@ -198,11 +198,16 @@ hermetic Python bootstrap/SSH tests, existing pinned-helper causal gate,
 комбинации не превращаются в искусственный positive report ради теста ветки:
 поддельная cached precision/score — отрицательный replay-mismatch case.
 
-## Открытое решение владельца
+## Решение владельца
 
-Принять R1–R3 и разрешить запись acceptance, интеграцию PR108 после CI5/5 и одну
-offline-реализацию. R4 остаётся отдельным exact-source разрешением после готовности.
-Ни следующая версия prompt, ни новый model pilot этим решением не открываются.
+2026-10-23 владелец ответил **«Принять, интегрировать и продолжить offline»**
+на вопрос о принятии R1–R3 в PR108, review head
+`db1f8642b4d634ffd489346fa4e20fb880f7f281`, записи acceptance, слиянии PR108 и
+PR109 после exact-head CI5/5 и последующей offline-реализации reader.
+Это acceptance контракта; implementation_status остаётся **not_started**.
+R4 — **NOT_AUTHORIZED / NOT_RUN**: чтение закрытого отчёта VPS требует
+отдельного разрешения на готовый exact source. Новый prompt/model pilot,
+повтор S1.19 или автоматическое слияние будущего implementation PR не разрешены.
 
 
 ## Проверка подготовки draft (не R1–R4 implementation evidence)

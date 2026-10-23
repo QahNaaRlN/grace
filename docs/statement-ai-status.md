@@ -9,7 +9,7 @@
 | S1.19 pilot | Run39983522098 SUCCESS,6/6 completed; base0/4 против candidate4/4 во всех3 парах; итог **REJECT** |
 | Качество моделей | S1.19 не дал принятого candidate; E6 quality0/3 у A и B, обе unqualified — [история](specs/0055-s117-e6-evidence.md) |
 | Причины | Q6 SUCCESS6/6 остаётся историческим evidence; конкретный reject-code S1.19 закрытый summary не экспортирует |
-| Разрешения | E6/Q6/S1.19 CONSUMED. Повтор, reader, новая версия или модель не разрешены |
+| Разрешения | E6/Q6/S1.19 CONSUMED. Повтор/новая модель не разрешены; S1.20 R1–R3 offline приняты, live R4 NOT_AUTHORIZED |
 | Accounting | S1.19 billingKnown/reservationSettled=true; provider cap$0.3234 соблюдён валидированным report; числовая actual сумма в summary не экспортируется |
 | Production | Research job сохранил container/image; deploy/activation не выполнялись; health/flags отдельно не проверялись |
 | Финансовая граница | Deterministic Go guards/scorer, owner review и confirmation сохраняются; финансовые записи не создавались |
@@ -32,7 +32,8 @@ C4 не выполнен: **REJECT**. Точную precision/non-clock прич�
 новый подход потребует отдельного решения. Продуктовый prompt/profile не менялся.
 
 
-Следующее предлагаемое решение — [S1.20: объяснение сохранённого REJECT](specs/0055-s120-clock-reject-diagnosis.md),
-**draft / implementation not_started**. Только сохранённые6 ответов, полные
-закрытые checks/precision/regressions/cost; model calls0. Принятие offline R1–R3
-и отдельный live R4 ещё не получены. Это предложение, не открытый reader/run.
+Следующий принятый offline-пакет — [S1.20: объяснение сохранённого REJECT](specs/0055-s120-clock-reject-diagnosis.md),
+**accepted R1–R3 offline / implementation not_started**. Только сохранённые6 ответов, полные
+закрытые checks/precision/regressions/cost; model calls0. Владелец принял R1–R3 и разрешил интеграцию PR108/109 после CI5/5
+и последующую offline-реализацию. Live R4 NOT_AUTHORIZED / NOT_RUN;
+отдельный exact-source допуск предъявляется после готовности.
