@@ -32,7 +32,12 @@ Log `/tmp/grace-s118-q6-make.log`; `git diff --check` — PASS.
 Local Go1.24.0 pinned public helper/causal verifier tests и readiness manifest5/5
 PASS без remote access; [конкретный Q6 candidate](0055-s118-q6-run-decision.md).
 
-Q6 NOT_AUTHORIZED / NOT_DISPATCHED. Saved E6/private payload не читался;
+При подготовке решения Q6 был NOT_AUTHORIZED / NOT_DISPATCHED, saved E6 не читался;
 provider/metadata/SSH/production SQL calls0, изменений runtime/ledger нет.
 Исторический E6 quality FAIL и CONSUMED сохранены. Слияние №104 не заменяет
 отдельное exact-source Q6 approval.
+
+После отдельного прямого «Разрешаю один Q6» выполнен один
+[run39949603261](https://github.com/QahNaaRlN/grace/actions/runs/39949603261),
+SUCCESS,6/6 VERIFIED; [evidence](0055-s118-q6-evidence.md).
+Permission CONSUMED; новых paid calls/repair/deploy не было.

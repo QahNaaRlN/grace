@@ -1,18 +1,18 @@
 Актуализация разработки: **2026-10-23**, Asia/Yekaterinburg.
 
 Текущий пакет — [S1.18: диагностика качества сохранённого E6](specs/0055-s118-saved-quality-diagnosis.md),
-**accepted Q1–Q5 / integrated offline, PR №104**. Спецификация
-принята прямым «принимаю» и интегрирована №103 в main1b80430 до implementation
-worktree. [Post-merge №103](specs/0055-pr103-postmerge.md): head/merge CI5/5 и Delivery4/4 PASS.
-[Q1–Q5 evidence](specs/0055-s118-evidence.md): codef604776, все local gates PASS;
-final head5fdd0f9 CI5/5 PASS. [Post-merge №104](specs/0055-pr104-postmerge.md):
-main438256b clean, source/head/merge status разделены. Реальные E6 artifacts не читались.
-[Q6 decision candidate](specs/0055-s118-q6-run-decision.md): frozen5fdd0f9/ref,
-local public readiness/manifest PASS; требуется отдельное разрешение одного read-only run.
-Q6 — отдельный read-only запуск после реализации/integration/exact-source CI5/5
-и отдельного разрешения; сейчас NOT_AUTHORIZED / NOT_DISPATCHED. Новых paid calls,
-SSH, исправлений prompt/guards или production changes в этом пакете нет.
-[PR №102 post-merge](specs/0055-pr102-postmerge.md): результаты E6 интегрированы2236c73.
+**accepted Q1–Q5 / integrated offline, PR №104; Q6 EXECUTED / SUCCESS**.
+[Post-merge №104](specs/0055-pr104-postmerge.md): main438256b clean, head/merge CI5/5
+и Delivery4/4 PASS. [Q1–Q5 evidence](specs/0055-s118-evidence.md): все local gates PASS.
+После отдельного «Разрешаю один Q6» на frozen5fdd0f9/ref/CI5/5 опубликован
+[receipt](specs/0055-s118-q6-execution-receipt.md), затем один
+[run39949603261](https://github.com/QahNaaRlN/grace/actions/runs/39949603261),
+только Q6, остальные12 jobs skipped. [Q6 evidence](specs/0055-s118-q6-evidence.md):
+6/6 tuples,22 failed checks и23 reasons VERIFIED,15 public unknown сопоставлены;
+artifactsUnchanged=true, providerCalls0, persistentWritesRequested0.
+Публично только safe status/counts, closed witnesses не переносятся в Git/PR/artifacts.
+Permission CONSUMED; исторический E6 quality FAIL сохранён. Ремонт, новый paid
+run, deployment/model/guard switch и SPEC-0056 этим результатом не открыты.
 
 Завершённый пакет — [S1.17: контролируемое сравнение после ограничения alias](specs/0055-s117-alias-comparison.md),
 **accepted / integrated offline, PR №100/№101; E6 EXECUTED / FAIL quality**.
@@ -24,7 +24,7 @@ SSH, исправлений prompt/guards или production changes в этом 
 качество0/3 у обоих, A17/19–14/20–17/23, B17/19–18/20–19/23.
 10897 USD micros ($0.010897 provider) known/settled; shared uncertain=false,
 image/health preserved. Permission CONSUMED; повтор/deploy/model switch не открыты.
-Offline реализация S1.18 приведена выше; фактическая диагностика saved E6 ещё не запускалась.
+Read-only диагностика saved E6 выполнена S1.18 Q6 (см. выше); исходный quality FAIL не исправлялся.
 
 Интегрированный offline пакет — [S1.16: допустимые alias во всех selections](specs/0055-s116-alias-schema.md),
 **accepted / integrated offline, PR №98**. Владелец принял A1–A6 прямым «принимаю»
@@ -46,7 +46,7 @@ Source `703b6c6`: CI 5/5; merge: CI 5/5 и Delivery 4/4 PASS;
 Closed результат публикуется только в разрешённом CI artifact, private-derived payload в Git не публикуется.
 Permission CONSUMED; retry/repair/new paid run не открыты.
 [PR №95 post-merge](specs/0055-pr95-postmerge.md): main403f69d clean.
-Текущий этап — отдельное решение по Q6 S1.18; quality FAIL E6 сохранён, Q6/repair не открыты. Закрытый evidence D5 остаётся вне Git.
+Текущий этап — фиксация SUCCESS диагностики Q6; quality FAIL E6 сохранён, новый run/repair не открыты. Закрытый evidence D5 остаётся вне Git.
 
 Текущий пакет — [S1.14](specs/0055-s114-observed-comparison.md), **accepted / integrated offline**:
 P1–P5 интегрированы PR №91 (`68ee7ee`); [post-merge evidence](specs/0055-pr91-postmerge.md).

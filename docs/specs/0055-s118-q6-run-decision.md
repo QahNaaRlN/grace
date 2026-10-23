@@ -1,6 +1,6 @@
 # S1.18 / Q6 — решение одного read-only запуска над saved E6
 
-- Статус: **accepted execution decision / AUTHORIZED / NOT_DISPATCHED**.
+- Статус: **accepted execution decision / EXECUTED / workflow SUCCESS; permission CONSUMED**.
 - Effective approval: прямое «Разрешаю один Q6» на предъявленный exact SHA/ref,
   fixed-host SSH read и закрытый stdout через CI; [pre-dispatch receipt](0055-s118-q6-execution-receipt.md).
 - Дата: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
@@ -15,8 +15,8 @@
   tree source5fdd0f9 и merge438256b byte-identical. Это отдельный CI источника,
   не перенесённый PASS от спецификации. Merge CI39947122855 впоследствии
   отдельно подтверждён5/5 на438256b; Delivery39948123236 отдельно4/4 PASS.
-- Наличие/содержимое private artifact и его права на VPS: **UNVERIFIED**,
-  до отдельного решения владельца не читаются.
+- При подготовке наличие/содержимое private artifact было UNVERIFIED. После
+  отдельного approval один Q6 completedSUCCESS,6/6 VERIFIED; [evidence](0055-s118-q6-evidence.md).
 
 ## Конкретное предлагаемое действие
 
@@ -90,5 +90,5 @@ fixed read и этой проверяемой процедуре сборки/ma
 Владелец прямо ответил «Разрешаю один Q6» на точный вопрос о source5fdd0f9/ref,
 одном workflow_dispatch с SSH-чтением fixed saved E6 и закрытым результатом
 через CI без inference/SQL/financial writes/retry. Это отдельное решение,
-а не вывод из слияния №104 или принятия Q1–Q5. До dispatch permission UNUSED;
-[receipt](0055-s118-q6-execution-receipt.md) публикуется до сетевого запроса.
+а не вывод из слияния №104 или принятия Q1–Q5. Pre-dispatch receipt опубликован до запроса; [run39949603261](https://github.com/QahNaaRlN/grace/actions/runs/39949603261)
+отправлен один раз. Permission CONSUMED; [receipt](0055-s118-q6-execution-receipt.md).

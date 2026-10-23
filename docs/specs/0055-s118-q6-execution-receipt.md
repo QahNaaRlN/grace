@@ -1,5 +1,7 @@
 # S1.18 / Q6 — разрешение и receipt единственного dispatch
 
+Текущий статус: **EXECUTED / workflow SUCCESS; permission CONSUMED**.
+
 Запись до dispatch: 2026-10-23 11:48:30 UTC / 16:48:30 +05:00, Asia/Yekaterinburg.
 
 - Контракт: [accepted S1.18 Q6](0055-s118-saved-quality-diagnosis.md),
@@ -41,3 +43,28 @@ Actions artifacts. Manifest/source — отдельный разрешённый
 UNVERIFIED. Автоматического retry/repair нет. После исполнения записать run/job,
 точный SHA/ref, статусы6 tuples и safe counts, artifactsUnchanged и ограничения.
 Исторический E6 quality FAIL и его CONSUMED permission не меняются.
+
+## Единственный отправленный dispatch
+
+Pre-dispatch receipt опубликован коммитом `882d64e86cf67aee63508aa54e8b71b974b4de0f`
+до сетевого запроса. После публикации повторно проверены local/remote source/ref,
+CI5/5 и actual mode selection; предыдущих dispatch на этом ref0.
+
+[Run39949603261](https://github.com/QahNaaRlN/grace/actions/runs/39949603261)
+создан2026-10-23 11:56:07 UTC / 16:56:07 +05:00, eventworkflow_dispatch,
+exact source5fdd0f9/ref совпадают с разрешением. При первой проверке выполняется
+только Q6; остальные12 jobs skipped, в том числе deploy, все paid comparisons,
+inspect/reconciliation и старые diagnostics. Permission CONSUMED независимо
+от результата. Повтор не разрешён и не отправлялся.
+
+## Завершение
+
+[Job120400553356](https://github.com/QahNaaRlN/grace/actions/runs/39949603261/job/120400553356)
+SUCCESS,11:56:11–11:57:31 UTC; run completedSUCCESS. Только Q6 выполнен,
+остальные12 jobs skipped. Context/artifact checks PASS;6/6 tuples VERIFIED,
+22 failed checks и23 reason entries VERIFIED,15 прежних public unknown сопоставлены.
+ProviderCalls0, persistentWritesRequested0, artifactsUnchanged=true.
+[Итоговое evidence и ограничения](0055-s118-q6-evidence.md),
+[безопасные counts/status](0055-s118-q6-public-summary.json).
+Повторного dispatch, новых inference/SQL/financial/runtime writes не было.
+Диагностика SUCCESS не меняет исторический E6 quality FAIL.

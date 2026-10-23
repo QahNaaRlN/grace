@@ -7,7 +7,9 @@ Implementation commit `f604776e7bb97d42edfd211eda398796771b3e5f`, branch
 `codex/statement-s118-quality-diagnosis`; integrated offline №104 / main438256b.
 Final head5fdd0f9: [CI39945454718](https://github.com/QahNaaRlN/grace/actions/runs/39945454718)
 SUCCESS5/5, canonical exact-SHA/full-job check PASS; [post-merge](0055-pr104-postmerge.md).
-Q6 **NOT_AUTHORIZED / NOT_DISPATCHED**; никакой реальный E6 payload здесь не читался.
+На этапе Q1–Q5 Q6 не исполнялся; последующий отдельно разрешённый
+[Q6](0055-s118-q6-evidence.md) выполнен один раз: SUCCESS,6/6 VERIFIED, CONSUMED.
+Этот документ описывает offline evidence; closed witnesses сюда не переносятся.
 
 ## Реализованный контракт и executable evidence
 
@@ -72,8 +74,9 @@ Logs: `/tmp/grace-s118-impl-make.log`, `/tmp/grace-s118-production.log`,
 
 ## Граница результата
 
-Q1–Q5 подготовлены offline; Q6 не запускался. Доступность и содержимое saved E6
-на VPS остаются UNVERIFIED в этом пакете. Ни одного inference/metadata/SSH/SQL
+Q1–Q5 подготовлены offline; их tests не являлись фактической диагностикой E6.
+Последующее read-only исполнение и проверка artifact описаны отдельно в
+[Q6 evidence](0055-s118-q6-evidence.md). На offline этапе Q1–Q5 ни одного inference/metadata/SSH/SQL
 вызова к production, новых billing/settlement/financial writes, изменений
 модели/flags/image/health/allowance нет. Локальные integration databases disposable
 и не связаны с production. E6 по-прежнему quality FAIL, permission CONSUMED.
