@@ -7,9 +7,9 @@
 [evidence](0055-s119-evidence.md), повтор не открыт.
 Принят [S1.20 R1–R3](0055-s120-clock-reject-diagnosis.md): **accepted / integrated offline PR110**,
 read-only разбор сохранённого REJECT без новых model calls; контракт PR108 и реализация PR110 интегрированы; единственный R4 VERIFIED/replay6/6, grant CONSUMED; причина REJECT — non_clock_regression, новый repair не открыт.
-Подготовлен [draft S1.21 D1–D3](0055-s121-row-scoped-selection.md): сначала
-границы строк, затем поля каждой строки; **не принят / implementation not_started**.
-Это предложение только offline feasibility, без нового paid pilot/reader/activation.
+Принят владельцем [S1.21 D1–D3](0055-s121-row-scoped-selection.md): сначала
+границы строк, затем поля каждой строки; **accepted offline / implementation not_started**.
+Разрешена только offline feasibility реализация, без нового paid pilot/reader/activation.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

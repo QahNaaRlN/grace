@@ -1,7 +1,7 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
-- Статус: **draft — решение владельца отсутствует**.
-- Implementation status: **not_started**. Изменения этого пакета сейчас — только Markdown.
+- Статус: **accepted D1–D3 offline**, 2026-10-24.
+- Implementation status на момент принятия: **not_started**; последующая реализация/evidence ведётся в этом же пакете.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
 - База: main `989918237babaff499cadf319f4be2fd32a10ec0` после PR111.
@@ -257,3 +257,15 @@ comparison, ни live reader, новую модель, production profile, deplo
 автоматическое слияние implementation PR. Прежний REJECT/R4 CONSUMED сохраняются.
 S1.21 не делает manual-only поведение новой конечной целью: весь AI draft,
 расширенный representative corpus и owner functional acceptance остаются нужны.
+
+## Прямое принятие D1–D3 до реализации
+
+2026-10-24 владелец ответил **«Принять D1–D3 и реализовать offline»** на вопрос
+о draft PR113, review head `80ac844b33e6575b1844c0475d00d234d403bbcd`.
+Это принимает D1–D3 и разрешает только offline-реализацию в том же пакете.
+На момент принятия Go-код отсутствовал. Provider/metadata/SSH/SQL calls, новый
+pilot/deploy и слияние PR113 этим решением не разрешены.
+
+Отдельно владелец принял отчёт и разрешил слить PR112/head60e0137;
+он интегрирован merge `911fbc63ab58c0570fc04ef4a1564e08f377f33a`.
+Принятие manual evidence не устанавливает H2 или AI qualification.
