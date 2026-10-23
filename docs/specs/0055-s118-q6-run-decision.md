@@ -1,6 +1,8 @@
-# S1.18 / Q6 — предложение одного read-only запуска над saved E6
+# S1.18 / Q6 — решение одного read-only запуска над saved E6
 
-- Статус: **proposed / NOT_AUTHORIZED / NOT_DISPATCHED**.
+- Статус: **accepted execution decision / AUTHORIZED / NOT_DISPATCHED**.
+- Effective approval: прямое «Разрешаю один Q6» на предъявленный exact SHA/ref,
+  fixed-host SSH read и закрытый stdout через CI; [pre-dispatch receipt](0055-s118-q6-execution-receipt.md).
 - Дата: 2026-10-23, Asia/Yekaterinburg; acceptance owner: владелец Grace.
 - Основание подготовки: «слил PR» после реализации Q1–Q5. Слияние №104
   разрешает подготовку следующего решения, но не заменяет отдельное approval Q6.
@@ -83,8 +85,10 @@ manifest binary/context/source/bootstrap/wrapper. Его фактические 
 по себе не разрешают SSH. Решение владельца относится к exact reviewed source,
 fixed read и этой проверяемой процедуре сборки/manifest, а не к другому binary.
 
-## Неполученное решение
+## Полученное отдельное решение
 
-Требуется отдельное прямое разрешение одного Q6 с SSH-чтением fixed saved E6
-и закрытым результатом через CI на указанном source. «Слил PR»/принятие Q1–Q5
-не считаются этим разрешением. До ответа Q6 NOT_AUTHORIZED / NOT_DISPATCHED.
+Владелец прямо ответил «Разрешаю один Q6» на точный вопрос о source5fdd0f9/ref,
+одном workflow_dispatch с SSH-чтением fixed saved E6 и закрытым результатом
+через CI без inference/SQL/financial writes/retry. Это отдельное решение,
+а не вывод из слияния №104 или принятия Q1–Q5. До dispatch permission UNUSED;
+[receipt](0055-s118-q6-execution-receipt.md) публикуется до сетевого запроса.
