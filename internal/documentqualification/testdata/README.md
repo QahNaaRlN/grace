@@ -1,7 +1,8 @@
 # Публичный набор SPEC-0056 Q
 
 `corpus.json` создан `documentqualification.Prepare` через настоящий локальный
-Poppler25.04.0 helper. Восемь cases, original/source/PNG/text/golden hashes,
+Poppler25.04.0 helper. Нормализация фото фиксирована на Go1.24.0
+из go.mod; Prepare требует этот toolchain. Восемь cases, original/source/PNG/text/golden hashes,
 настоящие native layouts только для native PDF. `Oracle` — публичный эталон
 судьи; он не передаётся модели и не объявляется OCR фотографий/сканов.
 
@@ -17,7 +18,8 @@ corpus/golden/prompt/schema после допуска меняет manifest и �
 Проверить: `go run ./cmd/document-reading-eval -mode=check`;
 `go test ./internal/documentqualification`;
 `./scripts/test-document-reading.sh` — actual renderer parity и одноразовая SQL.
-Регенерация corpus допускается только локально через `Prepare` и helper;
+Регенерация corpus допускается только локально через `Prepare` и helper
+с `GOTOOLCHAIN=go1.24.0`;
 `TestQActualRendererCorpus` в integration-tag режиме сравнивает сохранённый
 набор с настоящим renderer. Test-only `EXPORT_Q_CORPUS=/output/corpus.json`
 сохраняет результат при изолированном writable output mount.

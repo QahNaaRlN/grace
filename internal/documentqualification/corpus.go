@@ -15,10 +15,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 )
 
 const Version = "document-reading.spec0056-q.v1"
+const NormalizerToolchain = "go1.24.0"
 const CorpusPath = "internal/documentqualification/testdata/corpus.json"
 const MaximumMicros int64 = 2000000
 const MaximumCallMicros int64 = 250000
@@ -42,16 +44,17 @@ type Case struct {
 	Readable      bool                            `json:"readable"`
 }
 type Corpus struct {
-	Version  string            `json:"version"`
-	Renderer string            `json:"renderer"`
-	Files    map[string]string `json:"files"`
-	Cases    []Case            `json:"cases"`
+	Normalizer string            `json:"normalizer"`
+	Version    string            `json:"version"`
+	Renderer   string            `json:"renderer"`
+	Files      map[string]string `json:"files"`
+	Cases      []Case            `json:"cases"`
 }
 
 func (c Corpus) Hash() string { return documentdata.Digest(c) }
 func (c Corpus) Validate() error {
 	fail := errors.New("corpus_invalid")
-	if c.Version != Version || c.Renderer != "poppler-25.04.0" || len(c.Cases) != 8 || len(c.Files) < 8 || len(c.Files) > 64 {
+	if c.Normalizer != NormalizerToolchain || c.Version != Version || c.Renderer != "poppler-25.04.0" || len(c.Cases) != 8 || len(c.Files) < 8 || len(c.Files) > 64 {
 		return fail
 	}
 	for path, hash := range c.Files {
@@ -148,7 +151,10 @@ type Renderer interface {
 
 // Prepare runs locally against the real networkless helper, never a provider.
 func Prepare(ctx context.Context, root string, renderer Renderer) (Corpus, error) {
-	out := Corpus{Version: Version, Renderer: "poppler-25.04.0", Files: map[string]string{}, Cases: []Case{}}
+	out := Corpus{Normalizer: NormalizerToolchain, Version: Version, Renderer: "poppler-25.04.0", Files: map[string]string{}, Cases: []Case{}}
+	if runtime.Version() != NormalizerToolchain {
+		return out, errors.New("corpus_normalizer_toolchain")
+	}
 	direct, e := statementqualification.LoadDirectCorpus(root)
 	if e != nil {
 		return out, e
@@ -246,6 +252,7 @@ type CaseManifest struct {
 }
 type Manifest struct {
 	Cases                []CaseManifest             `json:"cases"`
+	Normalizer           string                     `json:"normalizer"`
 	Renderer             string                     `json:"renderer"`
 	Version              string                     `json:"version"`
 	Source               string                     `json:"source"`
@@ -287,7 +294,7 @@ func NewManifest(c Corpus, source string, candidate *assistant.GroupMembership) 
 		}
 		cases = append(cases, item)
 	}
-	return Manifest{Cases: cases, Renderer: c.Renderer, Version: Version, Source: source, CorpusSHA256: c.Hash(), ProtocolSHA256: protocol, Order: IDs(), MaximumMicros: MaximumMicros, MaximumCallMicros: MaximumCallMicros, MaximumPOST: 8, MaximumGET: 6, Candidate: candidate}
+	return Manifest{Normalizer: c.Normalizer, Cases: cases, Renderer: c.Renderer, Version: Version, Source: source, CorpusSHA256: c.Hash(), ProtocolSHA256: protocol, Order: IDs(), MaximumMicros: MaximumMicros, MaximumCallMicros: MaximumCallMicros, MaximumPOST: 8, MaximumGET: 6, Candidate: candidate}
 }
 func (m Manifest) Hash() string { return documentdata.Digest(m) }
 func (m Manifest) Validate(c Corpus, source string, requireCandidate bool) error {

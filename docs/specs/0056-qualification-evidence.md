@@ -76,7 +76,7 @@ stub теперь делегирует реальные read-only VCS коман
 
 ## Проверяемые артефакты и локальные логи
 
-Corpus file SHA256: `7c83d0ec8b757c865ba2ecf8a77182ead472fabd69c82766e5746480dc2da0ad`.
+Corpus file SHA256: `8b6417266c3d6c7b7fc1e43c870b757313411c74f10ace806576605548b4e615`.
 PDF-чек SHA256: `4650a27fc30fdab5a159d7199e9ade5b8912b889382b08736b629ca5d493c137`.
 Manifest дополнительно раскрывает каждый source hash, страницы/их размеры и
 hashes, native/text/golden digest, ожидаемые строки/позиции и режим источника.
@@ -89,3 +89,29 @@ hashes, native/text/golden digest, ожидаемые строки/позици�
 `/tmp/grace-q-vet-reviewed.log`. Команды/tests в repo воспроизводимы; `/tmp` —
 временное execution evidence. Feature worktree сохраняется для review, основной
 checkout чистый на интегрированном G1–G4.
+
+## Проверка воспроизводимости в CI
+
+Первый implementation CI40138581313 на7c866ed: **4/5 PASS**, integration FAIL
+на `TestQActualRendererCorpus`. Это не model quality результат.
+Локальный Go1.27.3 и CI Go1.24.0 выдавали разные JPEG байты трёх фото.
+Повторная локальная генерация с Go1.24.0 показала: native PDF/scan/PDF-чек,
+текст и goldens совпадают; изменились только normalized photo pages.
+
+Prepare и manifest теперь явно фиксируют `normalizer=go1.24.0`; подготовка
+с иным compiler отказывает. Integration script компилирует Q parity/SQL test
+с `GOTOOLCHAIN=go1.24.0`, совпадающим с go.mod/CI. Corpus заново получен
+через actual helper этим compiler; сравнение полных SHA не ослаблено.
+Default check/run/replay используют сохранённые page bytes и могут проверяться
+другим поддерживаемым Go без повторного кодирования изображений.
+Это изменение исследовательской воспроизводимости, product normalizer не менялся.
+Исходный FAIL сохранён; итог нового exact-head CI публикуется в PR123.
+
+Дополнительно воспроизведён именно CI Alpine digest
+`sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f`
+в отдельном локальном helper. Вместе с Go1.24.0 полный сохранённый corpus
+совпал byte-for-byte (`cmp` PASS), включая все PDF/фото. Product Dockerfile,
+текущий Docker tag и исходники normalizer не менялись. Логи:
+`/tmp/grace-q-ci-base-parity.log`, `/tmp/grace-q-pinned-corpus.log`,
+`/tmp/grace-q-make-test-compatible.log`, `/tmp/grace-q-integration-compatible.log`,
+`/tmp/grace-q-workflow-compatible.log`, `/tmp/grace-q-vet-compatible.log`.

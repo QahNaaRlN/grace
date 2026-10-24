@@ -5,6 +5,7 @@ package documentqualification
 import (
 	"context"
 	"encoding/json"
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"github.com/QahNaaRlN/grace/internal/pdfextract"
 	"os"
 	"path/filepath"
@@ -37,6 +38,11 @@ func TestQActualRendererCorpus(t *testing.T) {
 	}
 	saved, e := Load(root)
 	if e != nil || saved.Hash() != c.Hash() {
+		if e == nil {
+			for i, item := range c.Cases {
+				t.Logf("case=%s actual=%s expected=%s", item.ID, documentdata.Digest(item), documentdata.Digest(saved.Cases[i]))
+			}
+		}
 		t.Fatal("committed corpus differs from actual helper", e)
 	}
 }

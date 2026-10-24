@@ -53,7 +53,7 @@ docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 1
 # SPEC-0056 Q1–Q3: actual renderer parity and the same shared SQL functions.
 compose exec -T postgres createdb -U grace document_qualification
 compose run --rm migrate -path=/migrations -database=postgres://grace:grace@postgres:5432/document_qualification?sslmode=disable up
-CGO_ENABLED=0 go test -c -tags=integration -o "$work/qualification.test" ./internal/documentqualification
+GOTOOLCHAIN=go1.24.0 CGO_ENABLED=0 go test -c -tags=integration -o "$work/qualification.test" ./internal/documentqualification
 chmod 755 "$work/qualification.test"
 docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-new-privileges:true --memory=512m --pids-limit=32 \
  -v "$work/qualification.test:/run/qualification.test:ro" -v "$PWD:/src:ro" -v "$volume:/run/grace-pdf:ro" \
