@@ -2,8 +2,8 @@
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
-**draft / implementation not_started**. Направление утверждено, конкретный
-контракт G1–G4 ожидает review до product-кода: gateway, группы capabilities,
+**accepted G1–G4 / implementation not_started**. Владелец принял контракт
+и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
 локальный renderer, пользовательский visual review и прежний confirmation.
 Новых live calls, key setup или production activation это не открывает.
 

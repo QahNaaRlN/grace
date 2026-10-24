@@ -1,12 +1,12 @@
 # SPEC-0056: единый OpenRouter и чтение фото/PDF по возможностям модели
 
-- Статус: **draft**; implementation_status: **not_started**.
+- Статус: **accepted**; implementation_status: **not_started**.
 - Дата: 2026-10-24, Asia/Yekaterinburg.
 - Автор: Codex. Acceptance owner: владелец Grace.
 - Основание направления: «взаимодействие с LLM в Grace — через OpenRouter…
   Чтение и распознавание фотографий и PDF сделать через тип моделей,
   поддерживающих это чтение. Внедрить эти решения».
-- Направление поручено; конкретный контракт ниже ещё не принят.
+- Контракт G1–G4 принят владельцем 2026-10-24 до production-кода.
 - База: main `e9d02b2bacad7fdcef919d28b44dd4817b721aae`, PR120.
 - Ветка контракта: `codex/openrouter-document-reading`; production-код не меняется.
 
@@ -297,3 +297,13 @@ owner_visual_review_required, revision_conflict, statement_original_gone.
 - [Image input через Chat Completions](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding).
 - [PDF: native input и внешний parser при fallback](https://openrouter.ai/docs/guides/overview/multimodal/pdfs).
 - [Provider constraints и max_price](https://openrouter.ai/docs/guides/routing/provider-selection).
+
+## Принятие владельцем до реализации
+
+2026-10-24 владелец ответил **«Принять контракт, интегрировать и реализовать»**
+на конкретный G1–G4 в PR121/head
+`63209fc672fa677ec41a7fadb6afd44a6f4c498a`. Разрешены фиксация принятия,
+интеграция контракта после exact-head CI5/5 и последующая полная локальная
+реализация G1–G4 в отдельном worktree, включая fake/sandbox/integration проверки.
+Платные вызовы, чтение/настройка ключей, production SSH/SQL/deploy и activation
+не разрешены. Слияние будущего implementation PR не входит в это решение.
