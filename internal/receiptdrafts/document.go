@@ -149,6 +149,9 @@ func (h *Handler) sourceDocument(ctx context.Context, id string) (Draft, documen
 	if d.PhotoStatus != "stored" || !time.Now().Before(d.ExpiresAt) {
 		return d, documentdata.Document{}, errors.New("image_expired")
 	}
+	if h.store == nil {
+		return d, documentdata.Document{}, errors.New("photo_storage_unavailable")
+	}
 	doc, e := h.store.ReadDocument(d)
 	return d, doc, e
 }
@@ -172,6 +175,7 @@ func (h *Handler) ReadingPreview(w http.ResponseWriter, r *http.Request) {
 	web.WriteJSON(w, 200, plan)
 }
 func (h *Handler) Page(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "private, no-store")
 	_, doc, e := h.sourceDocument(r.Context(), chi.URLParam(r, "draftId"))
 	if e != nil {
 		draftError(w, e)

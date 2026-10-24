@@ -178,6 +178,7 @@ func (h *Handler) StatementReconciliation(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StatementPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "private, no-store")
 	id, ok := path(w, r, "statementId")
 	if !ok {
 		return

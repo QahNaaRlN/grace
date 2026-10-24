@@ -92,7 +92,9 @@ function HistoryRow({
           <strong className="block truncate">{batch.fileName ?? batch.source.sourceId}</strong>
           <span className="block truncate text-sm text-muted-foreground">
             {['bank_statement_pdf', 'bank_statement_image'].includes(batch.format ?? '')
-              ? 'PDF-выписка'
+              ? batch.format === 'bank_statement_image'
+                ? 'Фото-выписка'
+                : 'PDF-выписка'
               : batch.format === 'csv'
                 ? 'Таблица CSV'
                 : batch.format === 'json'

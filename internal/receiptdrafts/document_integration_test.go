@@ -207,6 +207,16 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 			if json.Unmarshal(response.Body.Bytes(), &draft) != nil {
 				t.Fatal("bad upload")
 			}
+			// A stored draft remains readable as metadata when storage is unavailable;
+			// its page route must fail privately instead of dereferencing a nil store.
+			noStore := receiptdrafts.NewHandler(pool, nil, nil)
+			noStoreRouter := chi.NewRouter()
+			noStore.Routes(noStoreRouter)
+			unavailable := httptest.NewRecorder()
+			noStoreRouter.ServeHTTP(unavailable, httptest.NewRequest("GET", "/"+draft.ID+"/pages/1", nil).WithContext(ctx))
+			if unavailable.Code != 503 || unavailable.Header().Get("Cache-Control") != "private, no-store" || gateway.posts != 0 {
+				t.Fatal("unconfigured storage leaked or called provider", unavailable.Code)
+			}
 			foreign := access.WithPrincipal(context.Background(), access.Principal{ID: other, Role: "member"})
 			if w := invoke(foreign, "GET", "/"+draft.ID+"/pages/1", nil, "", ""); w.Code == 200 {
 				t.Fatal("foreign source exposed")
