@@ -260,7 +260,7 @@ func (r *Repository) Month(ctx context.Context, batchID, month string) (MonthRep
 	if err != nil {
 		return MonthReport{}, err
 	}
-	if batch.Format != nil && *batch.Format == "bank_statement_pdf" {
+	if batch.Format != nil && (*batch.Format == "bank_statement_pdf" || *batch.Format == "bank_statement_image") {
 		return MonthReport{}, fault("statement_month_report_not_applicable", 422)
 	}
 

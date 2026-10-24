@@ -4,6 +4,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY cmd/pdf-extractor ./cmd/pdf-extractor
 COPY internal/pdfextract ./internal/pdfextract
+COPY internal/documentdata ./internal/documentdata
 COPY internal/statementdata ./internal/statementdata
 RUN CGO_ENABLED=0 go build -trimpath -o /out/grace-pdf-extractor ./cmd/pdf-extractor
 

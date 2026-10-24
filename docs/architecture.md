@@ -123,8 +123,10 @@ get_period_since_income. Опциональный Jev router выбирает о
 Router выключен по умолчанию и в production-конфигурации.
 
 TypeSafe получает текст запроса, язык и reference time; финансовые записи и
-результаты tools провайдеру не отправляются. Этот режим сохранён как быстрые
-запросы и не заменяет отдельные согласия OpenRouter.
+результаты tools провайдеру не отправляются.
+SPEC-0056 переводит генеративную классификацию этого режима на общий metered
+OpenRouter, с отдельным согласием analysis и без имитации вероятностей Jev.
+TypeSafe live adapter исключён из API composition.
 
 По accepted SPEC-0026 локально реализованы OpenRouter: объяснения месячных итогов,
 история разговоров и временные черновики фото чеков. В ветке SPEC-0033 эта работа
@@ -198,3 +200,22 @@ API, Web и PostgreSQL доступны только во внутренней D
 
 Статусы этапов и ограничения: [roadmap](roadmap.md). Эксплуатация:
 [production runbook](production-deployment.md).
+
+## Чтение изображений документов — SPEC-0056
+
+Принятый G1–G4 реализуется отдельным пакетом: `assistant.ModelGroups` выбирает
+квалифицированный конкретный model/provider по свежему capabilities proof.
+`documentdata` хранит ограниченные нормализованные страницы, а networkless
+`pdfextract` рендерит PDF локально. `statementextract.DocumentReasoner` получает
+снимок выбранной policy, исходника и страниц до согласия и бюджетного резерва.
+Чеки используют тот же transport и групповой resolver. Прямые OpenAI/TypeSafe
+live research entrypoints закрыты; исторический replay сохранён.
+
+Native PDF сохраняет реальные spans и grounding. Для фото/скана отдельный
+`image_review` хранит сырой ответ, правки владельца, source SHA и digests строк.
+Независимый OCR не заявляется. Проверка владельцем открывает только прежний
+import preview/confirmation; LLM не является финансовым writer. Migration30
+добавляет source/render/review metadata и очистку по существующему retention.
+API-контракт и UI поддерживают приватные страницы и ручную сверку.
+Production не активирован, реальное качество модели UNVERIFIED.
+[Конфигурация и пользовательский путь](openrouter-document-reading.md).

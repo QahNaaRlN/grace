@@ -15,7 +15,7 @@ services:
     cpus: 1.0
     pids_limit: 16
     tmpfs:
-      - /tmp:size=16777216,mode=700,uid=10001,gid=10001,noexec,nosuid,nodev
+      - /tmp:size=33554432,mode=700,uid=10001,gid=10001,noexec,nosuid,nodev
     volumes:
       - grace-pdf-socket:/run/grace-pdf
     stop_grace_period: 6s

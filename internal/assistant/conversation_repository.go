@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/jackc/pgx/v5"
@@ -27,7 +28,12 @@ func aiHash(value any) string {
 	return hex.EncodeToString(h[:])
 }
 func ConsentHash(scope string, policy ModelPolicy) string {
-	return aiHash(struct{ Scope, Model, Provider, ProviderName, Version string }{scope, policy.Model, policy.Provider, policy.DisplayProvider(), "grace.ai.20261008.zdr.confirmed"})
+	policy.VerifiedAt = time.Time{}
+	return aiHash(struct {
+		Scope   string
+		Policy  ModelPolicy
+		Version string
+	}{scope, policy, "grace.ai.0056.openrouter.groups.v1"})
 }
 func (r *ConversationRepository) Consent(ctx context.Context, scope, hash string, grant bool) error {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})

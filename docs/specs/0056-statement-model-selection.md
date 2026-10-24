@@ -1,6 +1,7 @@
 # SPEC-0056: автоматический выбор модели для банковской выписки
 
-- Статус: draft
+- Статус: historical draft; superseded by accepted [SPEC-0056 G1–G4](0056-openrouter-document-reading.md), 2026-10-24.
+- Этот старый файл не является действующим контрактом реализации.
 - Автор: Codex по поручению владельца
 - Дата: 2026-10-19 (Asia/Yekaterinburg)
 - Acceptance owner: владелец Grace

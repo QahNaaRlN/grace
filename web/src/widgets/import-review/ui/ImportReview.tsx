@@ -183,7 +183,7 @@ export function ImportReview() {
               Следующая нерешённая
             </Button>
           </div>
-          {batch.data.format !== 'bank_statement_pdf' && (
+          {!['bank_statement_pdf', 'bank_statement_image'].includes(batch.data.format ?? '') && (
             <MonthPanel batchId={batchId} onOpenRecord={setRecordId} />
           )}
           <RecordReview

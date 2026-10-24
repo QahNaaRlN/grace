@@ -44,12 +44,13 @@ type receipt struct {
 	Report         *statementqualification.DirectReport `json:"report"`
 }
 type dependencies struct {
-	key  func(string) string
-	call func(context.Context, statementextract.DirectRequest, []string, string) statementextract.DirectObservation
+	retired bool
+	key     func(string) string
+	call    func(context.Context, statementextract.DirectRequest, []string, string) statementextract.DirectObservation
 }
 
 func main() {
-	deps := dependencies{key: os.Getenv, call: func(ctx context.Context, r statementextract.DirectRequest, models []string, key string) statementextract.DirectObservation {
+	deps := dependencies{retired: true, key: os.Getenv, call: func(ctx context.Context, r statementextract.DirectRequest, models []string, key string) statementextract.DirectObservation {
 		return (statementextract.DirectResponses{Key: key}).Do(ctx, r, models)
 	}}
 	if e := command(os.Args[1:], os.Stdout, deps); e != nil {
@@ -98,6 +99,9 @@ func command(args []string, w io.Writer, deps dependencies) error {
 			return e
 		}
 		return json.NewEncoder(w).Encode(r)
+	}
+	if *mode == "run" && deps.retired {
+		return errors.New("direct_api_retired_use_openrouter")
 	}
 	if *mode != "run" {
 		return errors.New("invalid_mode")

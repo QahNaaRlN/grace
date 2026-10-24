@@ -16,7 +16,7 @@ type ComparisonCandidate struct {
 func ComparisonCandidates() []ComparisonCandidate {
 	return []ComparisonCandidate{
 		{"A", ScreeningPolicy(), ScreeningCanonicalModel},
-		{"B", Policy{"inception/mercury-3", "inception", "Inception", 100000, 350000}, "inception/mercury-3-20261019"},
+		{"B", Policy{Model: "inception/mercury-3", Provider: "inception", ProviderName: "Inception", InputMicrosPerMillion: 100000, OutputMicrosPerMillion: 350000}, "inception/mercury-3-20261019"},
 	}
 }
 func ComparisonCandidateByID(id string) (ComparisonCandidate, bool) {

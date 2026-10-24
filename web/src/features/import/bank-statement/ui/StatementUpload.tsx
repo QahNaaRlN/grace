@@ -31,7 +31,7 @@ export function StatementUpload({
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Текстовая выписка одного дебетового RUB-счёта. Загрузка обрабатывается локально. Денежные
+        PDF или фото выписки одного дебетового RUB-счёта. Загрузка обрабатывается локально. Денежные
         операции появятся после отдельной проверки и подтверждения.
       </p>
       <Field label="Счёт выписки">
@@ -51,10 +51,10 @@ export function StatementUpload({
             ))}
         </ChoiceSelect>
       </Field>
-      <Field label="PDF-выписка до 10 MiB">
+      <Field label="PDF до 10 MiB или фото до 8 MiB">
         <Input
           type="file"
-          accept="application/pdf,.pdf"
+          accept="application/pdf,image/jpeg,image/png,image/webp,.pdf"
           disabled={upload.isPending}
           onChange={(e) => {
             const next = e.target.files?.[0]
@@ -75,7 +75,7 @@ export function StatementUpload({
         disabled={!file || !accountId || file.size > 10 * 1024 * 1024 || upload.isPending}
         onClick={save}
       >
-        {upload.isPending ? 'Обрабатывается локально…' : 'Загрузить PDF'}
+        {upload.isPending ? 'Обрабатывается локально…' : 'Загрузить выписку'}
       </Button>
     </div>
   )

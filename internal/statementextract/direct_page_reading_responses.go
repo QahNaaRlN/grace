@@ -215,7 +215,7 @@ func (a DirectResponses) Do(ctx context.Context, request DirectRequest, allowed 
 	req.Header.Set("Authorization", "Bearer "+a.Key)
 	transport := a.Transport
 	if transport == nil {
-		transport = &http.Transport{Proxy: nil, TLSHandshakeTimeout: 15 * time.Second, ResponseHeaderTimeout: 180 * time.Second}
+		return failure("direct_api_retired_use_openrouter")
 	}
 	client := &http.Client{Transport: transport, Timeout: 180 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	res, e := client.Do(req)

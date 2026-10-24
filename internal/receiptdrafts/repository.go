@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"github.com/QahNaaRlN/grace/internal/financialevents"
 	"github.com/QahNaaRlN/grace/internal/platform/database"
 	"github.com/QahNaaRlN/grace/internal/receipts"
@@ -26,18 +27,18 @@ func Hash(v any) string {
 	return hex.EncodeToString(h[:])
 }
 
-const draftSelect = `SELECT id::text,revision,status,fields,extractions,photo_status,expires_at,receipt_id::text,event_id::text,image_id,image_hash,extraction_key FROM receipt_drafts WHERE id::text=$1`
+const draftSelect = `SELECT id::text,revision,status,fields,extractions,photo_status,expires_at,receipt_id::text,event_id::text,image_id,image_hash,extraction_key,source_kind,source_pages,reading_consent FROM receipt_drafts WHERE id::text=$1`
 
 func load(ctx context.Context, db interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }, id string, lock bool) (Draft, error) {
 	var d Draft
-	var f, e []byte
+	var f, e, pages, consent []byte
 	q := draftSelect
 	if lock {
 		q += " FOR UPDATE"
 	}
-	err := db.QueryRow(ctx, q, id).Scan(&d.ID, &d.Revision, &d.Status, &f, &e, &d.PhotoStatus, &d.ExpiresAt, &d.ReceiptID, &d.EventID, &d.ImageID, &d.ImageHash, &d.ExtractionKey)
+	err := db.QueryRow(ctx, q, id).Scan(&d.ID, &d.Revision, &d.Status, &f, &e, &d.PhotoStatus, &d.ExpiresAt, &d.ReceiptID, &d.EventID, &d.ImageID, &d.ImageHash, &d.ExtractionKey, &d.SourceKind, &pages, &consent)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return d, errors.New("not_found")
 	}
@@ -46,6 +47,14 @@ func load(ctx context.Context, db interface {
 	}
 	if json.Unmarshal(f, &d.Fields) != nil || json.Unmarshal(e, &d.Extractions) != nil {
 		return d, errors.New("invalid_draft")
+	}
+	if json.Unmarshal(pages, &d.Pages) != nil {
+		return d, errors.New("invalid_draft")
+	}
+	if len(consent) > 0 {
+		if json.Unmarshal(consent, &d.ReadingConsent) != nil {
+			return d, errors.New("invalid_draft")
+		}
 	}
 	d.Warnings = []string{}
 	if _, err := Validate(d.Fields); err != nil {
@@ -66,6 +75,9 @@ func (r *Repository) Get(ctx context.Context, id string) (Draft, error) {
 	return load(ctx, r.pool, id, false)
 }
 func (r *Repository) Create(ctx context.Context, imageID, imageHash string) (Draft, bool, error) {
+	return r.createDocument(ctx, imageID, imageHash, "image", []documentdata.Page{})
+}
+func (r *Repository) createDocument(ctx context.Context, imageID, imageHash, kind string, pages []documentdata.Page) (Draft, bool, error) {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return Draft{}, false, err
@@ -94,7 +106,7 @@ func (r *Repository) Create(ctx context.Context, imageID, imageHash string) (Dra
 		return Draft{}, false, errors.New("draft_limit")
 	}
 	var id string
-	err = tx.QueryRow(ctx, `INSERT INTO receipt_drafts(image_id,image_hash) VALUES($1,$2) ON CONFLICT(owner_id,image_hash) DO NOTHING RETURNING id::text`, imageID, imageHash).Scan(&id)
+	err = tx.QueryRow(ctx, `INSERT INTO receipt_drafts(image_id,image_hash,source_kind,source_pages) VALUES($1,$2,$3,$4) ON CONFLICT(owner_id,image_hash) DO NOTHING RETURNING id::text`, imageID, imageHash, kind, marshal(pages)).Scan(&id)
 	created := err == nil
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = tx.QueryRow(ctx, "SELECT id::text FROM receipt_drafts WHERE image_hash=$1", imageHash).Scan(&id)
@@ -143,6 +155,9 @@ func (r *Repository) Edit(ctx context.Context, id string, in Edit) (Draft, error
 }
 func marshal(v any) []byte { b, _ := json.Marshal(v); return b }
 func (r *Repository) BeginExtraction(ctx context.Context, id, key string) (Draft, bool, error) {
+	return r.beginDocumentExtraction(ctx, id, key, nil)
+}
+func (r *Repository) beginDocumentExtraction(ctx context.Context, id, key string, plan *ReadingPlan) (Draft, bool, error) {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return Draft{}, false, err
@@ -155,6 +170,9 @@ func (r *Repository) BeginExtraction(ctx context.Context, id, key string) (Draft
 	if d.ExtractionKey == key && d.Status != "extracting" {
 		return d, false, nil
 	}
+	if plan != nil && (plan.Revision != d.Revision || plan.SourceSHA256 != d.ImageHash) {
+		return d, false, errors.New("stale_revision")
+	}
 	if len(d.Extractions) >= 10 {
 		return d, false, errors.New("extraction_limit")
 	}
@@ -164,7 +182,7 @@ func (r *Repository) BeginExtraction(ctx context.Context, id, key string) (Draft
 	if d.PhotoStatus != "stored" {
 		return d, false, errors.New("image_expired")
 	}
-	_, err = tx.Exec(ctx, `UPDATE receipt_drafts SET status='extracting',extraction_key=$2,extraction_started_at=now() WHERE id::text=$1`, id, key)
+	_, err = tx.Exec(ctx, `UPDATE receipt_drafts SET status='extracting',extraction_key=$2,extraction_started_at=now(),reading_consent=$3 WHERE id::text=$1`, id, key, optionalReadingPlan(plan))
 	if err != nil {
 		return d, false, err
 	}
@@ -486,4 +504,11 @@ func (r *Repository) Sweep(ctx context.Context, store *PhotoStore) error {
 		}
 	}
 	return nil
+}
+
+func optionalReadingPlan(plan *ReadingPlan) any {
+	if plan == nil {
+		return nil
+	}
+	return marshal(plan)
 }

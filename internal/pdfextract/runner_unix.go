@@ -16,11 +16,14 @@ import (
 type Poppler struct{}
 
 func (Poppler) Verify(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, Binary, "-v")
-	cmd.Env = []string{"LANG=C", "LC_ALL=C", "PATH=/usr/bin:/bin"}
-	output, e := cmd.CombinedOutput()
-	if e != nil || !strings.HasPrefix(string(output), "pdftotext version 25.04.0\n") {
-		return errors.New("unsupported_poppler_version")
+	for _, binary := range []string{Binary, "/usr/bin/pdfinfo", "/usr/bin/pdftoppm"} {
+		cmd := exec.CommandContext(ctx, binary, "-v")
+		cmd.Env = []string{"LANG=C", "LC_ALL=C", "PATH=/usr/bin:/bin"}
+		output, e := cmd.CombinedOutput()
+		name := strings.TrimPrefix(binary, "/usr/bin/")
+		if e != nil || !strings.HasPrefix(string(output), name+" version 25.04.0\n") {
+			return errors.New("unsupported_poppler_version")
+		}
 	}
 	return nil
 }

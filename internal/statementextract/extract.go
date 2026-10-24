@@ -12,6 +12,9 @@ import (
 // Extract claims and reserves the entire plan once. A replay only reads the
 // durable attempt: no automatic retry or recovery ever invokes the provider.
 func (s *Service) Extract(ctx context.Context, id, key string, in ExtractionInput) (Attempt, error) {
+	if s.document != nil {
+		return s.extractDocument(ctx, id, key, in)
+	}
 	ctx, cancelRequest := context.WithTimeout(ctx, AttemptTimeoutSeconds*time.Second)
 	defer cancelRequest()
 	var out Attempt

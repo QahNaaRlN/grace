@@ -76,9 +76,10 @@ type Proposal struct {
 	Service []ServiceMapping `json:"service"`
 }
 type Evidence struct {
-	Role    string `json:"role"`
-	Spans   []Span `json:"spans"`
-	Literal string `json:"literal"`
+	Image   []ImageQuote `json:"image,omitempty"`
+	Role    string       `json:"role"`
+	Spans   []Span       `json:"spans"`
+	Literal string       `json:"literal"`
 }
 type Money struct {
 	AmountMinor int64  `json:"amountMinor"`

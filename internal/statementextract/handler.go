@@ -69,7 +69,11 @@ func reply(w http.ResponseWriter, v any, e error) {
 		}
 	} else {
 		switch e.Error() {
-		case "ai_disabled", "price_unknown", "provider_unavailable":
+		case "document_limit", "incomplete_reading", "source_binding_failed":
+			code, status = e.Error(), 422
+		case "policy_changed":
+			code, status = e.Error(), 409
+		case "ai_disabled", "price_unknown", "provider_unavailable", "no_eligible_model", "capability_unverified":
 			code, status = e.Error(), 503
 		}
 	}
@@ -123,7 +127,7 @@ func (h *Handler) extract(w http.ResponseWriter, r *http.Request) {
 		reply(w, nil, fault("invalid_reference", 400))
 		return
 	}
-	if e := http.NewResponseController(w).SetWriteDeadline(time.Now().Add(180 * time.Second)); e != nil {
+	if e := http.NewResponseController(w).SetWriteDeadline(time.Now().Add(215 * time.Second)); e != nil {
 		reply(w, nil, fault("statement_deadline_unavailable", 503))
 		return
 	}

@@ -24,6 +24,7 @@ test-jev-eval:
 	./scripts/test-jev-evaluation.sh
 
 test-integration:
+	./scripts/test-document-reading.sh
 	./scripts/test-pdf-extractor.sh
 	./scripts/test-bank-statements.sh
 	./scripts/test-installments.sh

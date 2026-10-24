@@ -18,14 +18,19 @@ func (s *Service) Recover(ctx context.Context, id, attempt string) error {
 	defer tx.Rollback(ctx)
 	var status, reservation, usageStatus string
 	var started time.Time
-	e = tx.QueryRow(ctx, `SELECT a.status,a.reservation_id::text,a.created_at,u.status FROM statement_extraction_attempts a JOIN ai_usage u ON u.id=a.reservation_id AND u.owner_id=a.owner_id WHERE a.id=$1 AND a.statement_id=$2 FOR UPDATE OF a`, attempt, id).Scan(&status, &reservation, &started, &usageStatus)
+	var document bool
+	e = tx.QueryRow(ctx, `SELECT a.status,a.reservation_id::text,a.created_at,u.status,EXISTS(SELECT 1 FROM statement_extraction_previews p WHERE p.id=a.preview_id AND p.plan->'document' IS NOT NULL) FROM statement_extraction_attempts a JOIN ai_usage u ON u.id=a.reservation_id AND u.owner_id=a.owner_id WHERE a.id=$1 AND a.statement_id=$2 FOR UPDATE OF a`, attempt, id).Scan(&status, &reservation, &started, &usageStatus, &document)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return fault("not_found", 404)
 	}
 	if e != nil {
 		return e
 	}
-	if (status != "running" && status != "cancelled") || usageStatus == "settled" || s.now().Sub(started) <= 130*time.Second {
+	threshold := 130 * time.Second
+	if document {
+		threshold = 210 * time.Second
+	}
+	if (status != "running" && status != "cancelled") || usageStatus == "settled" || s.now().Sub(started) <= threshold {
 		return nil
 	}
 	var incomplete int

@@ -6,9 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"github.com/QahNaaRlN/grace/internal/importreview"
+	"github.com/QahNaaRlN/grace/internal/pdfextract"
 	"github.com/QahNaaRlN/grace/internal/statementdata"
 	"github.com/jackc/pgx/v5"
 )
@@ -16,12 +19,12 @@ import (
 func (r *Repository) SetPDFExtractor(e PDFExtractor) { r.extractor = e }
 func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statement, error) {
 	var s Statement
-	var layout, review, pages, mapping []byte
-	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,s.mapping_snapshot,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
+	var layout, review, pages, mapping, rendered, visual []byte
+	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,s.mapping_snapshot,s.source_kind,s.reading_mode,s.rendered_pages,s.visual_state,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
 	if lock {
 		query += " FOR UPDATE OF s"
 	}
-	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &mapping, &s.PublishedRows, &s.ExcludedRows)
+	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &mapping, &s.SourceKind, &s.ReadingMode, &rendered, &visual, &s.PublishedRows, &s.ExcludedRows)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return s, ErrNotFound
 	}
@@ -39,6 +42,25 @@ func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statem
 	if len(review) > 0 {
 		if e = json.Unmarshal(review, &s.Review); e != nil {
 			return s, e
+		}
+	}
+	if len(rendered) > 0 {
+		if e = json.Unmarshal(rendered, &s.Rendered); e != nil {
+			return s, e
+		}
+	}
+	if len(visual) > 0 {
+		if e = json.Unmarshal(visual, &s.Visual); e != nil {
+			return s, e
+		}
+	}
+	s.Pages = s.Rendered.Manifest().Pages
+	if s.Visual != nil {
+		s.Visual.RowDigests = map[string]string{}
+		s.Visual.Recognition = "candidate"
+		s.Visual.SourceBinding = "image_review"
+		for i := range s.Visual.Candidate.Rows {
+			s.Visual.RowDigests[statementdata.VisualRowID(i)] = s.Visual.RowDigest(i)
 		}
 	}
 	s.DraftMapping = statementdata.MappingFor(s.Layout, s.Review, mapping, s.Revision)
@@ -85,10 +107,16 @@ func (r *Repository) Statement(ctx context.Context, id string) (Statement, error
 	return s, nil
 }
 func (r *Repository) UploadStatement(ctx context.Context, raw []byte, account, name, key string) (Statement, bool, error) {
+	return r.uploadStatementSource(ctx, raw, account, name, key, "pdf")
+}
+func (r *Repository) UploadStatementImage(ctx context.Context, raw []byte, account, name, key string) (Statement, bool, error) {
+	return r.uploadStatementSource(ctx, raw, account, name, key, "image")
+}
+func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, account, name, key, kind string) (Statement, bool, error) {
 	if len(raw) > statementdata.MaxPDFBytes {
 		return Statement{}, false, fault("pdf_size_limit", 413)
 	}
-	if len(raw) < 5 || !bytes.HasPrefix(raw, []byte("%PDF-")) {
+	if kind == "pdf" && (len(raw) < 5 || !bytes.HasPrefix(raw, []byte("%PDF-"))) {
 		return Statement{}, false, fault("invalid_pdf", 422)
 	}
 	payload := struct{ SHA256, AccountID string }{hashBytes(raw), account}
@@ -120,22 +148,51 @@ func (r *Repository) UploadStatement(ctx context.Context, raw []byte, account, n
 		return Statement{}, false, e
 	}
 	var layout statementdata.Document
+	prepared := documentdata.Document{}
+	mode := "native_text"
 	if knownID == "" {
-		if r.extractor == nil {
-			return Statement{}, false, fault("extractor_unavailable", 503)
+		if kind == "image" {
+			prepared, e = documentdata.Photo(raw)
+			mode = "image_review"
+		} else {
+			if r.extractor == nil {
+				return Statement{}, false, fault("extractor_unavailable", 503)
+			}
+			layout, e = r.extractor.Extract(ctx, raw)
+			if renderer, ok := r.extractor.(interface {
+				Render(context.Context, []byte) (pdfextract.Rendered, error)
+			}); ok && (e != nil && e.Error() == "pdf_text_required" || e == nil && len(layout.Pages) <= 4) {
+				rendered, renderErr := renderer.Render(ctx, raw)
+				if renderErr == nil {
+					prepared = rendered.Document
+					if rendered.Layout != nil {
+						layout = *rendered.Layout
+						if layout.Validate() != nil {
+							mode = "image_review"
+						}
+					} else {
+						mode = "image_review"
+					}
+					e = nil
+				} else if e != nil {
+					return Statement{}, false, fault(renderErr.Error(), 422)
+				}
+			}
 		}
-		layout, e = r.extractor.Extract(ctx, raw)
 		if e != nil {
-			status := 422
-			if e.Error() == "extraction_busy" {
-				status = 429
-			}
-			if e.Error() == "extractor_unavailable" {
-				status = 503
-			}
-			return Statement{}, false, fault(e.Error(), status)
+			return Statement{}, false, fault(e.Error(), 422)
 		}
-		if e = layout.Validate(); e != nil {
+		if mode == "image_review" {
+			if len(layout.Spans) == 0 {
+				layout = statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{}, Spans: []statementdata.Span{}}
+				for _, p := range prepared.Pages {
+					layout.Pages = append(layout.Pages, statementdata.Page{Number: p.Number, Width: float64(p.Width), Height: float64(p.Height)})
+				}
+			}
+			if prepared.Validate() != nil {
+				return Statement{}, false, fault("document_limit", 422)
+			}
+		} else if e = layout.Validate(); e != nil {
 			return Statement{}, false, fault("invalid_pdf_layout", 422)
 		}
 	}
@@ -173,7 +230,7 @@ func (r *Repository) UploadStatement(ctx context.Context, raw []byte, account, n
 			return Statement{}, false, e
 		}
 		encoded, _ := json.Marshal(layout)
-		e = tx.QueryRow(ctx, "INSERT INTO statement_sources(document_id,account_id,layout,page_count,original_size_bytes) VALUES($1,$2,$3,$4,$5) RETURNING id::text", document, account, encoded, len(layout.Pages), len(raw)).Scan(&existing)
+		e = tx.QueryRow(ctx, "INSERT INTO statement_sources(document_id,account_id,layout,page_count,original_size_bytes,source_kind,reading_mode,rendered_pages) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id::text", document, account, encoded, len(layout.Pages), len(raw), kind, mode, optionalRender(prepared)).Scan(&existing)
 		created = true
 	}
 	if e != nil {
@@ -242,9 +299,19 @@ func statementRecord(s Statement, row statementdata.Row) importreview.Record {
 	for _, code := range row.Issues {
 		issues = append(issues, importreview.Issue{Code: code, Severity: "error", Coordinate: fmt.Sprintf("pdf:%d", row.Ordinal), Message: code})
 	}
-	return importreview.Record{ID: fmt.Sprintf("pdf-%s-%d", s.ID, row.Ordinal), SourceKind: "bank_statement_pdf", PDF: &importreview.PDFSource{StatementID: s.ID, DocumentID: s.DocumentID, AccountID: s.AccountID, Ordinal: row.Ordinal, Row: row}, Domain: "transaction", Normalized: n, Issues: issues, Raw: map[string]importreview.Cell{}}
+	kind := "bank_statement_pdf"
+	if s.SourceKind == "image" {
+		kind = "bank_statement_image"
+	}
+	return importreview.Record{ID: fmt.Sprintf("pdf-%s-%d", s.ID, row.Ordinal), SourceKind: kind, PDF: &importreview.PDFSource{StatementID: s.ID, DocumentID: s.DocumentID, AccountID: s.AccountID, Ordinal: row.Ordinal, Row: row}, Domain: "transaction", Normalized: n, Issues: issues, Raw: map[string]importreview.Cell{}}
 }
 func (r *Repository) ManualStatementDraft(ctx context.Context, id, key string, in StatementManualDraft) (Statement, error) {
+	if in.Reading != nil {
+		if !reflect.DeepEqual(in.Proposal, statementdata.Proposal{}) {
+			return Statement{}, fault("invalid_request", 400)
+		}
+		return r.VisualDraft(ctx, id, key, in)
+	}
 	if strings.TrimSpace(in.Reason) == "" || len(in.Reason) > 2000 {
 		return Statement{}, fault("reason_required", 422)
 	}
@@ -284,8 +351,12 @@ func applyStatementFlags(s *Statement) {
 	if s.Review == nil {
 		return
 	}
-	statementdata.ApplyTurnoverRoleChecks(s.Layout, s.Review)
-	statementdata.ApplyGroundingChecks(s.Layout, s.Review)
+	if s.ReadingMode == "image_review" {
+		applyVisualFlags(s)
+	} else {
+		statementdata.ApplyTurnoverRoleChecks(s.Layout, s.Review)
+		statementdata.ApplyGroundingChecks(s.Layout, s.Review)
+	}
 	coverage := statementdata.Check{Status: "incomplete", Reasons: []string{}}
 	if s.PublishedRows == len(s.Review.Rows) && s.ExcludedRows == 0 {
 		coverage.Status = "represented"
@@ -303,6 +374,9 @@ func applyStatementFlags(s *Statement) {
 		pages[p] = true
 	}
 	required := s.PageCount
+	if s.ReadingMode == "image_review" && len(pages) == required && required > 0 {
+		s.Review.Reconciliation.RowCoverage = statementdata.Check{Status: "owner_reviewed", Reasons: []string{}}
+	}
 	if len(pages) != required || required == 0 {
 		s.Review.Reconciliation.RowCoverage.Status = "not_reviewed"
 		s.Review.Reconciliation.Blockers = append(s.Review.Reconciliation.Blockers, "owner_page_review_required")
@@ -508,6 +582,11 @@ func (r *Repository) MaterializeStatementInTx(ctx context.Context, tx pgx.Tx, id
 	if e != nil {
 		return s, fault(e.Error(), 422)
 	}
+	return r.materializeStatementReview(ctx, tx, s, review, &proposal, origin, reason, attemptID)
+}
+func (r *Repository) materializeStatementReview(ctx context.Context, tx pgx.Tx, s Statement, review statementdata.Review, proposal *statementdata.Proposal, origin, reason, attemptID string) (Statement, error) {
+	id := s.ID
+	var e error
 	report := importreview.Report{SchemaVersion: importreview.ReportVersion, Source: importreview.Metadata{SourceID: "bank_statement:" + s.ID}, PayloadSHA256: s.SHA256, Records: []importreview.Record{}, Candidates: []importreview.Candidate{}, Issues: []importreview.Issue{}, DomainCounts: map[string]int{"transaction": len(review.Rows)}}
 	for _, row := range review.Rows {
 		rec := statementRecord(s, row)
@@ -522,7 +601,7 @@ func (r *Repository) MaterializeStatementInTx(ctx context.Context, tx pgx.Tx, id
 	if s.BatchID != nil {
 		e = tx.QueryRow(ctx, "SELECT grace_statement_prepare_regroup($1,$2,$3)::text", s.ID, encoded, reason).Scan(&batch)
 	} else {
-		e = tx.QueryRow(ctx, `INSERT INTO import_batches(source_id,payload_hash,snapshot,report,format,file_name) VALUES($1,$2,$3,$4,'bank_statement_pdf',$5) RETURNING id::text`, report.Source.SourceID, digest(report.Source), manifest, encoded, s.FileName).Scan(&batch)
+		e = tx.QueryRow(ctx, `INSERT INTO import_batches(source_id,payload_hash,snapshot,report,format,file_name) VALUES($1,$2,$3,$4,$6,$5) RETURNING id::text`, report.Source.SourceID, digest(report.Source), manifest, encoded, s.FileName, "bank_statement_"+s.SourceKind).Scan(&batch)
 		if e != nil {
 			return s, e
 		}
@@ -547,10 +626,14 @@ func (r *Repository) MaterializeStatementInTx(ctx context.Context, tx pgx.Tx, id
 	}
 
 	encoded, _ = json.Marshal(review)
-	snapshot, e := json.Marshal(statementdata.NewMappingSnapshot(*s.Layout, proposal, review, origin, s.Revision+1))
-	if e != nil {
-		return s, e
+	var snapshot []byte
+	if proposal != nil {
+		snapshot, e = json.Marshal(statementdata.NewMappingSnapshot(*s.Layout, *proposal, review, origin, s.Revision+1))
+		if e != nil {
+			return s, e
+		}
 	}
+
 	_, e = tx.Exec(ctx, "UPDATE statement_sources SET batch_id=$2,review=$3,revision=revision+1,status='reviewing',roles_confirmed=false,reviewed_pages='[]',mapping_snapshot=$4 WHERE id=$1", id, batch, encoded, snapshot)
 	if e != nil {
 		return s, e

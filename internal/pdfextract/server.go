@@ -34,6 +34,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
 		_ = json.NewEncoder(w).Encode(map[string]string{"code": code})
 	}
+	if r.URL.Path == "/render" {
+		s.render(w, r)
+		return
+	}
 	if r.Method != "POST" || r.URL.Path != "/extract" {
 		fail(404, "not_found")
 		return

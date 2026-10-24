@@ -109,7 +109,7 @@ func resolved(rec Record, c Candidate, records map[string]Record) bool {
 	return false
 }
 func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report importreview.Report, ids []string) (Preview, error) {
-	if batch.Format != nil && *batch.Format == "bank_statement_pdf" && len(ids) > 100 {
+	if batch.Format != nil && (*batch.Format == "bank_statement_pdf" || *batch.Format == "bank_statement_image") && len(ids) > 100 {
 		return Preview{}, fault("statement_confirmation_limit", 422)
 	}
 
@@ -149,7 +149,7 @@ func (r *Repository) plan(ctx context.Context, tx pgx.Tx, batch Batch, report im
 		if rec.Source.PDF != nil {
 			ordinal := rec.Source.PDF.Ordinal
 			line.PDFOrdinal = &ordinal
-			line.SourceKind = "bank_statement_pdf"
+			line.SourceKind = rec.Source.SourceKind
 		}
 		line.Warnings = append(line.Warnings, statementWarnings...)
 		if rec.Published {

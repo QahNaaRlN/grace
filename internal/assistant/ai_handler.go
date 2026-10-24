@@ -2,7 +2,6 @@ package assistant
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -19,6 +18,7 @@ type AISettings struct {
 	Key            string
 	AnalysisPolicy string
 	ReceiptPolicy  string
+	ModelGroups    string
 	PhotoDir       string
 }
 type AIHandler struct {
@@ -38,17 +38,32 @@ func NewAIHandler(settings AISettings, pool *pgxpool.Pool, reader MonthlyReader)
 	if !settings.Enabled {
 		return h
 	}
-	analysisValid := json.Unmarshal([]byte(settings.AnalysisPolicy), &h.policy) == nil && approvedPolicyShape(h.policy)
-	provider, err := NewOpenRouterProvider(settings.Key, nil)
+	raw := settings.ModelGroups
+	if raw == "" {
+		raw = LegacyModelGroups(settings.AnalysisPolicy, settings.ReceiptPolicy)
+	}
+	groups, err := NewModelGroups(raw, settings.Key, nil)
+	if err != nil {
+		return h
+	}
+	provider, err := NewGroupedOpenRouterProvider(settings.Key, groups, nil)
 	if err != nil {
 		return h
 	}
 	h.provider = provider
 	h.verifier = NewPolicyVerifier()
-	h.enabled = analysisValid
-	if json.Unmarshal([]byte(settings.ReceiptPolicy), &h.receiptPolicy) == nil && h.receiptPolicy.Vision && approvedPolicyShape(h.receiptPolicy) && settings.PhotoDir != "" {
-		h.receiptsEnabled = true
+	h.verifier.Groups = groups
+	h.policy = ModelPolicy{Selection: &ModelSelection{Purpose: "analysis"}}
+	h.receiptPolicy = ModelPolicy{Selection: &ModelSelection{Purpose: "receipt"}}
+	for _, g := range groups.groups {
+		if g.Purpose == "analysis" {
+			h.enabled = true
+		}
+		if g.Purpose == "receipt" && settings.PhotoDir != "" {
+			h.receiptsEnabled = true
+		}
 	}
+
 	return h
 }
 func (h *AIHandler) SetReceiptStorageAvailable(available bool) {
@@ -83,6 +98,8 @@ func (h *AIHandler) DeleteConversation(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 func (h *AIHandler) Capabilities(w http.ResponseWriter, r *http.Request) {
+	analysisPolicy, _ := h.verifier.Current(r.Context(), h.policy)
+	receiptPolicy, _ := h.verifier.Current(r.Context(), h.receiptPolicy)
 	remaining := int64(0)
 	if h.available() || h.receiptsEnabled {
 		n, err := h.usage.Remaining(r.Context())
@@ -95,7 +112,7 @@ func (h *AIHandler) Capabilities(w http.ResponseWriter, r *http.Request) {
 	consent := false
 	if h.available() {
 		var err error
-		consent, err = h.conversations.HasConsent(r.Context(), "analysis", ConsentHash("analysis", h.policy))
+		consent, err = h.conversations.HasConsent(r.Context(), "analysis", ConsentHash("analysis", analysisPolicy))
 		if err != nil {
 			aiError(w, err)
 			return
@@ -104,18 +121,19 @@ func (h *AIHandler) Capabilities(w http.ResponseWriter, r *http.Request) {
 	receiptConsent := false
 	if h.receiptsEnabled {
 		var err error
-		receiptConsent, err = h.conversations.HasConsent(r.Context(), "receipt", ConsentHash("receipt", h.receiptPolicy))
+		receiptConsent, err = h.conversations.HasConsent(r.Context(), "receipt", ConsentHash("receipt", receiptPolicy))
 		if err != nil {
 			aiError(w, err)
 			return
 		}
 	}
-	web.WriteJSON(w, 200, map[string]any{"analysis": map[string]any{"enabled": h.available() && remaining > 0, "model": h.policy.Model, "provider": h.policy.DisplayProvider(), "consentGranted": consent, "policyHash": ConsentHash("analysis", h.policy), "dataDescription": "Твой вопрос, выбранный календарный месяц и итоги подтверждённых операций по категориям. Без номеров карт, снимка таблицы и фото.", "privacy": "OpenRouter и выбранный провайдер; ZDR, без обучения, внешних инструментов и скрытой смены маршрута."}, "receipt": map[string]any{"enabled": h.receiptsEnabled && h.receiptAvailable() && remaining > 0, "model": h.receiptPolicy.Model, "provider": h.receiptPolicy.DisplayProvider(), "consentGranted": receiptConsent, "policyHash": ConsentHash("receipt", h.receiptPolicy), "dataDescription": "Нормализованное фото чека без метаданных. Передача отдельно от подтверждения расхода.", "privacy": "OpenRouter и выбранный провайдер; маршрут с ZDR и запретом сбора данных."}, "remainingMicros": strconv.FormatInt(remaining, 10), "policyVersion": "grace.ai.20261008.zdr.confirmed"})
+	web.WriteJSON(w, 200, map[string]any{"analysis": map[string]any{"enabled": h.available() && remaining > 0, "model": analysisPolicy.Model, "provider": analysisPolicy.DisplayProvider(), "consentGranted": consent, "policyHash": ConsentHash("analysis", analysisPolicy), "dataDescription": "Твой вопрос, выбранный календарный месяц и итоги подтверждённых операций по категориям. Без номеров карт, снимка таблицы и фото.", "privacy": "OpenRouter и выбранный провайдер; ZDR, без обучения, внешних инструментов и скрытой смены маршрута."}, "receipt": map[string]any{"enabled": h.receiptsEnabled && h.receiptAvailable() && remaining > 0, "model": receiptPolicy.Model, "provider": receiptPolicy.DisplayProvider(), "consentGranted": receiptConsent, "policyHash": ConsentHash("receipt", receiptPolicy), "dataDescription": "Нормализованные изображения страниц одного чека без метаданных. Передача отдельно от подтверждения расхода.", "privacy": "OpenRouter и выбранный провайдер; маршрут с ZDR и запретом сбора данных."}, "remainingMicros": strconv.FormatInt(remaining, 10), "policyVersion": "grace.ai.0056.groups.confirmed"})
 }
 func (h *AIHandler) Consent(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		Scope      string `json:"scope"`
-		PolicyHash string `json:"policyHash"`
+		Scope          string `json:"scope"`
+		PolicyHash     string `json:"policyHash"`
+		RequiredImages int    `json:"requiredImages,omitempty"`
 	}
 	if !web.DecodeJSON(w, r, &in) {
 		return
@@ -131,6 +149,19 @@ func (h *AIHandler) Consent(w http.ResponseWriter, r *http.Request) {
 		aiError(w, errors.New("policy_changed"))
 		return
 	}
+	resolved, resolveErr := h.verifier.Current(r.Context(), policy)
+	if resolveErr != nil {
+		aiError(w, resolveErr)
+		return
+	}
+	if in.Scope == "receipt" && h.verifier != nil && h.verifier.Groups != nil && in.RequiredImages > 0 {
+		resolved, resolveErr = h.verifier.Groups.Resolve(r.Context(), "receipt", in.RequiredImages)
+		if resolveErr != nil {
+			aiError(w, resolveErr)
+			return
+		}
+	}
+	policy = resolved
 	if in.PolicyHash != ConsentHash(in.Scope, policy) {
 		aiError(w, errors.New("policy_changed"))
 		return

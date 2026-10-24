@@ -17,12 +17,13 @@ import (
 type Service struct {
 	pool     *database.TenantPool
 	imports  *imports.Repository
+	document DocumentReasoner
 	reasoner Reasoner
 	now      func() time.Time
 }
 
 func NewService(pool *pgxpool.Pool, repo *imports.Repository, reasoner Reasoner) *Service {
-	return &Service{database.ForUsers(pool), repo, reasoner, time.Now}
+	return &Service{pool: database.ForUsers(pool), imports: repo, reasoner: reasoner, now: time.Now}
 }
 func (s *Service) begin(ctx context.Context) (pgx.Tx, error) {
 	tx, e := s.pool.BeginTx(ctx, pgx.TxOptions{})
@@ -71,6 +72,9 @@ func sourceCurrent(ctx context.Context, tx pgx.Tx, id string, revision int64) er
 	return nil
 }
 func (s *Service) Preview(ctx context.Context, id string, in PreviewInput) (Preview, error) {
+	if s.document != nil {
+		return s.previewDocument(ctx, id, in)
+	}
 	var out Preview
 	policy, e := s.policy(ctx)
 	if e != nil {
@@ -136,7 +140,12 @@ func loadPreview(ctx context.Context, tx pgx.Tx, id, statement string) (Preview,
 }
 
 // Old consent cannot authorize new prompt/schema/redaction or inference settings.
-func currentPlanContract(p Plan) bool { return validPlan(p) }
+func currentPlanContract(p Plan) bool {
+	if p.Document != nil {
+		return documentPlanValid(p)
+	}
+	return validPlan(p)
+}
 
 func (s *Service) Consent(ctx context.Context, id, key string, in ConsentInput) (Consent, error) {
 	var out Consent

@@ -10,7 +10,6 @@ import { LoadingSkeleton } from '@/shared/ui/skeleton'
 import { Notice } from '@/shared/ui/status'
 import {
   cancelReceipt,
-  extractReceipt,
   getReceiptDraft,
   loadReceiptContext,
   previewReceipt,
@@ -23,6 +22,7 @@ import {
   type ReceiptDraftPreview,
 } from '../api/receipt-drafts'
 import { useConfirmReceiptDraft } from '../api/use-confirm-receipt-draft'
+import { ReceiptReading } from './ReceiptReading'
 import { ReceiptDraftEditor } from './ReceiptDraftEditor'
 
 type Account = components['schemas']['Account']
@@ -37,7 +37,6 @@ export function ReceiptPhoto() {
   const [categories, setCategories] = useState<Category[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const extractKey = useRef<string>('')
   const confirmKey = useRef<string>('')
   const confirmation = useConfirmReceiptDraft()
   useEffect(() => {
@@ -93,16 +92,10 @@ export function ReceiptPhoto() {
   async function upload(file: File) {
     const uploaded = await uploadReceiptPhoto(file)
     accept(uploaded)
-    extractKey.current = ''
     confirmKey.current = ''
     const url = new URL(location.href)
     url.searchParams.set('receiptDraft', uploaded.id)
     history.replaceState(null, '', url)
-  }
-  async function extract() {
-    if (!draft) return
-    if (!extractKey.current) extractKey.current = crypto.randomUUID()
-    accept(await extractReceipt(draft.id, extractKey.current))
   }
   async function prepare() {
     if (!draft || !fields) return
@@ -132,14 +125,16 @@ export function ReceiptPhoto() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Расход по фото чека</CardTitle>
+        <CardTitle>Расход по фото или PDF чека</CardTitle>
         <CardDescription>
           Проверь распознанные данные. Расход появится после отдельного подтверждения.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!mode.enabled && (
-          <p className="text-sm text-muted-foreground">Распознавание чеков пока недоступно.</p>
+          <p className="text-sm text-muted-foreground">
+            Распознавание недоступно. Можно загрузить источник и заполнить чек вручную.
+          </p>
         )}
         {mode.enabled && (
           <>
@@ -149,35 +144,34 @@ export function ReceiptPhoto() {
             <p className="text-sm">
               {mode.dataDescription} {mode.privacy}
             </p>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void run(() => consent(!mode.consentGranted))}
-            >
-              {mode.consentGranted
-                ? 'Отозвать согласие на распознавание'
-                : 'Разрешить передачу фото для распознавания'}
-            </Button>
-            <div>
-              <Label htmlFor="receipt-photo">Фото чека</Label>
-              <Input
-                id="receipt-photo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                capture="environment"
+            {mode.consentGranted && (
+              <Button
+                variant="outline"
                 disabled={busy}
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) void run(() => upload(file))
-                }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Фото хранится временно: до подтверждения, отмены или истечения суток. Загрузка не
-              отправляет фото провайдеру.
-            </p>
+                onClick={() => void run(() => consent(!mode.consentGranted))}
+              >
+                Отозвать согласие на распознавание
+              </Button>
+            )}
           </>
         )}
+        <div>
+          <Label htmlFor="receipt-photo">Фото или PDF чека</Label>
+          <Input
+            id="receipt-photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            disabled={busy}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void run(() => upload(file))
+            }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Фото хранится временно: до подтверждения, отмены или истечения суток. Загрузка не
+          отправляет фото провайдеру.
+        </p>
         {draft && (
           <p className="text-sm">
             {draft.status === 'confirmed'
@@ -192,23 +186,28 @@ export function ReceiptPhoto() {
                 : ''}
           </p>
         )}
-        {editable && fields && (
-          <ReceiptDraftEditor
-            fields={fields}
-            change={change}
-            accounts={accounts}
-            categories={categories}
-            busy={busy}
-            recognitionAllowed={Boolean(mode.consentGranted && mode.enabled)}
-            onRecognize={() => void run(extract)}
-            onRecognizeAgain={() => {
-              extractKey.current = crypto.randomUUID()
-              void run(extract)
-            }}
-            onPrepare={() => void run(prepare)}
-            onCancel={() => void run(cancel)}
-          />
-        )}
+        <div className="grid items-start gap-4 xl:grid-cols-2">
+          {editable && draft && (
+            <ReceiptReading
+              draft={draft}
+              available={mode.enabled}
+              busy={busy}
+              onChanged={accept}
+              onBusyChange={setBusy}
+            />
+          )}
+          {editable && fields && (
+            <ReceiptDraftEditor
+              fields={fields}
+              change={change}
+              accounts={accounts}
+              categories={categories}
+              busy={busy}
+              onPrepare={() => void run(prepare)}
+              onCancel={() => void run(cancel)}
+            />
+          )}
+        </div>
         {preview && (
           <div className="space-y-3 rounded-lg border p-4">
             <p className="font-medium">
