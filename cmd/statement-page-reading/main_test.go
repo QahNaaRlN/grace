@@ -111,7 +111,7 @@ func TestRunGateRefusalsConsumeWithoutKey(t *testing.T) {
 	}
 }
 func TestFakeCampaignReservationReplayAndNoRetry(t *testing.T) {
-	for _, kind := range []string{"positive", "semantic", "unknown_usage", "timeout", "missing_key"} {
+	for _, kind := range []string{"positive", "semantic", "unknown_usage", "timeout", "missing_key", "oversize_key"} {
 		t.Run(kind, func(t *testing.T) {
 			args, path, c := configured(t)
 			var keys, calls atomic.Int32
@@ -123,6 +123,9 @@ func TestFakeCampaignReservationReplayAndNoRetry(t *testing.T) {
 				raw, e := os.ReadFile(path + ".consumed")
 				if e != nil || !bytes.Contains(raw, []byte(`"state": "reserved"`)) || !bytes.Contains(raw, []byte(`"reservedMicros": 10400000`)) {
 					t.Fatal("key read before durable full reservation", e, string(raw))
+				}
+				if kind == "oversize_key" {
+					return strings.Repeat("X", 1025)
 				}
 				if kind == "missing_key" {
 					return ""
@@ -178,7 +181,7 @@ func TestFakeCampaignReservationReplayAndNoRetry(t *testing.T) {
 			if keys.Load() != 1 {
 				t.Fatal("key fetch count")
 			}
-			if kind == "missing_key" {
+			if kind == "missing_key" || kind == "oversize_key" {
 				if e == nil || calls.Load() != 0 || rec.State != "refused_before_calls" {
 					t.Fatal("missing key gate")
 				}

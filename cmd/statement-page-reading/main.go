@@ -169,7 +169,7 @@ func command(args []string, w io.Writer, deps dependencies) error {
 	// Key is deliberately accessed only after source, execution, fixed requests,
 	// funding and durable reservation. Tests inject a spy; offline work never calls run.
 	key := deps.key(keyEnvironment)
-	if key == "" {
+	if key == "" || len(key) > 1024 {
 		rec.State = "refused_before_calls"
 		save()
 		return errors.New("key_unavailable")
