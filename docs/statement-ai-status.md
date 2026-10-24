@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после интеграции A1–A3/PR117 и единственного B4, 2026-10-24 Asia/Yekaterinburg. Отчёт B4 подготовлен для приёмки.
+Обновлено после интеграции отчёта B4/PR118 и нового P4, 2026-10-24 Asia/Yekaterinburg. Отчёт нового P4 подготовлен для приёмки.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116 и A1–A3/PR117/main2059b49; exact-main CI40105683044/all5 и Delivery40106473989/all4 PASS |
+| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116 и A1–A3/PR117 и отчёт B4/PR118/main4e21431; exact-main CI40108414891/all5 и Delivery40109156224/all4 PASS |
 | S1.19 | Единственный pilot run39983522098:6/6 completed, clocks `[0,4,4,0,0,4]`, итог **REJECT**, без принятого candidate |
 | R4 | Единственный run40002091161/attempt1, source1a6b742, **VERIFIED**, replay6/6, все120 checks/3 pairs; разрешение **CONSUMED** |
 | Точная причина REJECT | Первая пара, candidate ordinal2, вторая строка: `record_description` и `row_issues` ухудшились с base PASS до candidate FAIL; `non_clock_regression` |
@@ -13,8 +13,8 @@
 | Общие проблемы | `coverage` и `blockers` FAIL во всех6 ответах; quality scores base14/20, candidate16/20,18/20,18/20, без full PASS |
 | Accounting S1.19 | Сохранённые bills `[3032,3117,1437,2999,1446,1449]`, actual13480 USD micros ($0.01348), known/settled; без fresh SQL/fees/allowance proof |
 | Дополнительные действия R4 | Provider/metadata/SQL calls0, persistentWritesRequested0, activationAuthorized=false; новые model calls/deploy/flags/financial writes не выполнялись |
-| S1.21 | D1–D3/P1–P3/root fix приняты и интегрированы. Correct fake controls19/19,20/20,23/23; единственный P4 **INCONCLUSIVE**, H2 UNVERIFIED |
-| Разрешения | E6/Q6/S1.19/R4/P4 **CONSUMED**. P4/run40035544723/attempt1: SSH public-key refusal, report unavailable; calls/cost/settlement N/A. B4 отдельно разрешён и завершён VERIFIED/CONSUMED; новый P4/activation не разрешён |
+| S1.21 | D1–D3/P1–P3/root fix приняты и интегрированы. Correct fake controls19/19,20/20,23/23; первый P4 INCONCLUSIVE, новый после B4 — **REJECT** на grouping/partition_invalid. Row-field quality UNVERIFIED |
+| Разрешения | E6/Q6/S1.19/R4/P4 **CONSUMED**. P4/run40035544723/attempt1: SSH public-key refusal, report unavailable; calls/cost/settlement N/A. B4 VERIFIED/CONSUMED. Новый P4/run40109843789 REJECT/CONSUMED; repair/repeat/activation не разрешены |
 
 R1–R3 приняты владельцем и интегрированы PR110 до R4. Exact source
 `1a6b74201db92ba37be750411ff7883d8216b602`, ref `codex/statement-s120-reader-source`,
@@ -72,11 +72,26 @@ attempt1: **VERIFIED**, один auth-only CI root SSH; все шаги success,
 [manifest](research/statement-quality/s121-access-manifest.json) и
 [run/hash evidence](research/statement-quality/s121-access-execution.json) проверены.
 CI manifest побайтно совпал с approved; root key/secret сохраняются по назначению.
-Допуск B4 **CONSUMED**, отчёт подготовлен для отдельной приёмки. Проверена
-аутентификация, SFTP/staging/wrapper и H2 остаются UNVERIFIED.
+Допуск B4 **CONSUMED**, отчёт принят и интегрирован PR118/main4e21431;
+main CI40108414891/all5 и Delivery40109156224/all4 PASS. B4 подтвердил только
+аутентификацию; последующее выполнение pilot отражено ниже.
 Новых provider/model-metadata/SQL/budget calls или deploy не было.
-Следующий возможный шаг — новый exact-source допуск P4 после приёмки отчёта;
-он пока NOT_AUTHORIZED. Прежний P4 остаётся INCONCLUSIVE, accounting N/A.
+Владелец затем отдельно разрешил один новый P4 на source9202641, frozen ref
+`codex/statement-s121-row-pilot-after-access-source`; receipt в PR118 до dispatch.
+[Run40109843789](https://github.com/QahNaaRlN/grace/actions/runs/40109843789),
+attempt1, completed/success: **quality decision REJECT**. Base completed14/20;
+candidate rejected на grouping/`partition_invalid`, до row-field вызовов.
+Ordinal3–6 not_sent/row_pilot_decisive_reject. Это отказ candidate в первой паре,
+преимущество H2 не подтверждено; качество row-field extraction не измерено.
+[Closed summary](research/statement-quality/s121-pilot-after-access-summary.json),
+[public manifest](research/statement-quality/s121-pilot-after-access-manifest.json),
+[run/hash evidence](research/statement-quality/s121-pilot-after-access-execution.json).
+Actual2 POST/3 metadata GET, known bills2, actual5509 USD micros ($0.005509),
+BillingKnown/ReservationSettled/SettlementRecorded=true. ReplayVerified=true:
+2 measurement positions +4 refusal-consistency suffix positions, не6 completed answers.
+Closed summary не раскрывает конкретный дефект partition; aliases не выдумываются.
+Новый допуск **CONSUMED**, отчёт prepared for review; repair/repeat/activation не открыты.
+Старый P4/run40035544723 остаётся INCONCLUSIVE/accounting N/A; он не перезаписан.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
 работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
 реальной модели. После любого результата — остановка, без автоматического повтора.

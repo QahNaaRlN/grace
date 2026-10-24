@@ -13,15 +13,19 @@ actual-main CI40019906935/all5 и Delivery40021060286/all4 PASS.
 В том же пакете приняты **P1–P3 accepted implementation / integrated PR114**, main8a3637b, подготовка измерения H2
 на прежнем public cards; отдельно разрешённая root UUID setup CONFIGURED;
 SSH principal root принят и интегрирован PR115/main6dc08d3, CI40034156936/all5 и Delivery40035190465/all4 PASS.
-Единственный отдельно разрешённый P4/run40035544723 завершён **INCONCLUSIVE**:
+Первый отдельно разрешённый P4/run40035544723 завершён **INCONCLUSIVE**:
 SSH public-key refusal, report unavailable, calls/cost/settlement N/A; grant **CONSUMED**.
 H2 UNVERIFIED, отчёт принят и интегрирован PR116/main ee7c0ec,
 CI40038147418/all5 и Delivery40039113963/all4 PASS; повтор/repair/activation не открыт.
 В том же S1.21 A1–A3 accepted implementation / integrated PR117/main2059b49;
 source CI40104638874/all5, main CI40105683044/all5 и Delivery40106473989/all4 PASS.
 Единственный отдельно разрешённый **B4 VERIFIED / CONSUMED**, run40107076865/attempt1:
-bootstrap CONFIGURED, один CI root auth-only SSH success. [Отчёт B4](0055-s121-row-scoped-selection.md#единственный-b4-результат-и-границы-evidence) подготовлен для приёмки;
-новый P4 NOT_AUTHORIZED, H2 UNVERIFIED.
+bootstrap CONFIGURED, один CI root auth-only SSH success; отчёт принят и интегрирован PR118/main4e21431,
+main CI40108414891/all5 и Delivery40109156224/all4 PASS.
+Новый отдельно разрешённый P4/run40109843789/attempt1 — **REJECT / CONSUMED**:
+candidate grouping/partition_invalid,2 POST/3 metadata GET, actual5509 micros ($0.005509), known/settled.
+[Отчёт](0055-s121-row-scoped-selection.md#новый-p4-после-b4-результат-и-границы-evidence) подготовлен для приёмки.
+Row-field quality UNVERIFIED; новый repair/repeat/activation не открыт.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

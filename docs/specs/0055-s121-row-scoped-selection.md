@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.21: сначала границы строк, затем поля каждой строки
 
-- Статус: **accepted D1–D3 offline / integrated**; **P1–P3 accepted / integrated; P4 INCONCLUSIVE / CONSUMED**, 2026-10-24.
+- Статус: **accepted D1–D3 offline / integrated**; **P1–P3/A1–A3 accepted / integrated; первый P4 INCONCLUSIVE, B4 VERIFIED, новый P4 REJECT; grants CONSUMED**, 2026-10-24. Новый отчёт prepared for review.
 - Implementation status: **D1–D3 приняты владельцем / integrated PR113**, merge `05221d9bb159aba55bf4142dd43d7917771ac522`; **P1–P3 accepted implementation / integrated PR114**, merge `8a3637bfae49cff58a6bd436cad006bc3f9e8372`. На момент принятия D1–D3 Go-кода не было.
 - Автор: Codex; 2026-10-24, Asia/Yekaterinburg.
 - Основание: общая цель надёжного импорта и принятый [S1.20 R4](0055-s120-clock-reject-diagnosis.md).
@@ -24,7 +24,7 @@ S1.19 дал REJECT: первый candidate ухудшил `record_description` 
 показывает предел grounding: начало/конец описания могут ошибочно уйти в service
 без interior-gap issue. Source coverage само по себе не равно semantic correctness.
 
-**H2, пока не проверена:** разделение задачи на явное владение фрагментами строки
+**H2, исследовательская гипотеза (новый P4 ниже дал REJECT на grouping):** разделение задачи на явное владение фрагментами строки
 и отдельный выбор её полей уменьшит пропуски и переносы описаний, сохранив полную
 правильность всех полей/coverage. На первом шаге модель видит весь документ;
 на втором — только одну явно выделенную строку и общий контекст валют/заголовка.
@@ -816,7 +816,7 @@ H2 и общая цель надёжного AI PDF-импорта остают�
 
 ## Принятое A1–A3: отдельно подготовить CI-доступ к root
 
-**Статус: A1–A3 accepted implementation / integrated PR117; B4 VERIFIED / CONSUMED; отчёт B4 prepared for review; новый P4 NOT_AUTHORIZED.**
+**Статус: A1–A3 accepted implementation / integrated PR117; B4 VERIFIED / CONSUMED, отчёт integrated PR118; новый P4 REJECT / CONSUMED, отчёт prepared for review; repair/repeat NOT_AUTHORIZED.**
 Исторические offline-состояния ниже предшествуют отдельному решению B4; актуальный receipt/result в конце раздела.
 Отчёт P4 принят владельцем и интегрирован PR116, merge
 `ee7c0ec6a032d614c45cb7ff70e599e2f3c4d8f8`, accepted head
@@ -1063,7 +1063,73 @@ PY
 `make test` PASS (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev),
 `git diff --check` PASS. Exact-head CI отчёта фиксируется в PR после commit.
 
-**B4 VERIFIED / допуск CONSUMED.** Этот отчёт подготовлен для приёмки, не принят
-владельцем автоматически. Новый P4 требует нового exact-source допуска;
-предыдущий P4 INCONCLUSIVE/calls-cost-settlement N/A не пересчитан.
-H2 UNVERIFIED, надёжный AI-импорт и owner functional acceptance не доказаны.
+**B4 VERIFIED / допуск CONSUMED.** Владелец отдельно принял отчёт и merge PR118,
+head9202641; merge4e21431, actual-main CI40108414891/all5 и Delivery40109156224/all4 PASS.
+Receipt принятия/интеграции в PR118. После этого владелец дал новый exact-source
+допуск P4, результат ниже. Первый P4 INCONCLUSIVE/calls-cost-settlement N/A
+не пересчитан. Надёжный AI-импорт и owner functional acceptance не доказаны.
+
+
+### Новый P4 после B4: результат и границы evidence
+
+Владелец прямо ответил **«Разрешаю один новый P4»** на source
+`9202641e3e1fa7e523c780c55a5f2bf5dc9608c4`, ref
+`codex/statement-s121-row-pilot-after-access-source`, manifest SHA256
+`db78588640f415a6d27acda78ee969f24150d431b24134b71da9e0cc0428d74d`.
+Receipt опубликован в [PR118](https://github.com/QahNaaRlN/grace/pull/118) до dispatch.
+Source CI40107634920/all5, main CI40108414891/all5 и Delivery40109156224/all4
+повторно проверены перед запуском; local atomic marker создан до preflight.
+Допуск включал один dispatch/root staging/fixed wrapper/budget reserve-guard-settle/
+replay только нового report, ≤12 POST/≤39 metadata GET/$0.6468 provider плюс fees
+в существующем бюджете. Не включал deploy/финансовые записи/старые payloads/повторы.
+
+[Run40109843789](https://github.com/QahNaaRlN/grace/actions/runs/40109843789),
+attempt1, exact source/ref, completed/success; все шаги success, включая source guard,
+build, SSH/SCP staging, wrapper и upload. Успех workflow не означает quality PASS.
+[Строгий closed summary](../research/statement-quality/s121-pilot-after-access-summary.json)
+даёт **REJECT**: base completed14/20, candidate rejected на stage=grouping,
+cause=`partition_invalid`, до row-field extraction. Ordinal3–6 `not_sent`/
+`row_pilot_decisive_reject`: остановка при первом достаточном witness по P3.
+
+| AC / измерение | Evidence |
+| --- | --- |
+| Exact source / один запуск | Один новый run40109843789/attempt1/source9202641, frozen ref; receipt до dispatch, local one-shot marker; повторов нет |
+| Manifest/source | CI manifest побайтно равен approved db7858…; SOURCE_SHA exact;6 уникальных SHA256SUMS имён, hashes fixture/document/wrapper равны source Git blobs |
+| Полный scorer | Base14/20: четыре clocks, coverage и blockers FAIL; candidate grouping rejected, quality/precision/row checks отсутствуют, full PASS не выдуман |
+| Ранний REJECT | Actual base + grouping requests;2 POST/3 metadata GET, row requests0; ordinal3–6 not_sent с закрытой stop-причиной |
+| Replay | ShapeVerified/ReplayVerified=true:2 measurement positions и4 suffix refusal-consistency positions; не6 completed answers |
+| Accounting | AttemptedCalls2/DeliveredCalls2/KnownBills2, ActualMicros5509 ($0.005509), BillingKnown/ReservationSettled/SettlementRecorded=true; cap646800 micros не превышен |
+| Privacy / isolation | Только новый closed result/public manifest; raw logs/старые private payloads не скачивались, дополнительного SSH нет; deploy/financial writes/repair/repeat0 |
+
+Closed summary SHA256
+`839ec8eb85c5d313811421e16bd938f4debbcee67242c25c2748931283456963`;
+report Digest `906951b8cc566cf3e52d38ef48b15b8e403270e1d8c0eaa19d8f14d4d1ce0c92`
+— отдельное поле provenance нового report, не hash closed JSON bytes.
+Original JSON точно равен output source CLI `-mode=validate-public` (exit0),
+с проверкой duplicate keys/unknown fields/types/полного source-bound DTO.
+CLI выполнялся offline с пустым environment; новых calls/replay VPS чтений нет.
+
+[Public manifest](../research/statement-quality/s121-pilot-after-access-manifest.json)
+и [execution evidence](../research/statement-quality/s121-pilot-after-access-execution.json)
+содержат run/jobs/steps/artifact IDs/declared archive digests/actual bundle hashes.
+Actual CI binary SHA256
+`8b3a9fb5b75d45b4f058e3eaf523e49dc3e60a9a93c7fdfd189774c378161ed7`
+отличается от local candidate `4d1d628c…`; equality не заявляется, source/manifest совпали.
+Archive digests взяты из metadata GitHub, локальные ZIP hashes не сравнивались.
+Свежая отдельная SQL/fees/allowance проверка не выполнялась; accounting — из replayed report.
+
+`partition_invalid` объединяет несколько строгих ownership/order/completeness/header
+условий в `rowScopedGrouping`. Closed projection не раскрывает нарушенные aliases
+или конкретное условие; не устанавливает, была ли причина в coverage, duplicates,
+порядке или header ownership. Нельзя приписывать модели конкретный пропуск,
+ослаблять guard или объявлять parser/scorer сломанным по одному cause-коду.
+
+**Новый P4 REJECT / допуск CONSUMED.** Преимущество H2 не подтверждено,
+row-field quality UNVERIFIED, candidate NOT_QUALIFIED. Это измерение public cards,
+не representative corpus/full import/owner functional acceptance.
+Первый P4 INCONCLUSIVE и B4 VERIFIED сохранены в своих файлах без перезаписи.
+Отчёт подготовлен для отдельной приёмки; repair/новый подход/повтор/activation не открыты.
+
+Проверки нового отчёта: strict source CLI/manifest/source/accounting/replay/suffix/links
+и неизменность старых P4/B4 PASS; `make test` PASS (Go,89 Web suites/336 tests,
+lint/FSD/format/build/Jev), `git diff --check` PASS. Exact-head CI фиксируется в PR.
