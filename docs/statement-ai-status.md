@@ -5,13 +5,17 @@ PR120/main `e9d02b2`; main CI40118781180/all5 и Delivery40119558599/all4 PASS.
 Реальное качество чтения ещё UNVERIFIED.
 
 **Текущая работа:** по прямому поручению владельца подготовлена
-[SPEC-0056](specs/0056-openrouter-document-reading.md), **accepted G1–G4 / локально verified, implementation acceptance pending**:
+[SPEC-0056](specs/0056-openrouter-document-reading.md), **accepted G1–G4 / accepted implementation / integrated PR122**, main10a0059:
+main CI40132897197/5, Delivery40133674626/4 и локальные post-merge gates PASS;
 всё LLM-взаимодействие через OpenRouter, группы моделей по capabilities,
 пользовательское чтение фото/PDF и проверка изображения перед импортом.
 Владелец принял G1–G4 и разрешил интеграцию контракта и локальную реализацию. Прямой OpenAI V4 не запускается;
 платная проверка и production rollout не открыты.
 [Локальная реализация и AC/evidence](specs/0056-evidence.md): OpenRouter groups,
 actual renderer, image_review и прежний confirmation проверены fake/integration.
+Следующий пакет для рассмотрения: [Q1–Q3 offline-подготовка](specs/0056-openrouter-document-qualification.md),
+**draft / not_started**. Предлагаются8 публичных документов, отдельный Q4
+≤8POST/6GET/$2.00; модель/тариф пока не выбраны, запуск NOT_AUTHORIZED.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |

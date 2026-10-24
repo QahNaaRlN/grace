@@ -203,7 +203,8 @@ API, Web и PostgreSQL доступны только во внутренней D
 
 ## Чтение изображений документов — SPEC-0056
 
-Принятый G1–G4 реализуется отдельным пакетом: `assistant.ModelGroups` выбирает
+Принятый G1–G4 реализован и интегрирован PR122/main10a0059:
+`assistant.ModelGroups` выбирает
 квалифицированный конкретный model/provider по свежему capabilities proof.
 `documentdata` хранит ограниченные нормализованные страницы, а networkless
 `pdfextract` рендерит PDF локально. `statementextract.DocumentReasoner` получает

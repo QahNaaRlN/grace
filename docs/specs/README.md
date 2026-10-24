@@ -2,7 +2,11 @@
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
-**accepted G1–G4 / локально verified, implementation acceptance pending**. Владелец принял контракт
+**accepted G1–G4 / accepted implementation / integrated PR122**, main10a0059;
+main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
+[Следующее предложение Q1–Q3](0056-openrouter-document-qualification.md) —
+**draft / not_started**:8 публичных документов через actual grouped adapter;
+Q4/≤8POST/6GET/$2.00 только предлагается, не разрешён. Владелец принял контракт
 и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
 локальный renderer, пользовательский visual review и прежний confirmation.
 Локальный результат и критерии: [evidence](0056-evidence.md).

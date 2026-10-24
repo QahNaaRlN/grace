@@ -1,6 +1,6 @@
 # SPEC-0056: единый OpenRouter и чтение фото/PDF по возможностям модели
 
-- Статус: **verified**; accepted G1–G4; implementation_status: **implemented_pending_owner_acceptance**.
+- Статус: **integrated**; accepted G1–G4; implementation_status: **accepted_integrated**.
 - Дата: 2026-10-24, Asia/Yekaterinburg.
 - Автор: Codex. Acceptance owner: владелец Grace.
 - Основание направления: «взаимодействие с LLM в Grace — через OpenRouter…
@@ -9,7 +9,9 @@
 - Контракт G1–G4 принят владельцем 2026-10-24 до production-кода.
 - База: main `e9d02b2bacad7fdcef919d28b44dd4817b721aae`, PR120.
 - Контракт интегрирован PR121, main `1fa1d93bc83e63ff8ddb0143bdf5849e32e6d98d`.
-- Реализация: `codex/openrouter-document-reading-implementation`; локальный G1–G4.
+- Реализация принята владельцем и интегрирована PR122, main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`.
+- Main CI40132897197/5 и Delivery40133674626/4 PASS; post-merge gates PASS.
+- Следующее предложение: [Q1–Q3 offline / Q4 отдельно](0056-openrouter-document-qualification.md), draft.
 - Production activation и качество реальной модели остаются UNVERIFIED.
 
 ## Проблема и пользовательский результат
@@ -24,7 +26,7 @@ Grace должен отправлять запросы к LLM через оди�
 OpenRouter сообщает технические возможности; качество чтения конкретной модели
 на наших документах проверяется отдельно. Наличие `image` не означает точный OCR.
 
-## Текущее поведение и доказательства
+## Исходное поведение до G1–G4
 
 - `internal/assistant/llm_provider.go`: OpenRouter Chat Completions, фиксированная
   ModelPolicy, schema, privacy/identity/cost guards. Объяснения и фото чеков уже
@@ -257,7 +259,8 @@ owner_visual_review_required, revision_conflict, statement_original_gone.
 ## Критерии приёмки и исполняемые проверки
 
 Локальные G1–G4 проверки выполнены; actual commands/results и ограничения —
-[0056-evidence.md](0056-evidence.md). Приёмка implementation PR и merge pending.
+[0056-evidence.md](0056-evidence.md). Реализация принята и интегрирована PR122;
+качество реальной модели и production activation не подтверждены.
 
 | AC | Наблюдаемый результат и обязательная проверка |
 | --- | --- |
@@ -310,3 +313,14 @@ owner_visual_review_required, revision_conflict, statement_original_gone.
 реализация G1–G4 в отдельном worktree, включая fake/sandbox/integration проверки.
 Платные вызовы, чтение/настройка ключей, production SSH/SQL/deploy и activation
 не разрешены. Слияние будущего implementation PR не входит в это решение.
+
+## Приёмка и интеграция реализации G1–G4
+
+2026-10-25 владелец ответил **«Принять реализацию и слить №122»** для head
+`b160af182760fbfde9e38da059f1f185f11c76dd`. PR122 переведён из draft и слит:
+main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`, tree равен принятому head.
+Exact-head CI40131646353/5, main CI40132897197/5 и Delivery40133674626/4 PASS.
+Локальные post-merge gates и ограничения — в [evidence](0056-evidence.md).
+Опубликованный receipt и результаты находятся также в
+[PR122](https://github.com/QahNaaRlN/grace/pull/122). Это закрывает G1–G4,
+сохраняя отдельный gate реального измерения и production rollout.
