@@ -2,7 +2,8 @@
 
 Принят [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md), контракт
 интегрирован PR121. Локальная реализация единого OpenRouter, capability groups,
-рендера фото/PDF и owner visual review выполняется отдельным пакетом.
+рендера фото/PDF и owner visual review локально verified;
+[implementation evidence](specs/0056-evidence.md), acceptance/merge pending.
 Реальное качество модели и production activation остаются UNVERIFIED.
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).

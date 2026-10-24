@@ -1,6 +1,6 @@
 # SPEC-0056: единый OpenRouter и чтение фото/PDF по возможностям модели
 
-- Статус: **accepted**; implementation_status: **in_progress**.
+- Статус: **verified**; accepted G1–G4; implementation_status: **implemented_pending_owner_acceptance**.
 - Дата: 2026-10-24, Asia/Yekaterinburg.
 - Автор: Codex. Acceptance owner: владелец Grace.
 - Основание направления: «взаимодействие с LLM в Grace — через OpenRouter…
@@ -256,7 +256,8 @@ owner_visual_review_required, revision_conflict, statement_original_gone.
 
 ## Критерии приёмки и исполняемые проверки
 
-Ниже ожидаемое evidence, сейчас **NOT_RUN / implementation not_started**.
+Локальные G1–G4 проверки выполнены; actual commands/results и ограничения —
+[0056-evidence.md](0056-evidence.md). Приёмка implementation PR и merge pending.
 
 | AC | Наблюдаемый результат и обязательная проверка |
 | --- | --- |
