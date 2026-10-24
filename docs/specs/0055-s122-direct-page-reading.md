@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.22: прямое чтение страниц выписки
 
-- Статус: **accepted V1–V3 offline**; implementation_status: **implemented_offline / pending_owner_acceptance**.
+- Статус: **accepted V1–V3 offline**; implementation_status: **accepted_implementation / integrated PR120**.
 - Направление принято владельцем 2026-10-24: «Значит пора сменить курс, попробовать то, что работает».
 - Дата: 2026-10-24, Asia/Yekaterinburg. Автор: Codex.
 - База: main `ad1eca3efed097901bd15d8f7207d592c89ec24f`, принятый отчёт PR119.
@@ -222,4 +222,17 @@ V4/paid calls/чтение и настройка ключей/SSH/SQL/deploy/act
 
 ## Offline-реализация V1–V3
 
-Реализована в том же PR120 после receipt `e54b154`. [Отчёт и исполняемые AC](0055-s122-offline-evidence.md). Четыре public fake controls проходят recognition/binding; полный full32 проверяет32 строки. Это evidence кода, качество реальной модели и account/key readiness остаются UNVERIFIED; V4/merge/activation не разрешены.
+Реализована в том же PR120 после receipt `e54b154`. [Отчёт и исполняемые AC](0055-s122-offline-evidence.md). Четыре public fake controls проходят recognition/binding; полный full32 проверяет32 строки. Это evidence кода, качество реальной модели и account/key readiness остаются UNVERIFIED; V4/activation не разрешены. Merge отдельно принят ниже.
+
+## Принятие реализации и интеграция
+
+Владелец ответил «Принять реализацию и слить №120» для source
+`52842439df5a3eb58df52b38690098a792f12602`. PR120 интегрирован main
+`e9d02b2bacad7fdcef919d28b44dd4817b721aae`; source CI40117756468/all5,
+main CI40118781180/all5 и Delivery40119558599/all4 PASS. Tree main совпал с
+принятым source. Это приёмка offline-реализации, не качества модели.
+
+Последующее поручение перевести всё LLM-взаимодействие на OpenRouter оформлено
+в [SPEC-0056](0056-openrouter-document-reading.md), пока draft. Исторический
+прямой OpenAI wire остаётся описанием реализованного S1.22; отдельный V4 не
+запускался и не разрешён. Новое направление не расходует старый allowance.

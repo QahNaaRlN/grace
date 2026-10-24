@@ -1,5 +1,12 @@
 Актуализация: **2026-10-24**, Asia/Yekaterinburg.
 
+По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
+чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
+**accepted G1–G4 / implementation not_started**. Владелец принял контракт
+и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
+локальный renderer, пользовательский visual review и прежний confirmation.
+Новых live calls, key setup или production activation это не открывает.
+
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на
 [одной status-странице](../statement-ai-status.md). Завершённый live-контракт —
 [S1.19: один эксперимент о полноте напечатанного времени](0055-s119-evidence-selection-candidate.md),
@@ -28,9 +35,11 @@ candidate grouping/partition_invalid,2 POST/3 metadata GET, actual5509 micros ($
 Row-field quality UNVERIFIED; новый repair/repeat/activation не открыт.
 По поручению владельца сменить курс подготовлен [S1.22 V1–V3](0055-s122-direct-page-reading.md):
 прямое чтение изображений страниц и текста, обычные строки+quotes, проверка кодом.
-**accepted V1–V3 offline / implemented; pending owner acceptance**,4 cases с image-only control/full32;
+**accepted V1–V3 offline / accepted implementation / integrated PR120**,4 cases с image-only control/full32;
 GPT-6 Astra — непроверенный API candidate. Будущий V4 отдельно:≤8 POST/предлагаемый
-ceiling $10.40, расходы/key setup/merge/deploy NOT_AUTHORIZED. V1–V3 приняты прямым решением; [offline evidence](0055-s122-offline-evidence.md), отдельный V4 не открыт.
+ceiling $10.40; V4/расходы/key setup/deploy NOT_AUTHORIZED.
+PR120 принят владельцем и интегрирован main `e9d02b2`; main CI40118781180/all5
+и Delivery40119558599/all4 PASS. Новый курс SPEC-0056 не запускает прямой OpenAI V4. V1–V3 приняты прямым решением; [offline evidence](0055-s122-offline-evidence.md), отдельный V4 не открыт.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.
