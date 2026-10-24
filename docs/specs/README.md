@@ -5,7 +5,8 @@
 **accepted G1–G4 / accepted implementation / integrated PR122**, main10a0059;
 main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
 [Следующее предложение Q1–Q3](0056-openrouter-document-qualification.md) —
-**draft / not_started**:8 публичных документов через actual grouped adapter;
+**accepted Q1–Q3 / offline implementation pending acceptance**:8 публичных
+документов через actual grouped adapter; [AC/evidence](0056-qualification-evidence.md);
 Q4/≤8POST/6GET/$2.00 только предлагается, не разрешён. Владелец принял контракт
 и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
 локальный renderer, пользовательский visual review и прежний confirmation.

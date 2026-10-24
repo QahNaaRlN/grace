@@ -96,7 +96,8 @@ fake values, намеренно не используется как evidence т
 Существующий visual fake PASS подтверждает протокол/guards, не точность LLM.
 G1–G4 приняты и интегрированы. Следующее предложение —
 [Q1–Q3: offline-подготовка измерения](0056-openrouter-document-qualification.md),
-**draft / implementation not_started**. Q4 требует отдельного допуска на
+**accepted Q1–Q3 / offline implementation pending acceptance**;
+[AC/evidence](0056-qualification-evidence.md). Q4 требует отдельного допуска на
 exact source/endpoint/данные/стоимость; production rollout отдельно.
 Гайд оператора: [OpenRouter и чтение документов](../openrouter-document-reading.md).
 
@@ -119,4 +120,5 @@ gates там PASS, права основного каталога не меня�
 `/tmp/grace-0056-merged-integration-worktree.log`,
 `/tmp/grace-0056-merged-production-worktree.log`, `/tmp/grace-0056-merged-vet.log`.
 Live provider/metadata calls, key setup, production SSH/SQL/deploy и расходы
-по merge не выполнялись. Q1–Q3 ещё не приняты, Q4 NOT_AUTHORIZED.
+по merge не выполнялись. Q1–Q3 отдельно приняты и реализованы offline в PR123, приёмка/merge pending;
+[AC/evidence](0056-qualification-evidence.md). Q4 NOT_AUTHORIZED.

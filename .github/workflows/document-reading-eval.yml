@@ -1,0 +1,131 @@
+name: 'SPEC-0056 Q: одно измерение чтения документов'
+on:
+  workflow_dispatch:
+    inputs:
+      authorized_source:
+        description: 'Exact source SHA из отдельного Q4 допуска'
+        required: true
+        type: string
+      approved_manifest:
+        description: 'Manifest SHA256 из отдельного Q4 допуска'
+        required: true
+        type: string
+      approval_id:
+        description: 'Commit SHA опубликованного owner receipt Q4'
+        required: true
+        type: string
+      execute_approved_reading:
+        description: 'Отдельно разрешённые ≤8 POST/6 metadata GET/$2.00; отказ расходует попытку'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  document-reading:
+    if: ${{ inputs.execute_approved_reading }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Проверить source, единственную попытку и CI5/5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+          APPROVED_MANIFEST: ${{ inputs.approved_manifest }}
+          APPROVAL_ID: ${{ inputs.approval_id }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$APPROVAL_ID" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$APPROVED_MANIFEST" | grep -Eq '^[0-9a-f]{64}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          git cat-file -e "$APPROVAL_ID^{commit}"
+          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/document-reading-eval.yml/runs?head_sha=$AUTHORIZED_SHA&event=workflow_dispatch&per_page=100" --jq '[.workflow_runs[] | select(.head_sha==env.AUTHORIZED_SHA and .event=="workflow_dispatch")] | length')
+          test "$runs" -eq 1
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2;;esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/document-reading-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/document-reading-ci.json"
+      - name: Собрать bundle и сверить одобренный manifest
+        env:
+          APPROVED_MANIFEST: ${{ inputs.approved_manifest }}
+        run: |
+          set -eu
+          binary="$RUNNER_TEMP/grace-document-reading-eval"
+          bundle="$RUNNER_TEMP/grace-document-reading-q-$GITHUB_SHA"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-X main.sourceSHA=$GITHUB_SHA" -o "$binary" ./cmd/document-reading-eval
+          "$binary" -mode=check -export="$bundle" > /dev/null
+          test "$(sha256sum "$bundle/MANIFEST.json" | cut -d ' ' -f 1)" = "$APPROVED_MANIFEST"
+          cp "$binary" "$bundle/grace-document-reading-eval"
+          cp deployments/production/document-reading-eval.sh "$bundle/run.sh"
+          printf '%s\n' "$GITHUB_SHA" > "$bundle/SOURCE_SHA"
+          chmod 755 "$bundle" "$bundle/grace-document-reading-eval"
+          chmod 644 "$bundle/corpus.json" "$bundle/MANIFEST.json" "$bundle/SOURCE_SHA" "$bundle/run.sh"
+          (cd "$bundle" && sha256sum grace-document-reading-eval corpus.json MANIFEST.json SOURCE_SHA run.sh > SHA256SUMS)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: document-reading-q-manifest
+          path: |
+            ${{ runner.temp }}/grace-document-reading-q-${{ github.sha }}/MANIFEST.json
+            ${{ runner.temp }}/grace-document-reading-q-${{ github.sha }}/SHA256SUMS
+          if-no-files-found: error
+      - name: Настроить pinned SSH только для разрешённого Q4
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_STATEMENT_ROW_SSH_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          install -m 0600 deployments/production/known_hosts "$HOME/.ssh/known_hosts"
+      - name: Выполнить один разрешённый Q4
+        env:
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+          APPROVED_MANIFEST: ${{ inputs.approved_manifest }}
+          APPROVAL_ID: ${{ inputs.approval_id }}
+          OPERATOR_OWNER_ID: ${{ secrets.PRODUCTION_STATEMENT_OPERATOR_OWNER_ID }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          printf '%s' "$OPERATOR_OWNER_ID" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          printf '%s' "$APPROVAL_ID" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$APPROVED_MANIFEST" | grep -Eq '^[0-9a-f]{64}$'
+          bundle="$RUNNER_TEMP/grace-document-reading-q-$GITHUB_SHA"
+          remote="/tmp/grace-document-reading-q-$GITHUB_SHA"
+          result="$RUNNER_TEMP/document-reading-summary.json"
+          raw="$RUNNER_TEMP/document-reading-stdout.private"
+          err="$RUNNER_TEMP/document-reading-stderr.private"
+          trap 'rm -f "$raw" "$err"' EXIT
+          "$bundle/grace-document-reading-eval" -mode=validate-public -bundle="$bundle" -authorized-source="$AUTHORIZED_SHA" </dev/null > "$result" 2>/dev/null || true
+          ssh -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=60 root@195.133.195.190 "mkdir '$remote'" 2>"$err"
+          scp -o BatchMode=yes -o ConnectTimeout=15 -r "$bundle/." "root@195.133.195.190:$remote/" 2>"$err"
+          status=0
+          ssh -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=60 root@195.133.195.190 "GRACE_STATEMENT_OPERATOR_OWNER_ID='$OPERATOR_OWNER_ID' sh '$remote/run.sh' '$remote' '$GITHUB_SHA' '$AUTHORIZED_SHA' '$APPROVED_MANIFEST' '$APPROVAL_ID'" 2>"$err" | head -c 65537 > "$raw" || status=$?
+          validated=0
+          "$bundle/grace-document-reading-eval" -mode=validate-public -bundle="$bundle" -authorized-source="$AUTHORIZED_SHA" < "$raw" > "$result" 2>/dev/null || validated=$?
+          cat "$result"
+          test "$status" -eq 0
+          test "$validated" -eq 0
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: document-reading-q-closed-result
+          path: ${{ runner.temp }}/document-reading-summary.json
+          if-no-files-found: warn
+      - name: Удалить временный CI SSH key
+        if: always()
+        run: rm -f "$HOME/.ssh/id_ed25519"

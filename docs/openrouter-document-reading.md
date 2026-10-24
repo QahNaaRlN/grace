@@ -126,8 +126,11 @@ networkless PDF helper; запросы к OpenRouter подменены fake tra
 
 ## Следующая проверка качества
 
-[Q1–Q3](specs/0056-openrouter-document-qualification.md) — draft: локальная
-подготовка восьми публичных документов и полного scorer через тот же adapter.
+[Q1–Q3](specs/0056-openrouter-document-qualification.md) приняты; offline-
+реализация восьми публичных документов и полного scorer подготовлена через
+тот же adapter, [implementation evidence](specs/0056-qualification-evidence.md).
+Приёмка/merge pending. `go run ./cmd/document-reading-eval -mode=check`
+показывает corpus/лимиты без ключей и сети. Candidate пока null, Q4_READY=false.
 Реальные вызовы Q4 требуют отдельного exact-source допуска после готового
 manifest и выбора concrete model/provider/тарифа. Предложенные≤8POST/6GET/$2.00
 не являются разрешением расходов; новых production group members пока нет.

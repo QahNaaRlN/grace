@@ -1,11 +1,11 @@
 # SPEC-0056 Q: проверка чтения документов через OpenRouter
 
-- Статус: **accepted**; Q1–Q3 **ACCEPTED**, implementation_status: **not_started**.
+- Статус: **accepted**; Q1–Q3 **ACCEPTED**, implementation_status: **implemented_pending_owner_acceptance**.
 - Дата: 2026-10-25, Asia/Yekaterinburg. Исполнитель: Codex.
 - Основание: поручение владельца «Идем дальше» после принятия реализации G1–G4.
 - База: PR122, main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`.
 - Родитель: [принятый SPEC-0056 G1–G4](0056-openrouter-document-reading.md).
-- Q4 **NOT_AUTHORIZED**. Контракт принят до нового кода; реализация начинается после receipt.
+- Q4 **NOT_AUTHORIZED**. Контракт принят до нового кода; offline-реализация в этом же PR, owner acceptance pending.
 
 ## Цель и граница решения
 
@@ -14,9 +14,9 @@ endpoint OpenRouter наши документы через уже реализо
 сохраняя поля, строки и известную стоимость? Fake-контроли G1–G4 проверили
 протокол; они не доказывают качество настоящей модели.
 
-Предлагается один пакет Q1–Q3: подготовить воспроизводимый набор, runner,
+Принятый пакет Q1–Q3: подготовить воспроизводимый набор, runner,
 полный scorer, replay и операционные исходники, проверить их только локально.
-Принятие Q1–Q3 разрешит создание перечисленных ниже файлов и необходимых
+Принятие Q1–Q3 разрешило создание перечисленных ниже файлов и необходимых
 общих компонентов в том же PR. Дополнительная спецификация на каждый файл
 не нужна. До принятия production-код по этому дополнению не изменяется.
 
@@ -193,9 +193,10 @@ replay использует публичные fake fixtures; новый private
 
 ## Следующее решение владельца
 
-Сейчас предлагается принять **Q1–Q3** и разрешить всю описанную offline-
-подготовку в одном пакете. Q4, paid/metadata calls, чтение/настройка secrets,
-SSH/VPS/production SQL, merge и deploy этим решением не разрешаются.
+**Q1–Q3 приняты владельцем**; описанная offline-реализация подготовлена в том
+же PR. [AC/evidence](0056-qualification-evidence.md), implementation acceptance
+пока PENDING. Q4, paid/metadata calls, чтение/настройка secrets,
+SSH/VPS/production SQL, merge и deploy этим решением не разрешены.
 
 После готового diff/evidence отдельно представляются приёмка/merge и затем
 Q4: exact source/ref/manifest, concrete endpoint, rates/image bounds, восемь

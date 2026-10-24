@@ -5,7 +5,9 @@
 рендера фото/PDF и owner visual review принята и интегрирована PR122/main10a0059;
 main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
 [Implementation evidence](specs/0056-evidence.md). Следующий
-[Q1–Q3 offline-пакет](specs/0056-openrouter-document-qualification.md) — draft/not_started;
+[Q1–Q3 offline-пакет](specs/0056-openrouter-document-qualification.md) принят,
+реализация подготовлена / owner acceptance pending;
+[AC/evidence](specs/0056-qualification-evidence.md);
 Q4/≤8POST/6GET/$2.00 предложен, не разрешён.
 Реальное качество модели и production activation остаются UNVERIFIED.
 
