@@ -2,9 +2,9 @@
 
 - Принятая спецификация: [S1.22 V1–V3](0055-s122-direct-page-reading.md).
 - Owner receipt: «Принять V1–V3 и реализовать offline», proposal PR120/head `fa18c519bf579776696b0bdf30c2ba0a62275416`; acceptance commit `e54b154370ad54a7387ec3caf47ae21426948362` создан до кода.
-- Статус: **implemented offline / pending owner acceptance**, тот же PR120.
+- Статус: **accepted implementation / integrated PR120**, main `e9d02b2`.
 - Реальная модель, OpenAI account/key/region/privacy/funding: **UNVERIFIED**.
-- V4/live provider calls, key read/setup, SSH/SQL/deploy/activation/merge: **NOT_AUTHORIZED**. Здесь live calls0; реальные ключи/config не читались и не создавались. Ни research allowance для реального запуска, ни живой marker не создавались.
+- V4/live provider calls, key read/setup, SSH/SQL/deploy/activation: **NOT_AUTHORIZED**; merge PR120 отдельно принят и выполнен. Здесь live calls0; реальные ключи/config не читались и не создавались. Ни research allowance для реального запуска, ни живой marker не создавались.
 
 ## Реализованный путь
 
@@ -76,3 +76,14 @@ Run требует execute flag, sourceSHA из build metadata, exact authorized
 Input bound: UTF8 bytes prompt/text/schema+framing2048 +3001 tokens/page (high≤2500 patches×1.2, округление вверх); максимум30000 input/16000 output. До отдельного V4 ceiling предложен14/55 USD за1M input/output,≤1.30/request и10.40/campaign. `calculatedProviderCostMicros` явно **upper bound по price ceiling**, не invoice и не production settlement. Allowance требует подтверждённых funding/access/endpoint/region/privacy/pricing/no-extra-fees, но никакие такие подтверждения сейчас не заявляются.
 
 Следующее решение — приёмка offline реализации/отдельное merge разрешение. V4 пока не запрашивается: account/model access, funding, privacy/region/актуальные rates и exact-source CI readiness ещё должны быть оформлены отдельным конкретным решением. Успех fake controls не означает, что исходная цель надёжного AI-импорта достигнута.
+
+## Приёмка и post-merge
+
+Owner: «Принять реализацию и слить №120», reviewed source
+`52842439df5a3eb58df52b38690098a792f12602`. Merge
+`e9d02b2bacad7fdcef919d28b44dd4817b721aae`, равный source tree
+`4edda4974597227b7c0410182cc648f2cc8418a6`. Source CI40117756468/all5,
+main CI40118781180/all5 и Delivery40119558599/all4 PASS. Main offline reader
+check PASS, manifest `2df9b50fa82c6e1d8c598ca21728eebc238b670593e29034fbc4921ca6e60f0f`.
+Реальные вызовы/ключи/deploy0. Новый OpenRouter product-контракт —
+[SPEC-0056](0056-openrouter-document-reading.md), draft, реализация не начата.
