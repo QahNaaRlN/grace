@@ -816,7 +816,8 @@ H2 и общая цель надёжного AI PDF-импорта остают�
 
 ## Принятое A1–A3: отдельно подготовить CI-доступ к root
 
-**Статус: accepted A1–A3 offline / implementation prepared for review / B4 NOT_AUTHORIZED.**
+**Статус: A1–A3 accepted implementation / integrated PR117; B4 VERIFIED / CONSUMED; отчёт B4 prepared for review; новый P4 NOT_AUTHORIZED.**
+Исторические offline-состояния ниже предшествуют отдельному решению B4; актуальный receipt/result в конце раздела.
 Отчёт P4 принят владельцем и интегрирован PR116, merge
 `ee7c0ec6a032d614c45cb7ff70e599e2f3c4d8f8`, accepted head
 `e432cb996cdfef9ce366a76150098655d020319f`; source CI40036955287/all5 PASS.
@@ -926,7 +927,7 @@ not_started на момент этого receipt. Принятие зафикс�
 до кода; draft CI proposal ещё выполнялся и не выдаётся за implementation evidence.
 
 
-### Offline-реализация A1–A3: приёмка ожидается
+### Offline-реализация A1–A3: исторический отчёт до приёмки
 
 Основание — прямое принятие proposal3179299, receipt1921406 до первого кода.
 Созданы helper `scripts/research/setup-statement-row-ssh.py`, auth-only workflow
@@ -989,3 +990,80 @@ Local `make test` PASS (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev),
 рабочий production SSH key не генерировался, production secrets/VPS/SQL/provider/model
 metadata не читались/не менялись для этой реализации. H2 UNVERIFIED, прежний
 P4 grant CONSUMED и его calls/cost/settlement N/A сохраняются.
+
+
+### Единственный B4: результат и границы evidence
+
+Владелец отдельно принял реализацию A1–A3 и merge PR117 на source
+`41ad69f781eb5ab5ca9d9e984412af57e65bc4d8`. Merge
+`2059b49d93aac93a9f982defa8e22908e0d8513f` имеет то же дерево;
+source CI40104638874/all5, actual-main CI40105683044/all5 и
+Delivery40106473989/all4 PASS. Receipt принятия/интеграции опубликован в PR117.
+
+После этого владелец прямо ответил **«Разрешаю один B4»** для exact source выше,
+ref `codex/statement-s121-row-access-source`, manifest SHA256
+`a608fbd9123024758facae7f1e4dd231131530e9da600bc6f3c2a67f5e528310`.
+Receipt в [PR117](https://github.com/QahNaaRlN/grace/pull/117) опубликован до
+bootstrap; разрешены только один bootstrap и после CONFIGURED один auth-only
+dispatch/CI SSH, без pilot/provider/model-metadata/SQL/budget/deploy.
+Любой отказ расходует допуск; повторов нет. Поздний auth-отказ не открывал cleanup.
+
+[Bootstrap result](../research/statement-quality/s121-access-bootstrap.json):
+**CONFIGURED**, installSSH=1, rollbackSSH=0, secretState=created, error=null.
+Public fingerprint `SHA256:bHy1CCKjIY+zNoIZ8mzozVxvlrIFCb3mTMo2AQXwNco`.
+Новая tagged restrict строка установлена в `/root/.ssh/authorized_keys`,
+создан только `PRODUCTION_STATEMENT_ROW_SSH_KEY` environment production.
+Existing secret values не читались. Helper exit0, штатный finally удалил локальную
+копию private key; в evidence только finite result/fingerprint. Public key и
+GitHub secret сохраняются по назначению, дополнительных cleanup SSH нет.
+
+[Run40107076865](https://github.com/QahNaaRlN/grace/actions/runs/40107076865),
+attempt1, event workflow_dispatch, exact source/ref: completed/success.
+Единственный job row-access и все шаги success, включая source CI guard,
+`Verify root access once` и `Remove ephemeral SSH key`. Ровно один CI SSH
+с fixed command `test "$(id -u)" -eq 0`; raw SSH output не скачивался.
+[Closed result](../research/statement-quality/s121-access-result.json):
+**VERIFIED**, sshVerified=true, activationAuthorized=false, pilotAuthorized=false;
+SHA256 `e79f307897a5866a0c08529f976521cedacae2d396e5c75f7066474cb36adcf0`.
+
+| AC B4 | Исполняемое evidence |
+| --- | --- |
+| Единственный exact-source bootstrap | Штатный helper source41ad69f/approved manifest/explicit execute; local one-shot marker, CONFIGURED/installSSH1/rollbackSSH0; receipt до выполнения |
+| Один auth-only dispatch | Run40107076865/attempt1/source41ad69f; frozen ref; authorized_source=source, execute_approved_access=true; все шаги success |
+| Source/manifest связь | CI manifest побайтно равен approved manifest; каждый operational SHA256 равен `git show 41ad69f:<file>` |
+| Закрытый результат | Строгий JSON: duplicate keys/oversize/types/точный набор полей/source/status/flags; result SHA256 выше |
+| Privacy/cleanup | Только новые finite result/public manifest; private keys/raw logs/old VPS reports не скачивались; local finally exit0/runner cleanup success |
+| Граница результата | Проверена CI root authentication; H2 и SFTP/staging/wrapper UNVERIFIED, новый P4/activation=false |
+
+[Execution evidence](../research/statement-quality/s121-access-execution.json)
+содержит run/jobs/steps/artifact IDs, declared archive digests и hashes сохранённых
+трёх JSON. Archive digests взяты из metadata GitHub; локальные ZIP hashes
+не сравнивались. JSON manifest включает executionAuthorized=false как безопасный
+формат check, сам по себе не является live разрешением; разрешение — receipt владельца.
+
+Локальная проверка сохранённых hashes без SSH/model calls:
+
+```sh
+python3 - <<'PY'
+import hashlib, json
+from pathlib import Path
+base = Path('docs/research/statement-quality')
+e = json.loads((base / 's121-access-execution.json').read_text())
+for name, digest in e['filesSHA256'].items():
+    assert hashlib.sha256((base / name).read_bytes()).hexdigest() == digest
+r = json.loads((base / 's121-access-result.json').read_text())
+assert r['source'] == e['source'] and r['status'] == 'VERIFIED'
+assert r['sshVerified'] is True
+assert r['pilotAuthorized'] is False and r['activationAuthorized'] is False
+assert e['run']['attempt'] == 1 and e['run']['conclusion'] == 'success'
+PY
+```
+
+Проверки отчёта: hashes/source/flags/all-steps/link checks PASS;
+`make test` PASS (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev),
+`git diff --check` PASS. Exact-head CI отчёта фиксируется в PR после commit.
+
+**B4 VERIFIED / допуск CONSUMED.** Этот отчёт подготовлен для приёмки, не принят
+владельцем автоматически. Новый P4 требует нового exact-source допуска;
+предыдущий P4 INCONCLUSIVE/calls-cost-settlement N/A не пересчитан.
+H2 UNVERIFIED, надёжный AI-импорт и owner functional acceptance не доказаны.

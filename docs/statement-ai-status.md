@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после принятия отчёта P4/PR116 и принятия A1–A3 offline, 2026-10-24 Asia/Yekaterinburg.
+Обновлено после интеграции A1–A3/PR117 и единственного B4, 2026-10-24 Asia/Yekaterinburg. Отчёт B4 подготовлен для приёмки.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116/main ee7c0ec; exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS |
+| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116 и A1–A3/PR117/main2059b49; exact-main CI40105683044/all5 и Delivery40106473989/all4 PASS |
 | S1.19 | Единственный pilot run39983522098:6/6 completed, clocks `[0,4,4,0,0,4]`, итог **REJECT**, без принятого candidate |
 | R4 | Единственный run40002091161/attempt1, source1a6b742, **VERIFIED**, replay6/6, все120 checks/3 pairs; разрешение **CONSUMED** |
 | Точная причина REJECT | Первая пара, candidate ordinal2, вторая строка: `record_description` и `row_issues` ухудшились с base PASS до candidate FAIL; `non_clock_regression` |
@@ -14,7 +14,7 @@
 | Accounting S1.19 | Сохранённые bills `[3032,3117,1437,2999,1446,1449]`, actual13480 USD micros ($0.01348), known/settled; без fresh SQL/fees/allowance proof |
 | Дополнительные действия R4 | Provider/metadata/SQL calls0, persistentWritesRequested0, activationAuthorized=false; новые model calls/deploy/flags/financial writes не выполнялись |
 | S1.21 | D1–D3/P1–P3/root fix приняты и интегрированы. Correct fake controls19/19,20/20,23/23; единственный P4 **INCONCLUSIVE**, H2 UNVERIFIED |
-| Разрешения | E6/Q6/S1.19/R4/P4 **CONSUMED**. P4/run40035544723/attempt1: SSH public-key refusal, report unavailable; calls/cost/settlement N/A. Повтор/credential repair/activation не разрешён |
+| Разрешения | E6/Q6/S1.19/R4/P4 **CONSUMED**. P4/run40035544723/attempt1: SSH public-key refusal, report unavailable; calls/cost/settlement N/A. B4 отдельно разрешён и завершён VERIFIED/CONSUMED; новый P4/activation не разрешён |
 
 R1–R3 приняты владельцем и интегрированы PR110 до R4. Exact source
 `1a6b74201db92ba37be750411ff7883d8216b602`, ref `codex/statement-s120-reader-source`,
@@ -62,12 +62,21 @@ calls/cost/settlement=null (N/A). Качество модели не измер�
 в том же S1.21 пакете. Допуск **CONSUMED**, повторов/дополнительного SSH нет.
 Отчёт отдельно принят владельцем и интегрирован PR116/main ee7c0ec;
 exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS, без deploy.
-В том же S1.21 принят **A1–A3 offline / implementation prepared for review**: offline source
-helper/dedicated key/auth-only workflow и одна secret reference нового pilot.
-Общий deploy key сохраняется. Прямое принятие владельца зафиксировано receipt1921406 до кода. Helper/auth workflow
-и fake controls подготовлены; рабочие ключи не создавались, live B4 не выполнялся.
-Actual bootstrap/auth-only B4 и новый paid P4 требуют отдельных exact-source
-допусков; принятие A1–A3 разрешает только offline source и fake tests.
+В том же S1.21 A1–A3 приняты и интегрированы PR117/main2059b49,
+source CI40104638874/all5, main CI40105683044/all5 и Delivery40106473989/all4 PASS.
+Владелец отдельно разрешил **один B4** на source41ad69f, receipt опубликован
+в PR117 до bootstrap. Bootstrap CONFIGURED: новый dedicated key/secret,
+installSSH1/rollbackSSH0. [Run40107076865](https://github.com/QahNaaRlN/grace/actions/runs/40107076865),
+attempt1: **VERIFIED**, один auth-only CI root SSH; все шаги success, включая cleanup.
+[Closed result](research/statement-quality/s121-access-result.json),
+[manifest](research/statement-quality/s121-access-manifest.json) и
+[run/hash evidence](research/statement-quality/s121-access-execution.json) проверены.
+CI manifest побайтно совпал с approved; root key/secret сохраняются по назначению.
+Допуск B4 **CONSUMED**, отчёт подготовлен для отдельной приёмки. Проверена
+аутентификация, SFTP/staging/wrapper и H2 остаются UNVERIFIED.
+Новых provider/model-metadata/SQL/budget calls или deploy не было.
+Следующий возможный шаг — новый exact-source допуск P4 после приёмки отчёта;
+он пока NOT_AUTHORIZED. Прежний P4 остаётся INCONCLUSIVE, accounting N/A.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
 работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
 реальной модели. После любого результата — остановка, без автоматического повтора.

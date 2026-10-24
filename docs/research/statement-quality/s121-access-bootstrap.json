@@ -1,0 +1,1 @@
+{"version":"statement.row-access.bootstrap.s121.v1","source":"41ad69f781eb5ab5ca9d9e984412af57e65bc4d8","status":"CONFIGURED","error":null,"activationAuthorized":false,"pilotAuthorized":false,"fingerprint":"SHA256:bHy1CCKjIY+zNoIZ8mzozVxvlrIFCb3mTMo2AQXwNco","installSSH":1,"rollbackSSH":0,"rootRollback":null,"secretState":"created","secretRollback":null}
