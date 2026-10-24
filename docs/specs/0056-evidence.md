@@ -11,7 +11,8 @@ Implementation acceptance владельцем и merge: **PENDING**.
 5/5 PASS; [Delivery40124951783](https://github.com/QahNaaRlN/grace/actions/runs/40124951783)
 4/4 PASS. Delivery не является production deploy.
 
-Implementation commit: `f3476c759aba09e5dd04af9061cf5be8432e8354`.
+Implementation commit: `32b0ae33ff53ede5a5fd551a68e9802ca9e885b1`
+(основная реализация `f3476c759aba09e5dd04af9061cf5be8432e8354` и review fix).
 Ветка/worktree: `codex/openrouter-document-reading-implementation` /
 `grace-worktrees/openrouter-document-reading-implementation`.
 Документационные уточнения после этого commit не меняют проверенный контракт;
@@ -58,6 +59,9 @@ SSH/SQL/deploy, включения flags и изменения реальног�
 Последние предметные повторы: `/tmp/grace-0056-document-final.log`,
 `/tmp/grace-0056-bank-final.log`, `/tmp/grace-0056-go-final.log`,
 `/tmp/grace-0056-vet-final.log`, `/tmp/grace-0056-deployment-source.log`.
+После review повторён `/tmp/grace-0056-document-review-final.log`: отсутствие
+private storage даёт безопасный503/0POST; page error содержит private/no-store.
+Подпись image batch в истории исправлена на «Фото-выписка».
 Это временные локальные evidence; воспроизводимые commands/tests находятся в repo.
 
 ## UI evidence
