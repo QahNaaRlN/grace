@@ -17,6 +17,7 @@ services:
     environment:
       GRACE_AI_ENABLED: ${GRACE_AI_ENABLED:-false}
       OPENROUTER_API_KEY_FILE: /run/secrets/openrouter_api_key
+      GRACE_AI_MODEL_GROUPS: ${GRACE_AI_MODEL_GROUPS:-}
       GRACE_AI_ANALYSIS_POLICY: ${GRACE_AI_ANALYSIS_POLICY:-}
       GRACE_AI_RECEIPT_POLICY: ${GRACE_AI_RECEIPT_POLICY:-}
       GRACE_AI_PHOTO_DIR: /var/lib/grace/temporary-receipt-photos

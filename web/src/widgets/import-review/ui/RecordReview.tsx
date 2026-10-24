@@ -45,7 +45,9 @@ export function RecordReview({
   onOpen: (id: string) => void
   disabled: boolean
 }) {
-  const selectionLimit = batch.format === 'bank_statement_pdf' ? 100 : MAX_FILTER_SELECTION
+  const selectionLimit = ['bank_statement_pdf', 'bank_statement_image'].includes(batch.format ?? '')
+    ? 100
+    : MAX_FILTER_SELECTION
   const records = useQuery(importBatchQueries.records(batchId, view))
   const counts = batch.counts ?? {}
   const total = batch.total ?? 0

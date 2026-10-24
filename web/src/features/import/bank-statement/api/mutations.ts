@@ -36,11 +36,16 @@ export function useStatementMutations(statementId: string) {
       const form = new FormData()
       form.append('file', file)
       form.append('accountId', accountId)
-      const { data, error } = await apiClient.POST('/api/imports/statements/pdf', {
-        body: { file: '', accountId },
-        bodySerializer: () => form,
-        params: { header: { 'Idempotency-Key': key } },
-      })
+      const { data, error } = await apiClient.POST(
+        file.type.startsWith('image/')
+          ? '/api/imports/statements/images'
+          : '/api/imports/statements/pdf',
+        {
+          body: { file: '', accountId },
+          bodySerializer: () => form,
+          params: { header: { 'Idempotency-Key': key } },
+        },
+      )
       if (!data) throw new Error(error?.message ?? 'Не удалось сохранить PDF.')
       return data.statement
     },

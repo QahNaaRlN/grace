@@ -11,6 +11,8 @@ import {
 } from '@/entities/bank-statement'
 import {
   StatementManualDraft,
+  StatementVisualDraft,
+  StatementPages,
   StatementAI,
   StatementOwnerReview,
   StatementUpload,
@@ -40,10 +42,10 @@ export function BankStatementImport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>PDF-выписка</CardTitle>
+        <CardTitle>Выписка: PDF или фото</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <Disclosure title="Загрузить текстовый PDF" defaultOpen={!id}>
+        <Disclosure title="Загрузить PDF или фото" defaultOpen={!id}>
           <StatementUpload
             accounts={(accounts.data?.items ?? []).filter(
               (a) => a.type === 'debit' && a.currency === 'RUB',
@@ -74,11 +76,11 @@ export function BankStatementImport() {
             {!s.deletedAt && (
               <Button asChild variant="outline">
                 <a href={`${env.VITE_API_BASE_URL}/api/imports/statements/${s.id}/original`}>
-                  Скачать исходный PDF
+                  Скачать исходник
                 </a>
               </Button>
             )}
-            {s.layout && (
+            {s.layout && s.layout.spans.length > 0 && (
               <Disclosure title="Текст исходника">
                 <SourceText layout={s.layout} />
               </Disclosure>
@@ -101,7 +103,14 @@ export function BankStatementImport() {
                   .join('; ')}
               </p>
             )}
-            <StatementManualDraft key={`manual:${s.id}`} statement={s} />
+            {s.readingMode === 'image_review' ? (
+              <StatementVisualDraft key={`visual:${s.id}`} statement={s} />
+            ) : (
+              <>
+                <StatementManualDraft key={`manual:${s.id}`} statement={s} />
+                {(s.pages?.length ?? 0) > 0 && <StatementPages id={s.id} count={s.pageCount} />}
+              </>
+            )}
             {s.batchId && (
               <Button
                 onClick={() => {

@@ -20,7 +20,9 @@ func validBox(b Box, p Page) bool {
 
 // DecodeLayout consumes Poppler bbox-layout XML with a hard byte cap. XML
 // directives are data; encoding/xml never fetches a DTD or expands entities.
-func DecodeLayout(reader io.Reader) (Document, error) {
+func DecodeLayout(reader io.Reader) (Document, error)       { return decodeLayout(reader, false) }
+func DecodeVisualLayout(reader io.Reader) (Document, error) { return decodeLayout(reader, true) }
+func decodeLayout(reader io.Reader, allowEmpty bool) (Document, error) {
 	d := Document{Extractor: ExtractorVersion, Pages: []Page{}, Spans: []Span{}}
 	limited := &io.LimitedReader{R: reader, N: MaxXMLBytes + 1}
 	dec := xml.NewDecoder(limited)
@@ -107,16 +109,18 @@ func DecodeLayout(reader io.Reader) (Document, error) {
 	if limited.N <= 0 {
 		return Document{}, errors.New("pdf_text_limit")
 	}
-	if page != nil || len(d.Pages) == 0 || len(d.Spans) == 0 {
+	if page != nil || len(d.Pages) == 0 || (!allowEmpty && len(d.Spans) == 0) {
 		return Document{}, errors.New("pdf_text_required")
 	}
-	if err := d.Validate(); err != nil {
+	if err := d.validate(!allowEmpty); err != nil {
 		return Document{}, err
 	}
 	return d, nil
 }
-func (d Document) Validate() error {
-	if d.Extractor != ExtractorVersion || len(d.Pages) < 1 || len(d.Pages) > MaxPages || len(d.Spans) < 1 || len(d.Spans) > MaxSpans {
+func (d Document) Validate() error             { return d.validate(true) }
+func (d Document) ValidateVisualLayout() error { return d.validate(false) }
+func (d Document) validate(requireText bool) error {
+	if d.Extractor != ExtractorVersion || len(d.Pages) < 1 || len(d.Pages) > MaxPages || (requireText && len(d.Spans) < 1) || len(d.Spans) > MaxSpans {
 		return errors.New("invalid_pdf_layout")
 	}
 	for i, p := range d.Pages {
@@ -138,7 +142,7 @@ func (d Document) Validate() error {
 		total += len(s.Text) + 1
 	}
 	for _, page := range d.Pages {
-		if pageWords[page.Number] == 0 {
+		if requireText && pageWords[page.Number] == 0 {
 			return errors.New("pdf_text_required")
 		}
 	}

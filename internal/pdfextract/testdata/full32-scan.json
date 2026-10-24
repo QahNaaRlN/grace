@@ -1,0 +1,11 @@
+{
+  "source": "public synthetic S1.22 full32",
+  "pages": 3,
+  "rows": 32,
+  "inputSHA256": [
+    "23e89619872e9cc6ee6a339994db758b915ab12a5ff9407951b6e34e666c5144",
+    "3e70281a4a631f14d226a0205e4749a4b7ed629ce5d92051b66da26bfab10e80",
+    "edafb16acc53c71ccd304eeefd91bf6004d13e2c380508c8227862e7cfa34078"
+  ],
+  "pdfSHA256": "fd7f628dbda2a4609918e8c3d57fd4be9126c64b1ac1ae4ef44454dc83a319fa"
+}

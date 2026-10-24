@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено 2026-10-24 Asia/Yekaterinburg. S1.22 V1–V3 принят и интегрирован
+Обновлено 2026-10-25 Asia/Yekaterinburg. S1.22 V1–V3 принят и интегрирован
 PR120/main `e9d02b2`; main CI40118781180/all5 и Delivery40119558599/all4 PASS.
 Реальное качество чтения ещё UNVERIFIED.
 
 **Текущая работа:** по прямому поручению владельца подготовлена
-[SPEC-0056](specs/0056-openrouter-document-reading.md), **accepted G1–G4 / implementation not_started**:
+[SPEC-0056](specs/0056-openrouter-document-reading.md), **accepted G1–G4 / implementation in_progress**:
 всё LLM-взаимодействие через OpenRouter, группы моделей по capabilities,
 пользовательское чтение фото/PDF и проверка изображения перед импортом.
 Владелец принял G1–G4 и разрешил интеграцию контракта и локальную реализацию. Прямой OpenAI V4 не запускается;

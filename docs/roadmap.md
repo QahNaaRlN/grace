@@ -1,5 +1,10 @@
 # Roadmap Grace
 
+Принят [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md), контракт
+интегрирован PR121. Локальная реализация единого OpenRouter, capability groups,
+рендера фото/PDF и owner visual review выполняется отдельным пакетом.
+Реальное качество модели и production activation остаются UNVERIFIED.
+
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).
 S1.19 завершён одним pilot: clock gain0/4→4/4 во всех3 парах, итог REJECT;
 разрешение CONSUMED, новый подход требует отдельного решения.
@@ -30,7 +35,7 @@ coverage и редактирование текущих строк. Реальн
 
 Исторический S1.2 `7b2deea`: columns19/19 и cards20/20, один separately approved
 smoke; [D1–D5](specs/0055-s12-evidence.md). Прежние model FAIL сохранены в
-[истории](specs/0055-activation-evidence.md). SPEC-0056 model registry остаётся draft;
+[истории](specs/0055-activation-evidence.md). Исторический model registry draft заменён accepted SPEC-0056 G1–G4;
 SPEC-0019 draft, номер0025 не использован. Унаследованные ShellCheck замечания
 сохранены в evidence SPEC-0050.
 
@@ -300,11 +305,10 @@ Gemini 3.1 Flash Lite / Google EU и Mercury 3 / Inception; обе пары
 точность ролей/строк, полнота, стоимость успешного документа и задержка.
 Production policy пока прежняя; новые платные вызовы этим поручением не запущены.
 
-2026-10-19 согласовано направление автоматического выбора модели для выписки.
-[SPEC-0056](specs/0056-statement-model-selection.md) — **accepted D1–D4**, реализация
-**not_started**: quality/privacy gates, выбор стоимости полного плана до
-consent, закреплённый маршрут без скрытого fallback. Сверка расхода
-SPEC-0055 завершена; исторические FAIL сохраняются. Statement AI включён для owner testing по отдельному accepted S1.2. Конкретный реестр квалифицированных моделей SPEC-0056 ещё не утверждён.
+Исторический draft выбора модели от 2026-10-19 сохранён для истории;
+действующий контракт — [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md),
+принят 2026-10-24 и интегрирован PR121. Он разрешает локальную реализацию;
+новая квалификация реальных моделей и production включение отдельно.
 2026-10-19 владелец принял [проработку устойчивости](research/statement-quality/README.md)
 («Принимаю», PR #68):
 32 offline probes выявили разрыв record core при добавлении нефинансового

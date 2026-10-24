@@ -51,19 +51,33 @@ export function StatementAI({ statement }: { statement: Statement }) {
             {(p.plan.maximumMicros / 1000000).toFixed(4)} из общего бюджета.
           </p>
           <p className="text-sm">
-            Передаётся только показанный текст и расположение фрагментов. PDF и изображения остаются
-            в Grace. Суммы и даты могут быть личными даже после скрытия имён и номеров.
+            {p.plan.document
+              ? 'Передаются изображения всех перечисленных страниц и доступный текст. Изображения могут содержать имена и номера счетов. Проверьте источник перед согласием.'
+              : 'Передаётся только показанный текст и расположение фрагментов. PDF и изображения остаются в Grace. Суммы и даты могут быть личными даже после скрытия имён и номеров.'}
           </p>
+          {p.plan.document && (
+            <p className="text-sm">
+              Передаваемые страницы: {p.plan.document.pages.map((page) => page.number).join(', ')}.
+              Выбрана модель из группы чтения документов.
+            </p>
+          )}
           <Disclosure title="Проверить передаваемый текст">
             <div className="max-h-80 overflow-auto rounded border p-3 text-xs">
-              {p.plan.chunks.map((c) => (
-                <section key={c.index} className="mb-3">
-                  <p>Часть {c.index}</p>
-                  <p className="whitespace-pre-wrap break-words">
-                    {[...c.context, ...c.spans].map((span) => span.text).join(' ')}
-                  </p>
-                </section>
-              ))}
+              {p.plan.document ? (
+                <p className="whitespace-pre-wrap break-words">
+                  {statement.layout?.spans.map((span) => span.text).join(' ') ||
+                    'Текстовый слой отсутствует; передаются показанные изображения страниц.'}
+                </p>
+              ) : (
+                p.plan.chunks.map((c) => (
+                  <section key={c.index} className="mb-3">
+                    <p>Часть {c.index}</p>
+                    <p className="whitespace-pre-wrap break-words">
+                      {[...c.context, ...c.spans].map((span) => span.text).join(' ')}
+                    </p>
+                  </section>
+                ))
+              )}
             </div>
           </Disclosure>
           <label className="flex min-h-11 items-center gap-3">

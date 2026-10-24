@@ -29,6 +29,7 @@ type Config struct {
 	TypeSafeAPIKey          string
 	AIEnabled               bool
 	OpenRouterAPIKey        string
+	AIModelGroups           string
 	AIAnalysisPolicy        string
 	AIReceiptPolicy         string
 	AIPhotoDir              string
@@ -54,7 +55,7 @@ func Load() (Config, error) {
 		Port:                 valueOrDefault("APP_PORT", "8080"),
 		DatabaseURL:          os.Getenv("DATABASE_URL"),
 		CORSOrigins:          splitCSV(valueOrDefault("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")),
-		TypeSafeAPIKey:       strings.TrimSpace(os.Getenv("TYPESAFE_API_KEY")),
+		AIModelGroups:        os.Getenv("GRACE_AI_MODEL_GROUPS"),
 		AIEnabled:            os.Getenv("GRACE_AI_ENABLED") == "true",
 		OpenRouterAPIKey:     strings.TrimSpace(os.Getenv("OPENROUTER_API_KEY")),
 		AIAnalysisPolicy:     os.Getenv("GRACE_AI_ANALYSIS_POLICY"),

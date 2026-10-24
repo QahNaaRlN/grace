@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/platform/web"
@@ -14,6 +15,9 @@ import (
 
 func (h *Handler) statementRoutes(r chi.Router) {
 	r.Post("/statements/pdf", h.UploadStatement)
+	r.Post("/statements/images", h.UploadStatementImage)
+	r.Get("/statements/{statementId}/pages/{page}", h.StatementPage)
+	r.Post("/statements/{statementId}/visual-reviews", h.VisualReview)
 	r.Get("/statements/{statementId}", h.Statement)
 	r.Patch("/statements/{statementId}", h.EditStatement)
 	r.Post("/statements/{statementId}/manual-drafts", h.ManualStatementDraft)
@@ -22,6 +26,12 @@ func (h *Handler) statementRoutes(r chi.Router) {
 	r.Get("/batches/{batchId}/statement/reconciliation", h.StatementReconciliation)
 }
 func (h *Handler) UploadStatement(w http.ResponseWriter, r *http.Request) {
+	h.uploadStatementSource(w, r, false)
+}
+func (h *Handler) UploadStatementImage(w http.ResponseWriter, r *http.Request) {
+	h.uploadStatementSource(w, r, true)
+}
+func (h *Handler) uploadStatementSource(w http.ResponseWriter, r *http.Request, image bool) {
 	_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(35 * time.Second))
 	r.Body = http.MaxBytesReader(w, r.Body, 11<<20)
 	if e := r.ParseMultipartForm(1 << 20); e != nil {
@@ -46,8 +56,18 @@ func (h *Handler) UploadStatement(w http.ResponseWriter, r *http.Request) {
 		web.WriteError(w, 413, "pdf_size_limit", "PDF не должен превышать 10 MiB.")
 		return
 	}
-	s, created, e := h.repo.UploadStatement(r.Context(), raw, r.FormValue("accountId"), header.Filename, key(r))
-	result := StatementUploadResult{Statement: s, Document: StatementDocument{ID: s.DocumentID, FileName: s.FileName, SHA256: s.SHA256, SizeBytes: s.SizeBytes, ContentType: "application/pdf"}, BatchID: s.BatchID}
+	upload := h.repo.UploadStatement
+	if image {
+		upload = h.repo.UploadStatementImage
+	}
+	detected := http.DetectContentType(raw)
+	declared, _, _ := mime.ParseMediaType(header.Header.Get("Content-Type"))
+	if declared != "" && declared != "application/octet-stream" && declared != detected {
+		web.WriteError(w, 415, "invalid_request", "Тип файла не соответствует содержимому.")
+		return
+	}
+	s, created, e := upload(r.Context(), raw, r.FormValue("accountId"), header.Filename, key(r))
+	result := StatementUploadResult{Statement: s, Document: StatementDocument{ID: s.DocumentID, FileName: s.FileName, SHA256: s.SHA256, SizeBytes: s.SizeBytes, ContentType: detected}, BatchID: s.BatchID}
 	if e == nil && created {
 		web.WriteJSON(w, 201, result)
 		return
@@ -100,7 +120,7 @@ func (h *Handler) StatementOriginal(w http.ResponseWriter, r *http.Request) {
 		respond(w, nil, e)
 		return
 	}
-	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Type", http.DetectContentType(raw))
 	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": name}))
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -155,4 +175,37 @@ func (h *Handler) StatementReconciliation(w http.ResponseWriter, r *http.Request
 		return
 	}
 	respond(w, s.Review.Reconciliation, nil)
+}
+
+func (h *Handler) StatementPage(w http.ResponseWriter, r *http.Request) {
+	id, ok := path(w, r, "statementId")
+	if !ok {
+		return
+	}
+	n, e := strconv.Atoi(chi.URLParam(r, "page"))
+	if e != nil {
+		respond(w, nil, fault("not_found", 404))
+		return
+	}
+	page, e := h.repo.StatementPage(r.Context(), id, n)
+	if e != nil {
+		respond(w, nil, e)
+		return
+	}
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Type", page.ContentType)
+	_, _ = w.Write(page.Data)
+}
+func (h *Handler) VisualReview(w http.ResponseWriter, r *http.Request) {
+	id, ok := path(w, r, "statementId")
+	if !ok {
+		return
+	}
+	var in VisualReviewInput
+	if !decode(w, r, &in) {
+		return
+	}
+	out, e := h.repo.ReviewVisual(r.Context(), id, key(r), in)
+	respond(w, out, e)
 }

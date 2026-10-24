@@ -169,13 +169,16 @@ func directTypedKeys(value any, typ reflect.Type) error {
 				return e
 			}
 		}
-	case reflect.Slice:
+	case reflect.Slice, reflect.Array:
 		if value == nil {
 			return nil
 		}
 		items, ok := value.([]any)
 		if !ok {
 			return errors.New("array_required")
+		}
+		if typ.Kind() == reflect.Array && len(items) != typ.Len() {
+			return errors.New("array_length")
 		}
 		for _, v := range items {
 			if e := directTypedKeys(v, typ.Elem()); e != nil {
@@ -234,7 +237,8 @@ func directShape(raw json.RawMessage, keys []string) (map[string]json.RawMessage
 	}
 	return m, nil
 }
-func DecodeDirectReading(raw []byte) (DirectReading, error) {
+func DecodeDirectReading(raw []byte) (DirectReading, error) { return decodeDirectReading(raw, 64) }
+func decodeDirectReading(raw []byte, maxRows int) (DirectReading, error) {
 	var out DirectReading
 	if e := DirectJSON(raw, &out); e != nil {
 		return out, e
@@ -248,7 +252,7 @@ func DecodeDirectReading(raw []byte) (DirectReading, error) {
 		return out, e
 	}
 	var rows []json.RawMessage
-	if json.Unmarshal(top["rows"], &rows) != nil || len(rows) < 1 || len(rows) > 64 {
+	if json.Unmarshal(top["rows"], &rows) != nil || len(rows) < 1 || len(rows) > maxRows {
 		return out, errors.New("direct_rows_limit")
 	}
 	fields := []map[string]json.RawMessage{header}
@@ -386,12 +390,15 @@ func directQuote(d statementdata.Document, q PageQuote, lo, hi int) (directRange
 // BindDirectReading never sees a golden. Only literal, uniquely scoped evidence
 // can select source IDs. Unclaimed spans remain unclaimed; no service repair.
 func BindDirectReading(d statementdata.Document, reading DirectReading) (DirectBinding, error) {
+	return bindDirectReading(d, reading, 64)
+}
+func bindDirectReading(d statementdata.Document, reading DirectReading, maxRows int) (DirectBinding, error) {
 	out := DirectBinding{Passed: true, Checks: []DirectBindingCheck{}, Proposal: statementdata.Proposal{Rows: []statementdata.RowMapping{}, Header: statementdata.HeaderMapping{Labels: map[string]statementdata.Selection{}}, Service: []statementdata.ServiceMapping{}}}
 	if e := d.Validate(); e != nil {
 		return out, e
 	}
 	raw, _ := json.Marshal(reading)
-	if _, e := DecodeDirectReading(raw); e != nil {
+	if _, e := decodeDirectReading(raw, maxRows); e != nil {
 		return out, e
 	}
 	add := func(row int, key string, qs []PageQuote, e error) {

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 	"time"
@@ -17,16 +18,20 @@ import (
 )
 
 type Handler struct {
+	renderer  PDFRenderer
 	repo      *Repository
 	store     *PhotoStore
 	extractor Extractor
 }
 
 func NewHandler(p *pgxpool.Pool, store *PhotoStore, extractor Extractor) *Handler {
-	return &Handler{NewRepository(p), store, extractor}
+	return &Handler{repo: NewRepository(p), store: store, extractor: extractor}
 }
 func (h *Handler) Routes(r chi.Router) {
 	r.Post("/", h.Upload)
+	r.Post("/documents", h.UploadDocument)
+	r.Get("/{draftId}/pages/{page}", h.Page)
+	r.Post("/{draftId}/reading-previews", h.ReadingPreview)
 	r.Get("/{draftId}", h.Get)
 	r.Patch("/{draftId}", h.Edit)
 	r.Delete("/{draftId}", h.Cancel)
@@ -37,7 +42,7 @@ func (h *Handler) Routes(r chi.Router) {
 func draftError(w http.ResponseWriter, err error) {
 	code := "receipt_unavailable"
 	status := 422
-	for _, v := range []string{"not_found", "invalid_image", "image_busy", "invalid_request", "stale_revision", "draft_not_editable", "image_expired", "extraction_limit", "extraction_incomplete", "invalid_amount", "invalid_quantity", "invalid_date", "decision_required", "totals_mismatch", "candidate_review_required", "invalid_account", "invalid_existing_purchase", "stale_preview", "idempotency_conflict", "ai_disabled", "consent_required", "provider_unavailable", "provider_protocol", "provider_timeout", "price_unknown", "budget_exhausted", "ai_usage_requires_review", "ai_concurrency_limit"} {
+	for _, v := range []string{"document_limit", "extractor_unavailable", "no_eligible_model", "capability_unverified", "incomplete_reading", "not_found", "invalid_image", "image_busy", "invalid_request", "stale_revision", "draft_not_editable", "image_expired", "extraction_limit", "extraction_incomplete", "invalid_amount", "invalid_quantity", "invalid_date", "decision_required", "totals_mismatch", "candidate_review_required", "invalid_account", "invalid_existing_purchase", "stale_preview", "idempotency_conflict", "ai_disabled", "consent_required", "provider_unavailable", "provider_protocol", "provider_timeout", "price_unknown", "budget_exhausted", "ai_usage_requires_review", "ai_concurrency_limit"} {
 		if err.Error() == v || strings.Contains(err.Error(), ": "+v) {
 			code = v
 			break
@@ -49,12 +54,12 @@ func draftError(w http.ResponseWriter, err error) {
 	if code == "stale_revision" || code == "stale_preview" || code == "draft_not_editable" || code == "idempotency_conflict" {
 		status = 409
 	}
-	if code == "receipt_unavailable" || code == "ai_disabled" {
+	if code == "receipt_unavailable" || code == "ai_disabled" || code == "no_eligible_model" || code == "capability_unverified" {
 		status = 503
 	}
 	web.WriteError(w, status, code, "Чек не подтверждён. Проверь поля, совпадения и согласие; при изменении данных получи новый предварительный просмотр.")
 }
-func (h *Handler) enabled() bool { return h.store != nil && h.extractor != nil }
+func (h *Handler) enabled() bool { return h.store != nil }
 func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	if !h.enabled() {
 		draftError(w, errors.New("ai_disabled"))
@@ -70,7 +75,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		draftError(w, errors.New("invalid_image"))
 		return
 	}
-	f, _, err := r.FormFile("photo")
+	f, header, err := r.FormFile("photo")
 	if err != nil {
 		draftError(w, errors.New("invalid_image"))
 		return
@@ -78,6 +83,11 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	raw, err := io.ReadAll(io.LimitReader(f, MaxPhotoBytes+1))
 	if err != nil {
+		draftError(w, errors.New("invalid_image"))
+		return
+	}
+	declared, _, _ := mime.ParseMediaType(header.Header.Get("Content-Type"))
+	if declared != "" && declared != "application/octet-stream" && declared != http.DetectContentType(raw) {
 		draftError(w, errors.New("invalid_image"))
 		return
 	}
@@ -134,6 +144,10 @@ func (h *Handler) Extract(w http.ResponseWriter, r *http.Request) {
 	}
 	if !h.enabled() || h.extractor == nil || !h.extractor.Available() {
 		draftError(w, errors.New("ai_disabled"))
+		return
+	}
+	if reader, ok := h.extractor.(DocumentExtractor); ok {
+		h.extractDocument(w, r, key, reader)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)

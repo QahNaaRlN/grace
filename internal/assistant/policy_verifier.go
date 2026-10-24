@@ -18,6 +18,7 @@ import (
 // price ceiling. Routing still enforces ZDR/deny/no-fallback on every inference.
 // Metadata requests contain no user questions, images or financial data.
 type PolicyVerifier struct {
+	Groups         *ModelGroups
 	screeningProof *statementextract.ScreeningIdentityProof
 	mu             sync.Mutex
 	client         HTTPDoer
@@ -30,6 +31,17 @@ func NewPolicyVerifier() *PolicyVerifier {
 	return &PolicyVerifier{client: &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, endpoint: "https://openrouter.ai/api/v1/models/", checked: map[string]ModelPolicy{}, attempted: map[string]time.Time{}}
 }
 func (v *PolicyVerifier) Current(ctx context.Context, approved ModelPolicy) (ModelPolicy, error) {
+	if v != nil && v.Groups != nil {
+		purpose := "analysis"
+		images := 0
+		if approved.Selection != nil {
+			purpose = approved.Selection.Purpose
+		}
+		if purpose != "analysis" {
+			images = 1
+		}
+		return v.Groups.Resolve(ctx, purpose, images)
+	}
 	return v.current(ctx, approved, false)
 }
 func (v *PolicyVerifier) CurrentStatement(ctx context.Context, approved ModelPolicy) (ModelPolicy, error) {

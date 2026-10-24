@@ -1847,6 +1847,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/imports/statements/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadBankStatementImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/pages/{page}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+                page: number;
+            };
+            cookie?: never;
+        };
+        get: operations["getBankStatementPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/statements/{statementId}/visual-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reviewVisualBankStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadReceiptDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/pages/{page}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+                page: number;
+            };
+            cookie?: never;
+        };
+        get: operations["getReceiptDocumentPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/receipt-drafts/{draftId}/reading-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewReceiptReading"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1869,6 +1975,7 @@ export interface components {
             providerName: string;
             inputMicrosPerMillion: number;
             outputMicrosPerMillion: number;
+            document?: components["schemas"]["DocumentModelPolicy"];
         };
         StatementRedactedSpan: {
             id: string;
@@ -1889,17 +1996,17 @@ export interface components {
         };
         StatementPlanLimits: {
             /** @enum {integer} */
-            maxInputBytes: 90000;
+            maxInputBytes: 90000 | 12582912;
             /** @enum {integer} */
-            inputTokens: 100000;
+            inputTokens: 100000 | 30000;
             /** @enum {integer} */
             outputTokens: 16000;
             /** @enum {integer} */
-            maxSpans: 2000;
+            maxSpans: 2000 | 0;
             /** @enum {integer} */
-            callTimeoutSeconds: 120;
+            callTimeoutSeconds: 120 | 180;
             /** @enum {integer} */
-            attemptTimeoutSeconds: 150;
+            attemptTimeoutSeconds: 150 | 210;
         };
         StatementPlan: {
             plannerVersion: string;
@@ -1916,6 +2023,7 @@ export interface components {
             policy: components["schemas"]["StatementModelPolicy"];
             chunks: components["schemas"]["StatementChunk"][];
             maximumMicros: number;
+            document?: components["schemas"]["DocumentReadingPlan"];
         };
         StatementExtractionPreview: {
             id: string;
@@ -1982,6 +2090,7 @@ export interface components {
             role: string;
             spans: components["schemas"]["StatementSpan"][];
             literal: string;
+            image?: components["schemas"]["ImageQuote"][];
         };
         StatementMoney: {
             /** Format: int64 */
@@ -2101,6 +2210,12 @@ export interface components {
             review: components["schemas"]["StatementReview"] | null;
             layout?: components["schemas"]["StatementLayout"];
             draftMapping?: components["schemas"]["StatementDraftMapping"];
+            /** @enum {string} */
+            sourceKind?: "pdf" | "image";
+            /** @enum {string} */
+            readingMode?: "native_text" | "image_review";
+            pages?: components["schemas"]["DocumentPage"][];
+            visual?: components["schemas"]["VisualState"];
         };
         StatementEdit: {
             expectedRevision: number;
@@ -2113,9 +2228,11 @@ export interface components {
         };
         StatementManualDraft: {
             expectedRevision: number;
-            proposal: components["schemas"]["StatementProposal"];
+            proposal?: components["schemas"]["StatementProposal"];
             reason: string;
-        };
+            reading?: components["schemas"]["VisualReading"];
+            sourceSHA256?: string;
+        } & (unknown | unknown);
         StatementDelete: {
             expectedRevision: number;
         };
@@ -2732,6 +2849,9 @@ export interface components {
             expiresAt: string;
             receiptId: string | null;
             eventId: string | null;
+            /** @enum {string} */
+            sourceKind?: "pdf" | "image";
+            pages?: components["schemas"]["DocumentPage"][];
         };
         EditReceiptDraft: {
             /** Format: int64 */
@@ -3019,7 +3139,7 @@ export interface components {
         };
         ImportSourceRecord: {
             /** @enum {string} */
-            sourceKind?: "spreadsheet" | "bank_statement_pdf";
+            sourceKind?: "spreadsheet" | "bank_statement_pdf" | "bank_statement_image";
             pdf?: components["schemas"]["ImportPDFSource"];
             id: string;
             /** Format: int64 */
@@ -3110,7 +3230,7 @@ export interface components {
             };
             fileName: string | null;
             /** @enum {string|null} */
-            format: "json" | "csv" | "bank_statement_pdf" | null;
+            format: "json" | "csv" | "bank_statement_pdf" | null | "bank_statement_image";
             /**
              * Format: date
              * @description Earliest operation date among transaction rows.
@@ -4067,6 +4187,115 @@ export interface components {
         Error: {
             code: string;
             message: string;
+        };
+        DocumentPage: {
+            number: number;
+            width: number;
+            height: number;
+            sha256: string;
+            /** @enum {string} */
+            contentType: "image/png" | "image/jpeg";
+        };
+        ImageQuote: {
+            page: number;
+            quote: string;
+            box: number[];
+        };
+        VisualField: {
+            value: string;
+            evidence: components["schemas"]["ImageQuote"][];
+        };
+        VisualFields: {
+            operationDate: components["schemas"]["VisualField"] | null;
+            bookingDate: components["schemas"]["VisualField"] | null;
+            accountAmount: components["schemas"]["VisualField"] | null;
+            accountCurrency: components["schemas"]["VisualField"] | null;
+            direction: components["schemas"]["VisualField"] | null;
+            transactionAmount: components["schemas"]["VisualField"] | null;
+            transactionCurrency: components["schemas"]["VisualField"] | null;
+            description: components["schemas"]["VisualField"] | null;
+        };
+        VisualHeader: {
+            openingBookDate: components["schemas"]["VisualField"] | null;
+            closingBookDate: components["schemas"]["VisualField"] | null;
+            openingBookBalance: components["schemas"]["VisualField"] | null;
+            closingBookBalance: components["schemas"]["VisualField"] | null;
+            availableBalanceObserved: components["schemas"]["VisualField"] | null;
+            debitTurnover: components["schemas"]["VisualField"] | null;
+            creditTurnover: components["schemas"]["VisualField"] | null;
+            currency: components["schemas"]["VisualField"] | null;
+        };
+        VisualRow: {
+            anchor: components["schemas"]["ImageQuote"][];
+            fields: components["schemas"]["VisualFields"];
+            issues: string[];
+        };
+        VisualReading: {
+            header: components["schemas"]["VisualHeader"];
+            rows: components["schemas"]["VisualRow"][];
+        };
+        VisualState: {
+            sourceSHA256: string;
+            candidate: components["schemas"]["VisualReading"];
+            original: components["schemas"]["VisualReading"];
+            reviewedRows: {
+                [key: string]: string;
+            };
+            rowDigests: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            recognition: "candidate";
+            /** @enum {string} */
+            sourceBinding: "image_review";
+        };
+        VisualReviewInput: {
+            expectedRevision: number;
+            sourceSHA256: string;
+            rows: {
+                [key: string]: string;
+            };
+            reviewedPages: number[];
+            rolesConfirmed: boolean;
+        };
+        DocumentModelPolicy: {
+            inputMicrosPerMillion: number;
+            outputMicrosPerMillion: number;
+            model: string;
+            provider: string;
+            providerName: string;
+            /** @enum {string} */
+            profile: "document_reading";
+            groupRevision: string;
+            proofSHA256: string;
+            maximumMicros: number;
+            snapshot: {
+                [key: string]: unknown;
+            };
+        };
+        DocumentReadingPlan: {
+            profile: string;
+            sourceSHA256: string;
+            textSHA256: string;
+            pages: components["schemas"]["DocumentPage"][];
+            snapshotSHA256: string;
+        };
+        ReceiptReadingPlan: {
+            revision: number;
+            sourceSHA256: string;
+            pages: components["schemas"]["DocumentPage"][];
+            model: string;
+            provider: string;
+            profile: string;
+            groupRevision: string;
+            maximumMicros: number;
+            consentPolicyHash: string;
+            hash: string;
+        };
+        ReceiptReadingInput: {
+            revision: number;
+            previewHash: string;
+            consent: boolean;
         };
     };
     responses: {
@@ -6039,7 +6268,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiptReadingInput"];
+            };
+        };
         responses: {
             /** @description Owner-scoped receipt workflow result. */
             200: {
@@ -6167,6 +6400,7 @@ export interface operations {
                     /** @enum {string} */
                     scope: "analysis" | "receipt";
                     policyHash: string;
+                    requiredImages?: number;
                 };
             };
         };
@@ -9494,6 +9728,261 @@ export interface operations {
                     "application/json": components["schemas"]["AssistantUnavailable"];
                 };
             };
+        };
+    };
+    uploadBankStatementImage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    accountId: string;
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementUploadResult"];
+                };
+            };
+            /** @description Owner-scoped result; no financial writes before explicit import confirmation. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementUploadResult"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Origin or CSRF rejected. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Upload or mapping exceeds the explicit byte limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            /** @description Extraction is busy; Retry-After is returned. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            500: components["responses"]["InternalError"];
+            /** @description Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains available. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getBankStatementPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+                page: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private normalized source image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                    "image/jpeg": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["ValidationError"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    reviewVisualBankStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisualReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    uploadReceiptDocument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Owner-scoped receipt workflow result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            /** @description Owner-scoped receipt workflow result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptDraft"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["InternalError"];
+        };
+    };
+    getReceiptDocumentPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draftId: string;
+                page: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private normalized source image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                    "image/jpeg": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["ValidationError"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    previewReceiptReading: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+            };
+            path: {
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptReadingPlan"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
         };
     };
 }

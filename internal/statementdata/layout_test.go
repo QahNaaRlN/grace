@@ -124,3 +124,17 @@ func TestMoneyCannotCombineDifferentLines(t *testing.T) {
 		t.Fatal("money combined across separate lines", review, e)
 	}
 }
+
+func TestVisualLayoutRetainsNativeSpansAlongsideScannedPage(t *testing.T) {
+	raw := strings.Replace(xmlLayout(`<word xMin="1" yMin="2" xMax="10" yMax="12">source</word>`), "</doc>", `<page width="600" height="800"></page></doc>`, 1)
+	if _, e := DecodeLayout(strings.NewReader(raw)); e == nil {
+		t.Fatal("legacy text extractor accepted empty-text page")
+	}
+	d, e := DecodeVisualLayout(strings.NewReader(raw))
+	if e != nil || len(d.Pages) != 2 || len(d.Spans) != 1 || d.Spans[0].Text != "source" {
+		t.Fatal(d, e)
+	}
+	if d.Validate() == nil || d.ValidateVisualLayout() != nil {
+		t.Fatal("visual relaxation leaked into native validation")
+	}
+}

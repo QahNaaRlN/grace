@@ -12,6 +12,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"github.com/QahNaaRlN/grace/internal/receiptdrafts"
 )
 
@@ -25,7 +26,7 @@ type ReceiptExtractor struct {
 }
 
 func (e *ReceiptExtractor) Available() bool {
-	if e == nil || e.Provider == nil || !e.Policy.Vision {
+	if e == nil || e.Provider == nil || (!e.Policy.Vision && (e.Verifier == nil || e.Verifier.Groups == nil)) {
 		return false
 	}
 	_, err := e.Verifier.Current(context.Background(), e.Policy)
@@ -54,6 +55,14 @@ var receiptSchema = func() json.RawMessage {
 }()
 
 func (e *ReceiptExtractor) Extract(ctx context.Context, photo []byte) (receiptdrafts.Extracted, error) {
+	if e.Verifier != nil && e.Verifier.Groups != nil {
+		page, err := documentdata.NewPage(1, photo)
+		if err != nil {
+			return receiptdrafts.Extracted{}, err
+		}
+		doc := documentdata.Document{Kind: "image", SourceSHA256: documentdata.Hash(photo), Pages: []documentdata.Page{page}}
+		return e.ExtractDocument(ctx, receiptdrafts.Draft{}, doc, "")
+	}
 	if !e.Available() {
 		return receiptdrafts.Extracted{}, errors.New("ai_disabled")
 	}

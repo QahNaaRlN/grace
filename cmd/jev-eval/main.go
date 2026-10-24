@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -151,9 +152,13 @@ func runCommand(arguments []string) error {
 	if err := validateReportPath(*reportPath); err != nil {
 		return err
 	}
-	apiKey := os.Getenv("TYPESAFE_API_KEY")
+	parsed, e := url.Parse(*endpoint)
+	if e != nil || parsed.Scheme != "http" || (parsed.Hostname() != "localhost" && parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "::1") {
+		return errors.New("direct_typesafe_retired_use_openrouter")
+	}
+	apiKey := os.Getenv("GRACE_JEV_OFFLINE_FIXTURE_KEY")
 	if strings.TrimSpace(apiKey) == "" {
-		return errors.New("TYPESAFE_API_KEY is required for live run")
+		return errors.New("GRACE_JEV_OFFLINE_FIXTURE_KEY is required for a loopback fixture")
 	}
 	version, err := readDatasetVersion(*datasetPath)
 	if err != nil {

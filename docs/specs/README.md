@@ -1,8 +1,8 @@
-Актуализация: **2026-10-24**, Asia/Yekaterinburg.
+Актуализация: **2026-10-25**, Asia/Yekaterinburg.
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
-**accepted G1–G4 / implementation not_started**. Владелец принял контракт
+**accepted G1–G4 / implementation in_progress**. Владелец принял контракт
 и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
 локальный renderer, пользовательский visual review и прежний confirmation.
 Новых live calls, key setup или production activation это не открывает.

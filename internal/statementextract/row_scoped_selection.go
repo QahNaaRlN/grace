@@ -55,7 +55,7 @@ func RowScopedCause(err error) string {
 	return "response_invalid"
 }
 func rowScopedPlan(d statementdata.Document) (Plan, error) {
-	p := Policy{"google/gemini-3.1-flash-lite", "google-vertex/eu", "Google", 275000, 1650000}
+	p := Policy{Model: "google/gemini-3.1-flash-lite", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 275000, OutputMicrosPerMillion: 1650000}
 	if ComparisonCandidates()[0].Policy != p || ScreeningCanonicalModel != "google/gemini-3.1-flash-lite-20260507" || PromptSHA(SystemPrompt) != ClockBasePromptSHA || PromptSHA(RowGroupingPrompt) != RowGroupingPromptSHA || PromptSHA(RowFieldPrompt) != RowFieldPromptSHA {
 		return Plan{}, rowScopedError("response_invalid")
 	}

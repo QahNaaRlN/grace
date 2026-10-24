@@ -29,14 +29,14 @@ func TestRunCommandRejectsAliasBeforeProviderUse(t *testing.T) {
 	}
 }
 
-func TestRunCommandRequiresAPIKeyBeforeNetwork(t *testing.T) {
-	t.Setenv("TYPESAFE_API_KEY", "")
+func TestRetiredDirectRunRejectsBeforeCredentialRead(t *testing.T) {
+	t.Setenv("GRACE_JEV_OFFLINE_FIXTURE_KEY", "")
 	err := runCommand([]string{
 		"--dataset", "../../testdata/jev-evaluation/v1/cases.json",
 		"--model", "jev-1.13.0",
 		"--report", filepath.Join(t.TempDir(), "report.json"),
 	})
-	if err == nil || !strings.Contains(err.Error(), "TYPESAFE_API_KEY") {
+	if err == nil || !strings.Contains(err.Error(), "direct_typesafe_retired_use_openrouter") {
 		t.Fatalf("runCommand() error = %v", err)
 	}
 }
@@ -91,7 +91,7 @@ func TestRunCommandWritesReportAgainstFakeHTTPProvider(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("TYPESAFE_API_KEY", "test-key")
+	t.Setenv("GRACE_JEV_OFFLINE_FIXTURE_KEY", "test-key")
 	reportPath := filepath.Join(t.TempDir(), "report.json")
 	err = runCommand([]string{
 		"--dataset", "../../testdata/jev-evaluation/v1/cases.json",

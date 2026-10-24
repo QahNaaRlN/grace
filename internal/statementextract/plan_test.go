@@ -10,7 +10,7 @@ import (
 )
 
 func testPolicy() Policy {
-	return Policy{"google/gemini-2.5-flash", "google-vertex/eu", "Google", 300000, 2500000}
+	return Policy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000}
 }
 func testDocument(values ...string) statementdata.Document {
 	d := statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{{Number: 1, Width: 600, Height: 800}}}

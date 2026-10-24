@@ -2,6 +2,7 @@ package imports
 
 import (
 	"context"
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"time"
 
 	"github.com/QahNaaRlN/grace/internal/statementdata"
@@ -11,6 +12,11 @@ type PDFExtractor interface {
 	Extract(context.Context, []byte) (statementdata.Document, error)
 }
 type Statement struct {
+	SourceKind     string                      `json:"sourceKind"`
+	ReadingMode    string                      `json:"readingMode"`
+	Pages          []documentdata.Page         `json:"pages"`
+	Rendered       documentdata.Document       `json:"-"`
+	Visual         *statementdata.VisualState  `json:"visual,omitempty"`
 	DraftMapping   *statementdata.DraftMapping `json:"draftMapping,omitempty"`
 	SizeBytes      int                         `json:"sizeBytes"`
 	PublishedRows  int                         `json:"publishedRows"`
@@ -34,9 +40,11 @@ type Statement struct {
 	Layout         *statementdata.Document     `json:"layout,omitempty"`
 }
 type StatementManualDraft struct {
-	ExpectedRevision int64                  `json:"expectedRevision"`
-	Proposal         statementdata.Proposal `json:"proposal"`
-	Reason           string                 `json:"reason"`
+	Reading          *statementdata.VisualReading `json:"reading,omitempty"`
+	SourceSHA256     string                       `json:"sourceSHA256,omitempty"`
+	ExpectedRevision int64                        `json:"expectedRevision"`
+	Proposal         statementdata.Proposal       `json:"proposal"`
+	Reason           string                       `json:"reason"`
 }
 type StatementEdit struct {
 	ExpectedRevision int64  `json:"expectedRevision"`

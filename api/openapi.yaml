@@ -1416,22 +1416,38 @@ paths:
         '503': { $ref: '#/components/responses/InternalError' }
   /api/receipt-drafts/{draftId}/extract:
     parameters:
-      - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+    - name: draftId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     post:
       operationId: extractReceiptPhoto
       parameters:
-        - $ref: '#/components/parameters/CSRF'
-        - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
           description: Owner-scoped receipt workflow result.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ReceiptDraft' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
-        '422': { $ref: '#/components/responses/ValidationError' }
-        '503': { $ref: '#/components/responses/InternalError' }
+              schema:
+                $ref: '#/components/schemas/ReceiptDraft'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/InternalError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptReadingInput'
   /api/receipt-drafts/{draftId}/previews:
     parameters:
       - { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1491,25 +1507,45 @@ paths:
     post:
       operationId: grantAIConsent
       parameters:
-        - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/CSRF'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [scope, policyHash]
+              required:
+              - scope
+              - policyHash
               additionalProperties: false
               properties:
-                scope: { type: string, enum: [analysis, receipt] }
-                policyHash: { type: string, minLength: 64, maxLength: 64 }
+                scope:
+                  type: string
+                  enum:
+                  - analysis
+                  - receipt
+                policyHash:
+                  type: string
+                  minLength: 64
+                  maxLength: 64
+                requiredImages:
+                  type: integer
+                  minimum: 1
+                  maximum: 4
       responses:
         '200':
           description: Consent granted for the current named provider and data scope.
           content:
             application/json:
-              schema: { type: object, required: [granted], properties: { granted: { type: boolean } } }
-        '422': { $ref: '#/components/responses/ValidationError' }
+              schema:
+                type: object
+                required:
+                - granted
+                properties:
+                  granted:
+                    type: boolean
+        '422':
+          $ref: '#/components/responses/ValidationError'
   /api/assistant/consents/{scope}:
     parameters:
       - { name: scope, in: path, required: true, schema: { type: string, enum: [analysis, receipt] } }
@@ -3671,6 +3707,258 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AssistantUnavailable' }
+  /api/imports/statements/images:
+    post:
+      operationId: uploadBankStatementImage
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementUploadResult'
+        '201':
+          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementUploadResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin or CSRF rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Upload or mapping exceeds the explicit byte limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Extraction is busy; Retry-After is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
+            available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - accountId
+              - file
+              properties:
+                accountId:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+
+  /api/imports/statements/{statementId}/pages/{page}:
+    parameters:
+    - name: statementId
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: page
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      operationId: getBankStatementPage
+      responses:
+        '200':
+          description: Private normalized source image.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '410':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/imports/statements/{statementId}/visual-reviews:
+    parameters:
+    - name: statementId
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: reviewVisualBankStatement
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisualReviewInput'
+      responses:
+        '200':
+          description: Owner-scoped result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/receipt-drafts/documents:
+    post:
+      operationId: uploadReceiptDocument
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptDraft'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/InternalError'
+        '200':
+          description: Owner-scoped receipt workflow result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptDraft'
+
+  /api/receipt-drafts/{draftId}/pages/{page}:
+    parameters:
+    - name: draftId
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: page
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      operationId: getReceiptDocumentPage
+      responses:
+        '200':
+          description: Private normalized source image.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '410':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/receipt-drafts/{draftId}/reading-previews:
+    parameters:
+    - name: draftId
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: previewReceiptReading
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200':
+          description: Owner-scoped result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptReadingPlan'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     SessionCookie:
@@ -3828,6 +4116,8 @@ components:
           type: integer
         outputMicrosPerMillion:
           type: integer
+        document:
+          $ref: '#/components/schemas/DocumentModelPolicy'
     StatementRedactedSpan:
       type: object
       additionalProperties: false
@@ -3875,26 +4165,43 @@ components:
     StatementPlanLimits:
       type: object
       additionalProperties: false
-      required: [maxInputBytes, inputTokens, outputTokens, maxSpans, callTimeoutSeconds, attemptTimeoutSeconds]
+      required:
+      - maxInputBytes
+      - inputTokens
+      - outputTokens
+      - maxSpans
+      - callTimeoutSeconds
+      - attemptTimeoutSeconds
       properties:
         maxInputBytes:
           type: integer
-          enum: [90000]
+          enum:
+          - 90000
+          - 12582912
         inputTokens:
           type: integer
-          enum: [100000]
+          enum:
+          - 100000
+          - 30000
         outputTokens:
           type: integer
-          enum: [16000]
+          enum:
+          - 16000
         maxSpans:
           type: integer
-          enum: [2000]
+          enum:
+          - 2000
+          - 0
         callTimeoutSeconds:
           type: integer
-          enum: [120]
+          enum:
+          - 120
+          - 180
         attemptTimeoutSeconds:
           type: integer
-          enum: [150]
+          enum:
+          - 150
+          - 210
     StatementPlan:
       type: object
       additionalProperties: false
@@ -3944,6 +4251,8 @@ components:
             $ref: '#/components/schemas/StatementChunk'
         maximumMicros:
           type: integer
+        document:
+          $ref: '#/components/schemas/DocumentReadingPlan'
     StatementExtractionPreview:
       type: object
       additionalProperties: false
@@ -4140,6 +4449,10 @@ components:
             $ref: '#/components/schemas/StatementSpan'
         literal:
           type: string
+        image:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageQuote'
     StatementMoney:
       type: object
       additionalProperties: false
@@ -4560,6 +4873,22 @@ components:
           $ref: '#/components/schemas/StatementLayout'
         draftMapping:
           $ref: '#/components/schemas/StatementDraftMapping'
+        sourceKind:
+          type: string
+          enum:
+          - pdf
+          - image
+        readingMode:
+          type: string
+          enum:
+          - native_text
+          - image_review
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentPage'
+        visual:
+          $ref: '#/components/schemas/VisualState'
     StatementEdit:
       type: object
       additionalProperties: false
@@ -4593,7 +4922,6 @@ components:
       additionalProperties: false
       required:
       - expectedRevision
-      - proposal
       - reason
       properties:
         expectedRevision:
@@ -4602,6 +4930,22 @@ components:
           $ref: '#/components/schemas/StatementProposal'
         reason:
           type: string
+        reading:
+          $ref: '#/components/schemas/VisualReading'
+        sourceSHA256:
+          type: string
+      oneOf:
+      - required:
+        - proposal
+        not:
+          required:
+          - reading
+      - required:
+        - reading
+        - sourceSHA256
+        not:
+          required:
+          - proposal
     StatementDelete:
       type: object
       additionalProperties: false
@@ -5517,18 +5861,56 @@ components:
     ReceiptDraft:
       type: object
       additionalProperties: false
-      required: [id, revision, status, fields, extractions, warnings, photoStatus, expiresAt, receiptId, eventId]
+      required:
+      - id
+      - revision
+      - status
+      - fields
+      - extractions
+      - warnings
+      - photoStatus
+      - expiresAt
+      - receiptId
+      - eventId
       properties:
-        id: { type: string }
-        revision: { type: integer, format: int64 }
-        status: { type: string }
-        fields: { $ref: '#/components/schemas/ReceiptDraftFields' }
-        extractions: { type: array, items: { $ref: '#/components/schemas/ReceiptExtraction' } }
-        warnings: { type: array, items: { type: string } }
-        photoStatus: { type: string }
-        expiresAt: { type: string }
-        receiptId: { type: [string, "null"] }
-        eventId: { type: [string, "null"] }
+        id:
+          type: string
+        revision:
+          type: integer
+          format: int64
+        status:
+          type: string
+        fields:
+          $ref: '#/components/schemas/ReceiptDraftFields'
+        extractions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptExtraction'
+        warnings:
+          type: array
+          items:
+            type: string
+        photoStatus:
+          type: string
+        expiresAt:
+          type: string
+        receiptId:
+          type:
+          - string
+          - 'null'
+        eventId:
+          type:
+          - string
+          - 'null'
+        sourceKind:
+          type: string
+          enum:
+          - pdf
+          - image
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentPage'
     EditReceiptDraft:
       type: object
       additionalProperties: false
@@ -5876,7 +6258,7 @@ components:
       "properties":
         sourceKind:
           type: string
-          enum: [spreadsheet, bank_statement_pdf]
+          enum: [spreadsheet, bank_statement_pdf, bank_statement_image]
         pdf:
           $ref: '#/components/schemas/ImportPDFSource'
         "id":
@@ -6019,49 +6401,98 @@ components:
                     "type": "string"
                   "facilityId":
                     "type": "string"
-    "ImportBatch":
-      "type": "object"
-      "additionalProperties": false
-      "required": ["id","source","payloadHash","revision","status","createdAt","counts","domainCounts","fileName","format","periodFrom","periodTo","total","reviewed","needsReview","lastConfirmation"]
-      "properties":
+    ImportBatch:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - source
+      - payloadHash
+      - revision
+      - status
+      - createdAt
+      - counts
+      - domainCounts
+      - fileName
+      - format
+      - periodFrom
+      - periodTo
+      - total
+      - reviewed
+      - needsReview
+      - lastConfirmation
+      properties:
         statementId:
           type: string
-        "id":
-          "type": "string"
-          "format": "uuid"
-        "source":
-          "$ref": "#/components/schemas/ImportMetadata"
-        "payloadHash":
-          "type": "string"
-        "revision":
-          "type": "integer"
-          "format": "int64"
-          "minimum": 1
-        "status":
-          "type": "string"
-          "enum": ["reviewing","completed"]
-        "createdAt":
-          "type": "string"
-          "format": "date-time"
-        "counts":
-          "type": "object"
-          "additionalProperties":
-            "type": "integer"
-        "domainCounts":
-          "type": "object"
-          "additionalProperties":
-            "type": "integer"
-        "fileName": { "type": ["string","null"], "maxLength": 255 }
-        "format": { "type": ["string","null"], "enum": ["json","csv","bank_statement_pdf",null] }
-        "periodFrom": { "type": ["string","null"], "format": "date", "description": "Earliest operation date among transaction rows." }
-        "periodTo": { "type": ["string","null"], "format": "date" }
-        "total": { "type": "integer", "minimum": 0, "description": "Transaction rows." }
-        "reviewed": { "type": "integer", "minimum": 0, "description": "Transaction rows with a decision or already published." }
-        "needsReview": { "type": "integer", "minimum": 0, "description": "Unpublished rows with source issues or match candidates." }
-        "lastConfirmation":
-          "oneOf":
-            - { "$ref": "#/components/schemas/ImportConfirmationSummary" }
-            - { "type": "null" }
+        id:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/ImportMetadata'
+        payloadHash:
+          type: string
+        revision:
+          type: integer
+          format: int64
+          minimum: 1
+        status:
+          type: string
+          enum:
+          - reviewing
+          - completed
+        createdAt:
+          type: string
+          format: date-time
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+        domainCounts:
+          type: object
+          additionalProperties:
+            type: integer
+        fileName:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        format:
+          type:
+          - string
+          - 'null'
+          enum:
+          - json
+          - csv
+          - bank_statement_pdf
+          - null
+          - bank_statement_image
+        periodFrom:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Earliest operation date among transaction rows.
+        periodTo:
+          type:
+          - string
+          - 'null'
+          format: date
+        total:
+          type: integer
+          minimum: 0
+          description: Transaction rows.
+        reviewed:
+          type: integer
+          minimum: 0
+          description: Transaction rows with a decision or already published.
+        needsReview:
+          type: integer
+          minimum: 0
+          description: Unpublished rows with source issues or match candidates.
+        lastConfirmation:
+          oneOf:
+          - $ref: '#/components/schemas/ImportConfirmationSummary'
+          - type: 'null'
     "ImportConfirmationSummary":
       "type": "object"
       "additionalProperties": false
@@ -6121,35 +6552,45 @@ components:
           "format": "date-time"
         "decision":
           "$ref": "#/components/schemas/ImportDecision"
-    "ImportRecord":
-      "type": "object"
-      "additionalProperties": false
-      "required": ["id","source","decision","published","candidates","history","eventId","questions"]
-      "properties":
-        "id":
-          "type": "string"
-          "format": "uuid"
-        "source":
-          "$ref": "#/components/schemas/ImportSourceRecord"
-        "decision":
-          "$ref": "#/components/schemas/ImportDecision"
-        "published":
-          "type": "boolean"
-        "candidates":
-          "type": "array"
-          "items":
-            "$ref": "#/components/schemas/ImportCandidate"
-        "history":
-          "type": "array"
-          "items":
-            "$ref": "#/components/schemas/ImportAudit"
-        "eventId":
-          "type": ["string","null"]
-          "format": "uuid"
-        "questions":
-          "type": "integer"
-          "minimum": 0
-          "description": "Source issues plus match candidates involving this row."
+    ImportRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - source
+      - decision
+      - published
+      - candidates
+      - history
+      - eventId
+      - questions
+      properties:
+        id:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/ImportSourceRecord'
+        decision:
+          $ref: '#/components/schemas/ImportDecision'
+        published:
+          type: boolean
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportCandidate'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportAudit'
+        eventId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        questions:
+          type: integer
+          minimum: 0
+          description: Source issues plus match candidates involving this row.
     "ImportChange":
       "type": "object"
       "additionalProperties": false
@@ -7178,3 +7619,367 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+
+    DocumentPage:
+      type: object
+      additionalProperties: false
+      required:
+      - number
+      - width
+      - height
+      - sha256
+      - contentType
+      properties:
+        number:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        sha256:
+          type: string
+        contentType:
+          type: string
+          enum:
+          - image/png
+          - image/jpeg
+
+    ImageQuote:
+      type: object
+      additionalProperties: false
+      required:
+      - page
+      - quote
+      - box
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          maximum: 4
+        quote:
+          type: string
+        box:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: number
+            minimum: 0
+            maximum: 1
+
+    VisualField:
+      type: object
+      additionalProperties: false
+      required:
+      - value
+      - evidence
+      properties:
+        value:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageQuote'
+
+    VisualFields:
+      type: object
+      additionalProperties: false
+      required:
+      - operationDate
+      - bookingDate
+      - accountAmount
+      - accountCurrency
+      - direction
+      - transactionAmount
+      - transactionCurrency
+      - description
+      properties:
+        operationDate:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        bookingDate:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        accountAmount:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        accountCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        direction:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        transactionAmount:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        transactionCurrency:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        description:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+
+    VisualHeader:
+      type: object
+      additionalProperties: false
+      required:
+      - openingBookDate
+      - closingBookDate
+      - openingBookBalance
+      - closingBookBalance
+      - availableBalanceObserved
+      - debitTurnover
+      - creditTurnover
+      - currency
+      properties:
+        openingBookDate:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        closingBookDate:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        openingBookBalance:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        closingBookBalance:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        availableBalanceObserved:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        debitTurnover:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        creditTurnover:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/VisualField'
+          - type: 'null'
+
+    VisualRow:
+      type: object
+      additionalProperties: false
+      required:
+      - anchor
+      - fields
+      - issues
+      properties:
+        anchor:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageQuote'
+        fields:
+          $ref: '#/components/schemas/VisualFields'
+        issues:
+          type: array
+          items:
+            type: string
+
+    VisualReading:
+      type: object
+      additionalProperties: false
+      required:
+      - header
+      - rows
+      properties:
+        header:
+          $ref: '#/components/schemas/VisualHeader'
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/VisualRow'
+
+    VisualState:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceSHA256
+      - candidate
+      - original
+      - reviewedRows
+      - rowDigests
+      - recognition
+      - sourceBinding
+      properties:
+        sourceSHA256:
+          type: string
+        candidate:
+          $ref: '#/components/schemas/VisualReading'
+        original:
+          $ref: '#/components/schemas/VisualReading'
+        reviewedRows:
+          type: object
+          additionalProperties:
+            type: string
+        rowDigests:
+          type: object
+          additionalProperties:
+            type: string
+        recognition:
+          type: string
+          enum:
+          - candidate
+        sourceBinding:
+          type: string
+          enum:
+          - image_review
+
+    VisualReviewInput:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - sourceSHA256
+      - rows
+      - reviewedPages
+      - rolesConfirmed
+      properties:
+        expectedRevision:
+          type: integer
+        sourceSHA256:
+          type: string
+        rows:
+          type: object
+          maxProperties: 200
+          additionalProperties:
+            type: string
+        reviewedPages:
+          type: array
+          items:
+            type: integer
+        rolesConfirmed:
+          type: boolean
+
+    DocumentModelPolicy:
+      type: object
+      additionalProperties: false
+      required:
+      - inputMicrosPerMillion
+      - outputMicrosPerMillion
+      - model
+      - provider
+      - providerName
+      - profile
+      - groupRevision
+      - proofSHA256
+      - maximumMicros
+      - snapshot
+      properties:
+        inputMicrosPerMillion:
+          type: integer
+        outputMicrosPerMillion:
+          type: integer
+        model:
+          type: string
+        provider:
+          type: string
+        providerName:
+          type: string
+        profile:
+          type: string
+          enum:
+          - document_reading
+        groupRevision:
+          type: string
+        proofSHA256:
+          type: string
+        maximumMicros:
+          type: integer
+        snapshot:
+          type: object
+          additionalProperties: true
+
+    DocumentReadingPlan:
+      type: object
+      additionalProperties: false
+      required:
+      - profile
+      - sourceSHA256
+      - textSHA256
+      - pages
+      - snapshotSHA256
+      properties:
+        profile:
+          type: string
+        sourceSHA256:
+          type: string
+        textSHA256:
+          type: string
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentPage'
+        snapshotSHA256:
+          type: string
+
+    ReceiptReadingPlan:
+      type: object
+      additionalProperties: false
+      required:
+      - revision
+      - sourceSHA256
+      - pages
+      - model
+      - provider
+      - profile
+      - groupRevision
+      - maximumMicros
+      - consentPolicyHash
+      - hash
+      properties:
+        revision:
+          type: integer
+        sourceSHA256:
+          type: string
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentPage'
+        model:
+          type: string
+        provider:
+          type: string
+        profile:
+          type: string
+        groupRevision:
+          type: string
+        maximumMicros:
+          type: integer
+        consentPolicyHash:
+          type: string
+        hash:
+          type: string
+
+    ReceiptReadingInput:
+      type: object
+      additionalProperties: false
+      required:
+      - revision
+      - previewHash
+      - consent
+      properties:
+        revision:
+          type: integer
+        previewHash:
+          type: string
+        consent:
+          type: boolean

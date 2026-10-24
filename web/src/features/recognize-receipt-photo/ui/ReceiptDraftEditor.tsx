@@ -30,9 +30,6 @@ export function ReceiptDraftEditor({
   accounts,
   categories,
   busy,
-  recognitionAllowed,
-  onRecognize,
-  onRecognizeAgain,
   onPrepare,
   onCancel,
 }: {
@@ -41,22 +38,12 @@ export function ReceiptDraftEditor({
   accounts: Account[]
   categories: Category[]
   busy: boolean
-  recognitionAllowed: boolean
-  onRecognize: () => void
-  onRecognizeAgain: () => void
   onPrepare: () => void
   onCancel: () => void
 }) {
   return (
     <fieldset disabled={busy} className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Button disabled={!recognitionAllowed} onClick={onRecognize}>
-          Распознать чек
-        </Button>
-        <Button variant="outline" disabled={!recognitionAllowed} onClick={onRecognizeAgain}>
-          Новая платная попытка
-        </Button>
-      </div>
+      <div className="flex flex-wrap gap-2"></div>
       <div>
         <Label htmlFor="receipt-seller">Магазин</Label>
         <Input

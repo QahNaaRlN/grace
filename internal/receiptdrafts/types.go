@@ -3,6 +3,7 @@ package receiptdrafts
 import (
 	"context"
 	"encoding/json"
+	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"time"
 )
 
@@ -52,19 +53,22 @@ type GroupSuggester interface {
 	Suggest(context.Context, []Item) ([]*GroupSuggestion, error)
 }
 type Draft struct {
-	ID            string      `json:"id"`
-	Revision      int64       `json:"revision"`
-	Status        string      `json:"status"`
-	Fields        Fields      `json:"fields"`
-	Extractions   []Extracted `json:"extractions"`
-	Warnings      []string    `json:"warnings"`
-	PhotoStatus   string      `json:"photoStatus"`
-	ExpiresAt     time.Time   `json:"expiresAt"`
-	ReceiptID     *string     `json:"receiptId"`
-	EventID       *string     `json:"eventId"`
-	ImageID       string      `json:"-"`
-	ImageHash     string      `json:"-"`
-	ExtractionKey string      `json:"-"`
+	SourceKind     string              `json:"sourceKind"`
+	Pages          []documentdata.Page `json:"pages"`
+	ReadingConsent *ReadingPlan        `json:"-"`
+	ID             string              `json:"id"`
+	Revision       int64               `json:"revision"`
+	Status         string              `json:"status"`
+	Fields         Fields              `json:"fields"`
+	Extractions    []Extracted         `json:"extractions"`
+	Warnings       []string            `json:"warnings"`
+	PhotoStatus    string              `json:"photoStatus"`
+	ExpiresAt      time.Time           `json:"expiresAt"`
+	ReceiptID      *string             `json:"receiptId"`
+	EventID        *string             `json:"eventId"`
+	ImageID        string              `json:"-"`
+	ImageHash      string              `json:"-"`
+	ExtractionKey  string              `json:"-"`
 }
 type Edit struct {
 	Revision int64  `json:"revision"`

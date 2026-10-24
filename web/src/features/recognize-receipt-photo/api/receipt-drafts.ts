@@ -21,9 +21,11 @@ export async function getReceiptDraft(draftId: string) {
 }
 
 /** Grants or revokes consent to send receipt photos to the recognition provider. */
-export async function setReceiptConsent(policyHash: string, grant: boolean) {
+export async function setReceiptConsent(policyHash: string, grant: boolean, requiredImages = 1) {
   const result = grant
-    ? await apiClient.POST('/api/assistant/consents', { body: { scope: 'receipt', policyHash } })
+    ? await apiClient.POST('/api/assistant/consents', {
+        body: { scope: 'receipt', policyHash, requiredImages },
+      })
     : await apiClient.DELETE('/api/assistant/consents/{scope}', {
         params: { path: { scope: 'receipt' } },
       })
@@ -34,18 +36,33 @@ export async function uploadReceiptPhoto(file: File) {
   const body = new FormData()
   body.set('photo', file)
   // multipart is sent without a JSON Content-Type; the browser supplies its boundary.
-  const result = await apiClient.POST('/api/receipt-drafts', {
-    body: { photo: file as unknown as string },
-    bodySerializer: () => body,
-  })
+  const result =
+    file.type === 'application/pdf'
+      ? await apiClient.POST('/api/receipt-drafts/documents', {
+          body: { file: file as unknown as string },
+          bodySerializer: () => {
+            const form = new FormData()
+            form.set('file', file)
+            return form
+          },
+        })
+      : await apiClient.POST('/api/receipt-drafts', {
+          body: { photo: file as unknown as string },
+          bodySerializer: () => body,
+        })
   if (!result.data)
     throw new Error('Не удалось загрузить фото. Используй JPEG, PNG или WebP до 8 МБ.')
   return result.data
 }
 
 /** A paid recognition attempt; the same key retries it without a new paid request. */
-export async function extractReceipt(draftId: string, key: string) {
+export async function extractReceipt(
+  draftId: string,
+  key: string,
+  plan: components['schemas']['ReceiptReadingPlan'],
+) {
   const result = await apiClient.POST('/api/receipt-drafts/{draftId}/extract', {
+    body: { revision: plan.revision, previewHash: plan.hash, consent: true },
     params: { path: { draftId }, header: { 'Idempotency-Key': key } },
   })
   if (!result.data)
@@ -93,5 +110,16 @@ export async function cancelReceipt(draftId: string) {
     params: { path: { draftId } },
   })
   if (!result.data) throw new Error('Отмена не завершена.')
+  return result.data
+}
+
+export async function prepareReceiptReading(draftId: string) {
+  const result = await apiClient.POST('/api/receipt-drafts/{draftId}/reading-previews', {
+    params: { path: { draftId } },
+  })
+  if (!result.data)
+    throw new Error(
+      result.error?.message ?? 'Нет подходящей модели чтения или источник недоступен.',
+    )
   return result.data
 }

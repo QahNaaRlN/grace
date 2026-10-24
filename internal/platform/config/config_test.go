@@ -106,7 +106,7 @@ func TestAssistantRoutingConfigurationIsOptIn(t *testing.T) {
 	t.Setenv("GRACE_ASSISTANT_ROUTING_ENABLED", "true")
 	t.Setenv("TYPESAFE_API_KEY", "  secret  ")
 	cfg, err = Load()
-	if err != nil || !cfg.AssistantRoutingEnabled || cfg.TypeSafeAPIKey != "secret" {
+	if err != nil || !cfg.AssistantRoutingEnabled || cfg.TypeSafeAPIKey != "" {
 		t.Fatalf("unexpected enabled config: %#v %v", cfg, err)
 	}
 }

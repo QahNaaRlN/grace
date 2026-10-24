@@ -1,6 +1,6 @@
 # SPEC-0056: единый OpenRouter и чтение фото/PDF по возможностям модели
 
-- Статус: **accepted**; implementation_status: **not_started**.
+- Статус: **accepted**; implementation_status: **in_progress**.
 - Дата: 2026-10-24, Asia/Yekaterinburg.
 - Автор: Codex. Acceptance owner: владелец Grace.
 - Основание направления: «взаимодействие с LLM в Grace — через OpenRouter…
@@ -8,7 +8,9 @@
   поддерживающих это чтение. Внедрить эти решения».
 - Контракт G1–G4 принят владельцем 2026-10-24 до production-кода.
 - База: main `e9d02b2bacad7fdcef919d28b44dd4817b721aae`, PR120.
-- Ветка контракта: `codex/openrouter-document-reading`; production-код не меняется.
+- Контракт интегрирован PR121, main `1fa1d93bc83e63ff8ddb0143bdf5849e32e6d98d`.
+- Реализация: `codex/openrouter-document-reading-implementation`; локальный G1–G4.
+- Production activation и качество реальной модели остаются UNVERIFIED.
 
 ## Проблема и пользовательский результат
 

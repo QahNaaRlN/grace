@@ -86,26 +86,31 @@ export function StatementOwnerReview({ statement }: { statement: Statement }) {
           ))}
         </ChoiceSelect>
       </Field>
-      <label className="flex min-h-11 items-center gap-3">
-        <Checkbox checked={roles} onCheckedChange={(v) => setRoles(v === true)} />
-        Проверены роли дат, валютных колонок, оборотов и остатков
-      </label>
-      <fieldset>
-        <legend>Проверено покрытие страниц</legend>
-        <div className="flex flex-wrap gap-3">
-          {Array.from({ length: statement.pageCount }, (_, i) => i + 1).map((page) => (
-            <label key={page} className="flex min-h-11 items-center gap-2">
-              <Checkbox
-                checked={pages.includes(page)}
-                onCheckedChange={(v) =>
-                  setPages(v ? [...pages, page] : pages.filter((p) => p !== page))
-                }
-              />
-              Страница {page}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {statement.readingMode !== 'image_review' && (
+        <>
+          {' '}
+          <label className="flex min-h-11 items-center gap-3">
+            <Checkbox checked={roles} onCheckedChange={(v) => setRoles(v === true)} />
+            Проверены роли дат, валютных колонок, оборотов и остатков
+          </label>
+          <fieldset>
+            <legend>Проверено покрытие страниц</legend>
+            <div className="flex flex-wrap gap-3">
+              {Array.from({ length: statement.pageCount }, (_, i) => i + 1).map((page) => (
+                <label key={page} className="flex min-h-11 items-center gap-2">
+                  <Checkbox
+                    checked={pages.includes(page)}
+                    onCheckedChange={(v) =>
+                      setPages(v ? [...pages, page] : pages.filter((p) => p !== page))
+                    }
+                  />
+                  Страница {page}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </>
+      )}
       <Field label="Основание проверки">
         <Textarea value={reason} onChange={(e) => setReason(e.target.value)} />
       </Field>
@@ -125,8 +130,8 @@ export function StatementOwnerReview({ statement }: { statement: Statement }) {
       {deleteRequested && (
         <div className="space-y-2">
           <p>
-            Удалить PDF и полный извлечённый текст? Фрагменты использованных полей и финансовая
-            история сохранятся.
+            Удалить исходник, изображения страниц и полный извлечённый текст? Фрагменты
+            использованных полей и финансовая история сохранятся.
           </p>
           <Button
             variant="destructive"

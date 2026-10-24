@@ -9,6 +9,9 @@ const render = (element: React.ReactElement) =>
 
 const mocked = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiClient: mocked }))
+vi.mock('@/shared/ui/private-source-image', () => ({
+  PrivateSourceImage: () => <div>Приватный источник</div>,
+}))
 const fields = {
   seller: 'Synthetic store',
   issuedAt: null,
@@ -60,7 +63,7 @@ describe('receipt photo confirmation boundary', () => {
     mocked.POST.mockResolvedValue({ data: { ...draft, fields: { ...fields, currency: 'USD' } } })
     render(<ReceiptPhoto />)
     await userEvent.upload(
-      await screen.findByLabelText('Фото чека'),
+      await screen.findByLabelText('Фото или PDF чека'),
       new File(['synthetic'], 'receipt.jpg', { type: 'image/jpeg' }),
     )
     const currency = await screen.findByLabelText('Валюта чека')
@@ -76,7 +79,7 @@ describe('receipt photo confirmation boundary', () => {
   it('uploads without inference or finance publication and keeps recognition behind separate consent', async () => {
     mocked.POST.mockResolvedValue({ data: draft })
     render(<ReceiptPhoto />)
-    const upload = await screen.findByLabelText('Фото чека')
+    const upload = await screen.findByLabelText('Фото или PDF чека')
     await userEvent.upload(
       upload,
       new File(['synthetic-image'], 'receipt.jpg', { type: 'image/jpeg' }),
@@ -84,21 +87,32 @@ describe('receipt photo confirmation boundary', () => {
     await screen.findByText('Черновик — финансовые данные ещё не изменены.')
     expect(mocked.POST).toHaveBeenCalledTimes(1)
     expect(mocked.POST.mock.calls[0][0]).toBe('/api/receipt-drafts')
-    expect(screen.getByRole('button', { name: 'Распознать чек' })).toBeDisabled()
+    expect(
+      screen.queryByRole('button', { name: 'Передать страницы и распознать чек' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Подготовить чтение фото или PDF' })).toBeEnabled()
     expect(screen.queryByRole('button', { name: 'Подтвердить расход' })).not.toBeInTheDocument()
   })
-  it('requires an explicit consent action naming the receipt scope', async () => {
-    mocked.POST.mockResolvedValue({ data: { granted: true } })
+  it('does not grant broad consent before selecting the actual document model', async () => {
     render(<ReceiptPhoto />)
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Разрешить передачу фото для распознавания' }),
+    await screen.findByLabelText('Фото или PDF чека')
+    expect(
+      screen.queryByRole('button', { name: 'Разрешить передачу фото для распознавания' }),
+    ).not.toBeInTheDocument()
+    await waitFor(() => expect(mocked.POST).not.toHaveBeenCalled())
+  })
+  it('keeps upload and manual fields usable when no model is eligible', async () => {
+    mocked.GET.mockResolvedValue({
+      data: { receipt: { enabled: false, consentGranted: false }, items: [] },
+    })
+    mocked.POST.mockResolvedValue({ data: draft })
+    render(<ReceiptPhoto />)
+    await userEvent.upload(
+      await screen.findByLabelText('Фото или PDF чека'),
+      new File(['synthetic'], 'receipt.jpg', { type: 'image/jpeg' }),
     )
-    await waitFor(() =>
-      expect(mocked.POST).toHaveBeenCalledWith(
-        '/api/assistant/consents',
-        expect.objectContaining({ body: { scope: 'receipt', policyHash: 'synthetic-policy' } }),
-      ),
-    )
-    expect(mocked.POST).toHaveBeenCalledTimes(1)
+    expect(await screen.findByLabelText('Магазин')).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Подготовить чтение фото или PDF' })).toBeDisabled()
+    expect(mocked.POST).toHaveBeenCalledOnce()
   })
 })

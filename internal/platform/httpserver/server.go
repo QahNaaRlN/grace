@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -50,22 +49,23 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	receiptsHandler := receipts.NewHandler(receiptsRepository)
 	obligationsHandler := obligations.NewHandler(obligationsRepository)
 	analyticsHandler := analytics.NewHandler(analyticsRepository)
-	assistantRouter := assistant.NewRouter(nil, nil)
-	if cfg.AssistantRoutingEnabled && cfg.TypeSafeAPIKey != "" {
-		provider, err := assistant.NewTypeSafeProvider(cfg.TypeSafeAPIKey, &http.Client{})
-		if err == nil {
-			executor := assistant.NewExecutor(accountsRepository, analyticsRepository, obligationsRepository, receiptsRepository)
-			assistantRouter = assistant.NewRouter(provider, executor)
-		}
+	aiHandler := assistant.NewAIHandler(assistant.AISettings{Enabled: cfg.AIEnabled, Key: cfg.OpenRouterAPIKey, AnalysisPolicy: cfg.AIAnalysisPolicy, ReceiptPolicy: cfg.AIReceiptPolicy, ModelGroups: cfg.AIModelGroups, PhotoDir: cfg.AIPhotoDir}, pool, analyticsRepository)
+	var queryRunner assistant.QueryRunner = assistant.NewRouter(nil, nil)
+	if cfg.AssistantRoutingEnabled {
+		queryRunner = aiHandler.QuickQuery(assistant.NewExecutor(accountsRepository, analyticsRepository, obligationsRepository, receiptsRepository))
 	}
-	assistantHandler := assistant.NewHandler(assistantRouter)
-	aiHandler := assistant.NewAIHandler(assistant.AISettings{Enabled: cfg.AIEnabled, Key: cfg.OpenRouterAPIKey, AnalysisPolicy: cfg.AIAnalysisPolicy, ReceiptPolicy: cfg.AIReceiptPolicy, PhotoDir: cfg.AIPhotoDir}, pool, analyticsRepository)
+	assistantHandler := assistant.NewHandler(queryRunner)
 	var photoStore *receiptdrafts.PhotoStore
 	if cfg.AIPhotoDir != "" {
 		photoStore, _ = receiptdrafts.NewPhotoStore(cfg.AIPhotoDir)
 	}
 	aiHandler.SetReceiptStorageAvailable(photoStore != nil)
 	draftHandler := receiptdrafts.NewHandler(pool, photoStore, aiHandler.ReceiptExtractor())
+	if cfg.PDFExtractorSocket != "" {
+		if helper, e := pdfextract.NewClient(cfg.PDFExtractorSocket); e == nil {
+			draftHandler.SetPDFRenderer(helper)
+		}
+	}
 	var identityProvider auth.Provider
 	if cfg.AuthMode == "telegram" {
 		identityProvider = auth.NewTelegramProvider(cfg.TelegramClientID, cfg.TelegramClientSecret, cfg.PublicURL+"/api/auth/callback")
@@ -144,16 +144,11 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 			}
 		}
 		imports.NewHandler(repository).Routes(router)
-		var reasoner statementextract.Reasoner
+		service := statementextract.NewService(pool, repository, nil)
 		if cfg.AIEnabled && cfg.StatementAIEnabled {
-			var policy assistant.ModelPolicy
-			if e := json.Unmarshal([]byte(cfg.StatementAIPolicy), &policy); e == nil {
-				if provider, e := assistant.NewStatementOpenRouterProvider(cfg.OpenRouterAPIKey, nil); e == nil {
-					reasoner = &assistant.StatementReasoner{Verifier: assistant.NewPolicyVerifier(), Policy: policy, Provider: provider}
-				}
-			}
+			service.SetDocumentReasoner(aiHandler.DocumentReasoner())
 		}
-		statementextract.NewHandler(statementextract.NewService(pool, repository, reasoner)).Routes(router)
+		statementextract.NewHandler(service).Routes(router)
 	})
 	router.Route("/api/assistant", func(router chi.Router) {
 		router.Use(authHandler.Require)

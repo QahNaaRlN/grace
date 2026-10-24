@@ -18,14 +18,17 @@ import (
 // ModelPolicy is an operator-verified endpoint and price snapshot. No automatic
 // model aliases or fallback may silently change the experiment's cost/privacy.
 type ModelPolicy struct {
-	Model                  string    `json:"model"`
-	Provider               string    `json:"provider"`
-	ProviderName           string    `json:"providerName,omitempty"`
-	InputMicrosPerMillion  int64     `json:"inputMicrosPerMillion"`
-	OutputMicrosPerMillion int64     `json:"outputMicrosPerMillion"`
-	ImageTokenUpperBound   int       `json:"imageTokenUpperBound"`
-	VerifiedAt             time.Time `json:"verifiedAt"`
-	Vision                 bool      `json:"vision"`
+	Selection              *ModelSelection `json:"selection,omitempty"`
+	RequestFeeMicros       int64           `json:"requestFeeMicros,omitempty"`
+	ImageFeeMicros         int64           `json:"imageFeeMicros,omitempty"`
+	Model                  string          `json:"model"`
+	Provider               string          `json:"provider"`
+	ProviderName           string          `json:"providerName,omitempty"`
+	InputMicrosPerMillion  int64           `json:"inputMicrosPerMillion"`
+	OutputMicrosPerMillion int64           `json:"outputMicrosPerMillion"`
+	ImageTokenUpperBound   int             `json:"imageTokenUpperBound"`
+	VerifiedAt             time.Time       `json:"verifiedAt"`
+	Vision                 bool            `json:"vision"`
 }
 
 func (p ModelPolicy) DisplayProvider() string {
@@ -52,19 +55,27 @@ type routerMetadata struct {
 
 func (p ModelPolicy) Valid(now time.Time) bool {
 	return p.Model != "" && !strings.ContainsAny(p.Model, ": \r\n") && p.Provider != "" &&
-		p.InputMicrosPerMillion > 0 && p.OutputMicrosPerMillion > 0 &&
+		p.InputMicrosPerMillion > 0 && p.OutputMicrosPerMillion > 0 && p.RequestFeeMicros >= 0 && p.RequestFeeMicros <= 1000000 && p.ImageFeeMicros >= 0 && p.ImageFeeMicros <= 1000000 &&
 		p.InputMicrosPerMillion <= 100_000_000 && p.OutputMicrosPerMillion <= 100_000_000 &&
 		!p.VerifiedAt.IsZero() && !p.VerifiedAt.After(now) && now.Sub(p.VerifiedAt) <= 24*time.Hour &&
 		(!p.Vision || p.ImageTokenUpperBound > 0 && p.ImageTokenUpperBound < 10000)
 }
 
 func (p ModelPolicy) ReservationMicros(inputBound, outputBound int) (int64, error) {
-	if !p.Valid(time.Now()) || inputBound < 1 || inputBound > 10000 || outputBound < 1 || outputBound > 2000 {
+	maxInput, maxOutput := 10000, 2000
+	if p.Selection != nil && p.Selection.Profile == DocumentReading {
+		maxInput, maxOutput = 30000, 16000
+	}
+	if !p.Valid(time.Now()) || inputBound < 1 || inputBound > maxInput || outputBound < 1 || outputBound > maxOutput {
 		return 0, errors.New("price_unknown")
 	}
 	// Prices are bounded above, so these products cannot overflow int64.
 	n := p.InputMicrosPerMillion*int64(inputBound) + p.OutputMicrosPerMillion*int64(outputBound)
-	return (n + 999999) / 1000000, nil
+	images := 0
+	if p.Selection != nil {
+		images = p.Selection.MaxImages
+	}
+	return (n+999999)/1000000 + p.RequestFeeMicros + int64(images)*p.ImageFeeMicros, nil
 }
 
 type LLMMessage struct {
@@ -89,6 +100,7 @@ func (e *ProviderProtocolError) Error() string          { return "provider_proto
 func (e *ProviderProtocolError) ProtocolReason() string { return e.Reason }
 
 type LLMResponse struct {
+	NotSent             bool
 	ComparisonRoute     *statementextract.ComparisonRouteEvidence `json:"-"`
 	ScreeningDiagnostic *statementextract.ScreeningDiagnostic     `json:"-"`
 	BillingKnown        bool
@@ -109,6 +121,8 @@ type OpenRouterProvider struct {
 	client            HTTPDoer
 	statementDocument bool
 	screeningDocument bool
+	groups            *ModelGroups
+	readingDocument   bool
 	comparisonID      string
 }
 
@@ -145,6 +159,18 @@ func costMicros(value string) (int64, error) {
 }
 
 func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (result LLMResponse, resultErr error) {
+	sent := false
+	defer func() {
+		if p.groups != nil && resultErr != nil && !sent {
+			result.NotSent = true
+			result.BillingKnown = true
+			result.ID = "not_sent"
+			result.CostMicros = 0
+		}
+	}()
+	if e := p.checkGroupRequest(in); e != nil {
+		return LLMResponse{}, e
+	}
 	diagnostic := statementextract.ScreeningDiagnostic{Code: "request"}
 	var comparisonRoute *statementextract.ComparisonRouteEvidence
 	defer func() {
@@ -206,11 +232,19 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		// Image ceiling in dollars per image; reservation also includes every image token.
 		body["provider"].(map[string]any)["max_price"].(map[string]any)["image"] = json.Number(big.NewRat(in.Policy.InputMicrosPerMillion*int64(in.Policy.ImageTokenUpperBound), 1_000_000_000_000).FloatString(12))
 	}
+	if p.groups != nil {
+		caps := body["provider"].(map[string]any)["max_price"].(map[string]any)
+		caps["request"] = json.Number(big.NewRat(in.Policy.RequestFeeMicros, 1000000).FloatString(6))
+		caps["image"] = json.Number(big.NewRat(in.Policy.ImageFeeMicros, 1000000).FloatString(6))
+	}
 	payload, err := json.Marshal(body)
 	if err != nil || (p.statementDocument && len(payload) > statementMaxEnvelopeBytes) {
 		return LLMResponse{}, errors.New("provider_request")
 	}
 	timeout := 30 * time.Second
+	if p.readingDocument {
+		timeout = 180 * time.Second
+	}
 	if p.statementDocument {
 		timeout = statementRequestTimeout()
 	}
@@ -224,6 +258,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-OpenRouter-Metadata", "enabled")
 	diagnostic.Code = "transport"
+	sent = true
 	response, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -258,6 +293,9 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		diagnostic.Code = "oversize"
 		return LLMResponse{}, errors.New("provider_protocol")
 	}
+	if p.groups != nil && len(p.apiKey) >= 16 && bytes.Contains(raw, []byte(p.apiKey)) {
+		return LLMResponse{}, errors.New("provider_protocol")
+	}
 	var out struct {
 		ID       string          `json:"id"`
 		Model    string          `json:"model"`
@@ -287,7 +325,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 			comparisonRoute.SelectedModelClass = comparisonSelectedClass(out.Metadata, in.comparisonProof)
 		}
 	}
-	if !decoded || out.ID == "" || (out.Model != in.Policy.Model && !(p.comparisonID != "" && in.comparisonProof != nil && out.Model == in.comparisonProof.Candidate.Canonical)) {
+	if !decoded || out.ID == "" || (out.Model != in.Policy.Model && !(p.groups != nil && in.Policy.Selection != nil && out.Model == in.Policy.Selection.Canonical) && !(p.comparisonID != "" && in.comparisonProof != nil && out.Model == in.comparisonProof.Candidate.Canonical)) {
 		return LLMResponse{}, &ProviderProtocolError{Reason: "envelope"}
 	}
 	// Routing slugs and response display names are distinct API fields. The
@@ -316,7 +354,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	for _, endpoint := range out.Metadata.Endpoints.Available {
 		if endpoint.Selected {
 			selected++
-			if endpoint.Model != in.Policy.Model && !(p.screeningDocument && in.screeningProof != nil && endpoint.Model == in.screeningProof.Canonical) && !(p.comparisonID != "" && in.comparisonProof != nil && endpoint.Model == in.comparisonProof.Candidate.Canonical) {
+			if endpoint.Model != in.Policy.Model && !(p.groups != nil && in.Policy.Selection != nil && endpoint.Model == in.Policy.Selection.Canonical) && !(p.screeningDocument && in.screeningProof != nil && endpoint.Model == in.screeningProof.Canonical) && !(p.comparisonID != "" && in.comparisonProof != nil && endpoint.Model == in.comparisonProof.Candidate.Canonical) {
 				diagnostic.Code = "selected_model"
 				return LLMResponse{}, errors.New("provider_protocol")
 			}
@@ -347,6 +385,12 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	// Billing is gateway metadata, independent of whether the model produced
 	// usable JSON. Retain only validated route/cost/ID on a content failure.
 	billed := LLMResponse{BillingKnown: true, ID: out.ID, Model: out.Model, Provider: actualProvider, PromptTokens: out.Usage.Prompt, CompletionTokens: out.Usage.Completion, CostMicros: cost}
+	if p.groups != nil {
+		bound, _ := in.Policy.ReservationMicros(in.InputTokenUpperBound, in.MaxOutputTokens)
+		if cost > bound {
+			return billed, &ProviderProtocolError{Reason: "cost_bound"}
+		}
+	}
 	if out.Usage.Completion == 0 {
 		diagnostic.Code = "usage"
 		return billed, &ProviderProtocolError{Reason: "usage"}
