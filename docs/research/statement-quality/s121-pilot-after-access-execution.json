@@ -1,0 +1,184 @@
+{
+  "version": "statement.row-pilot.s121.after-access.execution-evidence.v1",
+  "source": "9202641e3e1fa7e523c780c55a5f2bf5dc9608c4",
+  "ref": "codex/statement-s121-row-pilot-after-access-source",
+  "workflow": "statement-row-pilot.yml",
+  "inputs": {
+    "authorized_source": "9202641e3e1fa7e523c780c55a5f2bf5dc9608c4",
+    "execute_approved_pilot": "true"
+  },
+  "approval": {
+    "answer": "Разрешаю один новый P4",
+    "receiptURL": "https://github.com/QahNaaRlN/grace/pull/118",
+    "publishedBeforeDispatch": true,
+    "status": "CONSUMED"
+  },
+  "run": {
+    "attempt": 1,
+    "conclusion": "success",
+    "createdAt": "2026-10-24T16:04:12Z",
+    "event": "workflow_dispatch",
+    "headBranch": "codex/statement-s121-row-pilot-after-access-source",
+    "headSha": "9202641e3e1fa7e523c780c55a5f2bf5dc9608c4",
+    "jobs": [
+      {
+        "completedAt": "2026-10-24T16:05:02Z",
+        "conclusion": "success",
+        "databaseId": 120919078126,
+        "name": "row-pilot",
+        "startedAt": "2026-10-24T16:04:16Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-24T16:04:18Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-24T16:04:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:19Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-24T16:04:18Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:27Z",
+            "conclusion": "success",
+            "name": "Run actions/setup-go@v7",
+            "number": 3,
+            "startedAt": "2026-10-24T16:04:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:29Z",
+            "conclusion": "success",
+            "name": "Verify exact authorized source and CI 5/5",
+            "number": 4,
+            "startedAt": "2026-10-24T16:04:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:39Z",
+            "conclusion": "success",
+            "name": "Build fixed operator bundle",
+            "number": 5,
+            "startedAt": "2026-10-24T16:04:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:41Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v7",
+            "number": 6,
+            "startedAt": "2026-10-24T16:04:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:41Z",
+            "conclusion": "success",
+            "name": "Configure pinned SSH",
+            "number": 7,
+            "startedAt": "2026-10-24T16:04:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:58Z",
+            "conclusion": "success",
+            "name": "Execute approved pilot once",
+            "number": 8,
+            "startedAt": "2026-10-24T16:04:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:59Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v7",
+            "number": 9,
+            "startedAt": "2026-10-24T16:04:58Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:04:59Z",
+            "conclusion": "success",
+            "name": "Post Run actions/setup-go@v7",
+            "number": 17,
+            "startedAt": "2026-10-24T16:04:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:05:00Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 18,
+            "startedAt": "2026-10-24T16:04:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T16:05:00Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 19,
+            "startedAt": "2026-10-24T16:05:00Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/QahNaaRlN/grace/actions/runs/40109843789/job/120919078126"
+      }
+    ],
+    "status": "completed",
+    "updatedAt": "2026-10-24T16:05:02Z",
+    "url": "https://github.com/QahNaaRlN/grace/actions/runs/40109843789"
+  },
+  "artifacts": [
+    {
+      "id": 12565817576,
+      "name": "statement-s121-closed-result",
+      "declaredArchiveDigest": "sha256:e159614912d106df47d9fe2f403c4af1bde3ac30337adc4f25673e1539fce47e"
+    },
+    {
+      "id": 12565219410,
+      "name": "statement-s121-manifest",
+      "declaredArchiveDigest": "sha256:6fc2670f56329fcd718ee456d3758dc2f785d16036b084cca6eb94582c1869fd"
+    }
+  ],
+  "publicSummarySha256": "839ec8eb85c5d313811421e16bd938f4debbcee67242c25c2748931283456963",
+  "manifestSha256": "db78588640f415a6d27acda78ee969f24150d431b24134b71da9e0cc0428d74d",
+  "ciBundleSha256": {
+    "grace-row-pilot": "8b3a9fb5b75d45b4f058e3eaf523e49dc3e60a9a93c7fdfd189774c378161ed7",
+    "cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6",
+    "cards-document.json": "eefde6959b1bbfe8c94e4559fee1103dfeac98d10c0f415f8673d97b661cdbdf",
+    "SOURCE_SHA": "c945adbca993e7c090c56098f3e8a5c11e3d41f1161e518a6aac2e50614b0932",
+    "MANIFEST.json": "db78588640f415a6d27acda78ee969f24150d431b24134b71da9e0cc0428d74d",
+    "run.sh": "570fac3e8b72213b5e2df87adbab9543c4e355304dfe2eb0e4424bbd783e3378"
+  },
+  "localCandidateBinarySha256": "4d1d628cf3f3a1786b378fb445b9721d00ab6fcc4cb2bd8ccbdc439477ef4fc6",
+  "validation": {
+    "originalEqualsValidatedJSON": true,
+    "validatorExit": 0,
+    "strictPublicSummary": true,
+    "manifestEqualsApprovedManifest": true,
+    "artifactSourceEqualsAuthorizedSource": true,
+    "runSourceAttemptAndAllStepsVerified": true,
+    "rawLogsSaved": false,
+    "oldPrivateVPSReportsRead": false,
+    "additionalSSH": false
+  },
+  "decision": "REJECT",
+  "rowFieldQuality": "UNVERIFIED",
+  "qualification": "NOT_QUALIFIED",
+  "repeatAuthorized": false,
+  "repairAuthorized": false,
+  "activationAuthorized": false,
+  "limitations": [
+    "REJECT на grouping/partition_invalid; closed projection не раскрывает нарушенные aliases/условие partition.",
+    "ReplayVerified охватывает две measurement positions и четыре refusal-consistency suffix positions, не шесть completed answers.",
+    "Стоимость известна и reservation settled по новому report; отдельной свежей SQL/fees/allowance проверки нет.",
+    "Declared archive digests взяты из GitHub metadata; локальные ZIP hashes не сравнивались.",
+    "Actual CI binary hash отличается от local candidate; source/manifest совпали.",
+    "Это измерение public cards, не квалификация на репрезентативном corpus и не owner functional acceptance."
+  ]
+}
