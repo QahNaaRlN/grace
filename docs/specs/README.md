@@ -28,9 +28,9 @@ candidate grouping/partition_invalid,2 POST/3 metadata GET, actual5509 micros ($
 Row-field quality UNVERIFIED; новый repair/repeat/activation не открыт.
 По поручению владельца сменить курс подготовлен [S1.22 V1–V3](0055-s122-direct-page-reading.md):
 прямое чтение изображений страниц и текста, обычные строки+quotes, проверка кодом.
-**accepted V1–V3 offline / implementation not_started**,4 cases с image-only control/full32;
+**accepted V1–V3 offline / implemented; pending owner acceptance**,4 cases с image-only control/full32;
 GPT-6 Astra — непроверенный API candidate. Будущий V4 отдельно:≤8 POST/предлагаемый
-ceiling $10.40, расходы/key setup/merge/deploy NOT_AUTHORIZED. Принятие направления не подменяет принятие нового контракта.
+ceiling $10.40, расходы/key setup/merge/deploy NOT_AUTHORIZED. V1–V3 приняты прямым решением; [offline evidence](0055-s122-offline-evidence.md), отдельный V4 не открыт.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

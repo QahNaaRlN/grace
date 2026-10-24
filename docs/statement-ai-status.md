@@ -1,6 +1,6 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после интеграции отчёта B4/PR118 и нового P4, 2026-10-24 Asia/Yekaterinburg. Отчёт нового P4 принят и интегрирован PR119; подготовлен новый контракт S1.22.
+Обновлено после интеграции отчёта B4/PR118 и нового P4, 2026-10-24 Asia/Yekaterinburg. Отчёт нового P4 принят и интегрирован PR119; реализован offline S1.22 V1–V3 в PR120, pending owner acceptance.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
@@ -96,7 +96,7 @@ Closed summary не раскрывает конкретный дефект parti
 предлагает прямое чтение PNG страниц+текста одной vision-моделью: обычные строки
 и дословные quotes, deterministic binding/старые financial guards после распознавания.
 Candidate GPT-6 Astra пока UNVERIFIED;4 cases включают image-only control и full32.
-Контракт **accepted V1–V3 offline**, implementation **not_started**; paid V4/keys/merge/deploy не открыты.
+Контракт **accepted V1–V3 offline**, implementation **implemented / pending owner acceptance** в PR120; [offline evidence](specs/0055-s122-offline-evidence.md). Четыре fake controls PASS, full32:32 строки/3 страницы/297 recognition checks; importReady=false. Paid V4/keys/merge/deploy не открыты.
 Возможный будущий V4:≤8 POST, предлагаемый ceiling $10.40, новый явный бюджетный допуск.
 Старый grouping-подход закрыт REJECT; фейки/зелёный CI не заменяют измерения качества.
 Даже успешный новый corpus не докажет real/full import/owner acceptance автоматически.

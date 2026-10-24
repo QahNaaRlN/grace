@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+<doc>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="30.000000" yMin="32.820000" xMax="175.570000" yMax="42.070000">
+        <line xMin="30.000000" yMin="32.820000" xMax="175.570000" yMax="42.070000">
+          <word xMin="30.000000" yMin="32.820000" xMax="86.670000" yMax="42.070000">SYNTHETIC</word>
+          <word xMin="89.450000" yMin="32.820000" xMax="116.680000" yMax="42.070000">BANK</word>
+          <word xMin="119.460000" yMin="32.820000" xMax="122.790000" yMax="42.070000">-</word>
+          <word xMin="125.570000" yMin="32.820000" xMax="175.570000" yMax="42.070000">COLUMNS</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="57.820000" xMax="171.180000" yMax="67.070000">
+        <line xMin="30.000000" yMin="57.820000" xMax="171.180000" yMax="67.070000">
+          <word xMin="30.000000" yMin="57.820000" xMax="70.570000" yMax="67.070000">Available</word>
+          <word xMin="73.350000" yMin="57.820000" xMax="108.370000" yMax="67.070000">balance</word>
+          <word xMin="111.150000" yMin="57.820000" xMax="132.260000" yMax="67.070000">RUB</word>
+          <word xMin="135.040000" yMin="57.820000" xMax="171.180000" yMax="67.070000">7777.00</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="82.820000" xMax="155.610000" yMax="92.070000">
+        <line xMin="30.000000" yMin="82.820000" xMax="155.610000" yMax="92.070000">
+          <word xMin="30.000000" yMin="82.820000" xMax="53.340000" yMax="92.070000">Debit</word>
+          <word xMin="56.120000" yMin="82.820000" xMax="92.800000" yMax="92.070000">turnover</word>
+          <word xMin="95.580000" yMin="82.820000" xMax="116.690000" yMax="92.070000">RUB</word>
+          <word xMin="119.470000" yMin="82.820000" xMax="155.610000" yMax="92.070000">1234.56</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="102.820000" xMax="158.940000" yMax="112.070000">
+        <line xMin="30.000000" yMin="102.820000" xMax="158.940000" yMax="112.070000">
+          <word xMin="30.000000" yMin="102.820000" xMax="56.670000" yMax="112.070000">Credit</word>
+          <word xMin="59.450000" yMin="102.820000" xMax="96.130000" yMax="112.070000">turnover</word>
+          <word xMin="98.910000" yMin="102.820000" xMax="120.020000" yMax="112.070000">RUB</word>
+          <word xMin="122.800000" yMin="102.820000" xMax="158.940000" yMax="112.070000">2000.00</word>
+        </line>
+      </block>
+      <block xMin="30.000000" yMin="132.820000" xMax="73.910000" yMax="142.070000">
+        <line xMin="30.000000" yMin="132.820000" xMax="73.910000" yMax="142.070000">
+          <word xMin="30.000000" yMin="132.820000" xMax="73.910000" yMax="142.070000">Operation</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="180.000000" yMin="132.820000" xMax="216.130000" yMax="142.070000">
+        <line xMin="180.000000" yMin="132.820000" xMax="216.130000" yMax="142.070000">
+          <word xMin="180.000000" yMin="132.820000" xMax="216.130000" yMax="142.070000">Booking</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="330.000000" yMin="132.820000" xMax="390.020000" yMax="142.070000">
+        <line xMin="330.000000" yMin="132.820000" xMax="390.020000" yMax="142.070000">
+          <word xMin="330.000000" yMin="132.820000" xMax="366.130000" yMax="142.070000">Account</word>
+          <word xMin="368.910000" yMin="132.820000" xMax="390.020000" yMax="142.070000">RUB</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="450.000000" yMin="132.820000" xMax="508.340000" yMax="142.070000">
+        <line xMin="450.000000" yMin="132.820000" xMax="508.340000" yMax="142.070000">
+          <word xMin="450.000000" yMin="132.820000" xMax="484.450000" yMax="142.070000">Original</word>
+          <word xMin="487.230000" yMin="132.820000" xMax="508.340000" yMax="142.070000">USD</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="152.820000" xMax="80.040000" yMax="162.070000">
+        <line xMin="30.000000" yMin="152.820000" xMax="80.040000" yMax="162.070000">
+          <word xMin="30.000000" yMin="152.820000" xMax="80.040000" yMax="162.070000">19.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="180.000000" yMin="152.820000" xMax="230.040000" yMax="162.070000">
+        <line xMin="180.000000" yMin="152.820000" xMax="230.040000" yMax="162.070000">
+          <word xMin="180.000000" yMin="152.820000" xMax="230.040000" yMax="162.070000">20.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="330.000000" yMin="152.820000" xMax="369.470000" yMax="162.070000">
+        <line xMin="330.000000" yMin="152.820000" xMax="369.470000" yMax="162.070000">
+          <word xMin="330.000000" yMin="152.820000" xMax="369.470000" yMax="162.070000">-1234.56</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="450.000000" yMin="152.820000" xMax="478.350000" yMax="162.070000">
+        <line xMin="450.000000" yMin="152.820000" xMax="478.350000" yMax="162.070000">
+          <word xMin="450.000000" yMin="152.820000" xMax="478.350000" yMax="162.070000">-15.00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="172.820000" xMax="117.790000" yMax="182.070000">
+        <line xMin="30.000000" yMin="172.820000" xMax="117.790000" yMax="182.070000">
+          <word xMin="30.000000" yMin="172.820000" xMax="86.670000" yMax="182.070000">SYNTHETIC</word>
+          <word xMin="89.450000" yMin="172.820000" xMax="117.790000" yMax="182.070000">SHOP</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="30.000000" yMin="32.820000" xMax="214.480000" yMax="42.070000">
+        <line xMin="30.000000" yMin="32.820000" xMax="214.480000" yMax="42.070000">
+          <word xMin="30.000000" yMin="32.820000" xMax="86.670000" yMax="42.070000">SYNTHETIC</word>
+          <word xMin="89.450000" yMin="32.820000" xMax="116.680000" yMax="42.070000">BANK</word>
+          <word xMin="119.460000" yMin="32.820000" xMax="122.790000" yMax="42.070000">-</word>
+          <word xMin="125.570000" yMin="32.820000" xMax="175.570000" yMax="42.070000">COLUMNS</word>
+          <word xMin="178.350000" yMin="32.820000" xMax="206.140000" yMax="42.070000">PAGE</word>
+          <word xMin="208.920000" yMin="32.820000" xMax="214.480000" yMax="42.070000">2</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="82.820000" xMax="73.910000" yMax="92.070000">
+        <line xMin="30.000000" yMin="82.820000" xMax="73.910000" yMax="92.070000">
+          <word xMin="30.000000" yMin="82.820000" xMax="73.910000" yMax="92.070000">Operation</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="180.000000" yMin="82.820000" xMax="216.130000" yMax="92.070000">
+        <line xMin="180.000000" yMin="82.820000" xMax="216.130000" yMax="92.070000">
+          <word xMin="180.000000" yMin="82.820000" xMax="216.130000" yMax="92.070000">Booking</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="330.000000" yMin="82.820000" xMax="390.020000" yMax="92.070000">
+        <line xMin="330.000000" yMin="82.820000" xMax="390.020000" yMax="92.070000">
+          <word xMin="330.000000" yMin="82.820000" xMax="366.130000" yMax="92.070000">Account</word>
+          <word xMin="368.910000" yMin="82.820000" xMax="390.020000" yMax="92.070000">RUB</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="102.820000" xMax="80.040000" yMax="112.070000">
+        <line xMin="30.000000" yMin="102.820000" xMax="80.040000" yMax="112.070000">
+          <word xMin="30.000000" yMin="102.820000" xMax="80.040000" yMax="112.070000">21.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="180.000000" yMin="102.820000" xMax="230.040000" yMax="112.070000">
+        <line xMin="180.000000" yMin="102.820000" xMax="230.040000" yMax="112.070000">
+          <word xMin="180.000000" yMin="102.820000" xMax="230.040000" yMax="112.070000">22.10.2026</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="330.000000" yMin="102.820000" xMax="371.980000" yMax="112.070000">
+        <line xMin="330.000000" yMin="102.820000" xMax="371.980000" yMax="112.070000">
+          <word xMin="330.000000" yMin="102.820000" xMax="371.980000" yMax="112.070000">+2000.00</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="30.000000" yMin="122.820000" xMax="220.570000" yMax="132.070000">
+        <line xMin="30.000000" yMin="122.820000" xMax="220.570000" yMax="132.070000">
+          <word xMin="30.000000" yMin="122.820000" xMax="54.440000" yMax="132.070000">OWN</word>
+          <word xMin="57.220000" yMin="122.820000" xMax="111.110000" yMax="132.070000">TRANSFER</word>
+          <word xMin="113.890000" yMin="122.820000" xMax="117.220000" yMax="132.070000">-</word>
+          <word xMin="120.000000" yMin="122.820000" xMax="159.450000" yMax="132.070000">REVIEW</word>
+          <word xMin="162.230000" yMin="122.820000" xMax="220.570000" yMax="132.070000">SEMANTICS</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+</doc>
+</body>
+</html>

@@ -203,13 +203,13 @@ Owner принимает или изменяет:
 Финансовая арифметика, source validation и подтверждение записи остаются в Grace.
 
 
-## Предложение 2026-10-24: прямое чтение страниц, S1.22
+## Исследование 2026-10-24: прямое чтение страниц, S1.22
 
 По поручению владельца сменить курс подготовлен [S1.22 V1–V3](../specs/0055-s122-direct-page-reading.md),
-**accepted V1–V3 offline / implementation not_started**. Один research candidate получает PNG+text
+**accepted V1–V3 offline / implemented; pending owner acceptance**. Один research candidate получает PNG+text
 и возвращает строки+quotes; Go выполняет binding/grounding/арифметику/financial guards.
 Предлагается OpenAI Responses/gpt-6-astra, доступ/качество/region/funding UNVERIFIED.
-Это не Jev vision и не переключение production provider. После принятия возможна
-только offline-реализация перечисленного source/fakes; paid V4/key setup/merge/deploy
+Это не Jev vision и не переключение production provider. После прямого принятия выполнена
+только offline-реализация перечисленного source/fakes; [evidence](../specs/0055-s122-offline-evidence.md). Paid V4/key setup/merge/deploy
 отдельно. Историческое принятое решение выше сохраняется; production image non-goal
-SPEC-0055 не снимается этим предложением.
+SPEC-0055 сохраняется; исследование не активирует product image support.

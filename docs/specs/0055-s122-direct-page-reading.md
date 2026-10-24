@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.22: прямое чтение страниц выписки
 
-- Статус: **accepted V1–V3 offline**; implementation_status: **not_started**.
+- Статус: **accepted V1–V3 offline**; implementation_status: **implemented_offline / pending_owner_acceptance**.
 - Направление принято владельцем 2026-10-24: «Значит пора сменить курс, попробовать то, что работает».
 - Дата: 2026-10-24, Asia/Yekaterinburg. Автор: Codex.
 - База: main `ad1eca3efed097901bd15d8f7207d592c89ec24f`, принятый отчёт PR119.
@@ -219,3 +219,7 @@ PASS (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev), `go vet` PASS,
 source corpus/renderer/DTO/adapter/judge/CLI и только local/fake проверки.
 V4/paid calls/чтение и настройка ключей/SSH/SQL/deploy/activation/merge не разрешены.
 Этот receipt фиксируется отдельным commit до первого файла кода.
+
+## Offline-реализация V1–V3
+
+Реализована в том же PR120 после receipt `e54b154`. [Отчёт и исполняемые AC](0055-s122-offline-evidence.md). Четыре public fake controls проходят recognition/binding; полный full32 проверяет32 строки. Это evidence кода, качество реальной модели и account/key readiness остаются UNVERIFIED; V4/merge/activation не разрешены.

@@ -1,0 +1,136 @@
+{
+  "version": "statement.direct-page-reading.v1",
+  "publicReview": "All literals are generated in this script; English test instructions and Russian descriptions are synthetic. No owner, account number, person or bank data.",
+  "rendererImage": "sha256:5874a467b6446d165c933d99f65259c77c6db3dc9b2f9890ea96a1f37c7d97c3",
+  "rendererVersion": "poppler-25.04.0",
+  "generatorVersion": "reportlab-4.4.9/invariant",
+  "fontSHA256": "b4c632e3cdf9acc7f28758fb5a323c8524d7fc6660d46904d9b6cbe2809c419c",
+  "order": [
+    "cards",
+    "columns",
+    "cards-image-only",
+    "full32",
+    "cards",
+    "columns",
+    "cards-image-only",
+    "full32"
+  ],
+  "model": "gpt-6-astra",
+  "returnedModels": [
+    "gpt-6-astra"
+  ],
+  "files": {
+    "internal/statementextract/testdata/direct-page-reading/cards/version.txt": "5fec10434523a033a44af7369dbd54606b1b08b8adc8575e8c58b246ab271e7b",
+    "internal/statementextract/testdata/direct-page-reading/cards/info.txt": "463bb946b9c6c5ba0a58e2a6426ce7f10f89ed306da2c9120bc316af1d4bbf21",
+    "internal/statementextract/testdata/direct-page-reading/protocol.json": "bbedb5199877d0d34e48e56f750fbb11f108a52888c5013b67e55ee3afece851",
+    "internal/pdfextract/testdata/cards.pdf": "d4dd02153724c1599d4d89eb073e8cfaaf3fbce1696a4d691b69d150d0ccdce6",
+    "internal/statementextract/testdata/direct-page-reading/cards/source.xml": "4a12d3e6a33c306adefd41101fa52eaeea98c3939ca9f0ca943ccf8cf4a7654f",
+    "internal/statementextract/testdata/direct-page-reading/cards/text.txt": "906ac80d4b4882d390682d6cd521e25b5c7cfe6e286497b0ec46ac9e0414c7f5",
+    "internal/statementextract/testdata/direct-page-reading/cards.golden.json": "3997f522c8549b4bcea04cd3f3f06b78975f53ea0c0988c4a278962608932c4c",
+    "internal/statementextract/testdata/direct-page-reading/cards/page-1.png": "3dccc3cf0b30e79ab6d9b5ab8f11558a73e04de9570fd5364f4e36642eb7b318",
+    "internal/statementextract/testdata/direct-page-reading/columns/version.txt": "5fec10434523a033a44af7369dbd54606b1b08b8adc8575e8c58b246ab271e7b",
+    "internal/statementextract/testdata/direct-page-reading/columns/info.txt": "987c79b57341573ccc6b46aa08696ff5c0bed80bb7e45a8033704dd99c7a76a5",
+    "internal/pdfextract/testdata/columns.pdf": "097c3d35d4dd9787457b13f61bd524ff83c18d969ce50b93f7c8cecfeb569c8c",
+    "internal/statementextract/testdata/direct-page-reading/columns/source.xml": "e55e8b82f18a6b85df2d6eee94511147ad898969a5f3abd9c320997369ae67dd",
+    "internal/statementextract/testdata/direct-page-reading/columns/text.txt": "a3523f9b346d34c38d757c8cd227d2a1ad1abfd6133e0500cc2b3d644961295a",
+    "internal/statementextract/testdata/direct-page-reading/columns.golden.json": "e2deb3572debef1dd73f4a78f6d7dc6da0f68bf4349b2b8fc49d755c7834906f",
+    "internal/statementextract/testdata/direct-page-reading/columns/page-1.png": "f2b214147c1f6cafbeb6b89c7bb8b7a57e0153d2873c50f009d9766b5ca624ae",
+    "internal/statementextract/testdata/direct-page-reading/columns/page-2.png": "1279c3032e9f64c63708268315dc7fbcef52f629e4ce8312425a7c2c8ae5b2fa",
+    "internal/statementextract/testdata/direct-page-reading/cards-image-only.golden.json": "3997f522c8549b4bcea04cd3f3f06b78975f53ea0c0988c4a278962608932c4c",
+    "internal/statementextract/testdata/direct-page-reading/full32/version.txt": "5fec10434523a033a44af7369dbd54606b1b08b8adc8575e8c58b246ab271e7b",
+    "internal/statementextract/testdata/direct-page-reading/full32/info.txt": "79c85956d59446e72b42b8496bd8b2c80fd84217dab5cda501361ba5e4bdd16e",
+    "internal/statementextract/testdata/direct-page-reading/full32.pdf": "98f1f293f4886fa75d5f06279db111196866a20e01e1c73f309ef1483fc7e987",
+    "internal/statementextract/testdata/direct-page-reading/full32/source.xml": "9fbdc9a9ac9fe44d6912633dcf11b083e56f900c82e2a7802e549238a04d4842",
+    "internal/statementextract/testdata/direct-page-reading/full32/text.txt": "b6cbd404c3c604098fe0a4823de111b6a61a80053b8f9e926c2eafbc8a9e6dac",
+    "internal/statementextract/testdata/direct-page-reading/full32.golden.json": "891c04642625f377f560d63ee74fd0196f2a5561a516dafff2d1efb5a751d8ce",
+    "internal/statementextract/testdata/direct-page-reading/full32/page-1.png": "23e89619872e9cc6ee6a339994db758b915ab12a5ff9407951b6e34e666c5144",
+    "internal/statementextract/testdata/direct-page-reading/full32/page-2.png": "3e70281a4a631f14d226a0205e4749a4b7ed629ce5d92051b66da26bfab10e80",
+    "internal/statementextract/testdata/direct-page-reading/full32/page-3.png": "edafb16acc53c71ccd304eeefd91bf6004d13e2c380508c8227862e7cfa34078"
+  },
+  "cases": [
+    {
+      "name": "cards",
+      "rows": 2,
+      "pdf": "internal/pdfextract/testdata/cards.pdf",
+      "source": "internal/statementextract/testdata/direct-page-reading/cards/source.xml",
+      "text": "internal/statementextract/testdata/direct-page-reading/cards/text.txt",
+      "golden": "internal/statementextract/testdata/direct-page-reading/cards.golden.json",
+      "pages": [
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/cards/page-1.png",
+          "sha256": "3dccc3cf0b30e79ab6d9b5ab8f11558a73e04de9570fd5364f4e36642eb7b318",
+          "width": 1350,
+          "height": 1800
+        }
+      ]
+    },
+    {
+      "name": "columns",
+      "rows": 2,
+      "pdf": "internal/pdfextract/testdata/columns.pdf",
+      "source": "internal/statementextract/testdata/direct-page-reading/columns/source.xml",
+      "text": "internal/statementextract/testdata/direct-page-reading/columns/text.txt",
+      "golden": "internal/statementextract/testdata/direct-page-reading/columns.golden.json",
+      "pages": [
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/columns/page-1.png",
+          "sha256": "f2b214147c1f6cafbeb6b89c7bb8b7a57e0153d2873c50f009d9766b5ca624ae",
+          "width": 1350,
+          "height": 1800
+        },
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/columns/page-2.png",
+          "sha256": "1279c3032e9f64c63708268315dc7fbcef52f629e4ce8312425a7c2c8ae5b2fa",
+          "width": 1350,
+          "height": 1800
+        }
+      ]
+    },
+    {
+      "name": "cards-image-only",
+      "rows": 2,
+      "pdf": "internal/pdfextract/testdata/cards.pdf",
+      "source": "internal/statementextract/testdata/direct-page-reading/cards/source.xml",
+      "text": null,
+      "golden": "internal/statementextract/testdata/direct-page-reading/cards-image-only.golden.json",
+      "pages": [
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/cards/page-1.png",
+          "sha256": "3dccc3cf0b30e79ab6d9b5ab8f11558a73e04de9570fd5364f4e36642eb7b318",
+          "width": 1350,
+          "height": 1800
+        }
+      ]
+    },
+    {
+      "name": "full32",
+      "rows": 32,
+      "pdf": "internal/statementextract/testdata/direct-page-reading/full32.pdf",
+      "source": "internal/statementextract/testdata/direct-page-reading/full32/source.xml",
+      "text": "internal/statementextract/testdata/direct-page-reading/full32/text.txt",
+      "golden": "internal/statementextract/testdata/direct-page-reading/full32.golden.json",
+      "pages": [
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/full32/page-1.png",
+          "sha256": "23e89619872e9cc6ee6a339994db758b915ab12a5ff9407951b6e34e666c5144",
+          "width": 1350,
+          "height": 1800
+        },
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/full32/page-2.png",
+          "sha256": "3e70281a4a631f14d226a0205e4749a4b7ed629ce5d92051b66da26bfab10e80",
+          "width": 1350,
+          "height": 1800
+        },
+        {
+          "path": "internal/statementextract/testdata/direct-page-reading/full32/page-3.png",
+          "sha256": "edafb16acc53c71ccd304eeefd91bf6004d13e2c380508c8227862e7cfa34078",
+          "width": 1350,
+          "height": 1800
+        }
+      ]
+    }
+  ],
+  "promptSHA256": "76b309becf8dc81426f4d40cff93ec8067fac2f923d824314587aea803ef7202",
+  "schemaSHA256": "7e8f23408800d3804e870a82738856915bc1dc35a341ecf446377a0ac7c00f5a"
+}

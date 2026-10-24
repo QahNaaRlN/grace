@@ -1,0 +1,22 @@
+Title:           Public synthetic statement S1.22, no personal data
+Subject:         unspecified
+Keywords:
+Author:          Grace synthetic corpus
+Creator:         anonymous
+Producer:        ReportLab PDF Library - (opensource)
+CreationDate:    Sat Jan  1 00:00:00 2000 UTC
+ModDate:         Sat Jan  1 00:00:00 2000 UTC
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           3
+Encrypted:       no
+Page size:       600 x 800 pts
+Page rot:        0
+File size:       29070 bytes
+Optimized:       no
+PDF version:     1.3

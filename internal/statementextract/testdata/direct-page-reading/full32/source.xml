@@ -1,0 +1,900 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Public synthetic statement S1.22, no personal data</title>
+<meta name="Subject" content="unspecified"/>
+<meta name="Keywords" content=""/>
+<meta name="Author" content="Grace synthetic corpus"/>
+<meta name="Creator" content="anonymous"/>
+<meta name="Producer" content="ReportLab PDF Library - (opensource)"/>
+<meta name="CreationDate" content="2000-01-01T00:00:00Z"/>
+<meta name="ModDate" content="2000-01-01T00:00:00Z"/>
+</head>
+<body>
+<doc>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+        <line xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+          <word xMin="24.000000" yMin="13.921875" xMax="96.171874" yMax="21.921875">СИНТЕТИЧЕСКИЙ</word>
+          <word xMin="98.714843" yMin="13.921875" xMax="121.371093" yMax="21.921875">БАНК</word>
+          <word xMin="123.914062" yMin="13.921875" xMax="131.914062" yMax="21.921875">—</word>
+          <word xMin="134.457030" yMin="13.921875" xMax="177.687498" yMax="21.921875">ТЕСТОВАЯ</word>
+          <word xMin="180.230467" yMin="13.921875" xMax="221.515623" yMax="21.921875">ВЫПИСКА</word>
+          <word xMin="224.058592" yMin="13.921875" xMax="226.753905" yMax="21.921875">/</word>
+          <word xMin="229.296874" yMin="13.921875" xMax="273.749998" yMax="21.921875">СТРАНИЦА</word>
+          <word xMin="276.292966" yMin="13.921875" xMax="281.382810" yMax="21.921875">1</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="33.921875" xMax="330.503909" yMax="96.921875">
+        <line xMin="24.000000" yMin="33.921875" xMax="179.070316" yMax="41.921875">
+          <word xMin="24.000000" yMin="33.921875" xMax="57.738282" yMax="41.921875">Opening</word>
+          <word xMin="60.281250" yMin="33.921875" xMax="79.781250" yMax="41.921875">book</word>
+          <word xMin="82.324219" yMin="33.921875" xMax="113.820314" yMax="41.921875">balance</word>
+          <word xMin="116.363282" yMin="33.921875" xMax="133.265626" yMax="41.921875">RUB</word>
+          <word xMin="135.808595" yMin="33.921875" xMax="179.070316" yMax="41.921875">100000.00</word>
+        </line>
+        <line xMin="24.000000" yMin="44.921875" xMax="169.484378" yMax="52.921875">
+          <word xMin="24.000000" yMin="44.921875" xMax="53.242187" yMax="52.921875">Closing</word>
+          <word xMin="55.785156" yMin="44.921875" xMax="75.285156" yMax="52.921875">book</word>
+          <word xMin="77.828125" yMin="44.921875" xMax="109.324219" yMax="52.921875">balance</word>
+          <word xMin="111.867188" yMin="44.921875" xMax="128.769532" yMax="52.921875">RUB</word>
+          <word xMin="131.312501" yMin="44.921875" xMax="169.484378" yMax="52.921875">97889.37</word>
+        </line>
+        <line xMin="24.000000" yMin="55.921875" xMax="154.878909" yMax="63.921875">
+          <word xMin="24.000000" yMin="55.921875" xMax="60.679687" yMax="63.921875">Available</word>
+          <word xMin="63.222656" yMin="55.921875" xMax="94.718750" yMax="63.921875">balance</word>
+          <word xMin="97.261719" yMin="55.921875" xMax="114.164063" yMax="63.921875">RUB</word>
+          <word xMin="116.707032" yMin="55.921875" xMax="154.878909" yMax="63.921875">99999.00</word>
+        </line>
+        <line xMin="24.000000" yMin="66.921875" xMax="137.539064" yMax="74.921875">
+          <word xMin="24.000000" yMin="66.921875" xMax="45.519530" yMax="74.921875">Debit</word>
+          <word xMin="48.062499" yMin="66.921875" xMax="82.468750" yMax="74.921875">turnover</word>
+          <word xMin="85.011718" yMin="66.921875" xMax="101.914062" yMax="74.921875">RUB</word>
+          <word xMin="104.457031" yMin="66.921875" xMax="137.539064" yMax="74.921875">2749.48</word>
+        </line>
+        <line xMin="24.000000" yMin="77.921875" xMax="135.164064" yMax="85.921875">
+          <word xMin="24.000000" yMin="77.921875" xMax="48.234374" yMax="85.921875">Credit</word>
+          <word xMin="50.777343" yMin="77.921875" xMax="85.183594" yMax="85.921875">turnover</word>
+          <word xMin="87.726562" yMin="77.921875" xMax="104.628906" yMax="85.921875">RUB</word>
+          <word xMin="107.171875" yMin="77.921875" xMax="135.164064" yMax="85.921875">638.85</word>
+        </line>
+        <line xMin="24.000000" yMin="88.921875" xMax="330.503909" yMax="96.921875">
+          <word xMin="24.000000" yMin="88.921875" xMax="65.886719" yMax="96.921875">Операция</word>
+          <word xMin="68.429688" yMin="88.921875" xMax="71.125001" yMax="96.921875">/</word>
+          <word xMin="73.667970" yMin="88.921875" xMax="113.746094" yMax="96.921875">проводка</word>
+          <word xMin="116.289063" yMin="88.921875" xMax="118.984376" yMax="96.921875">/</word>
+          <word xMin="121.527345" yMin="88.921875" xMax="147.632814" yMax="96.921875">сумма</word>
+          <word xMin="150.175782" yMin="88.921875" xMax="173.785158" yMax="96.921875">счета</word>
+          <word xMin="176.328126" yMin="88.921875" xMax="179.023439" yMax="96.921875">/</word>
+          <word xMin="181.566408" yMin="88.921875" xMax="221.269533" yMax="96.921875">исходная</word>
+          <word xMin="223.812502" yMin="88.921875" xMax="249.917970" yMax="96.921875">сумма</word>
+          <word xMin="252.460939" yMin="88.921875" xMax="255.156252" yMax="96.921875">/</word>
+          <word xMin="257.699221" yMin="88.921875" xMax="287.984378" yMax="96.921875">полное</word>
+          <word xMin="290.527346" yMin="88.921875" xMax="330.503909" yMax="96.921875">описание</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="104.921875" xMax="182.171873" yMax="142.921875">
+        <line xMin="24.000000" yMin="104.921875" xMax="137.757816" yMax="112.921875">
+          <word xMin="24.000000" yMin="104.921875" xMax="63.812500" yMax="112.921875">Operation</word>
+          <word xMin="66.355469" yMin="104.921875" xMax="112.160158" yMax="112.921875">02.10.2026</word>
+          <word xMin="114.703127" yMin="104.921875" xMax="137.757816" yMax="112.921875">09:01</word>
+        </line>
+        <line xMin="24.000000" yMin="114.921875" xMax="130.226566" yMax="122.921875">
+          <word xMin="24.000000" yMin="114.921875" xMax="56.281250" yMax="122.921875">Booking</word>
+          <word xMin="58.824219" yMin="114.921875" xMax="104.628909" yMax="122.921875">02.10.2026</word>
+          <word xMin="107.171878" yMin="114.921875" xMax="130.226566" yMax="122.921875">18:01</word>
+        </line>
+        <line xMin="24.000000" yMin="124.921875" xMax="109.308595" yMax="132.921875">
+          <word xMin="24.000000" yMin="124.921875" xMax="56.441406" yMax="132.921875">Account</word>
+          <word xMin="58.984375" yMin="124.921875" xMax="75.886719" yMax="132.921875">RUB</word>
+          <word xMin="78.429688" yMin="124.921875" xMax="109.308595" yMax="132.921875">-100.37</word>
+        </line>
+        <line xMin="24.000000" yMin="134.921875" xMax="182.171873" yMax="142.921875">
+          <word xMin="24.000000" yMin="134.921875" xMax="95.234374" yMax="142.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="134.921875" xMax="137.812498" yMax="142.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="134.921875" xMax="169.449216" yMax="142.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="134.921875" xMax="182.171873" yMax="142.921875">01</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="152.921875" xMax="182.171873" yMax="190.921875">
+        <line xMin="24.000000" yMin="152.921875" xMax="137.757816" yMax="160.921875">
+          <word xMin="24.000000" yMin="152.921875" xMax="63.812500" yMax="160.921875">Operation</word>
+          <word xMin="66.355469" yMin="152.921875" xMax="112.160158" yMax="160.921875">03.10.2026</word>
+          <word xMin="114.703127" yMin="152.921875" xMax="137.757816" yMax="160.921875">09:02</word>
+        </line>
+        <line xMin="24.000000" yMin="162.921875" xMax="130.226566" yMax="170.921875">
+          <word xMin="24.000000" yMin="162.921875" xMax="56.281250" yMax="170.921875">Booking</word>
+          <word xMin="58.824219" yMin="162.921875" xMax="104.628909" yMax="170.921875">03.10.2026</word>
+          <word xMin="107.171878" yMin="162.921875" xMax="130.226566" yMax="170.921875">18:02</word>
+        </line>
+        <line xMin="24.000000" yMin="172.921875" xMax="109.308595" yMax="180.921875">
+          <word xMin="24.000000" yMin="172.921875" xMax="56.441406" yMax="180.921875">Account</word>
+          <word xMin="58.984375" yMin="172.921875" xMax="75.886719" yMax="180.921875">RUB</word>
+          <word xMin="78.429688" yMin="172.921875" xMax="109.308595" yMax="180.921875">-100.00</word>
+        </line>
+        <line xMin="24.000000" yMin="182.921875" xMax="182.171873" yMax="190.921875">
+          <word xMin="24.000000" yMin="182.921875" xMax="95.234374" yMax="190.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="182.921875" xMax="137.812498" yMax="190.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="182.921875" xMax="169.449216" yMax="190.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="182.921875" xMax="182.171873" yMax="190.921875">02</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="200.921875" xMax="182.171873" yMax="238.921875">
+        <line xMin="24.000000" yMin="200.921875" xMax="137.757816" yMax="208.921875">
+          <word xMin="24.000000" yMin="200.921875" xMax="63.812500" yMax="208.921875">Operation</word>
+          <word xMin="66.355469" yMin="200.921875" xMax="112.160158" yMax="208.921875">04.10.2026</word>
+          <word xMin="114.703127" yMin="200.921875" xMax="137.757816" yMax="208.921875">09:03</word>
+        </line>
+        <line xMin="24.000000" yMin="210.921875" xMax="130.226566" yMax="218.921875">
+          <word xMin="24.000000" yMin="210.921875" xMax="56.281250" yMax="218.921875">Booking</word>
+          <word xMin="58.824219" yMin="210.921875" xMax="104.628909" yMax="218.921875">04.10.2026</word>
+          <word xMin="107.171878" yMin="210.921875" xMax="130.226566" yMax="218.921875">18:03</word>
+        </line>
+        <line xMin="24.000000" yMin="220.921875" xMax="109.308595" yMax="228.921875">
+          <word xMin="24.000000" yMin="220.921875" xMax="56.441406" yMax="228.921875">Account</word>
+          <word xMin="58.984375" yMin="220.921875" xMax="75.886719" yMax="228.921875">RUB</word>
+          <word xMin="78.429688" yMin="220.921875" xMax="109.308595" yMax="228.921875">-100.00</word>
+        </line>
+        <line xMin="24.000000" yMin="230.921875" xMax="182.171873" yMax="238.921875">
+          <word xMin="24.000000" yMin="230.921875" xMax="95.234374" yMax="238.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="230.921875" xMax="137.812498" yMax="238.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="230.921875" xMax="169.449216" yMax="238.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="230.921875" xMax="182.171873" yMax="238.921875">03</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="248.921875" xMax="182.171873" yMax="286.921875">
+        <line xMin="24.000000" yMin="248.921875" xMax="137.757816" yMax="256.921875">
+          <word xMin="24.000000" yMin="248.921875" xMax="63.812500" yMax="256.921875">Operation</word>
+          <word xMin="66.355469" yMin="248.921875" xMax="112.160158" yMax="256.921875">05.10.2026</word>
+          <word xMin="114.703127" yMin="248.921875" xMax="137.757816" yMax="256.921875">09:04</word>
+        </line>
+        <line xMin="24.000000" yMin="258.921875" xMax="130.226566" yMax="266.921875">
+          <word xMin="24.000000" yMin="258.921875" xMax="56.281250" yMax="266.921875">Booking</word>
+          <word xMin="58.824219" yMin="258.921875" xMax="104.628909" yMax="266.921875">05.10.2026</word>
+          <word xMin="107.171878" yMin="258.921875" xMax="130.226566" yMax="266.921875">18:04</word>
+        </line>
+        <line xMin="24.000000" yMin="268.921875" xMax="109.308595" yMax="276.921875">
+          <word xMin="24.000000" yMin="268.921875" xMax="56.441406" yMax="276.921875">Account</word>
+          <word xMin="58.984375" yMin="268.921875" xMax="75.886719" yMax="276.921875">RUB</word>
+          <word xMin="78.429688" yMin="268.921875" xMax="109.308595" yMax="276.921875">-101.48</word>
+        </line>
+        <line xMin="24.000000" yMin="278.921875" xMax="182.171873" yMax="286.921875">
+          <word xMin="24.000000" yMin="278.921875" xMax="95.234374" yMax="286.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="278.921875" xMax="137.812498" yMax="286.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="278.921875" xMax="169.449216" yMax="286.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="278.921875" xMax="182.171873" yMax="286.921875">04</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="296.921875" xMax="205.144527" yMax="334.921875">
+        <line xMin="24.000000" yMin="296.921875" xMax="137.757816" yMax="304.921875">
+          <word xMin="24.000000" yMin="296.921875" xMax="63.812500" yMax="304.921875">Operation</word>
+          <word xMin="66.355469" yMin="296.921875" xMax="112.160158" yMax="304.921875">06.10.2026</word>
+          <word xMin="114.703127" yMin="296.921875" xMax="137.757816" yMax="304.921875">09:05</word>
+        </line>
+        <line xMin="24.000000" yMin="306.921875" xMax="130.226566" yMax="314.921875">
+          <word xMin="24.000000" yMin="306.921875" xMax="56.281250" yMax="314.921875">Booking</word>
+          <word xMin="58.824219" yMin="306.921875" xMax="104.628909" yMax="314.921875">06.10.2026</word>
+          <word xMin="107.171878" yMin="306.921875" xMax="130.226566" yMax="314.921875">18:05</word>
+        </line>
+        <line xMin="24.000000" yMin="316.921875" xMax="113.125002" yMax="324.921875">
+          <word xMin="24.000000" yMin="316.921875" xMax="56.441406" yMax="324.921875">Account</word>
+          <word xMin="58.984375" yMin="316.921875" xMax="75.886719" yMax="324.921875">RUB</word>
+          <word xMin="78.429688" yMin="316.921875" xMax="113.125002" yMax="324.921875">+101.85</word>
+        </line>
+        <line xMin="24.000000" yMin="326.921875" xMax="205.144527" yMax="334.921875">
+          <word xMin="24.000000" yMin="326.921875" xMax="87.460938" yMax="334.921875">СОБСТВЕННЫЙ</word>
+          <word xMin="90.003906" yMin="326.921875" xMax="128.988281" yMax="334.921875">ПЕРЕВОД</word>
+          <word xMin="131.531250" yMin="326.921875" xMax="163.230465" yMax="334.921875">МЕЖДУ</word>
+          <word xMin="165.773434" yMin="326.921875" xMax="205.144527" yMax="334.921875">СЧЕТАМИ</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="344.921875" xMax="182.171873" yMax="382.921875">
+        <line xMin="24.000000" yMin="344.921875" xMax="137.757816" yMax="352.921875">
+          <word xMin="24.000000" yMin="344.921875" xMax="63.812500" yMax="352.921875">Operation</word>
+          <word xMin="66.355469" yMin="344.921875" xMax="112.160158" yMax="352.921875">07.10.2026</word>
+          <word xMin="114.703127" yMin="344.921875" xMax="137.757816" yMax="352.921875">09:06</word>
+        </line>
+        <line xMin="24.000000" yMin="354.921875" xMax="130.226566" yMax="362.921875">
+          <word xMin="24.000000" yMin="354.921875" xMax="56.281250" yMax="362.921875">Booking</word>
+          <word xMin="58.824219" yMin="354.921875" xMax="104.628909" yMax="362.921875">07.10.2026</word>
+          <word xMin="107.171878" yMin="354.921875" xMax="130.226566" yMax="362.921875">18:06</word>
+        </line>
+        <line xMin="24.000000" yMin="364.921875" xMax="109.308595" yMax="372.921875">
+          <word xMin="24.000000" yMin="364.921875" xMax="56.441406" yMax="372.921875">Account</word>
+          <word xMin="58.984375" yMin="364.921875" xMax="75.886719" yMax="372.921875">RUB</word>
+          <word xMin="78.429688" yMin="364.921875" xMax="109.308595" yMax="372.921875">-102.22</word>
+        </line>
+        <line xMin="24.000000" yMin="374.921875" xMax="182.171873" yMax="382.921875">
+          <word xMin="24.000000" yMin="374.921875" xMax="95.234374" yMax="382.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="374.921875" xMax="137.812498" yMax="382.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="374.921875" xMax="169.449216" yMax="382.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="374.921875" xMax="182.171873" yMax="382.921875">06</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="392.921875" xMax="158.144529" yMax="430.921875">
+        <line xMin="24.000000" yMin="392.921875" xMax="137.757816" yMax="400.921875">
+          <word xMin="24.000000" yMin="392.921875" xMax="63.812500" yMax="400.921875">Operation</word>
+          <word xMin="66.355469" yMin="392.921875" xMax="112.160158" yMax="400.921875">08.10.2026</word>
+          <word xMin="114.703127" yMin="392.921875" xMax="137.757816" yMax="400.921875">09:07</word>
+        </line>
+        <line xMin="24.000000" yMin="402.921875" xMax="130.226566" yMax="410.921875">
+          <word xMin="24.000000" yMin="402.921875" xMax="56.281250" yMax="410.921875">Booking</word>
+          <word xMin="58.824219" yMin="402.921875" xMax="104.628909" yMax="410.921875">08.10.2026</word>
+          <word xMin="107.171878" yMin="402.921875" xMax="130.226566" yMax="410.921875">18:07</word>
+        </line>
+        <line xMin="24.000000" yMin="412.921875" xMax="109.308595" yMax="420.921875">
+          <word xMin="24.000000" yMin="412.921875" xMax="56.441406" yMax="420.921875">Account</word>
+          <word xMin="58.984375" yMin="412.921875" xMax="75.886719" yMax="420.921875">RUB</word>
+          <word xMin="78.429688" yMin="412.921875" xMax="109.308595" yMax="420.921875">-102.59</word>
+        </line>
+        <line xMin="24.000000" yMin="422.921875" xMax="158.144529" yMax="430.921875">
+          <word xMin="24.000000" yMin="422.921875" xMax="71.578126" yMax="430.921875">КОМИССИЯ</word>
+          <word xMin="74.121094" yMin="422.921875" xMax="84.722657" yMax="430.921875">ЗА</word>
+          <word xMin="87.265626" yMin="422.921875" xMax="158.144529" yMax="430.921875">ОБСЛУЖИВАНИЕ</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="440.921875" xMax="182.171873" yMax="478.921875">
+        <line xMin="24.000000" yMin="440.921875" xMax="137.757816" yMax="448.921875">
+          <word xMin="24.000000" yMin="440.921875" xMax="63.812500" yMax="448.921875">Operation</word>
+          <word xMin="66.355469" yMin="440.921875" xMax="112.160158" yMax="448.921875">09.10.2026</word>
+          <word xMin="114.703127" yMin="440.921875" xMax="137.757816" yMax="448.921875">09:08</word>
+        </line>
+        <line xMin="24.000000" yMin="450.921875" xMax="130.226566" yMax="458.921875">
+          <word xMin="24.000000" yMin="450.921875" xMax="56.281250" yMax="458.921875">Booking</word>
+          <word xMin="58.824219" yMin="450.921875" xMax="104.628909" yMax="458.921875">09.10.2026</word>
+          <word xMin="107.171878" yMin="450.921875" xMax="130.226566" yMax="458.921875">18:08</word>
+        </line>
+        <line xMin="24.000000" yMin="460.921875" xMax="109.308595" yMax="468.921875">
+          <word xMin="24.000000" yMin="460.921875" xMax="56.441406" yMax="468.921875">Account</word>
+          <word xMin="58.984375" yMin="460.921875" xMax="75.886719" yMax="468.921875">RUB</word>
+          <word xMin="78.429688" yMin="460.921875" xMax="109.308595" yMax="468.921875">-102.96</word>
+        </line>
+        <line xMin="24.000000" yMin="470.921875" xMax="182.171873" yMax="478.921875">
+          <word xMin="24.000000" yMin="470.921875" xMax="95.234374" yMax="478.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="470.921875" xMax="137.812498" yMax="478.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="470.921875" xMax="169.449216" yMax="478.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="470.921875" xMax="182.171873" yMax="478.921875">08</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="488.921875" xMax="193.664064" yMax="526.921875">
+        <line xMin="24.000000" yMin="488.921875" xMax="137.757816" yMax="496.921875">
+          <word xMin="24.000000" yMin="488.921875" xMax="63.812500" yMax="496.921875">Operation</word>
+          <word xMin="66.355469" yMin="488.921875" xMax="112.160158" yMax="496.921875">10.10.2026</word>
+          <word xMin="114.703127" yMin="488.921875" xMax="137.757816" yMax="496.921875">09:09</word>
+        </line>
+        <line xMin="24.000000" yMin="498.921875" xMax="130.226566" yMax="506.921875">
+          <word xMin="24.000000" yMin="498.921875" xMax="56.281250" yMax="506.921875">Booking</word>
+          <word xMin="58.824219" yMin="498.921875" xMax="104.628909" yMax="506.921875">10.10.2026</word>
+          <word xMin="107.171878" yMin="498.921875" xMax="130.226566" yMax="506.921875">18:09</word>
+        </line>
+        <line xMin="24.000000" yMin="508.921875" xMax="193.664064" yMax="516.921875">
+          <word xMin="24.000000" yMin="508.921875" xMax="56.441406" yMax="516.921875">Account</word>
+          <word xMin="58.984375" yMin="508.921875" xMax="75.886719" yMax="516.921875">RUB</word>
+          <word xMin="78.429688" yMin="508.921875" xMax="109.308595" yMax="516.921875">-103.33</word>
+          <word xMin="119.480470" yMin="508.921875" xMax="150.785158" yMax="516.921875">Original</word>
+          <word xMin="153.328126" yMin="508.921875" xMax="170.421876" yMax="516.921875">USD</word>
+          <word xMin="172.964845" yMin="508.921875" xMax="193.664064" yMax="516.921875">-2.00</word>
+        </line>
+        <line xMin="24.000000" yMin="518.921875" xMax="176.085937" yMax="526.921875">
+          <word xMin="24.000000" yMin="518.921875" xMax="64.035155" yMax="526.921875">ПОКУПКА</word>
+          <word xMin="66.578124" yMin="518.921875" xMax="72.066406" yMax="526.921875">В</word>
+          <word xMin="74.609374" yMin="518.921875" xMax="137.988280" yMax="526.921875">ИНОСТРАННОЙ</word>
+          <word xMin="140.531249" yMin="518.921875" xMax="176.085937" yMax="526.921875">ВАЛЮТЕ</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="536.921875" xMax="182.171873" yMax="574.921875">
+        <line xMin="24.000000" yMin="536.921875" xMax="137.757816" yMax="544.921875">
+          <word xMin="24.000000" yMin="536.921875" xMax="63.812500" yMax="544.921875">Operation</word>
+          <word xMin="66.355469" yMin="536.921875" xMax="112.160158" yMax="544.921875">11.10.2026</word>
+          <word xMin="114.703127" yMin="536.921875" xMax="137.757816" yMax="544.921875">09:10</word>
+        </line>
+        <line xMin="24.000000" yMin="546.921875" xMax="130.226566" yMax="554.921875">
+          <word xMin="24.000000" yMin="546.921875" xMax="56.281250" yMax="554.921875">Booking</word>
+          <word xMin="58.824219" yMin="546.921875" xMax="104.628909" yMax="554.921875">11.10.2026</word>
+          <word xMin="107.171878" yMin="546.921875" xMax="130.226566" yMax="554.921875">18:10</word>
+        </line>
+        <line xMin="24.000000" yMin="556.921875" xMax="113.125002" yMax="564.921875">
+          <word xMin="24.000000" yMin="556.921875" xMax="56.441406" yMax="564.921875">Account</word>
+          <word xMin="58.984375" yMin="556.921875" xMax="75.886719" yMax="564.921875">RUB</word>
+          <word xMin="78.429688" yMin="556.921875" xMax="113.125002" yMax="564.921875">+103.70</word>
+        </line>
+        <line xMin="24.000000" yMin="566.921875" xMax="182.171873" yMax="574.921875">
+          <word xMin="24.000000" yMin="566.921875" xMax="95.234374" yMax="574.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="566.921875" xMax="137.812498" yMax="574.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="566.921875" xMax="169.449216" yMax="574.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="566.921875" xMax="182.171873" yMax="574.921875">10</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="584.921875" xMax="193.874998" yMax="622.921875">
+        <line xMin="24.000000" yMin="584.921875" xMax="137.757816" yMax="592.921875">
+          <word xMin="24.000000" yMin="584.921875" xMax="63.812500" yMax="592.921875">Operation</word>
+          <word xMin="66.355469" yMin="584.921875" xMax="112.160158" yMax="592.921875">12.10.2026</word>
+          <word xMin="114.703127" yMin="584.921875" xMax="137.757816" yMax="592.921875">09:11</word>
+        </line>
+        <line xMin="24.000000" yMin="594.921875" xMax="130.226566" yMax="602.921875">
+          <word xMin="24.000000" yMin="594.921875" xMax="56.281250" yMax="602.921875">Booking</word>
+          <word xMin="58.824219" yMin="594.921875" xMax="104.628909" yMax="602.921875">12.10.2026</word>
+          <word xMin="107.171878" yMin="594.921875" xMax="130.226566" yMax="602.921875">18:11</word>
+        </line>
+        <line xMin="24.000000" yMin="604.921875" xMax="109.308595" yMax="612.921875">
+          <word xMin="24.000000" yMin="604.921875" xMax="56.441406" yMax="612.921875">Account</word>
+          <word xMin="58.984375" yMin="604.921875" xMax="75.886719" yMax="612.921875">RUB</word>
+          <word xMin="78.429688" yMin="604.921875" xMax="109.308595" yMax="612.921875">-104.07</word>
+        </line>
+        <line xMin="24.000000" yMin="614.921875" xMax="193.874998" yMax="622.921875">
+          <word xMin="24.000000" yMin="614.921875" xMax="71.300781" yMax="622.921875">ПОДПИСКА</word>
+          <word xMin="73.843750" yMin="614.921875" xMax="85.332030" yMax="622.921875">НА</word>
+          <word xMin="87.874999" yMin="614.921875" xMax="159.117186" yMax="622.921875">СИНТЕТИЧЕСКИЕ</word>
+          <word xMin="161.660154" yMin="614.921875" xMax="193.874998" yMax="622.921875">УСЛУГИ</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="410.000000" yMin="33.921875" xMax="455.804690" yMax="52.921875">
+        <line xMin="410.000000" yMin="33.921875" xMax="455.804690" yMax="41.921875">
+          <word xMin="410.000000" yMin="33.921875" xMax="455.804690" yMax="41.921875">30.09.2026</word>
+        </line>
+        <line xMin="410.000000" yMin="44.921875" xMax="455.804690" yMax="52.921875">
+          <word xMin="410.000000" yMin="44.921875" xMax="455.804690" yMax="52.921875">31.10.2026</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+        <line xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+          <word xMin="24.000000" yMin="13.921875" xMax="96.171874" yMax="21.921875">СИНТЕТИЧЕСКИЙ</word>
+          <word xMin="98.714843" yMin="13.921875" xMax="121.371093" yMax="21.921875">БАНК</word>
+          <word xMin="123.914062" yMin="13.921875" xMax="131.914062" yMax="21.921875">—</word>
+          <word xMin="134.457030" yMin="13.921875" xMax="177.687498" yMax="21.921875">ТЕСТОВАЯ</word>
+          <word xMin="180.230467" yMin="13.921875" xMax="221.515623" yMax="21.921875">ВЫПИСКА</word>
+          <word xMin="224.058592" yMin="13.921875" xMax="226.753905" yMax="21.921875">/</word>
+          <word xMin="229.296874" yMin="13.921875" xMax="273.749998" yMax="21.921875">СТРАНИЦА</word>
+          <word xMin="276.292966" yMin="13.921875" xMax="281.382810" yMax="21.921875">2</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="33.921875" xMax="214.371088" yMax="41.921875">
+        <line xMin="24.000000" yMin="33.921875" xMax="214.371088" yMax="41.921875">
+          <word xMin="24.000000" yMin="33.921875" xMax="90.425777" yMax="41.921875">ПРОДОЛЖЕНИЕ</word>
+          <word xMin="92.968746" yMin="33.921875" xMax="139.882808" yMax="41.921875">ОПИСАНИЯ</word>
+          <word xMin="142.425777" yMin="33.921875" xMax="167.972651" yMax="41.921875">ЧЕРЕЗ</word>
+          <word xMin="170.515620" yMin="33.921875" xMax="214.371088" yMax="41.921875">СТРАНИЦУ</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="47.921875" xMax="330.503909" yMax="55.921875">
+        <line xMin="24.000000" yMin="47.921875" xMax="330.503909" yMax="55.921875">
+          <word xMin="24.000000" yMin="47.921875" xMax="65.886719" yMax="55.921875">Операция</word>
+          <word xMin="68.429688" yMin="47.921875" xMax="71.125001" yMax="55.921875">/</word>
+          <word xMin="73.667970" yMin="47.921875" xMax="113.746094" yMax="55.921875">проводка</word>
+          <word xMin="116.289063" yMin="47.921875" xMax="118.984376" yMax="55.921875">/</word>
+          <word xMin="121.527345" yMin="47.921875" xMax="147.632814" yMax="55.921875">сумма</word>
+          <word xMin="150.175782" yMin="47.921875" xMax="173.785158" yMax="55.921875">счета</word>
+          <word xMin="176.328126" yMin="47.921875" xMax="179.023439" yMax="55.921875">/</word>
+          <word xMin="181.566408" yMin="47.921875" xMax="221.269533" yMax="55.921875">исходная</word>
+          <word xMin="223.812502" yMin="47.921875" xMax="249.917970" yMax="55.921875">сумма</word>
+          <word xMin="252.460939" yMin="47.921875" xMax="255.156252" yMax="55.921875">/</word>
+          <word xMin="257.699221" yMin="47.921875" xMax="287.984378" yMax="55.921875">полное</word>
+          <word xMin="290.527346" yMin="47.921875" xMax="330.503909" yMax="55.921875">описание</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="63.921875" xMax="182.171873" yMax="101.921875">
+        <line xMin="24.000000" yMin="63.921875" xMax="137.757816" yMax="71.921875">
+          <word xMin="24.000000" yMin="63.921875" xMax="63.812500" yMax="71.921875">Operation</word>
+          <word xMin="66.355469" yMin="63.921875" xMax="112.160158" yMax="71.921875">13.10.2026</word>
+          <word xMin="114.703127" yMin="63.921875" xMax="137.757816" yMax="71.921875">09:12</word>
+        </line>
+        <line xMin="24.000000" yMin="73.921875" xMax="130.226566" yMax="81.921875">
+          <word xMin="24.000000" yMin="73.921875" xMax="56.281250" yMax="81.921875">Booking</word>
+          <word xMin="58.824219" yMin="73.921875" xMax="104.628909" yMax="81.921875">13.10.2026</word>
+          <word xMin="107.171878" yMin="73.921875" xMax="130.226566" yMax="81.921875">18:12</word>
+        </line>
+        <line xMin="24.000000" yMin="83.921875" xMax="109.308595" yMax="91.921875">
+          <word xMin="24.000000" yMin="83.921875" xMax="56.441406" yMax="91.921875">Account</word>
+          <word xMin="58.984375" yMin="83.921875" xMax="75.886719" yMax="91.921875">RUB</word>
+          <word xMin="78.429688" yMin="83.921875" xMax="109.308595" yMax="91.921875">-104.44</word>
+        </line>
+        <line xMin="24.000000" yMin="93.921875" xMax="182.171873" yMax="101.921875">
+          <word xMin="24.000000" yMin="93.921875" xMax="95.234374" yMax="101.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="93.921875" xMax="137.812498" yMax="101.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="93.921875" xMax="169.449216" yMax="101.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="93.921875" xMax="182.171873" yMax="101.921875">12</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="111.921875" xMax="182.171873" yMax="149.921875">
+        <line xMin="24.000000" yMin="111.921875" xMax="137.757816" yMax="119.921875">
+          <word xMin="24.000000" yMin="111.921875" xMax="63.812500" yMax="119.921875">Operation</word>
+          <word xMin="66.355469" yMin="111.921875" xMax="112.160158" yMax="119.921875">14.10.2026</word>
+          <word xMin="114.703127" yMin="111.921875" xMax="137.757816" yMax="119.921875">09:13</word>
+        </line>
+        <line xMin="24.000000" yMin="121.921875" xMax="130.226566" yMax="129.921875">
+          <word xMin="24.000000" yMin="121.921875" xMax="56.281250" yMax="129.921875">Booking</word>
+          <word xMin="58.824219" yMin="121.921875" xMax="104.628909" yMax="129.921875">14.10.2026</word>
+          <word xMin="107.171878" yMin="121.921875" xMax="130.226566" yMax="129.921875">18:13</word>
+        </line>
+        <line xMin="24.000000" yMin="131.921875" xMax="109.308595" yMax="139.921875">
+          <word xMin="24.000000" yMin="131.921875" xMax="56.441406" yMax="139.921875">Account</word>
+          <word xMin="58.984375" yMin="131.921875" xMax="75.886719" yMax="139.921875">RUB</word>
+          <word xMin="78.429688" yMin="131.921875" xMax="109.308595" yMax="139.921875">-104.81</word>
+        </line>
+        <line xMin="24.000000" yMin="141.921875" xMax="182.171873" yMax="149.921875">
+          <word xMin="24.000000" yMin="141.921875" xMax="95.234374" yMax="149.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="141.921875" xMax="137.812498" yMax="149.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="141.921875" xMax="169.449216" yMax="149.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="141.921875" xMax="182.171873" yMax="149.921875">13</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="159.921875" xMax="182.171873" yMax="197.921875">
+        <line xMin="24.000000" yMin="159.921875" xMax="137.757816" yMax="167.921875">
+          <word xMin="24.000000" yMin="159.921875" xMax="63.812500" yMax="167.921875">Operation</word>
+          <word xMin="66.355469" yMin="159.921875" xMax="112.160158" yMax="167.921875">15.10.2026</word>
+          <word xMin="114.703127" yMin="159.921875" xMax="137.757816" yMax="167.921875">09:14</word>
+        </line>
+        <line xMin="24.000000" yMin="169.921875" xMax="130.226566" yMax="177.921875">
+          <word xMin="24.000000" yMin="169.921875" xMax="56.281250" yMax="177.921875">Booking</word>
+          <word xMin="58.824219" yMin="169.921875" xMax="104.628909" yMax="177.921875">15.10.2026</word>
+          <word xMin="107.171878" yMin="169.921875" xMax="130.226566" yMax="177.921875">18:14</word>
+        </line>
+        <line xMin="24.000000" yMin="179.921875" xMax="109.308595" yMax="187.921875">
+          <word xMin="24.000000" yMin="179.921875" xMax="56.441406" yMax="187.921875">Account</word>
+          <word xMin="58.984375" yMin="179.921875" xMax="75.886719" yMax="187.921875">RUB</word>
+          <word xMin="78.429688" yMin="179.921875" xMax="109.308595" yMax="187.921875">-100.00</word>
+        </line>
+        <line xMin="24.000000" yMin="189.921875" xMax="182.171873" yMax="197.921875">
+          <word xMin="24.000000" yMin="189.921875" xMax="95.234374" yMax="197.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="189.921875" xMax="137.812498" yMax="197.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="189.921875" xMax="169.449216" yMax="197.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="189.921875" xMax="182.171873" yMax="197.921875">14</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="207.921875" xMax="182.171873" yMax="245.921875">
+        <line xMin="24.000000" yMin="207.921875" xMax="137.757816" yMax="215.921875">
+          <word xMin="24.000000" yMin="207.921875" xMax="63.812500" yMax="215.921875">Operation</word>
+          <word xMin="66.355469" yMin="207.921875" xMax="112.160158" yMax="215.921875">16.10.2026</word>
+          <word xMin="114.703127" yMin="207.921875" xMax="137.757816" yMax="215.921875">09:15</word>
+        </line>
+        <line xMin="24.000000" yMin="217.921875" xMax="130.226566" yMax="225.921875">
+          <word xMin="24.000000" yMin="217.921875" xMax="56.281250" yMax="225.921875">Booking</word>
+          <word xMin="58.824219" yMin="217.921875" xMax="104.628909" yMax="225.921875">16.10.2026</word>
+          <word xMin="107.171878" yMin="217.921875" xMax="130.226566" yMax="225.921875">18:15</word>
+        </line>
+        <line xMin="24.000000" yMin="227.921875" xMax="113.125002" yMax="235.921875">
+          <word xMin="24.000000" yMin="227.921875" xMax="56.441406" yMax="235.921875">Account</word>
+          <word xMin="58.984375" yMin="227.921875" xMax="75.886719" yMax="235.921875">RUB</word>
+          <word xMin="78.429688" yMin="227.921875" xMax="113.125002" yMax="235.921875">+105.55</word>
+        </line>
+        <line xMin="24.000000" yMin="237.921875" xMax="182.171873" yMax="245.921875">
+          <word xMin="24.000000" yMin="237.921875" xMax="95.234374" yMax="245.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="237.921875" xMax="137.812498" yMax="245.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="237.921875" xMax="169.449216" yMax="245.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="237.921875" xMax="182.171873" yMax="245.921875">15</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="255.921875" xMax="182.171873" yMax="293.921875">
+        <line xMin="24.000000" yMin="255.921875" xMax="137.757816" yMax="263.921875">
+          <word xMin="24.000000" yMin="255.921875" xMax="63.812500" yMax="263.921875">Operation</word>
+          <word xMin="66.355469" yMin="255.921875" xMax="112.160158" yMax="263.921875">17.10.2026</word>
+          <word xMin="114.703127" yMin="255.921875" xMax="137.757816" yMax="263.921875">09:16</word>
+        </line>
+        <line xMin="24.000000" yMin="265.921875" xMax="130.226566" yMax="273.921875">
+          <word xMin="24.000000" yMin="265.921875" xMax="56.281250" yMax="273.921875">Booking</word>
+          <word xMin="58.824219" yMin="265.921875" xMax="104.628909" yMax="273.921875">17.10.2026</word>
+          <word xMin="107.171878" yMin="265.921875" xMax="130.226566" yMax="273.921875">18:16</word>
+        </line>
+        <line xMin="24.000000" yMin="275.921875" xMax="109.308595" yMax="283.921875">
+          <word xMin="24.000000" yMin="275.921875" xMax="56.441406" yMax="283.921875">Account</word>
+          <word xMin="58.984375" yMin="275.921875" xMax="75.886719" yMax="283.921875">RUB</word>
+          <word xMin="78.429688" yMin="275.921875" xMax="109.308595" yMax="283.921875">-105.92</word>
+        </line>
+        <line xMin="24.000000" yMin="285.921875" xMax="182.171873" yMax="293.921875">
+          <word xMin="24.000000" yMin="285.921875" xMax="95.234374" yMax="293.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="285.921875" xMax="137.812498" yMax="293.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="285.921875" xMax="169.449216" yMax="293.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="285.921875" xMax="182.171873" yMax="293.921875">16</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="303.921875" xMax="182.171873" yMax="341.921875">
+        <line xMin="24.000000" yMin="303.921875" xMax="137.757816" yMax="311.921875">
+          <word xMin="24.000000" yMin="303.921875" xMax="63.812500" yMax="311.921875">Operation</word>
+          <word xMin="66.355469" yMin="303.921875" xMax="112.160158" yMax="311.921875">18.10.2026</word>
+          <word xMin="114.703127" yMin="303.921875" xMax="137.757816" yMax="311.921875">09:17</word>
+        </line>
+        <line xMin="24.000000" yMin="313.921875" xMax="130.226566" yMax="321.921875">
+          <word xMin="24.000000" yMin="313.921875" xMax="56.281250" yMax="321.921875">Booking</word>
+          <word xMin="58.824219" yMin="313.921875" xMax="104.628909" yMax="321.921875">18.10.2026</word>
+          <word xMin="107.171878" yMin="313.921875" xMax="130.226566" yMax="321.921875">18:17</word>
+        </line>
+        <line xMin="24.000000" yMin="323.921875" xMax="109.308595" yMax="331.921875">
+          <word xMin="24.000000" yMin="323.921875" xMax="56.441406" yMax="331.921875">Account</word>
+          <word xMin="58.984375" yMin="323.921875" xMax="75.886719" yMax="331.921875">RUB</word>
+          <word xMin="78.429688" yMin="323.921875" xMax="109.308595" yMax="331.921875">-106.29</word>
+        </line>
+        <line xMin="24.000000" yMin="333.921875" xMax="182.171873" yMax="341.921875">
+          <word xMin="24.000000" yMin="333.921875" xMax="95.234374" yMax="341.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="333.921875" xMax="137.812498" yMax="341.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="333.921875" xMax="169.449216" yMax="341.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="333.921875" xMax="182.171873" yMax="341.921875">17</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="351.921875" xMax="182.171873" yMax="389.921875">
+        <line xMin="24.000000" yMin="351.921875" xMax="137.757816" yMax="359.921875">
+          <word xMin="24.000000" yMin="351.921875" xMax="63.812500" yMax="359.921875">Operation</word>
+          <word xMin="66.355469" yMin="351.921875" xMax="112.160158" yMax="359.921875">19.10.2026</word>
+          <word xMin="114.703127" yMin="351.921875" xMax="137.757816" yMax="359.921875">09:18</word>
+        </line>
+        <line xMin="24.000000" yMin="361.921875" xMax="130.226566" yMax="369.921875">
+          <word xMin="24.000000" yMin="361.921875" xMax="56.281250" yMax="369.921875">Booking</word>
+          <word xMin="58.824219" yMin="361.921875" xMax="104.628909" yMax="369.921875">19.10.2026</word>
+          <word xMin="107.171878" yMin="361.921875" xMax="130.226566" yMax="369.921875">18:18</word>
+        </line>
+        <line xMin="24.000000" yMin="371.921875" xMax="109.308595" yMax="379.921875">
+          <word xMin="24.000000" yMin="371.921875" xMax="56.441406" yMax="379.921875">Account</word>
+          <word xMin="58.984375" yMin="371.921875" xMax="75.886719" yMax="379.921875">RUB</word>
+          <word xMin="78.429688" yMin="371.921875" xMax="109.308595" yMax="379.921875">-106.66</word>
+        </line>
+        <line xMin="24.000000" yMin="381.921875" xMax="182.171873" yMax="389.921875">
+          <word xMin="24.000000" yMin="381.921875" xMax="95.234374" yMax="389.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="381.921875" xMax="137.812498" yMax="389.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="381.921875" xMax="169.449216" yMax="389.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="381.921875" xMax="182.171873" yMax="389.921875">18</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="399.921875" xMax="182.171873" yMax="437.921875">
+        <line xMin="24.000000" yMin="399.921875" xMax="137.757816" yMax="407.921875">
+          <word xMin="24.000000" yMin="399.921875" xMax="63.812500" yMax="407.921875">Operation</word>
+          <word xMin="66.355469" yMin="399.921875" xMax="112.160158" yMax="407.921875">20.10.2026</word>
+          <word xMin="114.703127" yMin="399.921875" xMax="137.757816" yMax="407.921875">09:19</word>
+        </line>
+        <line xMin="24.000000" yMin="409.921875" xMax="130.226566" yMax="417.921875">
+          <word xMin="24.000000" yMin="409.921875" xMax="56.281250" yMax="417.921875">Booking</word>
+          <word xMin="58.824219" yMin="409.921875" xMax="104.628909" yMax="417.921875">20.10.2026</word>
+          <word xMin="107.171878" yMin="409.921875" xMax="130.226566" yMax="417.921875">18:19</word>
+        </line>
+        <line xMin="24.000000" yMin="419.921875" xMax="109.308595" yMax="427.921875">
+          <word xMin="24.000000" yMin="419.921875" xMax="56.441406" yMax="427.921875">Account</word>
+          <word xMin="58.984375" yMin="419.921875" xMax="75.886719" yMax="427.921875">RUB</word>
+          <word xMin="78.429688" yMin="419.921875" xMax="109.308595" yMax="427.921875">-107.03</word>
+        </line>
+        <line xMin="24.000000" yMin="429.921875" xMax="182.171873" yMax="437.921875">
+          <word xMin="24.000000" yMin="429.921875" xMax="95.234374" yMax="437.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="429.921875" xMax="137.812498" yMax="437.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="429.921875" xMax="169.449216" yMax="437.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="429.921875" xMax="182.171873" yMax="437.921875">19</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="447.921875" xMax="182.171873" yMax="485.921875">
+        <line xMin="24.000000" yMin="447.921875" xMax="137.757816" yMax="455.921875">
+          <word xMin="24.000000" yMin="447.921875" xMax="63.812500" yMax="455.921875">Operation</word>
+          <word xMin="66.355469" yMin="447.921875" xMax="112.160158" yMax="455.921875">21.10.2026</word>
+          <word xMin="114.703127" yMin="447.921875" xMax="137.757816" yMax="455.921875">09:20</word>
+        </line>
+        <line xMin="24.000000" yMin="457.921875" xMax="130.226566" yMax="465.921875">
+          <word xMin="24.000000" yMin="457.921875" xMax="56.281250" yMax="465.921875">Booking</word>
+          <word xMin="58.824219" yMin="457.921875" xMax="104.628909" yMax="465.921875">21.10.2026</word>
+          <word xMin="107.171878" yMin="457.921875" xMax="130.226566" yMax="465.921875">18:20</word>
+        </line>
+        <line xMin="24.000000" yMin="467.921875" xMax="113.125002" yMax="475.921875">
+          <word xMin="24.000000" yMin="467.921875" xMax="56.441406" yMax="475.921875">Account</word>
+          <word xMin="58.984375" yMin="467.921875" xMax="75.886719" yMax="475.921875">RUB</word>
+          <word xMin="78.429688" yMin="467.921875" xMax="113.125002" yMax="475.921875">+107.40</word>
+        </line>
+        <line xMin="24.000000" yMin="477.921875" xMax="182.171873" yMax="485.921875">
+          <word xMin="24.000000" yMin="477.921875" xMax="95.234374" yMax="485.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="477.921875" xMax="137.812498" yMax="485.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="477.921875" xMax="169.449216" yMax="485.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="477.921875" xMax="182.171873" yMax="485.921875">20</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="495.921875" xMax="182.171873" yMax="533.921875">
+        <line xMin="24.000000" yMin="495.921875" xMax="137.757816" yMax="503.921875">
+          <word xMin="24.000000" yMin="495.921875" xMax="63.812500" yMax="503.921875">Operation</word>
+          <word xMin="66.355469" yMin="495.921875" xMax="112.160158" yMax="503.921875">22.10.2026</word>
+          <word xMin="114.703127" yMin="495.921875" xMax="137.757816" yMax="503.921875">09:21</word>
+        </line>
+        <line xMin="24.000000" yMin="505.921875" xMax="130.226566" yMax="513.921875">
+          <word xMin="24.000000" yMin="505.921875" xMax="56.281250" yMax="513.921875">Booking</word>
+          <word xMin="58.824219" yMin="505.921875" xMax="104.628909" yMax="513.921875">22.10.2026</word>
+          <word xMin="107.171878" yMin="505.921875" xMax="130.226566" yMax="513.921875">18:21</word>
+        </line>
+        <line xMin="24.000000" yMin="515.921875" xMax="109.308595" yMax="523.921875">
+          <word xMin="24.000000" yMin="515.921875" xMax="56.441406" yMax="523.921875">Account</word>
+          <word xMin="58.984375" yMin="515.921875" xMax="75.886719" yMax="523.921875">RUB</word>
+          <word xMin="78.429688" yMin="515.921875" xMax="109.308595" yMax="523.921875">-107.77</word>
+        </line>
+        <line xMin="24.000000" yMin="525.921875" xMax="182.171873" yMax="533.921875">
+          <word xMin="24.000000" yMin="525.921875" xMax="95.234374" yMax="533.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="525.921875" xMax="137.812498" yMax="533.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="525.921875" xMax="169.449216" yMax="533.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="525.921875" xMax="182.171873" yMax="533.921875">21</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="543.921875" xMax="182.171873" yMax="581.921875">
+        <line xMin="24.000000" yMin="543.921875" xMax="137.757816" yMax="551.921875">
+          <word xMin="24.000000" yMin="543.921875" xMax="63.812500" yMax="551.921875">Operation</word>
+          <word xMin="66.355469" yMin="543.921875" xMax="112.160158" yMax="551.921875">23.10.2026</word>
+          <word xMin="114.703127" yMin="543.921875" xMax="137.757816" yMax="551.921875">09:22</word>
+        </line>
+        <line xMin="24.000000" yMin="553.921875" xMax="130.226566" yMax="561.921875">
+          <word xMin="24.000000" yMin="553.921875" xMax="56.281250" yMax="561.921875">Booking</word>
+          <word xMin="58.824219" yMin="553.921875" xMax="104.628909" yMax="561.921875">23.10.2026</word>
+          <word xMin="107.171878" yMin="553.921875" xMax="130.226566" yMax="561.921875">18:22</word>
+        </line>
+        <line xMin="24.000000" yMin="563.921875" xMax="109.308595" yMax="571.921875">
+          <word xMin="24.000000" yMin="563.921875" xMax="56.441406" yMax="571.921875">Account</word>
+          <word xMin="58.984375" yMin="563.921875" xMax="75.886719" yMax="571.921875">RUB</word>
+          <word xMin="78.429688" yMin="563.921875" xMax="109.308595" yMax="571.921875">-108.14</word>
+        </line>
+        <line xMin="24.000000" yMin="573.921875" xMax="182.171873" yMax="581.921875">
+          <word xMin="24.000000" yMin="573.921875" xMax="95.234374" yMax="581.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="573.921875" xMax="137.812498" yMax="581.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="573.921875" xMax="169.449216" yMax="581.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="573.921875" xMax="182.171873" yMax="581.921875">22</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+  <page width="600.000000" height="800.000000">
+    <flow>
+      <block xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+        <line xMin="24.000000" yMin="13.921875" xMax="281.382810" yMax="21.921875">
+          <word xMin="24.000000" yMin="13.921875" xMax="96.171874" yMax="21.921875">СИНТЕТИЧЕСКИЙ</word>
+          <word xMin="98.714843" yMin="13.921875" xMax="121.371093" yMax="21.921875">БАНК</word>
+          <word xMin="123.914062" yMin="13.921875" xMax="131.914062" yMax="21.921875">—</word>
+          <word xMin="134.457030" yMin="13.921875" xMax="177.687498" yMax="21.921875">ТЕСТОВАЯ</word>
+          <word xMin="180.230467" yMin="13.921875" xMax="221.515623" yMax="21.921875">ВЫПИСКА</word>
+          <word xMin="224.058592" yMin="13.921875" xMax="226.753905" yMax="21.921875">/</word>
+          <word xMin="229.296874" yMin="13.921875" xMax="273.749998" yMax="21.921875">СТРАНИЦА</word>
+          <word xMin="276.292966" yMin="13.921875" xMax="281.382810" yMax="21.921875">3</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="33.921875" xMax="330.503909" yMax="41.921875">
+        <line xMin="24.000000" yMin="33.921875" xMax="330.503909" yMax="41.921875">
+          <word xMin="24.000000" yMin="33.921875" xMax="65.886719" yMax="41.921875">Операция</word>
+          <word xMin="68.429688" yMin="33.921875" xMax="71.125001" yMax="41.921875">/</word>
+          <word xMin="73.667970" yMin="33.921875" xMax="113.746094" yMax="41.921875">проводка</word>
+          <word xMin="116.289063" yMin="33.921875" xMax="118.984376" yMax="41.921875">/</word>
+          <word xMin="121.527345" yMin="33.921875" xMax="147.632814" yMax="41.921875">сумма</word>
+          <word xMin="150.175782" yMin="33.921875" xMax="173.785158" yMax="41.921875">счета</word>
+          <word xMin="176.328126" yMin="33.921875" xMax="179.023439" yMax="41.921875">/</word>
+          <word xMin="181.566408" yMin="33.921875" xMax="221.269533" yMax="41.921875">исходная</word>
+          <word xMin="223.812502" yMin="33.921875" xMax="249.917970" yMax="41.921875">сумма</word>
+          <word xMin="252.460939" yMin="33.921875" xMax="255.156252" yMax="41.921875">/</word>
+          <word xMin="257.699221" yMin="33.921875" xMax="287.984378" yMax="41.921875">полное</word>
+          <word xMin="290.527346" yMin="33.921875" xMax="330.503909" yMax="41.921875">описание</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="49.921875" xMax="182.171873" yMax="87.921875">
+        <line xMin="24.000000" yMin="49.921875" xMax="137.757816" yMax="57.921875">
+          <word xMin="24.000000" yMin="49.921875" xMax="63.812500" yMax="57.921875">Operation</word>
+          <word xMin="66.355469" yMin="49.921875" xMax="112.160158" yMax="57.921875">24.10.2026</word>
+          <word xMin="114.703127" yMin="49.921875" xMax="137.757816" yMax="57.921875">09:23</word>
+        </line>
+        <line xMin="24.000000" yMin="59.921875" xMax="130.226566" yMax="67.921875">
+          <word xMin="24.000000" yMin="59.921875" xMax="56.281250" yMax="67.921875">Booking</word>
+          <word xMin="58.824219" yMin="59.921875" xMax="104.628909" yMax="67.921875">24.10.2026</word>
+          <word xMin="107.171878" yMin="59.921875" xMax="130.226566" yMax="67.921875">18:23</word>
+        </line>
+        <line xMin="24.000000" yMin="69.921875" xMax="109.308595" yMax="77.921875">
+          <word xMin="24.000000" yMin="69.921875" xMax="56.441406" yMax="77.921875">Account</word>
+          <word xMin="58.984375" yMin="69.921875" xMax="75.886719" yMax="77.921875">RUB</word>
+          <word xMin="78.429688" yMin="69.921875" xMax="109.308595" yMax="77.921875">-108.51</word>
+        </line>
+        <line xMin="24.000000" yMin="79.921875" xMax="182.171873" yMax="87.921875">
+          <word xMin="24.000000" yMin="79.921875" xMax="95.234374" yMax="87.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="79.921875" xMax="137.812498" yMax="87.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="79.921875" xMax="169.449216" yMax="87.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="79.921875" xMax="182.171873" yMax="87.921875">23</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="97.921875" xMax="182.171873" yMax="135.921875">
+        <line xMin="24.000000" yMin="97.921875" xMax="137.757816" yMax="105.921875">
+          <word xMin="24.000000" yMin="97.921875" xMax="63.812500" yMax="105.921875">Operation</word>
+          <word xMin="66.355469" yMin="97.921875" xMax="112.160158" yMax="105.921875">25.10.2026</word>
+          <word xMin="114.703127" yMin="97.921875" xMax="137.757816" yMax="105.921875">09:24</word>
+        </line>
+        <line xMin="24.000000" yMin="107.921875" xMax="130.226566" yMax="115.921875">
+          <word xMin="24.000000" yMin="107.921875" xMax="56.281250" yMax="115.921875">Booking</word>
+          <word xMin="58.824219" yMin="107.921875" xMax="104.628909" yMax="115.921875">25.10.2026</word>
+          <word xMin="107.171878" yMin="107.921875" xMax="130.226566" yMax="115.921875">18:24</word>
+        </line>
+        <line xMin="24.000000" yMin="117.921875" xMax="109.308595" yMax="125.921875">
+          <word xMin="24.000000" yMin="117.921875" xMax="56.441406" yMax="125.921875">Account</word>
+          <word xMin="58.984375" yMin="117.921875" xMax="75.886719" yMax="125.921875">RUB</word>
+          <word xMin="78.429688" yMin="117.921875" xMax="109.308595" yMax="125.921875">-108.88</word>
+        </line>
+        <line xMin="24.000000" yMin="127.921875" xMax="182.171873" yMax="135.921875">
+          <word xMin="24.000000" yMin="127.921875" xMax="95.234374" yMax="135.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="127.921875" xMax="137.812498" yMax="135.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="127.921875" xMax="169.449216" yMax="135.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="127.921875" xMax="182.171873" yMax="135.921875">24</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="145.921875" xMax="182.171873" yMax="183.921875">
+        <line xMin="24.000000" yMin="145.921875" xMax="137.757816" yMax="153.921875">
+          <word xMin="24.000000" yMin="145.921875" xMax="63.812500" yMax="153.921875">Operation</word>
+          <word xMin="66.355469" yMin="145.921875" xMax="112.160158" yMax="153.921875">26.10.2026</word>
+          <word xMin="114.703127" yMin="145.921875" xMax="137.757816" yMax="153.921875">09:25</word>
+        </line>
+        <line xMin="24.000000" yMin="155.921875" xMax="130.226566" yMax="163.921875">
+          <word xMin="24.000000" yMin="155.921875" xMax="56.281250" yMax="163.921875">Booking</word>
+          <word xMin="58.824219" yMin="155.921875" xMax="104.628909" yMax="163.921875">26.10.2026</word>
+          <word xMin="107.171878" yMin="155.921875" xMax="130.226566" yMax="163.921875">18:25</word>
+        </line>
+        <line xMin="24.000000" yMin="165.921875" xMax="113.125002" yMax="173.921875">
+          <word xMin="24.000000" yMin="165.921875" xMax="56.441406" yMax="173.921875">Account</word>
+          <word xMin="58.984375" yMin="165.921875" xMax="75.886719" yMax="173.921875">RUB</word>
+          <word xMin="78.429688" yMin="165.921875" xMax="113.125002" yMax="173.921875">+109.25</word>
+        </line>
+        <line xMin="24.000000" yMin="175.921875" xMax="182.171873" yMax="183.921875">
+          <word xMin="24.000000" yMin="175.921875" xMax="95.234374" yMax="183.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="175.921875" xMax="137.812498" yMax="183.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="175.921875" xMax="169.449216" yMax="183.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="175.921875" xMax="182.171873" yMax="183.921875">25</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="193.921875" xMax="182.171873" yMax="231.921875">
+        <line xMin="24.000000" yMin="193.921875" xMax="137.757816" yMax="201.921875">
+          <word xMin="24.000000" yMin="193.921875" xMax="63.812500" yMax="201.921875">Operation</word>
+          <word xMin="66.355469" yMin="193.921875" xMax="112.160158" yMax="201.921875">27.10.2026</word>
+          <word xMin="114.703127" yMin="193.921875" xMax="137.757816" yMax="201.921875">09:26</word>
+        </line>
+        <line xMin="24.000000" yMin="203.921875" xMax="130.226566" yMax="211.921875">
+          <word xMin="24.000000" yMin="203.921875" xMax="56.281250" yMax="211.921875">Booking</word>
+          <word xMin="58.824219" yMin="203.921875" xMax="104.628909" yMax="211.921875">27.10.2026</word>
+          <word xMin="107.171878" yMin="203.921875" xMax="130.226566" yMax="211.921875">18:26</word>
+        </line>
+        <line xMin="24.000000" yMin="213.921875" xMax="109.308595" yMax="221.921875">
+          <word xMin="24.000000" yMin="213.921875" xMax="56.441406" yMax="221.921875">Account</word>
+          <word xMin="58.984375" yMin="213.921875" xMax="75.886719" yMax="221.921875">RUB</word>
+          <word xMin="78.429688" yMin="213.921875" xMax="109.308595" yMax="221.921875">-109.62</word>
+        </line>
+        <line xMin="24.000000" yMin="223.921875" xMax="182.171873" yMax="231.921875">
+          <word xMin="24.000000" yMin="223.921875" xMax="95.234374" yMax="231.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="223.921875" xMax="137.812498" yMax="231.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="223.921875" xMax="169.449216" yMax="231.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="223.921875" xMax="182.171873" yMax="231.921875">26</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="241.921875" xMax="182.171873" yMax="279.921875">
+        <line xMin="24.000000" yMin="241.921875" xMax="137.757816" yMax="249.921875">
+          <word xMin="24.000000" yMin="241.921875" xMax="63.812500" yMax="249.921875">Operation</word>
+          <word xMin="66.355469" yMin="241.921875" xMax="112.160158" yMax="249.921875">28.10.2026</word>
+          <word xMin="114.703127" yMin="241.921875" xMax="137.757816" yMax="249.921875">09:27</word>
+        </line>
+        <line xMin="24.000000" yMin="251.921875" xMax="130.226566" yMax="259.921875">
+          <word xMin="24.000000" yMin="251.921875" xMax="56.281250" yMax="259.921875">Booking</word>
+          <word xMin="58.824219" yMin="251.921875" xMax="104.628909" yMax="259.921875">28.10.2026</word>
+          <word xMin="107.171878" yMin="251.921875" xMax="130.226566" yMax="259.921875">18:27</word>
+        </line>
+        <line xMin="24.000000" yMin="261.921875" xMax="109.308595" yMax="269.921875">
+          <word xMin="24.000000" yMin="261.921875" xMax="56.441406" yMax="269.921875">Account</word>
+          <word xMin="58.984375" yMin="261.921875" xMax="75.886719" yMax="269.921875">RUB</word>
+          <word xMin="78.429688" yMin="261.921875" xMax="109.308595" yMax="269.921875">-109.99</word>
+        </line>
+        <line xMin="24.000000" yMin="271.921875" xMax="182.171873" yMax="279.921875">
+          <word xMin="24.000000" yMin="271.921875" xMax="95.234374" yMax="279.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="271.921875" xMax="137.812498" yMax="279.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="271.921875" xMax="169.449216" yMax="279.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="271.921875" xMax="182.171873" yMax="279.921875">27</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="289.921875" xMax="182.171873" yMax="327.921875">
+        <line xMin="24.000000" yMin="289.921875" xMax="137.757816" yMax="297.921875">
+          <word xMin="24.000000" yMin="289.921875" xMax="63.812500" yMax="297.921875">Operation</word>
+          <word xMin="66.355469" yMin="289.921875" xMax="112.160158" yMax="297.921875">01.10.2026</word>
+          <word xMin="114.703127" yMin="289.921875" xMax="137.757816" yMax="297.921875">09:28</word>
+        </line>
+        <line xMin="24.000000" yMin="299.921875" xMax="130.226566" yMax="307.921875">
+          <word xMin="24.000000" yMin="299.921875" xMax="56.281250" yMax="307.921875">Booking</word>
+          <word xMin="58.824219" yMin="299.921875" xMax="104.628909" yMax="307.921875">01.10.2026</word>
+          <word xMin="107.171878" yMin="299.921875" xMax="130.226566" yMax="307.921875">18:28</word>
+        </line>
+        <line xMin="24.000000" yMin="309.921875" xMax="109.308595" yMax="317.921875">
+          <word xMin="24.000000" yMin="309.921875" xMax="56.441406" yMax="317.921875">Account</word>
+          <word xMin="58.984375" yMin="309.921875" xMax="75.886719" yMax="317.921875">RUB</word>
+          <word xMin="78.429688" yMin="309.921875" xMax="109.308595" yMax="317.921875">-110.36</word>
+        </line>
+        <line xMin="24.000000" yMin="319.921875" xMax="182.171873" yMax="327.921875">
+          <word xMin="24.000000" yMin="319.921875" xMax="95.234374" yMax="327.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="319.921875" xMax="137.812498" yMax="327.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="319.921875" xMax="169.449216" yMax="327.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="319.921875" xMax="182.171873" yMax="327.921875">28</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="337.921875" xMax="182.171873" yMax="375.921875">
+        <line xMin="24.000000" yMin="337.921875" xMax="137.757816" yMax="345.921875">
+          <word xMin="24.000000" yMin="337.921875" xMax="63.812500" yMax="345.921875">Operation</word>
+          <word xMin="66.355469" yMin="337.921875" xMax="112.160158" yMax="345.921875">02.10.2026</word>
+          <word xMin="114.703127" yMin="337.921875" xMax="137.757816" yMax="345.921875">09:29</word>
+        </line>
+        <line xMin="24.000000" yMin="347.921875" xMax="130.226566" yMax="355.921875">
+          <word xMin="24.000000" yMin="347.921875" xMax="56.281250" yMax="355.921875">Booking</word>
+          <word xMin="58.824219" yMin="347.921875" xMax="104.628909" yMax="355.921875">02.10.2026</word>
+          <word xMin="107.171878" yMin="347.921875" xMax="130.226566" yMax="355.921875">18:29</word>
+        </line>
+        <line xMin="24.000000" yMin="357.921875" xMax="109.308595" yMax="365.921875">
+          <word xMin="24.000000" yMin="357.921875" xMax="56.441406" yMax="365.921875">Account</word>
+          <word xMin="58.984375" yMin="357.921875" xMax="75.886719" yMax="365.921875">RUB</word>
+          <word xMin="78.429688" yMin="357.921875" xMax="109.308595" yMax="365.921875">-110.73</word>
+        </line>
+        <line xMin="24.000000" yMin="367.921875" xMax="182.171873" yMax="375.921875">
+          <word xMin="24.000000" yMin="367.921875" xMax="95.234374" yMax="375.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="367.921875" xMax="137.812498" yMax="375.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="367.921875" xMax="169.449216" yMax="375.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="367.921875" xMax="182.171873" yMax="375.921875">29</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="385.921875" xMax="182.171873" yMax="423.921875">
+        <line xMin="24.000000" yMin="385.921875" xMax="137.757816" yMax="393.921875">
+          <word xMin="24.000000" yMin="385.921875" xMax="63.812500" yMax="393.921875">Operation</word>
+          <word xMin="66.355469" yMin="385.921875" xMax="112.160158" yMax="393.921875">03.10.2026</word>
+          <word xMin="114.703127" yMin="385.921875" xMax="137.757816" yMax="393.921875">09:30</word>
+        </line>
+        <line xMin="24.000000" yMin="395.921875" xMax="130.226566" yMax="403.921875">
+          <word xMin="24.000000" yMin="395.921875" xMax="56.281250" yMax="403.921875">Booking</word>
+          <word xMin="58.824219" yMin="395.921875" xMax="104.628909" yMax="403.921875">03.10.2026</word>
+          <word xMin="107.171878" yMin="395.921875" xMax="130.226566" yMax="403.921875">18:30</word>
+        </line>
+        <line xMin="24.000000" yMin="405.921875" xMax="113.125002" yMax="413.921875">
+          <word xMin="24.000000" yMin="405.921875" xMax="56.441406" yMax="413.921875">Account</word>
+          <word xMin="58.984375" yMin="405.921875" xMax="75.886719" yMax="413.921875">RUB</word>
+          <word xMin="78.429688" yMin="405.921875" xMax="113.125002" yMax="413.921875">+111.10</word>
+        </line>
+        <line xMin="24.000000" yMin="415.921875" xMax="182.171873" yMax="423.921875">
+          <word xMin="24.000000" yMin="415.921875" xMax="95.234374" yMax="423.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="415.921875" xMax="137.812498" yMax="423.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="415.921875" xMax="169.449216" yMax="423.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="415.921875" xMax="182.171873" yMax="423.921875">30</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="433.921875" xMax="182.171873" yMax="471.921875">
+        <line xMin="24.000000" yMin="433.921875" xMax="137.757816" yMax="441.921875">
+          <word xMin="24.000000" yMin="433.921875" xMax="63.812500" yMax="441.921875">Operation</word>
+          <word xMin="66.355469" yMin="433.921875" xMax="112.160158" yMax="441.921875">04.10.2026</word>
+          <word xMin="114.703127" yMin="433.921875" xMax="137.757816" yMax="441.921875">09:31</word>
+        </line>
+        <line xMin="24.000000" yMin="443.921875" xMax="130.226566" yMax="451.921875">
+          <word xMin="24.000000" yMin="443.921875" xMax="56.281250" yMax="451.921875">Booking</word>
+          <word xMin="58.824219" yMin="443.921875" xMax="104.628909" yMax="451.921875">04.10.2026</word>
+          <word xMin="107.171878" yMin="443.921875" xMax="130.226566" yMax="451.921875">18:31</word>
+        </line>
+        <line xMin="24.000000" yMin="453.921875" xMax="109.308595" yMax="461.921875">
+          <word xMin="24.000000" yMin="453.921875" xMax="56.441406" yMax="461.921875">Account</word>
+          <word xMin="58.984375" yMin="453.921875" xMax="75.886719" yMax="461.921875">RUB</word>
+          <word xMin="78.429688" yMin="453.921875" xMax="109.308595" yMax="461.921875">-111.47</word>
+        </line>
+        <line xMin="24.000000" yMin="463.921875" xMax="182.171873" yMax="471.921875">
+          <word xMin="24.000000" yMin="463.921875" xMax="95.234374" yMax="471.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="463.921875" xMax="137.812498" yMax="471.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="463.921875" xMax="169.449216" yMax="471.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="463.921875" xMax="182.171873" yMax="471.921875">31</word>
+        </line>
+      </block>
+      <block xMin="24.000000" yMin="481.921875" xMax="182.171873" yMax="519.921875">
+        <line xMin="24.000000" yMin="481.921875" xMax="137.757816" yMax="489.921875">
+          <word xMin="24.000000" yMin="481.921875" xMax="63.812500" yMax="489.921875">Operation</word>
+          <word xMin="66.355469" yMin="481.921875" xMax="112.160158" yMax="489.921875">05.10.2026</word>
+          <word xMin="114.703127" yMin="481.921875" xMax="137.757816" yMax="489.921875">09:32</word>
+        </line>
+        <line xMin="24.000000" yMin="491.921875" xMax="130.226566" yMax="499.921875">
+          <word xMin="24.000000" yMin="491.921875" xMax="56.281250" yMax="499.921875">Booking</word>
+          <word xMin="58.824219" yMin="491.921875" xMax="104.628909" yMax="499.921875">05.10.2026</word>
+          <word xMin="107.171878" yMin="491.921875" xMax="130.226566" yMax="499.921875">18:32</word>
+        </line>
+        <line xMin="24.000000" yMin="501.921875" xMax="109.308595" yMax="509.921875">
+          <word xMin="24.000000" yMin="501.921875" xMax="56.441406" yMax="509.921875">Account</word>
+          <word xMin="58.984375" yMin="501.921875" xMax="75.886719" yMax="509.921875">RUB</word>
+          <word xMin="78.429688" yMin="501.921875" xMax="109.308595" yMax="509.921875">-111.84</word>
+        </line>
+        <line xMin="24.000000" yMin="511.921875" xMax="182.171873" yMax="519.921875">
+          <word xMin="24.000000" yMin="511.921875" xMax="95.234374" yMax="519.921875">СИНТЕТИЧЕСКАЯ</word>
+          <word xMin="97.777342" yMin="511.921875" xMax="137.812498" yMax="519.921875">ПОКУПКА</word>
+          <word xMin="140.355466" yMin="511.921875" xMax="169.449216" yMax="519.921875">НОМЕР</word>
+          <word xMin="171.992185" yMin="511.921875" xMax="182.171873" yMax="519.921875">32</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+</doc>
+</body>
+</html>

@@ -1,0 +1,25 @@
+SYNTHETIC BANK - COLUMNS
+
+Available balance RUB 7777.00
+
+Debit turnover RUB 1234.56
+
+Credit turnover RUB 2000.00
+
+
+Operation                       Booking      Account RUB   Original USD
+
+19.10.2026                      20.10.2026   -1234.56      -15.00
+
+SYNTHETIC SHOP
+SYNTHETIC BANK - COLUMNS PAGE 2
+
+
+
+
+Operation                Booking      Account RUB
+
+21.10.2026               22.10.2026   +2000.00
+
+OWN TRANSFER - REVIEW SEMANTICS
+
