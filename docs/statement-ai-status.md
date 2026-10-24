@@ -96,7 +96,7 @@ Closed summary не раскрывает конкретный дефект parti
 предлагает прямое чтение PNG страниц+текста одной vision-моделью: обычные строки
 и дословные quotes, deterministic binding/старые financial guards после распознавания.
 Candidate GPT-6 Astra пока UNVERIFIED;4 cases включают image-only control и full32.
-Контракт **proposed**, implementation **not_started**; paid V4/keys/merge/deploy не открыты.
+Контракт **accepted V1–V3 offline**, implementation **not_started**; paid V4/keys/merge/deploy не открыты.
 Возможный будущий V4:≤8 POST, предлагаемый ceiling $10.40, новый явный бюджетный допуск.
 Старый grouping-подход закрыт REJECT; фейки/зелёный CI не заменяют измерения качества.
 Даже успешный новый corpus не докажет real/full import/owner acceptance автоматически.

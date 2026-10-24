@@ -1,6 +1,6 @@
 # SPEC-0055 / S1.22: прямое чтение страниц выписки
 
-- Статус: **proposed V1–V3**; implementation_status: **not_started**.
+- Статус: **accepted V1–V3 offline**; implementation_status: **not_started**.
 - Направление принято владельцем 2026-10-24: «Значит пора сменить курс, попробовать то, что работает».
 - Дата: 2026-10-24, Asia/Yekaterinburg. Автор: Codex.
 - База: main `ad1eca3efed097901bd15d8f7207d592c89ec24f`, принятый отчёт PR119.
@@ -211,3 +211,11 @@ env-переменной после execute gate, не argv/log/report; ника
 Проверка подготовки предложения: изменены только5 Markdown файлов; `make test`
 PASS (Go,89 Web suites/336 tests, lint/FSD/format/build/Jev), `go vet` PASS,
 `git diff --check` PASS. Код V1–V3 не написан, model calls/keys/config/SSH/SQL/deploy0.
+
+## Прямое принятие до реализации
+
+2026-10-24 владелец прямо ответил **«Принять V1–V3 и реализовать offline»**
+на PR120/head `fa18c519bf579776696b0bdf30c2ba0a62275416`. Принят перечисленный
+source corpus/renderer/DTO/adapter/judge/CLI и только local/fake проверки.
+V4/paid calls/чтение и настройка ключей/SSH/SQL/deploy/activation/merge не разрешены.
+Этот receipt фиксируется отдельным commit до первого файла кода.

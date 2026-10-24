@@ -206,7 +206,7 @@ Owner принимает или изменяет:
 ## Предложение 2026-10-24: прямое чтение страниц, S1.22
 
 По поручению владельца сменить курс подготовлен [S1.22 V1–V3](../specs/0055-s122-direct-page-reading.md),
-**proposed / implementation not_started**. Один research candidate получает PNG+text
+**accepted V1–V3 offline / implementation not_started**. Один research candidate получает PNG+text
 и возвращает строки+quotes; Go выполняет binding/grounding/арифметику/financial guards.
 Предлагается OpenAI Responses/gpt-6-astra, доступ/качество/region/funding UNVERIFIED.
 Это не Jev vision и не переключение production provider. После принятия возможна
