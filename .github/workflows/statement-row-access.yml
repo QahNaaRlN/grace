@@ -1,0 +1,99 @@
+name: 'S1.21: одна проверка CI SSH'
+on:
+  workflow_dispatch:
+    inputs:
+      authorized_source:
+        description: 'Exact source SHA отдельного допуска B4'
+        required: true
+        type: string
+      execute_approved_access:
+        description: 'Один отдельно разрешённый auth-only SSH, без pilot'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  row-access:
+    if: ${{ inputs.execute_approved_access }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify exact authorized source and CI 5/5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          ci_run=$(gh run list --workflow=ci.yml --commit="$GITHUB_SHA" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          case "$ci_run" in ''|*[!0-9]*) exit 2 ;; esac
+          gh run view "$ci_run" --json headSha,status,conclusion,jobs > "$RUNNER_TEMP/access-ci.json"
+          python3 scripts/research/verify-screening-source-ci.py "$GITHUB_SHA" "$RUNNER_TEMP/access-ci.json"
+          python3 scripts/research/setup-statement-row-ssh.py --source "$GITHUB_SHA" > "$RUNNER_TEMP/access-manifest.json"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: statement-s121-access-manifest
+          path: ${{ runner.temp }}/access-manifest.json
+          if-no-files-found: error
+      - name: Configure dedicated pinned SSH
+        env:
+          ROW_SSH_KEY: ${{ secrets.PRODUCTION_STATEMENT_ROW_SSH_KEY }}
+        run: |
+          set -eu
+          test -n "$ROW_SSH_KEY"
+          directory="$RUNNER_TEMP/s121-row-access-ssh"
+          mkdir -m 0700 "$directory"
+          install -m 0600 /dev/null "$directory/key"
+          printf '%s\n' "$ROW_SSH_KEY" > "$directory/key"
+          install -m 0600 deployments/production/known_hosts "$directory/known_hosts"
+      - name: Verify root access once
+        env:
+          AUTHORIZED_SHA: ${{ inputs.authorized_source }}
+        run: |
+          set -eu
+          test "$GITHUB_RUN_ATTEMPT" -eq 1
+          printf '%s' "$AUTHORIZED_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$AUTHORIZED_SHA" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          directory="$RUNNER_TEMP/s121-row-access-ssh"
+          status=0
+          timeout --signal=TERM --kill-after=2s 20s ssh -F /dev/null -T -n \
+            -oBatchMode=yes -oIdentitiesOnly=yes -oIdentityAgent=none \
+            -oPreferredAuthentications=publickey -oPasswordAuthentication=no \
+            -oKbdInteractiveAuthentication=no -oForwardAgent=no -oClearAllForwardings=yes \
+            -oConnectionAttempts=1 -oConnectTimeout=10 -oStrictHostKeyChecking=yes \
+            -oUserKnownHostsFile="$directory/known_hosts" -i "$directory/key" \
+            root@195.133.195.190 'test "$(id -u)" -eq 0' >/dev/null 2>&1 || status=$?
+          python3 - "$GITHUB_SHA" "$status" "$RUNNER_TEMP/s121-access-result.json" <<'PY'
+          import json, sys
+          source, status, target = sys.argv[1:]
+          result = dict(version='statement.row-access.s121.v1', source=source,
+                        sshVerified=status == '0', activationAuthorized=False,
+                        pilotAuthorized=False, status='VERIFIED' if status == '0' else 'NOT_VERIFIED')
+          with open(target, 'w') as output:
+              json.dump(result, output, separators=(',', ':'))
+              output.write('\n')
+          PY
+          cat "$RUNNER_TEMP/s121-access-result.json"
+          test "$status" -eq 0
+      - name: Remove ephemeral SSH key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/s121-row-access-ssh"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: statement-s121-access-result
+          path: ${{ runner.temp }}/s121-access-result.json
+          if-no-files-found: warn

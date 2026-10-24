@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 ./scripts/test-statement-clock-s119-wrapper.sh
 ./scripts/test-statement-row-s121-wrapper.sh
 python3 scripts/research/test-statement-row-workflow.py
+python3 -B scripts/research/test-statement-row-access.py
 work="$(mktemp -d /tmp/grace-clock-helper.XXXXXX)"
 name="grace-clock-helper-$$"
 volume="$name-socket"

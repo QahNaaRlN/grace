@@ -62,9 +62,10 @@ calls/cost/settlement=null (N/A). Качество модели не измер�
 в том же S1.21 пакете. Допуск **CONSUMED**, повторов/дополнительного SSH нет.
 Отчёт отдельно принят владельцем и интегрирован PR116/main ee7c0ec;
 exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS, без deploy.
-В том же S1.21 принят **A1–A3 offline / implementation not_started**: offline source
+В том же S1.21 принят **A1–A3 offline / implementation prepared for review**: offline source
 helper/dedicated key/auth-only workflow и одна secret reference нового pilot.
-Общий deploy key сохраняется. Прямое принятие владельца зафиксировано до кода; исходники/ключи пока не созданы.
+Общий deploy key сохраняется. Прямое принятие владельца зафиксировано receipt1921406 до кода. Helper/auth workflow
+и fake controls подготовлены; рабочие ключи не создавались, live B4 не выполнялся.
 Actual bootstrap/auth-only B4 и новый paid P4 требуют отдельных exact-source
 допусков; принятие A1–A3 разрешает только offline source и fake tests.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
