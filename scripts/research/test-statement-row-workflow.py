@@ -11,6 +11,8 @@ workflow = (repo / '.github/workflows/statement-row-pilot.yml').read_text()
 assert 'default: false' in workflow and 'if: ${{ inputs.execute_approved_pilot }}' in workflow
 assert 'workflow_dispatch:' in workflow and 'pull_request:' not in workflow
 assert 'PRODUCTION_STATEMENT_OPERATOR_OWNER_ID' in workflow
+assert '${{ secrets.PRODUCTION_STATEMENT_ROW_SSH_KEY }}' in workflow
+assert '${{ secrets.PRODUCTION_SSH_KEY }}' not in workflow
 assert 's119-cards-document.json' in workflow
 assert 'grace-deploy@' not in workflow
 

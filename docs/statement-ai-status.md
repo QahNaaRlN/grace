@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после единственного S1.21 P4/run40035544723, 2026-10-24 Asia/Yekaterinburg.
+Обновлено после принятия отчёта P4/PR116 и принятия A1–A3 offline, 2026-10-24 Asia/Yekaterinburg.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115/main6dc08d3; exact-main CI40034156936/all5 и Delivery40035190465/all4 PASS |
+| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116/main ee7c0ec; exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS |
 | S1.19 | Единственный pilot run39983522098:6/6 completed, clocks `[0,4,4,0,0,4]`, итог **REJECT**, без принятого candidate |
 | R4 | Единственный run40002091161/attempt1, source1a6b742, **VERIFIED**, replay6/6, все120 checks/3 pairs; разрешение **CONSUMED** |
 | Точная причина REJECT | Первая пара, candidate ordinal2, вторая строка: `record_description` и `row_issues` ухудшились с base PASS до candidate FAIL; `non_clock_regression` |
@@ -60,8 +60,14 @@ calls/cost/settlement=null (N/A). Качество модели не измер�
 [Run/artifact/hash evidence](research/statement-quality/s121-pilot-execution.json)
 и [public manifest](research/statement-quality/s121-pilot-manifest.json) сохранены
 в том же S1.21 пакете. Допуск **CONSUMED**, повторов/дополнительного SSH нет.
-Следующий необходимый шаг — отдельное решение о подготовке CI root credential;
-после его проверки для нового P4 всё равно потребуется новый exact-source допуск.
+Отчёт отдельно принят владельцем и интегрирован PR116/main ee7c0ec;
+exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS, без deploy.
+В том же S1.21 принят **A1–A3 offline / implementation prepared for review**: offline source
+helper/dedicated key/auth-only workflow и одна secret reference нового pilot.
+Общий deploy key сохраняется. Прямое принятие владельца зафиксировано receipt1921406 до кода. Helper/auth workflow
+и fake controls подготовлены; рабочие ключи не создавались, live B4 не выполнялся.
+Actual bootstrap/auth-only B4 и новый paid P4 требуют отдельных exact-source
+допусков; принятие A1–A3 разрешает только offline source и fake tests.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
 работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
 реальной модели. После любого результата — остановка, без автоматического повтора.

@@ -69,7 +69,7 @@ jobs:
           if-no-files-found: error
       - name: Configure pinned SSH
         env:
-          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_STATEMENT_ROW_SSH_KEY }}
         run: |
           install -d -m 0700 "$HOME/.ssh"
           install -m 0600 /dev/null "$HOME/.ssh/id_ed25519"
