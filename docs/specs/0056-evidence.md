@@ -2,7 +2,15 @@
 
 Дата: 2026-10-25, Asia/Yekaterinburg. Исполнитель: Codex.
 Принятый контракт: [SPEC-0056 G1–G4](0056-openrouter-document-reading.md).
-Implementation acceptance владельцем и merge: **PENDING**.
+Implementation acceptance владельцем: **ACCEPTED**; merge: **INTEGRATED PR122**.
+
+Владелец 2026-10-25: «Принять реализацию и слить №122», exact head
+`b160af182760fbfde9e38da059f1f185f11c76dd`; source CI40131646353/5 PASS.
+Merge/main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`, tree равен принятому.
+[Main CI40132897197](https://github.com/QahNaaRlN/grace/actions/runs/40132897197)
+**5/5 PASS**, [Delivery40133674626](https://github.com/QahNaaRlN/grace/actions/runs/40133674626)
+**4/4 PASS**, оба exact merge SHA. Delivery не является deploy.
+Receipt и post-merge evidence: [PR122](https://github.com/QahNaaRlN/grace/pull/122).
 
 Контракт принят прямым ответом «Принять контракт, интегрировать и реализовать»
 до production-кода. PR121 интегрирован в main
@@ -86,7 +94,31 @@ fake values, намеренно не используется как evidence т
 
 До реальной проверки не выбран и не квалифицирован новый production endpoint.
 Существующий visual fake PASS подтверждает протокол/guards, не точность LLM.
-Требуется приёмка готового implementation PR и отдельное решение о merge.
-Затем можно согласовать ограниченную проверку конкретной OpenRouter-модели
-на exact source и разрешённых данных/стоимости; production rollout отдельно.
+G1–G4 приняты и интегрированы. Следующее предложение —
+[Q1–Q3: offline-подготовка измерения](0056-openrouter-document-qualification.md),
+**accepted Q1–Q3 / offline implementation pending acceptance**;
+[AC/evidence](0056-qualification-evidence.md). Q4 требует отдельного допуска на
+exact source/endpoint/данные/стоимость; production rollout отдельно.
 Гайд оператора: [OpenRouter и чтение документов](../openrouter-document-reading.md).
+
+## Post-merge G1–G4
+
+На merge10a0059: `make test` (90 Web files/339 tests),
+`make test-integration` (17 suites), `make test-production`,
+`go vet ./cmd/... ./internal/...`, `git diff --check` — **PASS**.
+Exact-main CI проверен независимым `verify-screening-source-ci.py`, Delivery
+проверен по SHA и четырём обязательным jobs. Основной checkout чистый.
+
+Первый запуск Docker gates из main остановился из-за недоступности bind-mount
+UID10001 при правах700 на основной каталог. Чистый выделенный implementation
+worktree fast-forward обновлён до merge SHA; полные integration/production
+gates там PASS, права основного каталога не менялись. Worktree сохранён для
+воспроизводимости sandbox-проверок. `make test` выполнялся с TMPDIR вне checkout;
+защитные output_inside_repository проверки не изменялись.
+
+Логи: `/tmp/grace-0056-merged-test.log`,
+`/tmp/grace-0056-merged-integration-worktree.log`,
+`/tmp/grace-0056-merged-production-worktree.log`, `/tmp/grace-0056-merged-vet.log`.
+Live provider/metadata calls, key setup, production SSH/SQL/deploy и расходы
+по merge не выполнялись. Q1–Q3 отдельно приняты и реализованы offline в PR123, приёмка/merge pending;
+[AC/evidence](0056-qualification-evidence.md). Q4 NOT_AUTHORIZED.

@@ -1,9 +1,14 @@
 # Roadmap Grace
 
 Принят [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md), контракт
-интегрирован PR121. Локальная реализация единого OpenRouter, capability groups,
-рендера фото/PDF и owner visual review локально verified;
-[implementation evidence](specs/0056-evidence.md), acceptance/merge pending.
+интегрирован PR121. Реализация единого OpenRouter, capability groups,
+рендера фото/PDF и owner visual review принята и интегрирована PR122/main10a0059;
+main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
+[Implementation evidence](specs/0056-evidence.md). Следующий
+[Q1–Q3 offline-пакет](specs/0056-openrouter-document-qualification.md) принят,
+реализация подготовлена / owner acceptance pending;
+[AC/evidence](specs/0056-qualification-evidence.md);
+Q4/≤8POST/6GET/$2.00 предложен, не разрешён.
 Реальное качество модели и production activation остаются UNVERIFIED.
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).

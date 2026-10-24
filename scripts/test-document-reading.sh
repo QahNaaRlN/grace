@@ -50,4 +50,14 @@ docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 1
  -v "$work/assistant.test:/run/assistant.test:ro" -e TEST_S56_DOCUMENTS=true \
  -e TEST_DATABASE_URL=postgres://grace:grace@postgres:5432/receipt_documents?sslmode=disable \
  alpine:3.22 /run/assistant.test -test.run '^TestS56QuickRouter' -test.v
+# SPEC-0056 Q1–Q3: actual renderer parity and the same shared SQL functions.
+compose exec -T postgres createdb -U grace document_qualification
+compose run --rm migrate -path=/migrations -database=postgres://grace:grace@postgres:5432/document_qualification?sslmode=disable up
+GOTOOLCHAIN=go1.24.0 CGO_ENABLED=0 go test -c -tags=integration -o "$work/qualification.test" ./internal/documentqualification
+chmod 755 "$work/qualification.test"
+docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-new-privileges:true --memory=512m --pids-limit=32 \
+ -v "$work/qualification.test:/run/qualification.test:ro" -v "$PWD:/src:ro" -v "$volume:/run/grace-pdf:ro" \
+ -e TEST_Q_DOCUMENTS=true -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
+ -e TEST_DATABASE_URL=postgres://grace:grace@postgres:5432/document_qualification?sslmode=disable \
+ -w /src/internal/documentqualification alpine:3.22 /run/qualification.test -test.run '^(TestQActualRendererCorpus|TestQSQLBudget)$' -test.v
 printf '%s\n' 'SPEC-0056 document reading integration passed; live provider calls=0'

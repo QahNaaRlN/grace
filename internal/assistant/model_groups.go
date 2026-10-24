@@ -45,17 +45,22 @@ type ModelSelection struct {
 	MaxImageSide  int    `json:"maxImageSide"`
 }
 type ModelGroups struct {
-	mu        sync.Mutex
-	groups    []ModelGroup
-	client    HTTPDoer
-	key       string
-	base      string
-	checked   map[string][]ModelPolicy
-	attempted map[string]time.Time
-	now       func() time.Time
+	mu         sync.Mutex
+	groups     []ModelGroup
+	client     HTTPDoer
+	key        string
+	base       string
+	checked    map[string][]ModelPolicy
+	attempted  map[string]time.Time
+	now        func() time.Time
+	experiment bool
 }
 
 func NewModelGroups(raw, key string, client HTTPDoer) (*ModelGroups, error) {
+	return newModelGroups(raw, key, client, false)
+}
+
+func newModelGroups(raw, key string, client HTTPDoer, experiment bool) (*ModelGroups, error) {
 	var groups []ModelGroup
 	if len(raw) > 64<<10 || json.Unmarshal([]byte(raw), &groups) != nil || len(groups) < 1 || len(groups) > 4 {
 		return nil, errors.New("no_eligible_model")
@@ -71,7 +76,7 @@ func NewModelGroups(raw, key string, client HTTPDoer) (*ModelGroups, error) {
 			p := m.Policy
 			p.VerifiedAt = time.Now()
 			id := p.Model + "/" + p.Provider
-			if ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (g.Profile == DocumentReading && (!p.Vision || m.MaxImages < 1 || m.MaxImages > 4 || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
+			if ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || (!experiment && strings.HasPrefix(strings.ToLower(m.Qualification), "experiment_only:")) || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (g.Profile == DocumentReading && (!p.Vision || m.MaxImages < 1 || m.MaxImages > 4 || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
 				return nil, errors.New("capability_unverified")
 			}
 			ids[id] = true
@@ -80,7 +85,7 @@ func NewModelGroups(raw, key string, client HTTPDoer) (*ModelGroups, error) {
 	if client == nil {
 		client = &http.Client{Timeout: 5 * time.Second, Transport: &http.Transport{Proxy: nil}, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	}
-	return &ModelGroups{groups: groups, client: client, key: key, base: "https://openrouter.ai/api/v1/", checked: map[string][]ModelPolicy{}, attempted: map[string]time.Time{}, now: time.Now}, nil
+	return &ModelGroups{groups: groups, client: client, key: key, base: "https://openrouter.ai/api/v1/", checked: map[string][]ModelPolicy{}, attempted: map[string]time.Time{}, now: time.Now, experiment: experiment}, nil
 }
 
 // Legacy policy migration is explicit and bounded to 30 days from its original
@@ -128,6 +133,9 @@ func (g *ModelGroups) Resolve(ctx context.Context, purpose string, images int) (
 		fresh = fresh && p.Valid(now)
 	}
 	if !fresh {
+		if g.experiment && !g.attempted[purpose].IsZero() {
+			return ModelPolicy{}, errors.New("capability_unverified")
+		}
 		if last := g.attempted[purpose]; !last.IsZero() && now.Sub(last) < time.Minute {
 			return ModelPolicy{}, errors.New("capability_unverified")
 		}
