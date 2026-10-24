@@ -1,0 +1,157 @@
+{
+  "version": "statement.row-access.s121.execution-evidence.v1",
+  "source": "41ad69f781eb5ab5ca9d9e984412af57e65bc4d8",
+  "ref": "codex/statement-s121-row-access-source",
+  "workflow": "statement-row-access.yml",
+  "inputs": {
+    "authorized_source": "41ad69f781eb5ab5ca9d9e984412af57e65bc4d8",
+    "execute_approved_access": "true"
+  },
+  "approval": {
+    "answer": "Разрешаю один B4",
+    "receiptURL": "https://github.com/QahNaaRlN/grace/pull/117",
+    "publishedBeforeBootstrap": true,
+    "status": "CONSUMED"
+  },
+  "run": {
+    "attempt": 1,
+    "conclusion": "success",
+    "createdAt": "2026-10-24T15:27:49Z",
+    "event": "workflow_dispatch",
+    "headBranch": "codex/statement-s121-row-access-source",
+    "headSha": "41ad69f781eb5ab5ca9d9e984412af57e65bc4d8",
+    "jobs": [
+      {
+        "completedAt": "2026-10-24T15:28:04Z",
+        "conclusion": "success",
+        "databaseId": 120910879664,
+        "name": "row-access",
+        "startedAt": "2026-10-24T15:27:52Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-24T15:27:54Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-24T15:27:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:27:56Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-24T15:27:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:27:58Z",
+            "conclusion": "success",
+            "name": "Verify exact authorized source and CI 5/5",
+            "number": 3,
+            "startedAt": "2026-10-24T15:27:56Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:27:59Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v7",
+            "number": 4,
+            "startedAt": "2026-10-24T15:27:58Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:27:59Z",
+            "conclusion": "success",
+            "name": "Configure dedicated pinned SSH",
+            "number": 5,
+            "startedAt": "2026-10-24T15:27:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:28:01Z",
+            "conclusion": "success",
+            "name": "Verify root access once",
+            "number": 6,
+            "startedAt": "2026-10-24T15:27:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:28:01Z",
+            "conclusion": "success",
+            "name": "Remove ephemeral SSH key",
+            "number": 7,
+            "startedAt": "2026-10-24T15:28:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:28:02Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v7",
+            "number": 8,
+            "startedAt": "2026-10-24T15:28:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:28:03Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 16,
+            "startedAt": "2026-10-24T15:28:02Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-24T15:28:03Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 17,
+            "startedAt": "2026-10-24T15:28:03Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/QahNaaRlN/grace/actions/runs/40107076865/job/120910879664"
+      }
+    ],
+    "status": "completed",
+    "updatedAt": "2026-10-24T15:28:05Z",
+    "url": "https://github.com/QahNaaRlN/grace/actions/runs/40107076865"
+  },
+  "artifacts": [
+    {
+      "id": 12565515765,
+      "name": "statement-s121-access-result",
+      "declaredArchiveDigest": "sha256:c7de458663be9303ba26556d2bd852e48c88d75de70193c21d8044563984abbb"
+    },
+    {
+      "id": 12565515756,
+      "name": "statement-s121-access-manifest",
+      "declaredArchiveDigest": "sha256:16888258fa12fa762023b1a78606c5412fe9c9664940b427b52aeadf5c173afd"
+    }
+  ],
+  "filesSHA256": {
+    "s121-access-bootstrap.json": "dc7653904275cbca35abcfb818788d35857dfcef8103c0c2dfb18d7abadddc78",
+    "s121-access-result.json": "e79f307897a5866a0c08529f976521cedacae2d396e5c75f7066474cb36adcf0",
+    "s121-access-manifest.json": "a608fbd9123024758facae7f1e4dd231131530e9da600bc6f3c2a67f5e528310"
+  },
+  "validation": {
+    "strictClosedResult": true,
+    "manifestByteEquality": true,
+    "operationalHashesEqualSourceGitBlobs": true,
+    "runSourceAndAttemptVerified": true,
+    "allStepsSuccess": true,
+    "rawLogsSaved": false,
+    "privateVPSReportsRead": false
+  },
+  "result": "VERIFIED",
+  "modelHypothesis": "UNVERIFIED",
+  "repeatAuthorized": false,
+  "pilotAuthorized": false,
+  "activationAuthorized": false,
+  "limitations": [
+    "Подтверждена только CI root authentication, не SFTP/staging/wrapper/H2.",
+    "Public key и dedicated production secret сохраняются; private key не публикуется.",
+    "Archive digests взяты из GitHub metadata, локальные ZIP digests не сравнивались.",
+    "Штатный cleanup локальной копии завершён вместе с bootstrap exit0; cleanup runner key — success. Дополнительный SSH для проверки не выполнялся."
+  ]
+}
