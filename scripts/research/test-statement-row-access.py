@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """S1.21 A1-A3: actual helper/remote file operations and workflow blocks, all SSH/gh/keygen fake."""
 import base64
+import fcntl
 import importlib.util
 import json
 import os
@@ -179,6 +180,10 @@ class RemoteTests(unittest.TestCase):
         self.assertEqual(self.update('rollback'), 'absent')
 
     def test_refuse_unsafe_files_and_ambiguous_rollback(self):
+        with self.keys.open('rb') as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            with self.assertRaises(BlockingIOError): self.update('install')
+        self.assertEqual(self.keys.read_bytes(), self.original)
         self.keys.chmod(0o644)
         with self.assertRaises(ValueError): self.update('install')
         self.keys.chmod(0o600)

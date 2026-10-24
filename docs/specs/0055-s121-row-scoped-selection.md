@@ -954,7 +954,7 @@ false/unknown, без скрытого второго install/повтора. SI
 
 Remote Python исполняется через stdin без установки файла на VPS. Цель только
 `/root/.ssh/authorized_keys`, owner/mode/no-symlink/no-hardlink/size/newline guards,
-flock и append одной restrict tagged строки. Rollback обрезает только exact свой
+nonblocking flock и append одной restrict tagged строки (busy lock — отказ без ожидания). Rollback обрезает только exact свой
 последний tail. При чужой дописанной строке — отказ без её изменения. Fake harness
 исполняет этот actual код на временных файлах, не на `/root`.
 
@@ -973,7 +973,7 @@ source-bound result; pre-SSH guard/config отказ может не созда�
 | Safe defaults | `python3 -B scripts/research/test-statement-row-access.py`: CLI check с invalid HOME/agent/GH_DEBUG и PATH-spies; missing execute/invalid source до внешних команд |
 | Source/manifest | Мутации source/clean tree/ancestor/Git blob/CI/skipped jobs/manifest limits/duplicate keys/boolean types; отказ до SSH/keygen; actual local one-shot marker mode0600/refusal |
 | Bootstrap caps и cleanup | Fake keygen/gh/SSH success и failures до/после install, secret race/PUT uncertainty/verification failure/rollback failure/KeyboardInterrupt;≤1 install+≤1 rollback, new private fixture удалён |
-| Remote ownership | Actual append/rollback byte equality чужих строк; public/private mode, symlink, missing newline, foreign tag, concurrent tail refusal — временный filesystem fixture |
+| Remote ownership | Actual append/rollback byte equality чужих строк; public/private mode, busy flock, symlink, missing newline, foreign tag, concurrent tail refusal — временный filesystem fixture |
 | CI authentication | Actual shell blocks с fake git/gh/SSH: success/failure/timeout/source/attempt/ancestor/CI/secret guards, одна фиксированная root command/identity; private output не попадает в result/log |
 | Pilot binding | `python3 scripts/research/test-statement-row-workflow.py`: dedicated secret reference и прежние source/marker/refusal/privacy/root destination controls |
 | Integration | Новый harness подключён к существующему `scripts/test-statement-clock-s119.sh` в `make test-production`, не только отдельный ручной запуск |

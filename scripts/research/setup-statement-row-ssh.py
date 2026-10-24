@@ -42,7 +42,7 @@ def update(root, source, blob, operation, owner=0):
     target = root / '.ssh/authorized_keys'
     fd = os.open(target, os.O_RDWR | os.O_NOFOLLOW)
     try:
-        fcntl.flock(fd, fcntl.LOCK_EX)
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode) or st.st_uid != owner or stat.S_IMODE(st.st_mode) != 0o600 or st.st_nlink != 1 or st.st_size > 1048576:
             raise ValueError('file')
