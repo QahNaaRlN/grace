@@ -814,9 +814,9 @@ mode, не отменяет исторический отдельный допу
 H2 и общая цель надёжного AI PDF-импорта остаются **UNVERIFIED**.
 
 
-## Кандидат A1–A3: отдельно подготовить CI-доступ к root
+## Принятое A1–A3: отдельно подготовить CI-доступ к root
 
-**Статус: proposed / implementation not_started / live NOT_AUTHORIZED.**
+**Статус: accepted A1–A3 offline / implementation not_started / B4 NOT_AUTHORIZED.**
 Отчёт P4 принят владельцем и интегрирован PR116, merge
 `ee7c0ec6a032d614c45cb7ff70e599e2f3c4d8f8`, accepted head
 `e432cb996cdfef9ce366a76150098655d020319f`; source CI40036955287/all5 PASS.
@@ -912,3 +912,15 @@ value не публикуется. Результат B4 проверяет то
 tests, lint/FSD/format/build/Jev), `git diff --check` PASS; только3 Markdown файла,
 operational source отсутствует, executable baseline023ad38 сохранён. Эти проверки
 не являются реализацией AC A1–A3 или подтверждением CI-root authentication.
+
+
+### Принятие A1–A3 до реализации
+
+2026-10-24 владелец прямо ответил **«Принять A1–A3 и готовить offline»**
+для proposal head `3179299359b50adf24707d48236140f9b7260a9d` в PR117. Разрешены
+создание исходников `scripts/research/setup-statement-row-ssh.py`,
+`.github/workflows/statement-row-access.yml`, fake tests и одна замена secret
+reference row pilot. Actual key generation/setup, secret/VPS writes, SSH, dispatch,
+B4/P4 и merge прямо исключены. Статус спецификации accepted; implementation
+not_started на момент этого receipt. Принятие зафиксировано отдельным коммитом
+до кода; draft CI proposal ещё выполнялся и не выдаётся за implementation evidence.

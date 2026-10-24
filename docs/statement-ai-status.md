@@ -1,6 +1,6 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после принятия отчёта P4/PR116 и подготовки кандидата A1–A3, 2026-10-24 Asia/Yekaterinburg.
+Обновлено после принятия отчёта P4/PR116 и принятия A1–A3 offline, 2026-10-24 Asia/Yekaterinburg.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
@@ -62,11 +62,11 @@ calls/cost/settlement=null (N/A). Качество модели не измер�
 в том же S1.21 пакете. Допуск **CONSUMED**, повторов/дополнительного SSH нет.
 Отчёт отдельно принят владельцем и интегрирован PR116/main ee7c0ec;
 exact-main CI40038147418/all5 и Delivery40039113963/all4 PASS, без deploy.
-В том же S1.21 предложен **A1–A3 / implementation not_started**: offline source
+В том же S1.21 принят **A1–A3 offline / implementation not_started**: offline source
 helper/dedicated key/auth-only workflow и одна secret reference нового pilot.
-Общий deploy key сохраняется. Предложение ещё не принято, код/ключи не созданы.
+Общий deploy key сохраняется. Прямое принятие владельца зафиксировано до кода; исходники/ключи пока не созданы.
 Actual bootstrap/auth-only B4 и новый paid P4 требуют отдельных exact-source
-допусков; принятие A1–A3 разрешит только offline source и fake tests.
+допусков; принятие A1–A3 разрешает только offline source и fake tests.
 Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
 работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
 реальной модели. После любого результата — остановка, без автоматического повтора.

@@ -17,8 +17,8 @@ SSH principal root принят и интегрирован PR115/main6dc08d3, C
 SSH public-key refusal, report unavailable, calls/cost/settlement N/A; grant **CONSUMED**.
 H2 UNVERIFIED, отчёт принят и интегрирован PR116/main ee7c0ec,
 CI40038147418/all5 и Delivery40039113963/all4 PASS; повтор/repair/activation не открыт.
-В том же S1.21 предложен A1–A3 (implementation not_started): dedicated CI key/auth-only check,
-только кандидат offline подготовки, live B4/P4 NOT_AUTHORIZED; [отчёт](0055-s121-row-scoped-selection.md#единственный-p4-результат-и-границы-evidence).
+В том же S1.21 принят A1–A3 offline (implementation not_started): dedicated CI key/auth-only check,
+разрешены только offline source/fake tests, live B4/P4 NOT_AUTHORIZED; [отчёт](0055-s121-row-scoped-selection.md#единственный-p4-результат-и-границы-evidence).
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.
