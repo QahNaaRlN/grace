@@ -24,8 +24,13 @@ bootstrap CONFIGURED, один CI root auth-only SSH success; отчёт при�
 main CI40108414891/all5 и Delivery40109156224/all4 PASS.
 Новый отдельно разрешённый P4/run40109843789/attempt1 — **REJECT / CONSUMED**:
 candidate grouping/partition_invalid,2 POST/3 metadata GET, actual5509 micros ($0.005509), known/settled.
-[Отчёт](0055-s121-row-scoped-selection.md#новый-p4-после-b4-результат-и-границы-evidence) подготовлен для приёмки.
+Отчёт принят и интегрирован PR119/mainad1eca3; main CI40111553326/all5 и Delivery40112288231/all4 PASS.
 Row-field quality UNVERIFIED; новый repair/repeat/activation не открыт.
+По поручению владельца сменить курс подготовлен [S1.22 V1–V3](0055-s122-direct-page-reading.md):
+прямое чтение изображений страниц и текста, обычные строки+quotes, проверка кодом.
+**proposed / implementation not_started**,4 cases с image-only control/full32;
+GPT-6 Astra — непроверенный API candidate. Будущий V4 отдельно:≤8 POST/предлагаемый
+ceiling $10.40, расходы/key setup/merge/deploy NOT_AUTHORIZED. Принятие направления не подменяет принятие нового контракта.
 [SPEC-0055](0055-bank-statement-pdf-import.md) и принятые amendments сохраняют
 свои статусы. [История до S1.18](0055-development-history.md) архивирована,
 а не пересчитана в PASS. Правила принятия/worktree/gates ниже сохраняются.

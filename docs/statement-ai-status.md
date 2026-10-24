@@ -1,11 +1,11 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено после интеграции отчёта B4/PR118 и нового P4, 2026-10-24 Asia/Yekaterinburg. Отчёт нового P4 подготовлен для приёмки.
+Обновлено после интеграции отчёта B4/PR118 и нового P4, 2026-10-24 Asia/Yekaterinburg. Отчёт нового P4 принят и интегрирован PR119; подготовлен новый контракт S1.22.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |
-| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116 и A1–A3/PR117 и отчёт B4/PR118/main4e21431; exact-main CI40108414891/all5 и Delivery40109156224/all4 PASS |
+| Интеграция | S1.19 offline PR107, evidence/контракт S1.20 PR108, review fix PR109, reader PR110, отчёт PR111, принятый manual evidence PR112 и принятые S1.21 D1–D3/PR113, P1–P3/PR114, root fix/PR115, P4 отчёт/PR116 и A1–A3/PR117 и отчёт B4/PR118 и новый P4/PR119/mainad1eca3; exact-main CI40111553326/all5 и Delivery40112288231/all4 PASS |
 | S1.19 | Единственный pilot run39983522098:6/6 completed, clocks `[0,4,4,0,0,4]`, итог **REJECT**, без принятого candidate |
 | R4 | Единственный run40002091161/attempt1, source1a6b742, **VERIFIED**, replay6/6, все120 checks/3 pairs; разрешение **CONSUMED** |
 | Точная причина REJECT | Первая пара, candidate ordinal2, вторая строка: `record_description` и `row_issues` ухудшились с base PASS до candidate FAIL; `non_clock_regression` |
@@ -90,11 +90,16 @@ Actual2 POST/3 metadata GET, known bills2, actual5509 USD micros ($0.005509),
 BillingKnown/ReservationSettled/SettlementRecorded=true. ReplayVerified=true:
 2 measurement positions +4 refusal-consistency suffix positions, не6 completed answers.
 Closed summary не раскрывает конкретный дефект partition; aliases не выдумываются.
-Новый допуск **CONSUMED**, отчёт prepared for review; repair/repeat/activation не открыты.
+Новый допуск **CONSUMED**, отчёт принят и интегрирован PR119/mainad1eca3; repair/repeat/activation не открыты.
 Старый P4/run40035544723 остаётся INCONCLUSIVE/accounting N/A; он не перезаписан.
-Масштабирование обязательно до product-интеграции, но сначала полезно выяснить,
-работает ли H2 на двух строках; больше fake/96-row planner не заменяют измерения
-реальной модели. После любого результата — остановка, без автоматического повтора.
+Владелец поручил сменить курс. [S1.22 V1–V3](specs/0055-s122-direct-page-reading.md)
+предлагает прямое чтение PNG страниц+текста одной vision-моделью: обычные строки
+и дословные quotes, deterministic binding/старые financial guards после распознавания.
+Candidate GPT-6 Astra пока UNVERIFIED;4 cases включают image-only control и full32.
+Контракт **proposed**, implementation **not_started**; paid V4/keys/merge/deploy не открыты.
+Возможный будущий V4:≤8 POST, предлагаемый ceiling $10.40, новый явный бюджетный допуск.
+Старый grouping-подход закрыт REJECT; фейки/зелёный CI не заменяют измерения качества.
+Даже успешный новый corpus не докажет real/full import/owner acceptance автоматически.
 
 Manual path и deterministic Go guards независимы от AI. Исправление актуальности
 owner review PR109 интегрировано. [Полный ручной UI-сценарий](specs/0055-manual-import-ui-evidence.md)

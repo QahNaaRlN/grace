@@ -201,3 +201,15 @@ Owner принимает или изменяет:
 и [SDE cascade](https://docs.typesafe.ai/cookbooks/sde_cascade) показывают эти разные
 роли, но их demo thresholds/качество не являются acceptance evidence Grace.
 Финансовая арифметика, source validation и подтверждение записи остаются в Grace.
+
+
+## Предложение 2026-10-24: прямое чтение страниц, S1.22
+
+По поручению владельца сменить курс подготовлен [S1.22 V1–V3](../specs/0055-s122-direct-page-reading.md),
+**proposed / implementation not_started**. Один research candidate получает PNG+text
+и возвращает строки+quotes; Go выполняет binding/grounding/арифметику/financial guards.
+Предлагается OpenAI Responses/gpt-6-astra, доступ/качество/region/funding UNVERIFIED.
+Это не Jev vision и не переключение production provider. После принятия возможна
+только offline-реализация перечисленного source/fakes; paid V4/key setup/merge/deploy
+отдельно. Историческое принятое решение выше сохраняется; production image non-goal
+SPEC-0055 не снимается этим предложением.

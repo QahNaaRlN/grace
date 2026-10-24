@@ -56,6 +56,15 @@ Grace проверяет ссылки на текст, нормализует д
 7. Выбор владельца сохранить/удалить оригинал; source records/provenance остаются.
    Mobile-first UI в «Импортах», OpenAPI/types, budget/consent/privacy policy.
 
+## Предложение смены способа распознавания
+
+2026-10-24 владелец поручил сменить курс после S1.21 REJECT. Подготовлен
+[S1.22](0055-s122-direct-page-reading.md), статус proposed: отдельное исследование
+PNG+text с прямым чтением строк. Принятие V1–V3 разрешит только offline source и
+fake tests; будущий V4 потребует отдельного exact-source/model/funding/privacy решения.
+Это предложенное исследовательское исключение к image non-goal ниже, не включение
+vision/raw PDF в production. Financial core/подтверждение/приватность сохраняются.
+
 ## Non-goals
 
 OCR/сканы и raw-PDF/image upload провайдеру в v1; зашифрованные/повреждённые PDF;
