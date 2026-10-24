@@ -812,3 +812,103 @@ mode, не отменяет исторический отдельный допу
 ограниченному контракту. Новый P4 потребует отдельного допуска после готовности;
 ни ремонт ключей, ни повтор, ни model activation данным отчётом не разрешены.
 H2 и общая цель надёжного AI PDF-импорта остаются **UNVERIFIED**.
+
+
+## Кандидат A1–A3: отдельно подготовить CI-доступ к root
+
+**Статус: proposed / implementation not_started / live NOT_AUTHORIZED.**
+Отчёт P4 принят владельцем и интегрирован PR116, merge
+`ee7c0ec6a032d614c45cb7ff70e599e2f3c4d8f8`, accepted head
+`e432cb996cdfef9ce366a76150098655d020319f`; source CI40036955287/all5 PASS.
+Actual-main CI40038147418/all5 и Delivery40039113963/all4 PASS на exact merge,
+primary clean; receipt/integration сохранены в PR116. Принятие отчёта прямо
+исключало исправление доступа и повтор P4. Этот кандидат предлагает новое
+ограниченное решение в прежнем S1.21 пакете, без нового номера спецификации.
+
+### Факт и выбранный способ подготовки
+
+Run40035544723 отказал на public-key authentication/exit255 при root SSH staging.
+Существование `PRODUCTION_SSH_KEY` и локальный root agent не подтверждают, что
+этот CI credential принят сервером. Причина прежнего отказа не установлена;
+кандидат не объявляет ключ неправильным, не экспортирует личные private keys
+и не читает существующие GitHub secret values.
+
+Предлагается новый независимо отзываемый ed25519 key для row pilot и новый
+production environment secret `PRODUCTION_STATEMENT_ROW_SSH_KEY`. Общий
+`PRODUCTION_SSH_KEY`, operator UUID и соседние deploy workflows сохраняются.
+На VPS будущая подготовка добавит только свою tagged public-key строку с
+OpenSSH `restrict` в `/root/.ssh/authorized_keys`. `restrict` запрещает forwarding
+и PTY, но не ограничивает обычное исполнение root-команд; отдельный ключ
+отделяет credential этого пути от общего deploy key, не создаёт ограниченного
+пользователя. Платный pilot остаётся отдельным последующим решением.
+
+### A1. Только offline source подготовки ключа
+
+После принятия A1–A3 разрешить **создать исходник**
+`scripts/research/setup-statement-row-ssh.py` и fake harness, без запуска
+production режима. Helper требует отдельного явного execute flag и exact-source
+manifest; default check не читает agent/config/secrets и не обращается к сети.
+
+Будущий отдельно разрешённый режим создаст private key только в ephemeral
+локальном каталоге0700/файле0600, передаст его GitHub через stdin, удалит локальную
+копию в finally. В repo/logs/чат ключ не попадает. Если целевой secret уже существует,
+неоднозначны path/ownership/permissions root authorized_keys или найдена чужая
+строка с нашим tag, helper отказывает без замены существующих объектов.
+
+Только future bootstrap: один local-agent SSH под root для проверки и добавления
+одной собственной tagged public-key строки; только создание нового secret в
+`QahNaaRlN/grace`, environment production. Целевой authorized_keys можно прочитать
+для проверки целостности/tag; чужие строки не выводить и не менять. Не читать
+private keys, sshd configuration, приложения, SQL, allowance или прежние private reports.
+При отказе после частичной записи допустим rollback только собственных созданных
+объектов: не более одного дополнительного local-agent SSH для удаления exact
+своей строки и удаления только созданного этим bootstrap secret. Ошибка rollback
+фиксируется явно, не скрывается повтором. Новые attempts автоматически не открываются.
+
+### A2. Только offline source проверки CI authentication
+
+Разрешить **создать исходник** `.github/workflows/statement-row-access.yml`,
+с fake-проверками actual shell blocks. Manual-only, execute=false по умолчанию,
+attempt1, full exact-source SHA==GITHUB_SHA, ancestor main, CI5/5,
+production environment/concurrency и прежний pinned host key.
+
+Future отдельно разрешённый auth workflow использует только новый secret и
+делает ровно один SSH root с единственным фиксированным remote command:
+`test "$(id -u)" -eq 0`. Нет SCP, staging, wrapper/marker/report, Docker, model,
+metadata или SQL. CI client: explicit identity, agent/password/keyboard fallback
+выключены, BatchMode, StrictHostKeyChecking, ConnectionAttempts=1 и timeout.
+Наружу только source-bound finite access result и exit status, raw SSH output
+не печатается/не загружается. Любой отказ расходует этот отдельный auth grant.
+
+Также разрешить offline замену **одной secret reference** в существующем
+`.github/workflows/statement-row-pilot.yml` на `PRODUCTION_STATEMENT_ROW_SSH_KEY`
+и соответствующее усиление fake test. Prompts/requests/scorer/caps/budget/UUID,
+wrapper и marker semantics не меняются; старый frozen P4 ref023ad38 не двигается.
+
+### A3. Acceptance criteria и отдельный live B4
+
+| AC | Исполняемое offline evidence после принятия |
+| --- | --- |
+| Safe defaults | Helper check с invalid env/agent/config:0 network/secret reads/writes; execute/source refusal до действий |
+| Bootstrap bounds | Fake SSH/gh/keygen: unique new secret/own tagged line only,≤1 install SSH+≤1 rollback SSH, no existing secret values/foreign key replacement, cleanup private key на всех exits |
+| CI authentication only | Actual workflow shell с fake SSH: exact root/one fixed command/one identity/one attempt; default/source/CI/attempt/host-key guards; finite result/privacy |
+| Pilot binding | Existing fake workflow требует dedicated secret и root; все прежние source/marker/refusal/privacy controls сохранены |
+| Regression | make test; fake workflow/wrapper; YAML parser; git diff --check; exact-head CI5/5 перед implementation review |
+| Isolation | Никаких live SSH/agent/secret/provider/metadata/SQL/deploy/paid calls до B4; product API/types/financial/default wiring и старые refs/grants unchanged |
+
+**Принятие A1–A3 разрешит только перечисленное offline source создание/изменение
+и fake tests.** Не разрешит actual key setup, root authorized_keys/secret writes,
+workflow_dispatch, SSH/auth probe, merge, paid P4 или activation.
+
+Будущий **B4** требует отдельного решения на готовый exact source после review:
+bootstrap≤1 install SSH (+≤1 own rollback SSH при ошибке), только new secret,
+один auth-only workflow_dispatch/один CI SSH, без повторов; manifest укажет
+полные SHA/ref/flags/paths/tag и rollback bounds. Публичный fingerprint
+добавляется в receipt лишь после отдельно разрешённой генерации ключа, private
+value не публикуется. Результат B4 проверяет только CI-root authentication, не H2.
+Новый P4 после успешного B4 всё равно потребует нового exact-source допуска.
+
+Проверка подготовки кандидата A1–A3: `make test` PASS (Go,89 Web suites/336
+tests, lint/FSD/format/build/Jev), `git diff --check` PASS; только3 Markdown файла,
+operational source отсутствует, executable baseline023ad38 сохранён. Эти проверки
+не являются реализацией AC A1–A3 или подтверждением CI-root authentication.
