@@ -12,7 +12,7 @@ logs:
 generate-api:
 	cd web && npm run generate:api
 
-test: test-go test-web test-jev-eval
+test: test-go test-web test-jev-eval test-statement-page-corpus
 
 test-go:
 	go test ./cmd/... ./internal/...
@@ -81,3 +81,7 @@ test-production:
 build:
 	go build -o bin/grace-api ./cmd/api
 	cd web && npm run build
+
+.PHONY: test-statement-page-corpus
+test-statement-page-corpus:
+	python3 -B scripts/research/test-statement-page-corpus.py

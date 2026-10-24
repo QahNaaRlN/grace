@@ -1,0 +1,2242 @@
+{
+  "header": {
+    "openingBookDate": {
+      "value": "30.09.2026",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "30.09.2026"
+        }
+      ]
+    },
+    "closingBookDate": {
+      "value": "31.10.2026",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "31.10.2026"
+        }
+      ]
+    },
+    "openingBookBalance": {
+      "value": "100000.00",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Opening book balance RUB 100000.00"
+        }
+      ]
+    },
+    "closingBookBalance": {
+      "value": "97889.37",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Closing book balance RUB 97889.37"
+        }
+      ]
+    },
+    "availableBalanceObserved": {
+      "value": "99999.00",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Available balance RUB 99999.00"
+        }
+      ]
+    },
+    "debitTurnover": {
+      "value": "2749.48",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Debit turnover RUB 2749.48"
+        }
+      ]
+    },
+    "creditTurnover": {
+      "value": "638.85",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Credit turnover RUB 638.85"
+        }
+      ]
+    },
+    "currency": {
+      "value": "RUB",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Opening book balance RUB 100000.00"
+        }
+      ]
+    }
+  },
+  "rows": [
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 02.10.2026 09:01"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "02.10.2026 09:01",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "02.10.2026 09:01"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "02.10.2026 18:01",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "02.10.2026 18:01"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-100.37",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.37"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.37"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 01",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 01"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 03.10.2026 09:02"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "03.10.2026 09:02",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "03.10.2026 09:02"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "03.10.2026 18:02",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "03.10.2026 18:02"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-100.00",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 02",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 02"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 04.10.2026 09:03"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "04.10.2026 09:03",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "04.10.2026 09:03"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "04.10.2026 18:03",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "04.10.2026 18:03"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-100.00",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 03",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 03"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 05.10.2026 09:04"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "05.10.2026 09:04",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "05.10.2026 09:04"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "05.10.2026 18:04",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "05.10.2026 18:04"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-101.48",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-101.48"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-101.48"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 04",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 04"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 06.10.2026 09:05"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "06.10.2026 09:05",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "06.10.2026 09:05"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "06.10.2026 18:05",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "06.10.2026 18:05"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+101.85",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "+101.85"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "+101.85"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СОБСТВЕННЫЙ ПЕРЕВОД МЕЖДУ СЧЕТАМИ",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СОБСТВЕННЫЙ ПЕРЕВОД МЕЖДУ СЧЕТАМИ"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 07.10.2026 09:06"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "07.10.2026 09:06",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "07.10.2026 09:06"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "07.10.2026 18:06",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "07.10.2026 18:06"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-102.22",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.22"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.22"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 06",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 06"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 08.10.2026 09:07"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "08.10.2026 09:07",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "08.10.2026 09:07"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "08.10.2026 18:07",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "08.10.2026 18:07"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-102.59",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.59"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.59"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "КОМИССИЯ ЗА ОБСЛУЖИВАНИЕ",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "КОМИССИЯ ЗА ОБСЛУЖИВАНИЕ"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 09.10.2026 09:08"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "09.10.2026 09:08",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "09.10.2026 09:08"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "09.10.2026 18:08",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "09.10.2026 18:08"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-102.96",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.96"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-102.96"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 08",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 08"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 10.10.2026 09:09"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "10.10.2026 09:09",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "10.10.2026 09:09"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "10.10.2026 18:09",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "10.10.2026 18:09"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-103.33",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-103.33"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-103.33"
+            }
+          ]
+        },
+        "transactionAmount": {
+          "value": "-2.00",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-2.00"
+            }
+          ]
+        },
+        "transactionCurrency": {
+          "value": "USD",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Original USD"
+            }
+          ]
+        },
+        "description": {
+          "value": "ПОКУПКА В ИНОСТРАННОЙ ВАЛЮТЕ",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "ПОКУПКА В ИНОСТРАННОЙ ВАЛЮТЕ"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 11.10.2026 09:10"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "11.10.2026 09:10",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "11.10.2026 09:10"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "11.10.2026 18:10",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "11.10.2026 18:10"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+103.70",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "+103.70"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "+103.70"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 10",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 10"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "Operation 12.10.2026 09:11"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "12.10.2026 09:11",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "12.10.2026 09:11"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "12.10.2026 18:11",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "12.10.2026 18:11"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-104.07",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-104.07"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-104.07"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "ПОДПИСКА НА СИНТЕТИЧЕСКИЕ УСЛУГИ ПРОДОЛЖЕНИЕ ОПИСАНИЯ ЧЕРЕЗ СТРАНИЦУ",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "ПОДПИСКА НА СИНТЕТИЧЕСКИЕ УСЛУГИ"
+            },
+            {
+              "page": 2,
+              "quote": "ПРОДОЛЖЕНИЕ ОПИСАНИЯ ЧЕРЕЗ СТРАНИЦУ"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 13.10.2026 09:12"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "13.10.2026 09:12",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "13.10.2026 09:12"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "13.10.2026 18:12",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "13.10.2026 18:12"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-104.44",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-104.44"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-104.44"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 12",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 12"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 14.10.2026 09:13"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "14.10.2026 09:13",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "14.10.2026 09:13"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "14.10.2026 18:13",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "14.10.2026 18:13"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-104.81",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-104.81"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-104.81"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 13",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 13"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 15.10.2026 09:14"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "15.10.2026 09:14",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "15.10.2026 09:14"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "15.10.2026 18:14",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "15.10.2026 18:14"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-100.00",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-100.00"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 14",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 14"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 16.10.2026 09:15"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "16.10.2026 09:15",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "16.10.2026 09:15"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "16.10.2026 18:15",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "16.10.2026 18:15"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+105.55",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+105.55"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+105.55"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 15",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 15"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 17.10.2026 09:16"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "17.10.2026 09:16",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "17.10.2026 09:16"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "17.10.2026 18:16",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "17.10.2026 18:16"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-105.92",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-105.92"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-105.92"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 16",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 16"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 18.10.2026 09:17"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "18.10.2026 09:17",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "18.10.2026 09:17"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "18.10.2026 18:17",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "18.10.2026 18:17"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-106.29",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-106.29"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-106.29"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 17",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 17"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 19.10.2026 09:18"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "19.10.2026 09:18",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "19.10.2026 09:18"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "19.10.2026 18:18",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "19.10.2026 18:18"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-106.66",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-106.66"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-106.66"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 18",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 18"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 20.10.2026 09:19"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "20.10.2026 09:19",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "20.10.2026 09:19"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "20.10.2026 18:19",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "20.10.2026 18:19"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-107.03",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-107.03"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-107.03"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 19",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 19"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 21.10.2026 09:20"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "21.10.2026 09:20",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "21.10.2026 09:20"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "21.10.2026 18:20",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "21.10.2026 18:20"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+107.40",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+107.40"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+107.40"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 20",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 20"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 22.10.2026 09:21"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "22.10.2026 09:21",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "22.10.2026 09:21"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "22.10.2026 18:21",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "22.10.2026 18:21"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-107.77",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-107.77"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-107.77"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 21",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 21"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "Operation 23.10.2026 09:22"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "23.10.2026 09:22",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "23.10.2026 09:22"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "23.10.2026 18:22",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "23.10.2026 18:22"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-108.14",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-108.14"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "-108.14"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 22",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 22"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 24.10.2026 09:23"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "24.10.2026 09:23",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "24.10.2026 09:23"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "24.10.2026 18:23",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "24.10.2026 18:23"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-108.51",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-108.51"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-108.51"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 23",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 23"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 25.10.2026 09:24"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "25.10.2026 09:24",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "25.10.2026 09:24"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "25.10.2026 18:24",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "25.10.2026 18:24"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-108.88",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-108.88"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-108.88"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 24",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 24"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 26.10.2026 09:25"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "26.10.2026 09:25",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "26.10.2026 09:25"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "26.10.2026 18:25",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "26.10.2026 18:25"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+109.25",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "+109.25"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "+109.25"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 25",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 25"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 27.10.2026 09:26"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "27.10.2026 09:26",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "27.10.2026 09:26"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "27.10.2026 18:26",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "27.10.2026 18:26"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-109.62",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-109.62"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-109.62"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 26",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 26"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 28.10.2026 09:27"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "28.10.2026 09:27",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "28.10.2026 09:27"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "28.10.2026 18:27",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "28.10.2026 18:27"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-109.99",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-109.99"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-109.99"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 27",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 27"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 01.10.2026 09:28"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "01.10.2026 09:28",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "01.10.2026 09:28"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "01.10.2026 18:28",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "01.10.2026 18:28"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-110.36",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-110.36"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-110.36"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 28",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 28"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 02.10.2026 09:29"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "02.10.2026 09:29",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "02.10.2026 09:29"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "02.10.2026 18:29",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "02.10.2026 18:29"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-110.73",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-110.73"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-110.73"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 29",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 29"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 03.10.2026 09:30"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "03.10.2026 09:30",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "03.10.2026 09:30"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "03.10.2026 18:30",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "03.10.2026 18:30"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+111.10",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "+111.10"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "+111.10"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 30",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 30"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 04.10.2026 09:31"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "04.10.2026 09:31",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "04.10.2026 09:31"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "04.10.2026 18:31",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "04.10.2026 18:31"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-111.47",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-111.47"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-111.47"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 31",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 31"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 3,
+          "quote": "Operation 05.10.2026 09:32"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "05.10.2026 09:32",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "05.10.2026 09:32"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "05.10.2026 18:32",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "05.10.2026 18:32"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-111.84",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-111.84"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "-111.84"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 32",
+          "evidence": [
+            {
+              "page": 3,
+              "quote": "СИНТЕТИЧЕСКАЯ ПОКУПКА НОМЕР 32"
+            }
+          ]
+        }
+      },
+      "issues": []
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "header": {
+    "openingBookDate": null,
+    "closingBookDate": null,
+    "openingBookBalance": null,
+    "closingBookBalance": null,
+    "availableBalanceObserved": {
+      "value": "7777.00",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Available balance RUB 7777.00"
+        }
+      ]
+    },
+    "debitTurnover": {
+      "value": "1234.56",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Debit turnover RUB 1234.56"
+        }
+      ]
+    },
+    "creditTurnover": {
+      "value": "2000.00",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Credit turnover RUB 2000.00"
+        }
+      ]
+    },
+    "currency": {
+      "value": "RUB",
+      "evidence": [
+        {
+          "page": 1,
+          "quote": "Debit turnover RUB 1234.56"
+        }
+      ]
+    }
+  },
+  "rows": [
+    {
+      "anchor": [
+        {
+          "page": 1,
+          "quote": "19.10.2026"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "19.10.2026",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "19.10.2026"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "20.10.2026",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "20.10.2026"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "-1234.56",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-1234.56"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "debit",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-1234.56"
+            }
+          ]
+        },
+        "transactionAmount": {
+          "value": "-15.00",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "-15.00"
+            }
+          ]
+        },
+        "transactionCurrency": {
+          "value": "USD",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "Original USD"
+            }
+          ]
+        },
+        "description": {
+          "value": "SYNTHETIC SHOP",
+          "evidence": [
+            {
+              "page": 1,
+              "quote": "SYNTHETIC SHOP"
+            }
+          ]
+        }
+      },
+      "issues": []
+    },
+    {
+      "anchor": [
+        {
+          "page": 2,
+          "quote": "21.10.2026"
+        }
+      ],
+      "fields": {
+        "operationDate": {
+          "value": "21.10.2026",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "21.10.2026"
+            }
+          ]
+        },
+        "bookingDate": {
+          "value": "22.10.2026",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "22.10.2026"
+            }
+          ]
+        },
+        "accountAmount": {
+          "value": "+2000.00",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+2000.00"
+            }
+          ]
+        },
+        "accountCurrency": {
+          "value": "RUB",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "Account RUB"
+            }
+          ]
+        },
+        "direction": {
+          "value": "credit",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "+2000.00"
+            }
+          ]
+        },
+        "transactionAmount": null,
+        "transactionCurrency": null,
+        "description": {
+          "value": "OWN TRANSFER - REVIEW SEMANTICS",
+          "evidence": [
+            {
+              "page": 2,
+              "quote": "OWN TRANSFER - REVIEW SEMANTICS"
+            }
+          ]
+        }
+      },
+      "issues": []
+    }
+  ]
+}
