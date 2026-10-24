@@ -1,11 +1,11 @@
 # SPEC-0056 Q: проверка чтения документов через OpenRouter
 
-- Статус: **draft**; Q1–Q3 **PROPOSED**, implementation_status: **not_started**.
+- Статус: **accepted**; Q1–Q3 **ACCEPTED**, implementation_status: **not_started**.
 - Дата: 2026-10-25, Asia/Yekaterinburg. Исполнитель: Codex.
 - Основание: поручение владельца «Идем дальше» после принятия реализации G1–G4.
 - База: PR122, main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`.
 - Родитель: [принятый SPEC-0056 G1–G4](0056-openrouter-document-reading.md).
-- Q4 **NOT_AUTHORIZED**. В этой версии только документация; нового кода нет.
+- Q4 **NOT_AUTHORIZED**. Контракт принят до нового кода; реализация начинается после receipt.
 
 ## Цель и граница решения
 
@@ -203,3 +203,12 @@ Q4: exact source/ref/manifest, concrete endpoint, rates/image bounds, восем
 Пока source/endpoint/rates для запуска не определены, согласия на него нет.
 Успешное synthetic evidence будет основанием обсуждать дальнейшую проверку
 и production rollout; оно не доказывает точность на произвольных документах.
+
+## Принятие владельцем до реализации
+
+2026-10-25 владелец ответил **«Принять Q1–Q3 и реализовать offline»** на
+PR123/head `ab2f10bf8f08ffc9b6ea4598ba27bf708f96d2e2`. Разрешена вся
+описанная Q1–Q3 offline-реализация в этом же PR, включая создание runner,
+manual workflow/root wrapper и fake SSH/SCP/Docker проверки.
+Q4/live provider/metadata calls, чтение/настройка secrets, production
+SSH/SQL, merge и deploy не разрешены. Receipt фиксируется до нового кода.
