@@ -304,7 +304,7 @@ func (m Manifest) Validate(c Corpus, source string, requireCandidate bool) error
 	}
 	if m.Candidate != nil {
 		v := m.Candidate
-		if v.Qualification != "" || !v.QualifiedUntil.IsZero() || v.Priority != 0 || v.MaxImages != 4 || v.MaxImageSide < 1800 || v.MaxImageSide > 2048 || v.Region != "eu" || !strings.HasSuffix(v.Policy.Provider, "/eu") || v.Policy.Selection != nil || !v.Policy.Vision || !v.Policy.VerifiedAt.IsZero() {
+		if (v.RequestFeeEvidence != "" && (v.RequestFeeEvidence != assistant.RequestFeeRouterCeilingOnly || v.Policy.RequestFeeMicros <= 0)) || v.Qualification != "" || !v.QualifiedUntil.IsZero() || v.Priority != 0 || v.MaxImages != 4 || v.MaxImageSide < 1800 || v.MaxImageSide > 2048 || v.Region != "eu" || !strings.HasSuffix(v.Policy.Provider, "/eu") || v.Policy.Selection != nil || !v.Policy.Vision || !v.Policy.VerifiedAt.IsZero() {
 			return errors.New("candidate_invalid")
 		}
 	}

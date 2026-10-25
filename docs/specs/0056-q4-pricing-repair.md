@@ -1,7 +1,7 @@
 # SPEC-0056 R: ограниченный pricing repair и один Q4.2
 
 - Статус: **accepted** до production code; условное разрешение на полный путь до Q4.2.
-- Implementation status: **not_started**; production code не изменён.
+- Implementation status: **implemented_pending_ci_and_run**; [evidence](0056-q4-pricing-repair-evidence.md).
 - Дата: 2026-10-25, Asia/Yekaterinburg.
 - Основание: «приступай, мне нужен прогон» после VERIFIED read-only диагноза Q4.
 - База: integrated main `9200b731a0dea8f171e31aaf988d038073ad577f`.

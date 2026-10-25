@@ -106,24 +106,28 @@ case "$1" in
             (remote/'SHA256SUMS').write_text(''.join(hashlib.sha256((remote/n).read_bytes()).hexdigest()+'  '+n+'\n' for n in names))
             runtime=root/scenario;shared=runtime/'shared';shared.mkdir(parents=True)
             dockerlog=runtime/'docker';seen=runtime/'seen'
+            old_marker=shared/'document-reading-spec0056-q.started';old_marker.write_text('old-consumed-marker')
+            old_report=shared/'document-reading-spec0056-q.private.json';old_report.write_text('old-private-report')
             cx=dict(base,GRACE_ROOT=str(runtime),GRACE_STATEMENT_OPERATOR_OWNER_ID=base['OPERATOR_OWNER_ID'],DOCKER_COMMANDS=str(dockerlog),INSPECT_SEEN=str(seen),FAKE_WRAPPER=scenario)
             approved=manifest;authorized=sha
             if scenario=='manifest':approved='0'*64
             if scenario=='source':authorized='0'*40
             if scenario=='tamper':(remote/'corpus.json').write_text('PRIVATE')
             if scenario=='symlink':(remote/'corpus.json').unlink();(remote/'corpus.json').symlink_to(prepared/'corpus.json')
-            if scenario=='spent':(shared/'document-reading-spec0056-q.started').write_text('consumed')
+            if scenario=='spent':(shared/'document-reading-spec0056-q2.started').write_text('consumed')
             held=None
             if scenario=='lock':
                 import fcntl
                 held=open(shared/'statement-screening.lock','w');fcntl.flock(held,fcntl.LOCK_EX|fcntl.LOCK_NB)
             result=subprocess.run(['sh',str(WRAPPER),str(remote),sha,authorized,approved,'b'*40],cwd=REPO,env=cx,capture_output=True)
             if held:held.close()
+            assert old_marker.read_text()=='old-consumed-marker'
+            assert old_report.read_text()=='old-private-report'
             assert (result.returncode==0)==(scenario=='good'),(scenario,result.stdout,result.stderr)
             assert b'PRIVATE' not in result.stdout+result.stderr
             if scenario in ['good','run_fail','changed']:
-                assert (shared/'document-reading-spec0056-q.started').exists()
-                assert (shared/'document-reading-spec0056-q.private.json').exists()
+                assert (shared/'document-reading-spec0056-q2.started').exists()
+                assert (shared/'document-reading-spec0056-q2.private.json').exists()
                 assert 'rm -rf '+str(remote) in dockerlog.read_text()
                 assert not remote.exists()
             else:

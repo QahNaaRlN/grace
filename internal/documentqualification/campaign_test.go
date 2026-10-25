@@ -70,12 +70,13 @@ func fakeContent(c Case) json.RawMessage {
 }
 
 type fakeHTTP struct {
-	c           Corpus
-	posts, gets int
-	faultAt     int
-	fault       string
-	mutate      func(int, json.RawMessage) json.RawMessage
-	wire        []map[string]any
+	requestOmitted bool
+	c              Corpus
+	posts, gets    int
+	faultAt        int
+	fault          string
+	mutate         func(int, json.RawMessage) json.RawMessage
+	wire           []map[string]any
 }
 
 func response(v any) *http.Response {
@@ -126,6 +127,9 @@ func (f *fakeHTTP) Do(r *http.Request) (*http.Response, error) {
 		params = []string{"max_tokens"}
 	}
 	ep := map[string]any{"model_id": candidate().Policy.Model, "tag": "fixture/eu", "provider_name": "Fixture", "name": "Fixture", "status": 0, "context_length": 64000, "max_completion_tokens": 20000, "supported_parameters": params, "pricing": map[string]string{"prompt": "0.0000001", "completion": "0.0000001", "request": "0", "image": "0"}}
+	if f.requestOmitted || f.fault == "request_omitted" {
+		ep["pricing"] = map[string]string{"prompt": "0.0000001", "completion": "0.0000001", "image": "0.000000275"}
+	}
 	if f.fault == "fees" {
 		ep["pricing"] = map[string]string{"prompt": "0.0000001", "completion": "0.0000001"}
 	}
@@ -422,5 +426,119 @@ func TestQSummaryRejectsPayloadAndSemanticForgeries(t *testing.T) {
 	duplicate := strings.Replace(string(mustJSON(s)), `"post":8`, `"post":8,"Post":8`, 1)
 	if _, e := ValidateSummary([]byte(duplicate), m); e == nil {
 		t.Fatal("case alias duplicate accepted")
+	}
+}
+
+func TestRResearchOmittedRequestCampaignAndStrictReplay(t *testing.T) {
+	c := corpus(t)
+	for _, mode := range []string{"", assistant.RequestFeeRouterCeilingOnly} {
+		t.Run("mode="+mode, func(t *testing.T) {
+			member := candidate()
+			member.RequestFeeEvidence = mode
+			member.Policy.RequestFeeMicros = 1000
+			member.Policy.ImageFeeMicros = 1
+			m := NewManifest(c, strings.Repeat("a", 40), member)
+			f := &fakeHTTP{c: c, fault: "request_omitted"}
+			b := &fakeBudget{guard: true}
+			r, err := Run(context.Background(), c, m, grant(m), "offline-live-credential", f, b)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if mode == "" {
+				if r.Core.Decision != "INCONCLUSIVE" || f.posts != 0 || f.gets != 3 || b.settled != 0 {
+					t.Fatal("strict omission changed", r.Core.Decision, f.posts, f.gets)
+				}
+			} else {
+				if r.Core.Decision != "PASS_SYNTHETIC" || f.posts != 8 || f.gets != 6 || b.settled != 8 {
+					t.Fatal("cap campaign", r.Core.Decision, f.posts, f.gets)
+				}
+				if len(r.Core.Results[3].Measurement.Checks) != 297 || len(r.Core.Results[4].Measurement.Checks) != 297 {
+					t.Fatal("full32 reduced")
+				}
+				for _, wire := range f.wire {
+					caps := wire["provider"].(map[string]any)["max_price"].(map[string]any)
+					if caps["request"] != 0.001 || caps["image"] != 0.000001 {
+						t.Fatal("wire cap missing", caps)
+					}
+				}
+			}
+			encoded, err := EncodeReport(r)
+			if err != nil {
+				t.Fatal(err)
+			}
+			replay, err := Replay(context.Background(), c, m, encoded)
+			if err != nil {
+				t.Fatal("replay", err)
+			}
+			if replay.Core.Decision != r.Core.Decision {
+				t.Fatal("replay changed")
+			}
+			if _, err = ValidateSummary(mustJSON(Summarize(replay)), m); err != nil {
+				t.Fatal("projection", err)
+			}
+		})
+	}
+}
+func TestRManifestRejectsInvalidRequestEvidence(t *testing.T) {
+	c := corpus(t)
+	for _, tc := range []struct {
+		mode string
+		cap  int64
+	}{{"unknown", 1000}, {assistant.RequestFeeRouterCeilingOnly, 0}, {assistant.RequestFeeRouterCeilingOnly, -1}} {
+		member := candidate()
+		member.RequestFeeEvidence = tc.mode
+		member.Policy.RequestFeeMicros = tc.cap
+		m := NewManifest(c, strings.Repeat("a", 40), member)
+		if m.Validate(c, m.Source, true) == nil {
+			t.Fatal("invalid manifest evidence", tc)
+		}
+	}
+}
+
+func TestRCapOnlyFailuresStopWithoutFollowingPOST(t *testing.T) {
+	c := corpus(t)
+	for _, fault := range []string{"quality", "timeout", "wrong_model", "unknown_cost", "cost_overrun", "zdr", "text_only"} {
+		t.Run(fault, func(t *testing.T) {
+			member := candidate()
+			member.RequestFeeEvidence = assistant.RequestFeeRouterCeilingOnly
+			member.Policy.RequestFeeMicros = 1000
+			member.Policy.ImageFeeMicros = 1
+			m := NewManifest(c, strings.Repeat("a", 40), member)
+			f := &fakeHTTP{c: c, fault: fault, requestOmitted: true}
+			b := &fakeBudget{guard: true}
+			if fault == "quality" {
+				f.mutate = func(_ int, raw json.RawMessage) json.RawMessage {
+					var v map[string]any
+					_ = json.Unmarshal(raw, &v)
+					v["rows"] = v["rows"].([]any)[:1]
+					return mustJSON(v)
+				}
+			}
+			r, err := Run(context.Background(), c, m, grant(m), "offline-live-credential", f, b)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if f.posts > 1 || f.gets > 6 || r.Core.Decision == "PASS_SYNTHETIC" {
+				t.Fatal("unsafe continuation", r.Core.Decision, f.posts, f.gets)
+			}
+			for _, v := range r.Core.Results[1:] {
+				if v.State != "not_sent" {
+					t.Fatal("sent after stop", v)
+				}
+			}
+			if fault == "quality" && (r.Core.Decision != "REJECT" || b.settled != 1) {
+				t.Fatal("quality bill/decision", r.Core.Decision, b.settled)
+			}
+			if fault == "unknown_cost" && b.unknown != 1 {
+				t.Fatal("unknown bill not frozen", b.unknown)
+			}
+			raw, err := EncodeReport(r)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = Replay(context.Background(), c, m, raw); err != nil {
+				t.Fatal("failure replay", err)
+			}
+		})
 	}
 }

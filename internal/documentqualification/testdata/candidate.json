@@ -1,7 +1,7 @@
 {
   "policy": {
-    "requestFeeMicros": 0,
-    "imageFeeMicros": 0,
+    "requestFeeMicros": 1000,
+    "imageFeeMicros": 1,
     "model": "google/gemini-3.1-flash-lite",
     "provider": "google-vertex/eu",
     "providerName": "Google",
@@ -17,5 +17,6 @@
   "maxImageSide": 2048,
   "region": "eu",
   "qualification": "",
-  "qualifiedUntil": "0001-01-01T00:00:00Z"
+  "qualifiedUntil": "0001-01-01T00:00:00Z",
+  "requestFeeEvidence": "router_ceiling_only"
 }
