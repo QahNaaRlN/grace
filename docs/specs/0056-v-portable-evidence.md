@@ -11,6 +11,9 @@ acceptance commit6165d8139e8068bc6d1f5e585abbe236c860f920 **до production/ops 
 | V2 actual Q4.4 | [Projection](../research/statement-quality/q44-V-settlement.json) VERIFIED_OPERATION,1SSH/0GET/0POST,1row/owner/snapshots unchanged; private0600 audit2531586b9f8fdb988c06f2bfd6d120f4848b573276953890473b14de4af11236. Administrative actual0, basis owner_accepted_http400_policy/directMetadataVerified=false. Original summary unknown preserved, contingency30329+32023=62352 in original$2. |
 | V3 last-slot boundary | [Journal](../research/statement-quality/evidence-series-2026-10-25.json) consumed2/3,remaining1. Last maximum285232+contingency62352=347584≤2000000. New integrated source/mainCI/manifest/published immutable receipt required before one Q4.5 dispatch. After dispatch remaining0 regardless result; no retry/fourth/new series/model/activation/import/deploy. |
 
-Full local make test/test-production/test-integration/vet/diff and exact-head CI5/5
-are in progress. Merge and last dispatch remain gated on their success.
+Full local make test (339 Web)/test-production/test-integration/vet/diff PASS.
+Tested headc8c241f6453b4d937baee31d6bf8aee6658a5b9c, PR CI40227597292/5 PASS;
+merged PR132/main0a955148169cd42c04667c5e510c87fb31102591; exact-source mainCI40228543312/5 PASS.
+Clean source Go1.24.0/CGO0 build/vcs.modified=false, new manifest9c253c87615961c925d58fb600206ce62b49dddcf7378c4bff0614a45ebc8255.
+[Immutable Q4.5 receipt](0056-q45-owner-receipt.md) publishes the last-slot grant before dispatch.
 Q4.4 outcome INCONCLUSIVE is preserved; this repair does not claim quality PASS.

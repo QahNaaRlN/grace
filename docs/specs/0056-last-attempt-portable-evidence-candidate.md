@@ -1,6 +1,6 @@
 # SPEC-0056 V: portable evidence schema и последняя попытка S
 
-- Статус: **accepted V1–V3**; implementation in progress; acceptance commit `6165d8139e8068bc6d1f5e585abbe236c860f920`.
+- Статус: **accepted V1–V3**; implementation integrated PR132/main0a955148; acceptance commit `6165d8139e8068bc6d1f5e585abbe236c860f920`.
 - Приёмка владельца 2026-10-26: «Принять V и выполнить последнюю попытку (рекомендую)».
 - Прежние [S](0056-evidence-alignment-series.md)/[U](0056-q43-owner-activity-reconciliation-candidate.md) не расширяются молча.
 - Основание: [Q4.4 evidence](0056-q44-execution-evidence.md),consumed2/3,remaining1,$2 total прежний.
