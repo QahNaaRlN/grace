@@ -18,8 +18,10 @@ actual renderer, image_review и прежний confirmation проверены 
 принят и интегрирован PR124/main `9200b73`, main CI40185076058/5 и Delivery40185803512/4 PASS.
 Отдельно разрешённый Q4/run40186488958/attempt1 —
 [INCONCLUSIVE / CONSUMED](specs/0056-q4-evidence.md): preflight0POST/3metadataGET/$0,
-восемь cases not_sent. Точная причина отказа и качество модели UNVERIFIED.
-Следующий отдельный scope — read-only диагноз сохранённого report, без новых вызовов модели;
+восемь cases not_sent. [Read-only диагноз](specs/0056-q4-incident-diagnosis.md) VERIFIED: отсутствует
+явный request fee, image fee не проходит нулевой ceiling; diagnosis calls0,
+сохранённые marker/report неизменны. Качество модели UNVERIFIED.
+Следующий возможный scope — offline repair-контракт тарификации;
 нового Q4/повтора/production activation не разрешено.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 

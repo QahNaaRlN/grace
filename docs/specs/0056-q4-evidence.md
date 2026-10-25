@@ -39,6 +39,11 @@ checks0, input/output tokens=null, actualMicros=null. Нулевой итого�
 следует из0POST и отсутствия неизвестных счетов; per-case null не подменяется
 измеренным нулевым bill. Непрочитанные документы не получают quality FAIL/PASS.
 
+Отдельный разрешённый read-only разбор после кампании установил
+[ценовой guard отказа](0056-q4-incident-diagnosis.md): отсутствует явный request fee,
+image fee не проходит нулевой ceiling. Исходная публичная summary ниже не
+содержала этого диагноза; результат Q4 остаётся INCONCLUSIVE / CONSUMED.
+
 ## Доказательства и предел диагноза
 
 Скачан только allowlisted artifact `document-reading-q-closed-result`;
@@ -58,7 +63,7 @@ Workflow guard подтвердил source/main ancestry/единственны�
 Это evidence работоспособности SSH/staging/container/replay в этой попытке.
 Ключи/UUID/DSN и произвольный provider content не выводились.
 
-Точная причина preflight refusal **UNVERIFIED**: публичная проекция сохраняет
+По исходной публичной проекции точная причина была **UNVERIFIED**: она сохраняет
 только `preflight`, counters и hashes. Она не содержит ответов metadata,
 HTTP statuses и конкретного исключившего candidate guard. Нельзя объявить
 причиной ключ, тарифы, fees, ZDR, модель или общий бюджет по одному этому коду.
