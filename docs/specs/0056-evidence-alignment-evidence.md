@@ -48,3 +48,11 @@ PASS, предметные Go/fake campaign/replay/negative controls PASS, q4 fa
 PASS с сохранностью q/q2/q3 файлов, `git diff --check` PASS. HTTP400 reader
 privacy/snapshot controls4/4 PASS. Новых inference/settlement после frozen события0; T выполнил один metadata GET
 и одно чтение bound usage row, результат generation_time_mismatch.
+
+## Actual Q4.4
+
+После принятого U выполнен Q4.4/run40225129622:INCONCLUSIVE,1POST/6GET,
+HTTP400/INVALID_ARGUMENT/no generation/usage/cost; reserve32023micros unknown,
+quality checks0. Inline refs removal не устранил отказ, конкретный keyword
+не установлен. [Execution evidence](0056-q44-execution-evidence.md), consumed2/3,
+remaining1 BLOCKED. Следующий контракт [V](0056-last-attempt-portable-evidence-candidate.md) только draft.

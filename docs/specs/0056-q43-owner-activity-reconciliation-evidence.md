@@ -35,3 +35,10 @@ PR130 интегрирован `a8752028463d19351c9eddcb0ee40b71fe398b47` пос
 новые make test/production/integration/vet/diff и exact head/main CI5/5,
 clean manifest/binary/опубликованный receipt. Q4.4 пока NOT_DISPATCHED;
 actual PASS_SYNTHETIC не заявляется.
+
+## Результат продолжения
+
+После U/PR131 и опубликованного receipt выполнен Q4.4/attempt2из3:
+[INCONCLUSIVE/HTTP400/unknown bill](0056-q44-execution-evidence.md).
+Source a875202 прошёл mainCI40223309245/5, U head d692de9 — CI40224022530/5.
+Последний слот сохранён, серия снова frozen; U не распространяется на новый bill.

@@ -1,0 +1,17 @@
+{
+  "version": "document-reading.q44.V.policy-settlement.v1",
+  "status": "VERIFIED_OPERATION",
+  "billingBasis": "owner_accepted_http400_policy",
+  "directMetadataVerified": false,
+  "settlementApplied": true,
+  "actualMicros": 0,
+  "contingencyMicros": 32023,
+  "targetUsageRows": 1,
+  "ownerUnchanged": true,
+  "snapshotUnchanged": true,
+  "metadataGET": 0,
+  "paidPOST": 0,
+  "idempotentReplay": false,
+  "auditFileSHA256": "2531586b9f8fdb988c06f2bfd6d120f4848b573276953890473b14de4af11236",
+  "resumeAllowed": true
+}
