@@ -11,6 +11,6 @@
   "consumedAttempts": 0,
   "knownCostMicros": 0,
   "unknownBills": 0,
-  "status": "awaiting_source_ci",
+  "status": "authorized_attempt_1",
   "attempts": []
 }
