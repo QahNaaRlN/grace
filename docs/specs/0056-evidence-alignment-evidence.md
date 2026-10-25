@@ -27,3 +27,18 @@ DirectSchema. Форма ответа прежняя. Повтор вмести�
 сама модель, затем прежний scorer проверяет его по неизменному golden.
 Actual page bounds/площадь/byte limits по-прежнему проверяет Go. JSON Schema не
 заменяет domain validation и не гарантирует grounding или PASS_SYNTHETIC.
+
+## Actual первая попытка и compatibility candidate
+
+Q4.3 run40204752709: INCONCLUSIVE/HTTP400,1POST/6GET, unknownBills1, reserve30329micros.
+[Полный evidence](0056-q43-execution-evidence.md). S series frozen1/3; paid продолжение
+требует отдельно принятого T и authoritative reconciliation. Offline candidate v3
+убирает $defs/$ref, сохраняя evidence constraints; actual reserves255817, preflight267205,
+8max285232. Причина HTTP400 остаётся UNVERIFIED; это controlled compatibility change,
+не доказанное исправление сервера.
+
+Inline candidate checks: `make test` PASS (339/339Web), `go vet ./cmd/... ./internal/...`
+PASS, предметные Go/fake campaign/replay/negative controls PASS, q4 fake workflow
+PASS с сохранностью q/q2/q3 файлов, `git diff --check` PASS. HTTP400 reader
+privacy/snapshot controls4/4 PASS. Ни новых inference, ни T SQL/metadata/settlement
+операций после frozen события не выполнено.
