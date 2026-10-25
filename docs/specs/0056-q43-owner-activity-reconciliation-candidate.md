@@ -1,6 +1,7 @@
 # SPEC-0056 U: один Q4.3 settlement по owner Activity и HTTP400 policy
 
-- Статус: **accepted U1–U3**; ops code NOT_STARTED.
+- Статус: **accepted U1–U3**; U1 executed VERIFIED_OPERATION;
+  U2 remaining2/3, contingency30329micros; U3 offline gates verified, CI pending.
 - Приёмка владельца 2026-10-25: «Принять U и продолжить (рекомендую)»
   в ответ на отдельный вопрос о settlement0, contingency30329 и оставшихся2/$2.
 - Родители: [accepted S](0056-evidence-alignment-series.md), [accepted T](0056-q43-billing-reconciliation-candidate.md).
@@ -90,3 +91,11 @@ idempotency controls и изолированный SQL тест существу
 policy+owner Activity, сохранить $0.030329 запаса в серии и довести оставшиеся
 2 попытки до PASS либо прежнего stop. Новых GET/дополнительных attempts/$ нет.
 Предоставление screenshot само по себе не считается принятием этого исключения.
+
+## Исполнение
+
+Приёмка до ops code: `423e7ff`. Один разрешённый U SSH (T+U всего3),
+settlement одной row0 по policy+Activity, owner/snapshot unchanged;
+[AC/evidence](0056-q43-owner-activity-reconciliation-evidence.md).
+Historical unknown не переписан; directMetadataVerified=false.
+Следующий шаг — gates/merge/clean source CI5/5/receipt и Q4.4 (попытка2из3).
