@@ -86,3 +86,10 @@ R1–R5 выполнены repair/CI; R6 выполнен фактическим
 Приёмка качества/активация не заявляются. Новый live grant не открыт;
 дальнейший точный разбор protocol failure возможен отдельным read-only пакетом
 по сохранённому report, без повтора распознавания.
+
+## Последующий read-only разбор
+
+По отдельному запросу владельца «разбор REJECT» установлены два нарушения
+evidence:23 boxes вне0..1 и два непустых поля второй строки без цитат.
+[Причина, causal controls и границы вывода](../research/statement-quality/q42-reject-diagnosis.md).
+Исходный REJECT/counters/bill/grant не изменены; новых provider calls0.
