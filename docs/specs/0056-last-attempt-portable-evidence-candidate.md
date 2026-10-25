@@ -1,6 +1,7 @@
 # SPEC-0056 V: portable evidence schema и последняя попытка S
 
-- Статус: **draft / awaiting owner acceptance**; implementation NOT_STARTED.
+- Статус: **accepted V1–V3**; implementation NOT_STARTED.
+- Приёмка владельца 2026-10-26: «Принять V и выполнить последнюю попытку (рекомендую)».
 - Прежние [S](0056-evidence-alignment-series.md)/[U](0056-q43-owner-activity-reconciliation-candidate.md) не расширяются молча.
 - Основание: [Q4.4 evidence](0056-q44-execution-evidence.md),consumed2/3,remaining1,$2 total прежний.
 
@@ -84,9 +85,9 @@ Offline real SQL/owner/conflict/replay/rollback/privacy tests обязатель
 V не разрешает новую серию, другой model, retry/rerun или четвёртую попытку.
 Полный результат и accounting публикуются честно; неудача не пересчитывается в PASS.
 
-## Требуемое решение
+## Принятое решение
 
-Принять V1–V3 целиком: один bounded compatibility repair, указанный policy accounting
+Владелец принял V1–V3 целиком: один bounded compatibility repair, указанный policy accounting
 текущего400/при точно таком же исходе последнего run и последний Q4.5 в прежних3/$2.
 Новое принятие требуется, потому что S1 требовал эти bounds именно в generative
-schema, а U разрешал только reconciliation Q4.3. Текущий V не принят владельцем.
+schema, а U разрешал только reconciliation Q4.3. V принят до production/ops implementation; повторное разрешение этого пути не требуется.
