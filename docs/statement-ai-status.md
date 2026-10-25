@@ -1,34 +1,30 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено 2026-10-26, Asia/Yekaterinburg. **Последний Q4.4 INCONCLUSIVE;
-consumed2/3; V принят, последняя1попытка разрешена после gates. PASS_SYNTHETIC не получен.**
+Обновлено 2026-10-26, Asia/Yekaterinburg. **Последний Q4.5: REJECT по качеству.
+Серия закрыта3/3,remaining0. PASS_SYNTHETIC не получен.**
 
 [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md) и Q1–Q3
-интегрированы PR122/123: общий OpenRouter, actual renderer, image_review и прежний
-confirmation. Выбрана google/gemini-3.1-flash-lite/canonical20260507,
-provider google-vertex/eu; research ≤8POST/6GET/$2, fresh identity/pricing gates.
-Q4.2 получил model output, REJECT/protocol, $0.005183 settled.
+интегрированы PR122/123. Прежние model/canonical/provider/8documents/criteria сохранены.
+Принятый [V](specs/0056-last-attempt-portable-evidence-candidate.md), acceptance6165d81 до кода,
+интегрирован PR132/main0a955148 после всех local gates и PR CI40227597292/5;
+source mainCI40228543312/5 PASS. V удаляет только S1 bounds из model request schema;
+prompt v3 и Go semantic validation/oracle/scorer/corpus unchanged.
 
-Принят [S](specs/0056-evidence-alignment-series.md): evidence repair и до3 новых
-попыток/$2 суммарно. Q4.3 получил HTTP400/no generation/no usage. По отдельно
-принятому [U](specs/0056-q43-owner-activity-reconciliation-candidate.md) его один
-reserve закрыт0 на основании owner Activity+policy, directMetadataVerified=false;
-contingency$0.030329 сохранён. U интегрирован PR131/main200e719,
-main CI40225076873/5, PR CI40224022530/5 и local gates PASS.
+[Q4.5/run40229482580](specs/0056-q45-execution-evidence.md),attempt1/count1:
+**HTTP200/protocol PASS**,21/27 recognition checks PASS,6fail, nativeBinding fail.
+Четыре date fields сохранили calendar date, но потеряли напечатанное время;
+row2 description=null,issues nonempty. Не установлено, почему модель пропустила описание.
+Остальные7cases не отправлены по decisive_quality_reject; full32/receipts live UNVERIFIED.
+1POST/6GET,5631input/2117output,actual$0.005042 settled,unknownBills0.
+Read-only fixed-file diagnosis1SSH/0SQL/key/provider/writes,closed projection и hashes сохранены.
 
-[Q4.4/run40225129622](specs/0056-q44-execution-evidence.md): sourcea875202/
-main CI40223309245/5, опубликованный receipt до dispatch. Итог снова HTTP400/
-INVALID_ARGUMENT,1POST/6GET,641bytes/no generation/usage/cost, reserve$0.032023
-unknown. Остальные7not_sent, quality checks0. Inline refs removal не устранил
-отказ; конкретный параметр provider не назвал. [Journal](research/statement-quality/evidence-series-2026-10-25.json)
-сохраняет все original summaries и отдельное основание U. U не закрывает новый bill.
-
-Принят [V](specs/0056-last-attempt-portable-evidence-candidate.md), acceptance6165d81 до кода:
-portable shape schema с прежними Go checks/quality criteria. Q4.4 закрыт0 по
-owner_accepted_http400_policy, directMetadataVerified=false; запас$0.062352 сохранён.
-Одна V SSH,0GET/POST; [projection](research/statement-quality/q44-V-settlement.json).
-Реализация проходит local/CI/integration gates перед единственным последним Q4.5.
-[V AC/evidence](specs/0056-v-portable-evidence.md). Activation/import/deploy не открываются.
+Q4.3/Q4.4 original INCONCLUSIVE summaries сохранены; административные U/V settlement0
+имеют directMetadataVerified=false и отдельные основания. Их полный reserve$0.062352
+остаётся contingency внутри прежних$2. Q4.5 имеет обычный known settlement, policy0 не применялся.
+[Journal](research/statement-quality/evidence-series-2026-10-25.json): consumed3/3,
+remaining0,conservative accounted$0.067394. Q4.2 bill$0.005183 вне новой серии.
+Реальный quality PASS не заявлен. Новые retry/series/model/activation/import/deploy не открыты.
+[V AC/evidence](specs/0056-v-portable-evidence.md).
 [История](specs/0055-development-history.md).
 
 ## Исторические S1.19–S1.22
