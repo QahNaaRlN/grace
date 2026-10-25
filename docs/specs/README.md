@@ -13,10 +13,13 @@ Q4.2 завершён REJECT/protocol,1POST/6GET/$0.005183, grant CONSUMED;
 на той же модели/8документах/неизменных критериях. Реализация интегрирована PR129/maina49542e, CI5/5 PASS;
 [AC/evidence](0056-evidence-alignment-evidence.md). Попытка1/3 Q4.3 дала HTTP400/
 INCONCLUSIVE, unknownBills1, reserve$0.030329; серия frozen.
-[T](0056-q43-billing-reconciliation-candidate.md) принят владельцем; T1 исполнен,
-correlation отсутствует; переданный владельцем ID не совпал по времени —
-[billing UNVERIFIED / resume BLOCKED](0056-q43-reconciliation-evidence.md);
-следующий inline compatibility candidate проверен только offline.
+[T](0056-q43-billing-reconciliation-candidate.md) исполнен: stored correlation отсутствует,
+переданный Activity ID не совпал по времени. Затем принят [U](0056-q43-owner-activity-reconciliation-candidate.md):
+один bound reserve закрыт0 по owner Activity+policy, directMetadataVerified=false;
+[AC/evidence](0056-q43-owner-activity-reconciliation-evidence.md). Серия открыта для
+оставшихся2из3, contingency$0.030329 сохранён внутри $2; inline compatibility v3
+интегрирован PR130/a875202, exact-head CI40222097044/5 PASS. Новый dispatch после
+clean integrated source/CI5/5/manifest/receipt, live PASS пока не получен.
 Production activation/import этим не открываются.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на
