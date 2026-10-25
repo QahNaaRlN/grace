@@ -93,7 +93,9 @@ production qualification; reserved research qualification нельзя загр�
 через обычный `GRACE_AI_MODEL_GROUPS`. Отдельные fake-тесты обязаны доказать
 эту границу, включая истёкший/чужой допуск и подмену manifest.
 
-Конкретная модель сейчас **UNSELECTED**, доступ и тариф **UNVERIFIED**.
+Выбран [операторский кандидат Q4](../research/statement-quality/document-q4-candidate-2026-10-25.md):
+Gemini3.1 Flash Lite / Google Vertex EU. Публичный тариф проверен;
+актуальный endpoint proof, fees и доступ остаются **UNVERIFIED**.
 Q1–Q3 не закрепляют прежнюю Astra или старую candidate-policy. До запроса Q4
 оператор представляет один конкретный model ID/canonical/provider endpoint,
 region/privacy, явные верхние тарифы и image bounds. Значения берутся из

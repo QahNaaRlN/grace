@@ -36,6 +36,23 @@ function paths(routes: RouteObject[]): string[] {
   ])
 }
 
+// Route modules are real lazy imports. Wait for router initialization before
+// starting DOM assertions so module transformation is outside their polling window.
+async function initializedRouter(path: string) {
+  const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
+  if (!router.state.initialized) {
+    await new Promise<void>((resolve) => {
+      const unsubscribe = router.subscribe((state) => {
+        if (state.initialized) {
+          unsubscribe()
+          resolve()
+        }
+      })
+    })
+  }
+  return router
+}
+
 describe('SPEC-0048 router', () => {
   it('keeps the URL set of e623775', () => {
     expect(paths(appRoutes).sort()).toEqual([...protectedPaths, ...publicPaths].sort())
@@ -71,7 +88,7 @@ describe('SPEC-0048 router', () => {
             response: new Response(null, { status: 200 }),
           }
         : { data: { items: [] }, response: new Response(null, { status: 200 }) }) as never)
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/categories'] })
+    const router = await initializedRouter('/categories')
     render(
       <QueryClientProvider
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
@@ -85,7 +102,7 @@ describe('SPEC-0048 router', () => {
 
   // SPEC-0052 AC4: the shared password-entry chunk keeps the view of each URL.
   it('renders a sign-in page with its view', async () => {
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/register'] })
+    const router = await initializedRouter('/register')
     render(
       <QueryClientProvider client={new QueryClient()}>
         <RouterProvider router={router} />

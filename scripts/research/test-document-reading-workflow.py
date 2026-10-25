@@ -74,14 +74,17 @@ case "$1" in
         ci.write_text(json.dumps(data))
         result=subprocess.run(['bash','-c',guard],cwd=REPO,env=cx,capture_output=True)
         assert (result.returncode==0)==(scenario=='good'),(scenario,result.stdout,result.stderr)
-    # Exercise the real build/check/export shell block with the safe unselected candidate.
+    # Exercise the real build/check/export block with the current operator proposal.
     checked=subprocess.run([str(binary),'-mode=check'],cwd=REPO,env=env,check=True,capture_output=True).stdout.rstrip(b'\n')
     build_manifest=hashlib.sha256(checked).hexdigest()
     build_root=root/'build-control';build_root.mkdir()
     build_env=dict(base,RUNNER_TEMP=str(build_root),APPROVED_MANIFEST=build_manifest)
     build=subprocess.run(['bash','-c',block('Собрать bundle и сверить одобренный manifest')],cwd=REPO,env=build_env,capture_output=True)
     assert build.returncode==0,(build.stdout,build.stderr)
-    assert json.loads((build_root/('grace-document-reading-q-'+sha)/'MANIFEST.json').read_text())['candidate'] is None
+    built_manifest=json.loads((build_root/('grace-document-reading-q-'+sha)/'MANIFEST.json').read_text())
+    assert built_manifest['candidate']==json.loads(checked)['candidate']
+    assert built_manifest['executionAuthorized'] is False
+    assert built_manifest['activationAuthorized'] is False
     bundle=root/('grace-document-reading-q-'+sha);shutil.copytree(prepared,bundle);shutil.copy2(binary,bundle/'grace-document-reading-eval')
     transport=block('Выполнить один разрешённый Q4')
     for scenario in ['good','private','overflow','loss','auth_fail','scp_fail']:
