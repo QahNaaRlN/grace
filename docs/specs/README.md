@@ -18,8 +18,12 @@ INCONCLUSIVE/HTTP400/INVALID_ARGUMENT,1POST/6GET,unknown bill/reserve$0.032023.
 Владелец принял [V](0056-last-attempt-portable-evidence-candidate.md), acceptance6165d81 до кода:
 portable shape schema с прежними Go checks, policy accounting и только последний Q4.5.
 Q4.4 административно закрыт0, directMetadataVerified=false, contingency$0.062352 сохранён.
-Consumed2/3; последняя1попытка разрешена после local/CI/integration gates.
-[V AC/evidence](0056-v-portable-evidence.md). Новых POST после Q4.4 пока0.
+[Последний Q4.5](0056-q45-execution-evidence.md),run40229482580: **REJECT/quality_reject**,HTTP200,
+protocol PASS,1POST/6GET,27checks/6fail,known$0.005042 settled/unknown0.
+Calendar dates верны, но во всех4 date fields потерян clock; row2 description=null/issues nonempty;
+nativeBinding fail. Остальные7not_sent по stop-rule. **Серия закрыта3/3,remaining0; PASS_SYNTHETIC не получен.**
+Contingency$0.062352 сохранён, accounting с bill=$0.067394 в исходных$2.
+[V AC/evidence](0056-v-portable-evidence.md). Новой попытки/серии/model этим не разрешено.
 Production activation/import этим не открываются.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на

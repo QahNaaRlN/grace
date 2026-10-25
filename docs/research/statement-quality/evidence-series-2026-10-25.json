@@ -8,10 +8,10 @@
   "model": "google/gemini-3.1-flash-lite",
   "canonical": "google/gemini-3.1-flash-lite-20260507",
   "provider": "google-vertex/eu",
-  "consumedAttempts": 2,
-  "knownCostMicros": 0,
+  "consumedAttempts": 3,
+  "knownCostMicros": 5042,
   "unknownBills": 0,
-  "status": "authorized_last_attempt_by_V",
+  "status": "closed_exhausted_quality_reject",
   "attempts": [
     {
       "ordinal": 1,
@@ -62,6 +62,29 @@
         "directMetadataVerified": false,
         "evidencePath": "q44-V-settlement.json"
       }
+    },
+    {
+      "ordinal": 3,
+      "slot": "q5",
+      "runID": 40229482580,
+      "source": "0a955148169cd42c04667c5e510c87fb31102591",
+      "manifestSHA256": "9c253c87615961c925d58fb600206ce62b49dddcf7378c4bff0614a45ebc8255",
+      "receiptCommit": "e2e7daabf1ca002ad3b80ef6ed96782acb139c89",
+      "status": "completed_closed",
+      "maximumReserveMicros": 285232,
+      "knownCostMicros": 5042,
+      "unknownBills": 0,
+      "decision": "REJECT",
+      "post": 1,
+      "metadataGET": 6,
+      "heldReserveMicros": 0,
+      "summaryPath": "q45-40229482580.summary.json",
+      "reportSHA256": "48404d81a3f1c373db0d6b40f31f5b59a4aca3585c4b0fda551aa0cd405d4d3f",
+      "diagnosisPath": "q45-40229482580.diagnosis.json",
+      "checks": 27,
+      "failedChecks": 6,
+      "settlement": "settled",
+      "nativeBinding": "fail"
     }
   ],
   "heldReserveMicros": 0,
@@ -82,8 +105,8 @@
   },
   "historicalUnknownBills": 2,
   "contingencyMicros": 62352,
-  "reconciledSpendMicros": 0,
-  "resumeAllowed": true,
+  "reconciledSpendMicros": 5042,
+  "resumeAllowed": false,
   "ownerActivityReconciliation": {
     "acceptedSpecification": "SPEC-0056 U",
     "acceptanceCommit": "423e7ff",
@@ -101,7 +124,7 @@
     "evidencePath": "q43-U-settlement.json",
     "remainingAttempts": 2
   },
-  "remainingAttempts": 1,
+  "remainingAttempts": 0,
   "http400PolicyReconciliation": {
     "acceptedSpecification": "SPEC-0056 V",
     "acceptanceCommit": "6165d8139e8068bc6d1f5e585abbe236c860f920",
@@ -113,6 +136,20 @@
     "auditFileSHA256": "2531586b9f8fdb988c06f2bfd6d120f4848b573276953890473b14de4af11236",
     "contingencyMicros": 62352,
     "evidencePath": "q44-V-settlement.json",
-    "remainingAttempts": 1
+    "remainingAttempts": 0
+  },
+  "conservativeAccountedMicros": 67394,
+  "lastAttemptClosure": {
+    "acceptedSpecification": "SPEC-0056 V",
+    "status": "closed_exhausted_quality_reject",
+    "consumedAttempts": 3,
+    "remainingAttempts": 0,
+    "nextDispatchAuthorized": false,
+    "knownSettledCostMicros": 5042,
+    "policyContingencyMicros": 62352,
+    "conservativeAccountedMicros": 67394,
+    "maximumTotalMicros": 2000000,
+    "q45PolicySettlementApplied": false,
+    "reason": "q45_HTTP200_known_bill_normal_settlement"
   }
 }

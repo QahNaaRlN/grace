@@ -43,6 +43,7 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	python3 -B docs/research/statement-quality/q45-quality-reader-test.py
 	python3 -B docs/research/statement-quality/q44-wire-reader-test.py
 	./scripts/research/test-q43-owner-settlement.sh
 	./scripts/research/test-q44-policy-settlement.sh
