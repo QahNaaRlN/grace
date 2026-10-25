@@ -129,8 +129,10 @@ networkless PDF helper; запросы к OpenRouter подменены fake tra
 [Q1–Q3](specs/0056-openrouter-document-qualification.md) приняты; offline-
 реализация восьми публичных документов и полного scorer подготовлена через
 тот же adapter, [implementation evidence](specs/0056-qualification-evidence.md).
-Приёмка/merge pending. `go run ./cmd/document-reading-eval -mode=check`
-показывает corpus/лимиты без ключей и сети. Candidate пока null, Q4_READY=false.
+Q1–Q3 интегрированы PR123/main `1bf7993`, main CI40141643032 success.
+`go run ./cmd/document-reading-eval -mode=check` показывает corpus/лимиты без
+ключей и сети. [Кандидат Q4 и тарифные границы](research/statement-quality/document-q4-candidate-2026-10-25.md)
+подготовлены локально; runtime доступ и свежий endpoint proof UNVERIFIED, Q4_READY=false.
 Реальные вызовы Q4 требуют отдельного exact-source допуска после готового
 manifest и выбора concrete model/provider/тарифа. Предложенные≤8POST/6GET/$2.00
 не являются разрешением расходов; новых production group members пока нет.

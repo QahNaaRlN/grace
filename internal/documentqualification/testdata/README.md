@@ -11,8 +11,11 @@ Poppler25.04.0 helper. Нормализация фото фиксирована 
 invariant. SHA256:4650a27fc30fdab5a159d7199e9ade5b8912b889382b08736b629ca5d493c137.
 PDF реально отрендерен, текстовый слой отсутствует, PNG визуально проверен.
 
-`candidate.json` содержит `null`: настоящая модель/endpoint не выбраны и не
-квалифицированы. Default check не читает keys/env и не открывает сеть. Подмена
+`candidate.json` содержит операторское предложение Gemini3.1 Flash Lite через
+Google Vertex EU; qualification и свежий metadata proof отсутствуют.
+[Выбор, тарифные границы и доступ](../../../docs/research/statement-quality/document-q4-candidate-2026-10-25.md).
+Q4_READY=false, выполнение отдельно не разрешено. Default check не читает
+keys/env и не открывает сеть. Подмена
 corpus/golden/prompt/schema после допуска меняет manifest и требует нового решения.
 
 Проверить: `go run ./cmd/document-reading-eval -mode=check`;

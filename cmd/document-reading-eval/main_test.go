@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"github.com/QahNaaRlN/grace/internal/assistant"
 	q "github.com/QahNaaRlN/grace/internal/documentqualification"
@@ -21,8 +22,15 @@ func TestQDefaultAndRefusalsNeverReadSecretsOrCallRun(t *testing.T) {
 		return q.Report{}, nil
 	}}
 	var out bytes.Buffer
-	if e := command([]string{"-root=../.."}, strings.NewReader(""), &out, deps); e != nil || !strings.Contains(out.String(), `"candidate":null`) {
+	if e := command([]string{"-root=../.."}, strings.NewReader(""), &out, deps); e != nil {
 		t.Fatal(e, out.String())
+	}
+	var manifest q.Manifest
+	if e := json.Unmarshal(out.Bytes(), &manifest); e != nil || manifest.ExecutionAuthorized || manifest.ActivationAuthorized {
+		t.Fatal("default check authorized execution", e)
+	}
+	if keyReads != 0 || runs != 0 {
+		t.Fatal("default check touched execution", keyReads, runs)
 	}
 	old := sourceSHA
 	sourceSHA = strings.Repeat("a", 40)
