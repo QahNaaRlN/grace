@@ -1,7 +1,7 @@
 # SPEC-0056 R: ограниченный pricing repair и один Q4.2
 
 - Статус: **accepted** до production code; условное разрешение на полный путь до Q4.2.
-- Implementation status: **implemented_pending_ci_and_run**; [evidence](0056-q4-pricing-repair-evidence.md).
+- Implementation status: **integrated_runtime_measured**; [evidence](0056-q4-pricing-repair-evidence.md).
 - Дата: 2026-10-25, Asia/Yekaterinburg.
 - Основание: «приступай, мне нужен прогон» после VERIFIED read-only диагноза Q4.
 - База: integrated main `9200b731a0dea8f171e31aaf988d038073ad577f`.
@@ -130,7 +130,7 @@ production groups и deployment config вне scope. Никаких побочн
   provider pricing допускает omission неприменимых SKU; это не переносится
   автоматически на доказательство0 в legacy endpoint metadata.
 
-## Решение, которое требуется от владельца
+## Принятое решение владельца
 
 Принять этот конкретный R-контракт **до production code** и разрешить связанный
 путь: ограниченная реализация → offline/local+CI gates → merge прошедшего repair →
