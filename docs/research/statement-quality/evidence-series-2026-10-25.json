@@ -1,0 +1,16 @@
+{
+  "version": "document-reading.evidence-series.2026-10-25.v1",
+  "acceptedSpecification": "SPEC-0056 S",
+  "maximumNewAttempts": 3,
+  "maximumTotalMicros": 2000000,
+  "maximalNextCampaignReserveMicros": 285232,
+  "maximumAllThreeReserveMicros": 855696,
+  "model": "google/gemini-3.1-flash-lite",
+  "canonical": "google/gemini-3.1-flash-lite-20260507",
+  "provider": "google-vertex/eu",
+  "consumedAttempts": 0,
+  "knownCostMicros": 0,
+  "unknownBills": 0,
+  "status": "awaiting_source_ci",
+  "attempts": []
+}

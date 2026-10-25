@@ -7,8 +7,8 @@ import (
 	"github.com/QahNaaRlN/grace/internal/statementdata"
 )
 
-const DocumentPromptVersion = "statement.document-reading.0056.v1"
-const DocumentPrompt = DirectPrompt + ` For each page quote also return a bounding box [left,top,right,bottom] in normalized page coordinates 0..1, enclosing the quoted printed region. A box is model-proposed evidence, never proof that OCR is correct. Do not omit operations. Return at most 200 operations; if incomplete, keep explicit issues. No tools.`
+const DocumentPromptVersion = "statement.document-reading.0056.v2"
+const DocumentPrompt = DirectPrompt + ` Every non-null field and row anchor requires 1..8 verbatim page/quote evidence entries. If no printed quote supports a field, return that field as null; never return a value with empty evidence and never infer an original transaction amount/currency from account amount/currency. For each quote return a box [left,top,right,bottom] as fractional normalized page coordinates in 0..1: left < right and top < bottom, relative to that page's full width/height. Do not use pixel coordinates or coordinates in 0..1000. For example, a region from 10% to 30% of page width and 20% to 40% of page height is [0.10,0.20,0.30,0.40]; this example is not document evidence. Use the actual enclosing printed region. A box is model-proposed evidence, never proof that OCR is correct. Do not omit operations. Return at most 200 operations; if incomplete, keep explicit issues. No tools.`
 
 type DocumentPolicy struct {
 	InputMicrosPerMillion  int64           `json:"inputMicrosPerMillion"`

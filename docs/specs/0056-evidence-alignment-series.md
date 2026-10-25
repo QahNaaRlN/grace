@@ -1,7 +1,7 @@
 # SPEC-0056 S: evidence alignment и ограниченная серия до PASS
 
 - Статус: **accepted** до production code.
-- Implementation status: **not_started**.
+- Implementation status: **implemented_pending_ci_and_series**; [evidence](0056-evidence-alignment-evidence.md).
 - Дата:2026-10-25, Asia/Yekaterinburg.
 - База: main5b10b2c, интегрированный Q4.2 evidence PR127; diagnosis [PR128](https://github.com/QahNaaRlN/grace/pull/128).
 - Родители: [accepted G1–G4](0056-openrouter-document-reading.md), [Q](0056-openrouter-document-qualification.md), [R](0056-q4-pricing-repair.md).

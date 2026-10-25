@@ -4,14 +4,15 @@
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
 **accepted G1–G4 / accepted implementation / integrated PR122**, main10a0059;
 main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
-[Следующее предложение Q1–Q3](0056-openrouter-document-qualification.md) —
-**accepted Q1–Q3 / offline implementation pending acceptance**:8 публичных
-документов через actual grouped adapter; [AC/evidence](0056-qualification-evidence.md);
-Q4/≤8POST/6GET/$2.00 только предлагается, не разрешён. Владелец принял контракт
-и разрешил его интеграцию и полную локальную реализацию: gateway, группы capabilities,
-локальный renderer, пользовательский visual review и прежний confirmation.
-Локальный результат и критерии: [evidence](0056-evidence.md).
-Новых live calls, key setup или production activation это не открывает.
+[Q1–Q3](0056-openrouter-document-qualification.md) интегрированы PR123:
+8 публичных документов через actual grouped adapter; [AC/evidence](0056-qualification-evidence.md).
+Q4.2 завершён REJECT/protocol,1POST/6GET/$0.005183, grant CONSUMED;
+[execution evidence](0056-q42-execution-evidence.md).
+Принят [S: evidence alignment и серия](0056-evidence-alignment-series.md):
+согласовать Schema/prompt с прежним validator, затем до3 новых попыток/$2 суммарно
+на той же модели/8документах/неизменных критериях. Локальная реализация проверяется;
+[AC/evidence](0056-evidence-alignment-evidence.md), dispatch ещё не выполнен.
+Production activation/import этим не открываются.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на
 [одной status-странице](../statement-ai-status.md). Завершённый live-контракт —
