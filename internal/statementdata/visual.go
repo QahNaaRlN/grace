@@ -112,19 +112,19 @@ func (v VisualReading) Validate(pages int) error {
 	return nil
 }
 func VisualSchema() json.RawMessage {
-	quote := map[string]any{"type": "object", "additionalProperties": false, "required": []string{"page", "quote", "box"}, "properties": map[string]any{"page": map[string]any{"type": "integer"}, "quote": map[string]any{"type": "string"}, "box": map[string]any{"type": "array", "items": map[string]any{"type": "number"}, "minItems": 4, "maxItems": 4}}}
-	quotes := map[string]any{"type": "array", "items": quote}
+	quote := map[string]any{"type": "object", "additionalProperties": false, "required": []string{"page", "quote", "box"}, "properties": map[string]any{"page": map[string]any{"type": "integer"}, "quote": map[string]any{"type": "string"}, "box": map[string]any{"type": "array", "items": map[string]any{"type": "number", "minimum": 0, "maximum": 1}, "minItems": 4, "maxItems": 4}}}
+	quotes := map[string]any{"type": "array", "minItems": 1, "maxItems": 8, "items": quote}
 	field := map[string]any{"type": "object", "additionalProperties": false, "required": []string{"value", "evidence"}, "properties": map[string]any{"value": map[string]any{"type": "string"}, "evidence": quotes}}
 	nullable := map[string]any{"anyOf": []any{map[string]any{"type": "null"}, field}}
 	fields := func(keys []string) map[string]any {
 		props := map[string]any{}
 		for _, k := range keys {
-			props[k] = nullable
+			props[k] = map[string]any{"$ref": "#/$defs/field"}
 		}
 		return map[string]any{"type": "object", "additionalProperties": false, "required": keys, "properties": props}
 	}
 	row := map[string]any{"type": "object", "additionalProperties": false, "required": []string{"anchor", "fields", "issues"}, "properties": map[string]any{"anchor": quotes, "fields": fields(VisualRowFields), "issues": map[string]any{"type": "array", "items": map[string]any{"type": "string"}}}}
-	b, _ := json.Marshal(map[string]any{"type": "object", "additionalProperties": false, "required": []string{"header", "rows"}, "properties": map[string]any{"header": fields(VisualHeaderFields), "rows": map[string]any{"type": "array", "items": row}}})
+	b, _ := json.Marshal(map[string]any{"$defs": map[string]any{"field": nullable}, "type": "object", "additionalProperties": false, "required": []string{"header", "rows"}, "properties": map[string]any{"header": fields(VisualHeaderFields), "rows": map[string]any{"type": "array", "items": row}}})
 	return b
 }
 

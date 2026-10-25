@@ -108,13 +108,15 @@ case "$1" in
             dockerlog=runtime/'docker';seen=runtime/'seen'
             old_marker=shared/'document-reading-spec0056-q.started';old_marker.write_text('old-consumed-marker')
             old_report=shared/'document-reading-spec0056-q.private.json';old_report.write_text('old-private-report')
+            prior_marker=shared/'document-reading-spec0056-q2.started';prior_marker.write_text('q2-consumed-marker')
+            prior_report=shared/'document-reading-spec0056-q2.private.json';prior_report.write_text('q2-private-report')
             cx=dict(base,GRACE_ROOT=str(runtime),GRACE_STATEMENT_OPERATOR_OWNER_ID=base['OPERATOR_OWNER_ID'],DOCKER_COMMANDS=str(dockerlog),INSPECT_SEEN=str(seen),FAKE_WRAPPER=scenario)
             approved=manifest;authorized=sha
             if scenario=='manifest':approved='0'*64
             if scenario=='source':authorized='0'*40
             if scenario=='tamper':(remote/'corpus.json').write_text('PRIVATE')
             if scenario=='symlink':(remote/'corpus.json').unlink();(remote/'corpus.json').symlink_to(prepared/'corpus.json')
-            if scenario=='spent':(shared/'document-reading-spec0056-q2.started').write_text('consumed')
+            if scenario=='spent':(shared/'document-reading-spec0056-q3.started').write_text('consumed')
             held=None
             if scenario=='lock':
                 import fcntl
@@ -123,11 +125,13 @@ case "$1" in
             if held:held.close()
             assert old_marker.read_text()=='old-consumed-marker'
             assert old_report.read_text()=='old-private-report'
+            assert prior_marker.read_text()=='q2-consumed-marker'
+            assert prior_report.read_text()=='q2-private-report'
             assert (result.returncode==0)==(scenario=='good'),(scenario,result.stdout,result.stderr)
             assert b'PRIVATE' not in result.stdout+result.stderr
             if scenario in ['good','run_fail','changed']:
-                assert (shared/'document-reading-spec0056-q2.started').exists()
-                assert (shared/'document-reading-spec0056-q2.private.json').exists()
+                assert (shared/'document-reading-spec0056-q3.started').exists()
+                assert (shared/'document-reading-spec0056-q3.private.json').exists()
                 assert 'rm -rf '+str(remote) in dockerlog.read_text()
                 assert not remote.exists()
             else:
