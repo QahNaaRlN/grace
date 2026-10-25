@@ -36,7 +36,9 @@ Actual page bounds/площадь/byte limits по-прежнему провер
 Q4.3 run40204752709: INCONCLUSIVE/HTTP400,1POST/6GET, unknownBills1, reserve30329micros.
 [Полный evidence](0056-q43-execution-evidence.md). S series frozen1/3; paid продолжение
 требует authoritative reconciliation по принятому T. T1 исполнил один SSH,
-correlation отсутствует; [T evidence](0056-q43-reconciliation-evidence.md), resume BLOCKED. Offline candidate v3
+correlation отсутствует; переданный затем Activity ID не совпал по времени
+(всего T2SSH/1GET/одна row read). [T evidence](0056-q43-reconciliation-evidence.md),
+resume BLOCKED. Offline candidate v3
 убирает $defs/$ref, сохраняя evidence constraints; actual reserves255817, preflight267205,
 8max285232. Причина HTTP400 остаётся UNVERIFIED; это controlled compatibility change,
 не доказанное исправление сервера.
@@ -44,5 +46,5 @@ correlation отсутствует; [T evidence](0056-q43-reconciliation-evidenc
 Inline candidate checks: `make test` PASS (339/339Web), `go vet ./cmd/... ./internal/...`
 PASS, предметные Go/fake campaign/replay/negative controls PASS, q4 fake workflow
 PASS с сохранностью q/q2/q3 файлов, `git diff --check` PASS. HTTP400 reader
-privacy/snapshot controls4/4 PASS. Ни новых inference, ни T SQL/metadata/settlement
-операций после frozen события не выполнено.
+privacy/snapshot controls4/4 PASS. Новых inference/settlement после frozen события0; T выполнил один metadata GET
+и одно чтение bound usage row, результат generation_time_mismatch.

@@ -35,15 +35,16 @@
   "reconciliation": {
     "acceptedSpecification": "SPEC-0056 T",
     "acceptanceCommit": "9e9bd21",
-    "status": "blocked_missing_generation_correlation",
-    "sshSessionsUsed": 1,
+    "status": "blocked_generation_time_mismatch",
+    "sshSessionsUsed": 2,
     "maximumSSH": 3,
-    "metadataGET": 0,
+    "metadataGET": 1,
     "maximumMetadataGET": 1,
-    "sqlCalls": 0,
+    "sqlCalls": 1,
     "settlementApplied": false,
     "resumeAllowed": false,
-    "evidencePath": "q43-T-correlation-inspection.json",
-    "remainingAttempts": 2
+    "evidencePath": "q43-T-metadata-inspection.json",
+    "remainingAttempts": 2,
+    "auditFileSHA256": "374579f1c99cceb90725e9450a247bf3677bd6302029249668025a652f13d332"
   }
 }

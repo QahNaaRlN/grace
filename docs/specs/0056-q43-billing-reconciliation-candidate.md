@@ -1,6 +1,6 @@
 # SPEC-0056 T: один Q4.3 billing reconcile и условное продолжение серии
 
-- Статус: **accepted T1–T3**; T1 executed, BLOCKED / missing generation correlation.
+- Статус: **accepted T1–T3**; T1 executed, BLOCKED / owner-supplied generation time mismatch.
   T2 settlement NOT_EXECUTED; T3 resume BLOCKED.
 - Приёмка владельца 2026-10-25: «Принять T и продолжить (рекомендую)»
   в ответ на отдельный вопрос о bounded reconciliation и оставшихся 2 попытках/$2.
@@ -93,3 +93,13 @@ authoritative billing evidence остаётся блокировкой; поло
 Authoritative bill UNVERIFIED; metadata GET/SQL/key reads/ledger writes0.
 Оставшиеся2 попытки сохранены, но resumeAllowed=false. Требуется узкое
 owner-supplied Activity evidence по указанному событию; HTTP400 не заменяет cost.
+
+## Продолжение T1 по Activity ID владельца
+
+Владелец передал один generation ID в ответ на узкий запрос Activity evidence.
+Выполнен второй SSH: snapshot VERIFIED, ровно одна bound usage row прочитана,
+один metadata GET через существующий key. Metadata не прошли timestamp interval:
+**generation_time_mismatch**. Private audit сохранён, settlement NOT_EXECUTED.
+Всего T:2/3 SSH,1/1metadata GET,1read-onlySQL/одна row. Новых POST0.
+Точный ID/raw metadata остаются приватными; cost чужого по времени события
+не переносится на Q4.3. Следующий metadata GET этим T не открыт.

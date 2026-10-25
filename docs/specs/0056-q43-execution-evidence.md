@@ -58,5 +58,7 @@ unbilled response; MeteredCompletion/SQLBudget сохраняют uncertain rese
 [T принят владельцем](0056-q43-billing-reconciliation-candidate.md), commit9e9bd21.
 Первый bounded T1 inspection подтвердил отсутствие generation correlation в
 запечатанной ошибке. [Результат T](0056-q43-reconciliation-evidence.md):
-1SSH,0metadataGET/SQL/key reads/writes, settlement NOT_EXECUTED, resume BLOCKED.
+Первый SSH:0metadataGET/SQL/key reads/writes. После предоставленного владельцем ID
+второй SSH/одинGET/одна usage row: generation_time_mismatch. Ledger writes0,
+settlement NOT_EXECUTED, resume BLOCKED.
 Сохраняются только оставшиеся2 попытки в исходных $2; historical unknown не изменён.
