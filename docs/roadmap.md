@@ -6,9 +6,11 @@
 main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gates PASS.
 [Implementation evidence](specs/0056-evidence.md). Следующий
 [Q1–Q3 offline-пакет](specs/0056-openrouter-document-qualification.md) принят,
-реализация подготовлена / owner acceptance pending;
-[AC/evidence](specs/0056-qualification-evidence.md);
-Q4/≤8POST/6GET/$2.00 предложен, не разрешён.
+реализация интегрирована PR123/main `1bf7993`;
+[AC/evidence](specs/0056-qualification-evidence.md). Кандидат принят/интегрирован
+PR124/main `9200b73`, main CI5/5 и Delivery4/4 PASS. Единственный отдельно разрешённый
+Q4/run40186488958/attempt1 — [INCONCLUSIVE / CONSUMED](specs/0056-q4-evidence.md):
+preflight0POST/3metadataGET/$0, все8 cases not_sent. Повтор не разрешён.
 Реальное качество модели и production activation остаются UNVERIFIED.
 
 Актуальная работа Statement AI — [единая status-страница](statement-ai-status.md).
