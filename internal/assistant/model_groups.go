@@ -17,17 +17,22 @@ import (
 const TextReasoning = "text_reasoning"
 const DocumentReading = "document_reading"
 
+// RequestFeeRouterCeilingOnly is an explicit experiment-only evidence mode.
+// An omitted request rate remains unknown; the positive cap is reserved and sent.
+const RequestFeeRouterCeilingOnly = "router_ceiling_only"
+
 // GroupMembership is operator configuration, never model or upload input.
 // Qualification attests task suitability; the catalog only attests capabilities.
 type GroupMembership struct {
-	Policy         ModelPolicy `json:"policy"`
-	Canonical      string      `json:"canonical"`
-	Priority       int         `json:"priority"`
-	MaxImages      int         `json:"maxImages"`
-	MaxImageSide   int         `json:"maxImageSide"`
-	Region         string      `json:"region"`
-	Qualification  string      `json:"qualification"`
-	QualifiedUntil time.Time   `json:"qualifiedUntil"`
+	RequestFeeEvidence string      `json:"requestFeeEvidence,omitempty"`
+	Policy             ModelPolicy `json:"policy"`
+	Canonical          string      `json:"canonical"`
+	Priority           int         `json:"priority"`
+	MaxImages          int         `json:"maxImages"`
+	MaxImageSide       int         `json:"maxImageSide"`
+	Region             string      `json:"region"`
+	Qualification      string      `json:"qualification"`
+	QualifiedUntil     time.Time   `json:"qualifiedUntil"`
 }
 type ModelGroup struct {
 	Revision string            `json:"revision"`
@@ -76,7 +81,7 @@ func newModelGroups(raw, key string, client HTTPDoer, experiment bool) (*ModelGr
 			p := m.Policy
 			p.VerifiedAt = time.Now()
 			id := p.Model + "/" + p.Provider
-			if ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || (!experiment && strings.HasPrefix(strings.ToLower(m.Qualification), "experiment_only:")) || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (g.Profile == DocumentReading && (!p.Vision || m.MaxImages < 1 || m.MaxImages > 4 || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
+			if !m.validRequestFeeEvidence(experiment) || ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || (!experiment && strings.HasPrefix(strings.ToLower(m.Qualification), "experiment_only:")) || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (g.Profile == DocumentReading && (!p.Vision || m.MaxImages < 1 || m.MaxImages > 4 || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
 				return nil, errors.New("capability_unverified")
 			}
 			ids[id] = true
@@ -226,11 +231,26 @@ type capabilityEndpoint struct {
 	Output     int      `json:"max_completion_tokens"`
 	Parameters []string `json:"supported_parameters"`
 	Pricing    struct {
-		Prompt     string `json:"prompt"`
-		Completion string `json:"completion"`
-		Image      string `json:"image"`
-		Request    string `json:"request"`
+		Prompt     string          `json:"prompt"`
+		Completion string          `json:"completion"`
+		Image      string          `json:"image"`
+		Request    json.RawMessage `json:"request"`
 	} `json:"pricing"`
+}
+
+func (m GroupMembership) validRequestFeeEvidence(experiment bool) bool {
+	return m.RequestFeeEvidence == "" || (experiment && m.RequestFeeEvidence == RequestFeeRouterCeilingOnly && m.Policy.RequestFeeMicros > 0)
+}
+
+func requestPriceFits(raw json.RawMessage, m GroupMembership, experiment bool) bool {
+	if len(raw) == 0 {
+		return experiment && m.RequestFeeEvidence == RequestFeeRouterCeilingOnly && m.Policy.RequestFeeMicros > 0
+	}
+	var price string
+	if json.Unmarshal(raw, &price) != nil || price == "" {
+		return false
+	}
+	return nonnegativePriceWithin(price, m.Policy.RequestFeeMicros, false)
 }
 
 func parametersFit(parameters []string) bool {
@@ -318,9 +338,10 @@ func (g *ModelGroups) refresh(ctx context.Context, group ModelGroup, now time.Ti
 			if (ep.Model != p.Model && ep.Model != m.Canonical) || ep.Tag != p.Provider || ep.Name != p.DisplayProvider() || ep.Status == nil || *ep.Status != 0 || ep.Context < input+output || ep.Output < output || (ep.Input != nil && *ep.Input < input) || !parametersFit(ep.Parameters) || !nonnegativePriceWithin(ep.Pricing.Prompt, p.InputMicrosPerMillion, true) || !nonnegativePriceWithin(ep.Pricing.Completion, p.OutputMicrosPerMillion, true) {
 				continue
 			}
-			request, image := ep.Pricing.Request, ep.Pricing.Image
-			// Missing flat-price information is not evidence of a zero fee.
-			if request == "" || image == "" || !nonnegativePriceWithin(request, p.RequestFeeMicros, false) || !nonnegativePriceWithin(image, p.ImageFeeMicros, false) {
+			// Only an explicitly authorized experiment can rely on a positive
+			// router request ceiling when that optional metadata key is omitted.
+			// Null/empty/malformed rates and unpriced images still fail closed.
+			if !requestPriceFits(ep.Pricing.Request, m, g.experiment) || ep.Pricing.Image == "" || !nonnegativePriceWithin(ep.Pricing.Image, p.ImageFeeMicros, false) {
 				continue
 			}
 			matches++
