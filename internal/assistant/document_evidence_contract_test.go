@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestSActualGroupedWireCarriesEvidenceContract(t *testing.T) {
+func TestVActualGroupedWireCarriesPortableEvidenceContract(t *testing.T) {
 	f := &requestPricingFixture{omitRequest: true, image: "0.000000275"}
 	groups, err := NewExperimentModelGroups(pricingMember(), pricingGrant(), "offline", f)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestSActualGroupedWireCarriesEvidenceContract(t *testing.T) {
 	var expected any
 	_ = json.Unmarshal(schema, &expected)
 	if f.inner.posts != 1 || actual["strict"] != true || !reflect.DeepEqual(actual["schema"], expected) {
-		t.Fatal("actual wire lost schema constraints")
+		t.Fatal("actual wire lost portable schema/strict contract")
 	}
 	raw, _ := json.Marshal(f.inner.wire["messages"])
 	if !strings.Contains(string(raw), "fractional normalized") || !strings.Contains(string(raw), "empty evidence") || statementextract.DocumentPromptVersion != "statement.document-reading.0056.v3" {

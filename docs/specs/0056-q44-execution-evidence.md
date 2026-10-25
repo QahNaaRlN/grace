@@ -48,3 +48,18 @@ Inline без $defs/$ref не устранил отказ. Нельзя счит
 shape schema, сохранив prompt v3 и все прежние Go validation/quality criteria.
 Это меняет S1 и требует отдельного accepted-контракта; [draft V](0056-last-attempt-portable-evidence-candidate.md).
 Автоматического settlement/new POST после нового freeze не выполнено.
+
+## Последующее принятое V: административное закрытие Q4.4
+
+Владелец принял V1–V3 отдельным решением; acceptance6165d8139e8068bc6d1f5e585abbe236c860f920
+создан до ops-кода. [V projection](../research/statement-quality/q44-V-settlement.json):
+VERIFIED_OPERATION, ровно1usage row, actual0, basis owner_accepted_http400_policy,
+directMetadataVerified=false. Это не individual metadata proof. Original summary и
+приведённый выше исход INCONCLUSIVE сохранены. Одна pinned SSH,0GET/POST/key reads.
+Private0600 audit SHA2562531586b9f8fdb988c06f2bfd6d120f4848b573276953890473b14de4af11236.
+Owner и sealed marker/report unchanged. Reserve32023 добавлен к contingency30329:
+62352micros остаются внутри прежних$2. Только последний Q4.5 остаётся разрешённым.
+Offline V tests12/12, включая real PostgreSQL commit/rollback/owner/conflict/replay,
+privacy и отказ иных billing shapes, PASS до live операции. Источник noaux:
+internal/assistant/llm_provider.go SHA256f5bb9a8b01b76fb3c2ede779b916f356ffd8b57f058ce627a8f1d14cacaa6c41,
+идентичен Q4.4 source; новых plugins/fallback/key/environment изменений нет.

@@ -10,8 +10,8 @@
   "provider": "google-vertex/eu",
   "consumedAttempts": 2,
   "knownCostMicros": 0,
-  "unknownBills": 1,
-  "status": "frozen_unknown_bill_q44",
+  "unknownBills": 0,
+  "status": "authorized_last_attempt_by_V",
   "attempts": [
     {
       "ordinal": 1,
@@ -54,10 +54,17 @@
       "heldReserveMicros": 32023,
       "summaryPath": "q44-40225129622.summary.json",
       "reportSHA256": "21d4d71e413bc3f8631d369db1ed344e7f9fc6f13c210cc58a80f08a2a3b7963",
-      "diagnosisPath": "q44-40225129622.diagnosis.json"
+      "diagnosisPath": "q44-40225129622.diagnosis.json",
+      "reconciliation": {
+        "status": "closed_by_owner_policy",
+        "actualMicros": 0,
+        "ledgerReserveReleasedMicros": 32023,
+        "directMetadataVerified": false,
+        "evidencePath": "q44-V-settlement.json"
+      }
     }
   ],
-  "heldReserveMicros": 32023,
+  "heldReserveMicros": 0,
   "reconciliation": {
     "acceptedSpecification": "SPEC-0056 T",
     "acceptanceCommit": "9e9bd21",
@@ -74,9 +81,9 @@
     "auditFileSHA256": "374579f1c99cceb90725e9450a247bf3677bd6302029249668025a652f13d332"
   },
   "historicalUnknownBills": 2,
-  "contingencyMicros": 30329,
+  "contingencyMicros": 62352,
   "reconciledSpendMicros": 0,
-  "resumeAllowed": false,
+  "resumeAllowed": true,
   "ownerActivityReconciliation": {
     "acceptedSpecification": "SPEC-0056 U",
     "acceptanceCommit": "423e7ff",
@@ -94,5 +101,18 @@
     "evidencePath": "q43-U-settlement.json",
     "remainingAttempts": 2
   },
-  "remainingAttempts": 1
+  "remainingAttempts": 1,
+  "http400PolicyReconciliation": {
+    "acceptedSpecification": "SPEC-0056 V",
+    "acceptanceCommit": "6165d8139e8068bc6d1f5e585abbe236c860f920",
+    "sshSessionsUsed": 1,
+    "metadataGET": 0,
+    "paidPOST": 0,
+    "billingBasis": "owner_accepted_http400_policy",
+    "directMetadataVerified": false,
+    "auditFileSHA256": "2531586b9f8fdb988c06f2bfd6d120f4848b573276953890473b14de4af11236",
+    "contingencyMicros": 62352,
+    "evidencePath": "q44-V-settlement.json",
+    "remainingAttempts": 1
+  }
 }

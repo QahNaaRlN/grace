@@ -1,7 +1,7 @@
 # Statement AI: текущее состояние и следующее решение
 
 Обновлено 2026-10-26, Asia/Yekaterinburg. **Последний Q4.4 INCONCLUSIVE;
-серия frozen2/3, последняя1попытка BLOCKED. PASS_SYNTHETIC не получен.**
+consumed2/3; V принят, последняя1попытка разрешена после gates. PASS_SYNTHETIC не получен.**
 
 [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md) и Q1–Q3
 интегрированы PR122/123: общий OpenRouter, actual renderer, image_review и прежний
@@ -23,10 +23,12 @@ unknown. Остальные7not_sent, quality checks0. Inline refs removal не 
 отказ; конкретный параметр provider не назвал. [Journal](research/statement-quality/evidence-series-2026-10-25.json)
 сохраняет все original summaries и отдельное основание U. U не закрывает новый bill.
 
-Подготовлен только [draft V](specs/0056-last-attempt-portable-evidence-candidate.md):
-portable shape schema с прежними Go semantic checks/quality criteria, bounded
-policy accounting и последний Q4.5 в прежних3/$2. **V не принят; implementation/
-новый POST NOT_STARTED.** Production activation/import/deploy этим не открываются.
+Принят [V](specs/0056-last-attempt-portable-evidence-candidate.md), acceptance6165d81 до кода:
+portable shape schema с прежними Go checks/quality criteria. Q4.4 закрыт0 по
+owner_accepted_http400_policy, directMetadataVerified=false; запас$0.062352 сохранён.
+Одна V SSH,0GET/POST; [projection](research/statement-quality/q44-V-settlement.json).
+Реализация проходит local/CI/integration gates перед единственным последним Q4.5.
+[V AC/evidence](specs/0056-v-portable-evidence.md). Activation/import/deploy не открываются.
 [История](specs/0055-development-history.md).
 
 ## Исторические S1.19–S1.22

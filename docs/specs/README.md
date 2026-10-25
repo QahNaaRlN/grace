@@ -1,4 +1,4 @@
-Актуализация: **2026-10-25**, Asia/Yekaterinburg.
+Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),
@@ -15,9 +15,11 @@ Q4.3 reserve30329micros закрыт0 по отдельно принятому [
 PR131/200e719, basis owner Activity+policy/directMetadataVerified=false;
 contingency$0.030329 сохранён. Затем [Q4.4](0056-q44-execution-evidence.md) снова дал
 INCONCLUSIVE/HTTP400/INVALID_ARGUMENT,1POST/6GET,unknown bill/reserve$0.032023.
-Серия **frozen2/3**, последняя1попытка BLOCKED. Отдельный [draft V](0056-last-attempt-portable-evidence-candidate.md)
-предлагает portable shape schema с неизменными Go checks, bounded policy accounting
-и только последний Q4.5; **V ещё не принят, implementation/новыеPOST NOT_STARTED**.
+Владелец принял [V](0056-last-attempt-portable-evidence-candidate.md), acceptance6165d81 до кода:
+portable shape schema с прежними Go checks, policy accounting и только последний Q4.5.
+Q4.4 административно закрыт0, directMetadataVerified=false, contingency$0.062352 сохранён.
+Consumed2/3; последняя1попытка разрешена после local/CI/integration gates.
+[V AC/evidence](0056-v-portable-evidence.md). Новых POST после Q4.4 пока0.
 Production activation/import этим не открываются.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на

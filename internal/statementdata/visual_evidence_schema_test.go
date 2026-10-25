@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSEvidenceSchemaClosesObservedProtocolGaps(t *testing.T) {
+func TestVPortableSchemaKeepsSemanticChecksInGo(t *testing.T) {
 	if bytes.Contains(VisualSchema(), []byte(`"$ref"`)) || bytes.Contains(VisualSchema(), []byte(`"$defs"`)) {
 		t.Fatal("inline compatibility contract lost")
 	}
@@ -17,10 +17,12 @@ func TestSEvidenceSchemaClosesObservedProtocolGaps(t *testing.T) {
 	row := root["properties"].(map[string]any)["rows"].(map[string]any)["items"].(map[string]any)["properties"].(map[string]any)
 	anchor := row["anchor"].(map[string]any)
 	coords := anchor["items"].(map[string]any)["properties"].(map[string]any)["box"].(map[string]any)["items"].(map[string]any)
-	minimum, minOK := coords["minimum"].(float64)
-	maximum, maxOK := coords["maximum"].(float64)
-	if !minOK || !maxOK || minimum != 0 || maximum != 1 {
-		t.Fatal("schema permits observed integer coordinate scale")
+	if coords["type"] != "number" || coords["minimum"] != nil || coords["maximum"] != nil {
+		t.Fatal("portable numeric shape lost")
+	}
+	box := anchor["items"].(map[string]any)["properties"].(map[string]any)["box"].(map[string]any)
+	if box["minItems"] != float64(4) || box["maxItems"] != float64(4) {
+		t.Fatal("four coordinate shape lost")
 	}
 	fields := row["fields"].(map[string]any)["properties"].(map[string]any)
 	for _, k := range VisualRowFields {
@@ -30,14 +32,12 @@ func TestSEvidenceSchemaClosesObservedProtocolGaps(t *testing.T) {
 		}
 		evidence := alternatives[1].(map[string]any)["properties"].(map[string]any)["evidence"].(map[string]any)
 		for _, quotes := range []map[string]any{anchor, evidence} {
-			low, ok := quotes["minItems"].(float64)
-			high, ok2 := quotes["maxItems"].(float64)
-			if !ok || !ok2 || low != 1 || high != 8 {
-				t.Fatal("schema permits empty/unbounded evidence", k)
+			if quotes["type"] != "array" || quotes["minItems"] != nil || quotes["maxItems"] != nil {
+				t.Fatal("portable quote shape lost", k)
 			}
 		}
 	}
-	// Both independent classes from Q4.2 remain refused by the unchanged validator.
+	// Semantic acceptance is independent of model schema; the same Go validator refuses both classes.
 	for _, which := range []string{"integer_box", "empty_evidence", "both"} {
 		v := visualFixture()
 		if which != "empty_evidence" {
