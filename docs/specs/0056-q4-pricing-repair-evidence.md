@@ -3,8 +3,9 @@
 Дата: 2026-10-25. Принятый контракт: [SPEC-0056 R](0056-q4-pricing-repair.md).
 Приёмка спецификации и условный допуск до одного Q4.2: ответ владельца
 «Принять и довести до прогона»; receipt `e0fbfa4b0d3d0fbc7174dd7eae3b1cbee9aa49fe`
-предшествует implementation diff. Реализация проверена локально; CI/merge/live
-фиксируются далее отдельно. Реальное качество этим отчётом не заявляется.
+предшествует implementation diff. Реализация интегрирована PR126/main `b1d310ed8746d4c1159d0b345c4acc3a7d8d3fdf`;
+PR CI40189521830/5 и main CI40190313336/5 PASS, Delivery40191042047/4 PASS.
+[Actual Q4.2 evidence](0056-q42-execution-evidence.md): REJECT/protocol,1POST/6GET/$0.005183, grant CONSUMED.
 
 Request pricing декодируется с различением отсутствующего ключа и explicit null.
 Только experiment group с положительным cap и явным `router_ceiling_only`
@@ -21,8 +22,8 @@ Scorer, corpus/order, golden, prompts/schema, production config и financial cor
 | R2 | Тот же actual grouped wire test: request0.001/image0.000001, один pinned provider, fallback=false, полный fee reserve. `go test ./internal/documentqualification -run 'TestR(ActualCandidateConservativeReservations|ResearchOmittedRequestCampaignAndStrictReplay)'`: PASS. Actual request reserves254267micros; campaign preflight267205;8 maximal285232. Strict saved-wire omission остаётся INCONCLUSIVE0POST/3GET; image missing/invalid/overcap отвергнут. |
 | R3 | `go test ./internal/documentqualification ./cmd/document-reading-eval`: PASS. Новый cap-only positive fake campaign8POST/6GET/8settled →PASS_SYNTHETIC, full32 native/scan по297checks; replay и projection проходят. `TestRCapOnlyFailuresStopWithoutFollowingPOST`: quality/timeout/wrong model/unknown cost/overrun/ZDR/text-only останавливают дальнейшие POST, known quality bill settled, unknown bill frozen. Прежние forgery/negative/source/manifest/secret guards проходят. |
 | R4 | `python3 -B scripts/research/test-document-reading-workflow.py`: PASS. Реальные workflow blocks/wrapper/CLI с fake transport, q2 spent/lock/no-clobber/source/attempt1/cleanup, старые q marker/report неизменны;0 real SSH/provider calls. |
-| R5 | Локальные `make test` PASS (включая339/339 Web), `go vet ./cmd/... ./internal/...` PASS, `git diff --check` PASS. Exact-head CI обязан исполнить также `make test-production` и `make test-integration`; только после5/5 и main source CI допускается receipt/dispatch. Результаты CI пока PENDING. |
-| R6 | Q4.2 NOT_DISPATCHED; условный grant пока unspent. После gates новый receipt свяжет exact source/manifest/caps и разрешение; один dispatch, verdict/cost/counters будут отдельным runtime evidence. |
+| R5 | Локальные `make test` PASS (включая339/339 Web), `go vet ./cmd/... ./internal/...` PASS, `git diff --check` PASS. Exact-head CI обязан исполнить также `make test-production` и `make test-integration`; только после5/5 и main source CI допускается receipt/dispatch. PR CI40189521830 и main CI40190313336 completed/success,5/5; test-production и test-integration PASS. |
+| R6 | Q4.2 run40191109474/attempt1 REJECT;1POST/6GET/5183micros,1 settled/0 unknown, остальные7 not_sent. Receipt75ebae2 опубликован до dispatch; grant CONSUMED, второй dispatch0. [Runtime evidence](0056-q42-execution-evidence.md). |
 
 Лимиты остаются≤8POST/6GET/$2 total/$0.25 call. Request omission означает
 неподтверждённую metadata цену под операторским/router ceiling, а не цену0.
