@@ -1,3 +1,9 @@
+Последний новый опыт: [SPEC-0057 — реальный документ и простой запрос](0057-real-document-simple-check.md),
+accepted владельцем; один пятистраничный input, обычный текстовый ответ, локальная
+сверка с предварительной расшифровкой совпала. [AC/evidence](0057-real-document-simple-evidence.md).
+Один POST выполнен, BillingKnown/settled, $0.013771. Private input/answer не опубликованы;
+этот результат не является production qualification и не открывает import/activation.
+
 Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
