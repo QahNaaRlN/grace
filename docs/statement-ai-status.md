@@ -13,10 +13,16 @@ main CI40132897197/5, Delivery40133674626/4 и локальные post-merge gat
 платная проверка и production rollout не открыты.
 [Локальная реализация и AC/evidence](specs/0056-evidence.md): OpenRouter groups,
 actual renderer, image_review и прежний confirmation проверены fake/integration.
-Следующий пакет для рассмотрения: [Q1–Q3 offline-подготовка](specs/0056-openrouter-document-qualification.md),
-**accepted Q1–Q3 / offline implementation pending acceptance**
-([AC/evidence](specs/0056-qualification-evidence.md)). Подготовлены8 публичных документов; отдельный Q4
-≤8POST/6GET/$2.00; модель/тариф пока не выбраны, запуск NOT_AUTHORIZED.
+[Q1–Q3 offline-подготовка](specs/0056-openrouter-document-qualification.md)
+интегрирована PR123/main `1bf7993`; кандидат Gemini3.1 Flash Lite / Google Vertex EU
+принят и интегрирован PR124/main `9200b73`, main CI40185076058/5 и Delivery40185803512/4 PASS.
+Отдельно разрешённый Q4/run40186488958/attempt1 —
+[INCONCLUSIVE / CONSUMED](specs/0056-q4-evidence.md): preflight0POST/3metadataGET/$0,
+восемь cases not_sent. [Read-only диагноз](specs/0056-q4-incident-diagnosis.md) VERIFIED: отсутствует
+явный request fee, image fee не проходит нулевой ceiling; diagnosis calls0,
+сохранённые marker/report неизменны. Качество модели UNVERIFIED.
+Следующий возможный scope — offline repair-контракт тарификации;
+нового Q4/повтора/production activation не разрешено.
 [История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
 
 | Вопрос | Подтверждённое состояние |

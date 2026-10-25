@@ -5,7 +5,9 @@
 - Основание: поручение владельца «Идем дальше» после принятия реализации G1–G4.
 - База: PR122, main `10a0059bb90265ea1b39a51f6f84037ebc4dd9c8`.
 - Родитель: [принятый SPEC-0056 G1–G4](0056-openrouter-document-reading.md).
-- Q4 **NOT_AUTHORIZED**. Контракт принят до нового кода; offline-реализация в этом же PR, owner acceptance pending.
+- Q4: отдельный owner receipt опубликован; run40186488958/attempt1 —
+  **INCONCLUSIVE / CONSUMED**,0POST/3metadataGET/$0;
+  [фактический отчёт](0056-q4-evidence.md). Нового допуска нет.
 
 ## Цель и граница решения
 

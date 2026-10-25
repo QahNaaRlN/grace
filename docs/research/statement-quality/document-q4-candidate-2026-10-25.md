@@ -6,6 +6,11 @@
 Это подготовка предложения; Q4 NOT_AUTHORIZED, Q4_READY=false,
 качество реального распознавания UNVERIFIED.
 
+Обновление после отдельного допуска: Q4/run40186488958/attempt1 —
+**INCONCLUSIVE / CONSUMED**, preflight0POST/3metadataGET/$0.
+[Фактический отчёт](../../specs/0056-q4-evidence.md); исходная подготовка ниже
+остаётся историческим snapshot, качество распознавания не измерено.
+
 ## Выбор
 
 Один кандидат для statement/receipt: `google/gemini-3.1-flash-lite`,
