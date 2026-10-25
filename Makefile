@@ -43,6 +43,8 @@ test-integration:
 	./scripts/test-assistant-router.sh
 
 test-production:
+	python3 -B docs/research/statement-quality/q43-billing-correlation-reader-test.py
+	python3 -B docs/research/statement-quality/q43-wire-reader-test.py
 	python3 -B scripts/research/test-document-reading-workflow.py
 	go test ./scripts/research/s120-diagnose
 	python3 -B scripts/research/test-statement-s120-diagnosis.py

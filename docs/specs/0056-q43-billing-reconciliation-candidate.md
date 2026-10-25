@@ -1,6 +1,7 @@
 # SPEC-0056 T: один Q4.3 billing reconcile и условное продолжение серии
 
-- Статус: **accepted T1–T3**; ops execution NOT_STARTED.
+- Статус: **accepted T1–T3**; T1 executed, BLOCKED / missing generation correlation.
+  T2 settlement NOT_EXECUTED; T3 resume BLOCKED.
 - Приёмка владельца 2026-10-25: «Принять T и продолжить (рекомендую)»
   в ответ на отдельный вопрос о bounded reconciliation и оставшихся 2 попытках/$2.
 - Основание: frozen S после run40204752709/attempt1, HTTP400, usage.cost отсутствует.
@@ -82,3 +83,13 @@ authoritative billing evidence остаётся блокировкой; поло
 
 Официальный reference для единственного GET: [generation metadata](https://openrouter.ai/docs/api/api-reference/generations/get-generation);
 общая [pricing policy](https://openrouter.ai/pricing) не заменяет per-request cost proof.
+
+## Результат T1
+
+Приёмка сохранена отдельным commit `9e9bd21` до реализации reader.
+Первый pinned SSH выполнил только fixed-file correlation inspection:
+**generation_correlation_absent**, snapshot VERIFIED/unchanged.
+[Evidence и критерии](0056-q43-reconciliation-evidence.md).
+Authoritative bill UNVERIFIED; metadata GET/SQL/key reads/ledger writes0.
+Оставшиеся2 попытки сохранены, но resumeAllowed=false. Требуется узкое
+owner-supplied Activity evidence по указанному событию; HTTP400 не заменяет cost.

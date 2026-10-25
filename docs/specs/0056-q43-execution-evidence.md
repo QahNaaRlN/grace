@@ -55,8 +55,8 @@ unbilled response; MeteredCompletion/SQLBudget сохраняют uncertain rese
 не доказана. Candidate проверяется без платных calls; q4 identity сохраняет q/q2/q3.
 Никаких изменений validator/scorer/golden/model/financial core нет.
 
-[Draft T](0056-q43-billing-reconciliation-candidate.md) отдельно запрашивает
-bounded authoritative inspection одного bill/usage row и conditional settlement.
-До его acceptance/VERIFIED reconciliation ни второго POST run, ни SQL/key probes,
-ни принудительного settled0 не выполняется. Новый допуск не создаёт ещё3 попытки:
-сохраняются только оставшиеся2 в исходных $2.
+[T принят владельцем](0056-q43-billing-reconciliation-candidate.md), commit9e9bd21.
+Первый bounded T1 inspection подтвердил отсутствие generation correlation в
+запечатанной ошибке. [Результат T](0056-q43-reconciliation-evidence.md):
+1SSH,0metadataGET/SQL/key reads/writes, settlement NOT_EXECUTED, resume BLOCKED.
+Сохраняются только оставшиеся2 попытки в исходных $2; historical unknown не изменён.

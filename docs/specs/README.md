@@ -13,7 +13,8 @@ Q4.2 завершён REJECT/protocol,1POST/6GET/$0.005183, grant CONSUMED;
 на той же модели/8документах/неизменных критериях. Реализация интегрирована PR129/maina49542e, CI5/5 PASS;
 [AC/evidence](0056-evidence-alignment-evidence.md). Попытка1/3 Q4.3 дала HTTP400/
 INCONCLUSIVE, unknownBills1, reserve$0.030329; серия frozen.
-[Draft T](0056-q43-billing-reconciliation-candidate.md) о сверке одного bill ещё не принят;
+[T](0056-q43-billing-reconciliation-candidate.md) принят владельцем; T1 исполнен,
+correlation отсутствует — [billing UNVERIFIED / resume BLOCKED](0056-q43-reconciliation-evidence.md);
 следующий inline compatibility candidate проверен только offline.
 Production activation/import этим не открываются.
 
