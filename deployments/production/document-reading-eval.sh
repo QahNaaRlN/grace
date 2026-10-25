@@ -16,8 +16,8 @@ shared="${GRACE_ROOT:-/opt/grace}/shared"
 test ! -L "$shared/statement-screening.lock"
 exec 9>"$shared/statement-screening.lock"
 flock -n 9 || { echo already_running;exit 1; }
-marker="$shared/document-reading-spec0056-q3.started"
-report="$shared/document-reading-spec0056-q3.private.json"
+marker="$shared/document-reading-spec0056-q4.started"
+report="$shared/document-reading-spec0056-q4.private.json"
 for file in "$marker" "$report";do if [ -e "$file" ] || [ -L "$file" ];then echo authorization_consumed;exit 1;fi;done
 set -C
 printf '%s %s %s\n' "$source_sha" "$manifest_sha" "$approval_sha" > "$marker"

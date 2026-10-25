@@ -8,9 +8,43 @@
   "model": "google/gemini-3.1-flash-lite",
   "canonical": "google/gemini-3.1-flash-lite-20260507",
   "provider": "google-vertex/eu",
-  "consumedAttempts": 0,
+  "consumedAttempts": 1,
   "knownCostMicros": 0,
-  "unknownBills": 0,
-  "status": "awaiting_source_ci",
-  "attempts": []
+  "unknownBills": 1,
+  "status": "frozen_unknown_bill",
+  "attempts": [
+    {
+      "ordinal": 1,
+      "slot": "q3",
+      "runID": 40204752709,
+      "source": "a49542e2db7522adf30171ef2cf4b2198016fa67",
+      "manifestSHA256": "8f378b10d708075d5a3badcb4cf3f7d016c967f5ff86c8854c0c8b541e1de3da",
+      "receiptCommit": "689e0952b85353dd7aee95834ab0b4a01dced6bb",
+      "status": "completed_frozen",
+      "knownCostMicros": 0,
+      "unknownBills": 1,
+      "decision": "INCONCLUSIVE",
+      "post": 1,
+      "metadataGET": 6,
+      "heldReserveMicros": 30329,
+      "summaryPath": "q43-40204752709.summary.json",
+      "reportSHA256": "c6f93f6246c9e37612c7861865fdab606b700184130aa8d4427e79fa9fad5d4f"
+    }
+  ],
+  "heldReserveMicros": 30329,
+  "reconciliation": {
+    "acceptedSpecification": "SPEC-0056 T",
+    "acceptanceCommit": "9e9bd21",
+    "status": "blocked_generation_time_mismatch",
+    "sshSessionsUsed": 2,
+    "maximumSSH": 3,
+    "metadataGET": 1,
+    "maximumMetadataGET": 1,
+    "sqlCalls": 1,
+    "settlementApplied": false,
+    "resumeAllowed": false,
+    "evidencePath": "q43-T-metadata-inspection.json",
+    "remainingAttempts": 2,
+    "auditFileSHA256": "374579f1c99cceb90725e9450a247bf3677bd6302029249668025a652f13d332"
+  }
 }

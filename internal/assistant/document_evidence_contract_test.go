@@ -40,7 +40,7 @@ func TestSActualGroupedWireCarriesEvidenceContract(t *testing.T) {
 		t.Fatal("actual wire lost schema constraints")
 	}
 	raw, _ := json.Marshal(f.inner.wire["messages"])
-	if !strings.Contains(string(raw), "fractional normalized") || !strings.Contains(string(raw), "empty evidence") || statementextract.DocumentPromptVersion != "statement.document-reading.0056.v2" {
+	if !strings.Contains(string(raw), "fractional normalized") || !strings.Contains(string(raw), "empty evidence") || statementextract.DocumentPromptVersion != "statement.document-reading.0056.v3" {
 		t.Fatal("actual wire lost evidence instructions")
 	}
 	route := f.inner.wire["provider"].(map[string]any)

@@ -54,7 +54,7 @@ func TestRActualCandidateConservativeReservations(t *testing.T) {
 			total += reserve
 		}
 	}
-	if actual != 247349 || total != 267205 || 8*maximum != 285232 || total > MaximumMicros || 3*8*maximum > MaximumMicros {
+	if actual != 255817 || total != 267205 || 8*maximum != 285232 || total > MaximumMicros || 3*8*maximum > MaximumMicros {
 		t.Fatal("conservative plan", actual, total, maximum)
 	}
 	t.Logf("actual request reserves=%d; campaign preflight=%d; eight maximal=%d", actual, total, 8*maximum)

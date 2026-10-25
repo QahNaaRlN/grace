@@ -6,6 +6,9 @@ Production repair ограничен VisualSchema и DocumentPrompt/version; Go 
 scorer, goldens/corpus, model/rates, core/API/web не изменены. Runtime quality пока
 не заявляется. Каждая новая попытка получит exact-source receipt и свой результат.
 
+Таблица фиксирует исходный v2/source a49542e перед Q4.3; фактическое
+состояние серии и v3 приведены ниже, исходные результаты не пересчитаны.
+
 | AC | Исполняемое evidence |
 | --- | --- |
 | S1 | `go test ./internal/statementdata -run TestSEvidenceSchemaClosesObservedProtocolGaps` PASS: actual schema0..1/quotes1..8/null; обе независимые invalid classes остаются rejected unchanged validator, fractional/null control PASS. `go test ./internal/assistant -run TestSActualGroupedWireCarriesEvidenceContract` PASS: настоящий grouped wire содержит именно эту schema, strict=true, prompt v2, pinned provider/no fallback. |
@@ -27,3 +30,21 @@ DirectSchema. Форма ответа прежняя. Повтор вмести�
 сама модель, затем прежний scorer проверяет его по неизменному golden.
 Actual page bounds/площадь/byte limits по-прежнему проверяет Go. JSON Schema не
 заменяет domain validation и не гарантирует grounding или PASS_SYNTHETIC.
+
+## Actual первая попытка и compatibility candidate
+
+Q4.3 run40204752709: INCONCLUSIVE/HTTP400,1POST/6GET, unknownBills1, reserve30329micros.
+[Полный evidence](0056-q43-execution-evidence.md). S series frozen1/3; paid продолжение
+требует authoritative reconciliation по принятому T. T1 исполнил один SSH,
+correlation отсутствует; переданный затем Activity ID не совпал по времени
+(всего T2SSH/1GET/одна row read). [T evidence](0056-q43-reconciliation-evidence.md),
+resume BLOCKED. Offline candidate v3
+убирает $defs/$ref, сохраняя evidence constraints; actual reserves255817, preflight267205,
+8max285232. Причина HTTP400 остаётся UNVERIFIED; это controlled compatibility change,
+не доказанное исправление сервера.
+
+Inline candidate checks: `make test` PASS (339/339Web), `go vet ./cmd/... ./internal/...`
+PASS, предметные Go/fake campaign/replay/negative controls PASS, q4 fake workflow
+PASS с сохранностью q/q2/q3 файлов, `git diff --check` PASS. HTTP400 reader
+privacy/snapshot controls4/4 PASS. Новых inference/settlement после frozen события0; T выполнил один metadata GET
+и одно чтение bound usage row, результат generation_time_mismatch.

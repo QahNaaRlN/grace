@@ -1,11 +1,15 @@
 package statementdata
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 )
 
 func TestSEvidenceSchemaClosesObservedProtocolGaps(t *testing.T) {
+	if bytes.Contains(VisualSchema(), []byte(`"$ref"`)) || bytes.Contains(VisualSchema(), []byte(`"$defs"`)) {
+		t.Fatal("inline compatibility contract lost")
+	}
 	var root map[string]any
 	if err := json.Unmarshal(VisualSchema(), &root); err != nil {
 		t.Fatal(err)
@@ -20,10 +24,7 @@ func TestSEvidenceSchemaClosesObservedProtocolGaps(t *testing.T) {
 	}
 	fields := row["fields"].(map[string]any)["properties"].(map[string]any)
 	for _, k := range VisualRowFields {
-		if fields[k].(map[string]any)["$ref"] != "#/$defs/field" {
-			t.Fatal("field reference lost", k)
-		}
-		alternatives := root["$defs"].(map[string]any)["field"].(map[string]any)["anyOf"].([]any)
+		alternatives := fields[k].(map[string]any)["anyOf"].([]any)
 		if alternatives[0].(map[string]any)["type"] != "null" {
 			t.Fatal("uncited null forbidden", k)
 		}
