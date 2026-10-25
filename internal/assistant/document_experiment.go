@@ -26,6 +26,9 @@ func (g ExperimentGrant) Valid(now time.Time) bool {
 	return sha.MatchString(g.Source) && sha.MatchString(g.Approval) && regexp.MustCompile(`^[0-9a-f]{64}$`).MatchString(g.ManifestSHA256) && now.Before(g.ExpiresAt) && g.ExpiresAt.Sub(now) <= 40*time.Minute
 }
 func NewExperimentModelGroups(member GroupMembership, grant ExperimentGrant, key string, client HTTPDoer) (*ModelGroups, error) {
+	return newExperimentGroups(member, grant, key, client, 4)
+}
+func newExperimentGroups(member GroupMembership, grant ExperimentGrant, key string, client HTTPDoer, maxImages int) (*ModelGroups, error) {
 	if !grant.Valid(time.Now()) || member.Policy.Selection != nil {
 		return nil, errors.New("experiment_not_authorized")
 	}
@@ -37,7 +40,7 @@ func NewExperimentModelGroups(member GroupMembership, grant ExperimentGrant, key
 		groups = append(groups, ModelGroup{Revision: "spec0056-q:" + grant.ManifestSHA256, Purpose: purpose, Profile: DocumentReading, Members: []GroupMembership{member}})
 	}
 	raw, _ := json.Marshal(groups)
-	return newModelGroups(string(raw), key, client, true)
+	return newModelGroupsWithLimit(string(raw), key, client, true, maxImages)
 }
 
 // ReceiptDocumentProtocol shares the exact product prompt/schema with offline
@@ -120,4 +123,22 @@ func (e *ReceiptExtractor) ReadExperimentDocument(ctx context.Context, doc docum
 		return ReceiptDocumentResult{}, err
 	}
 	return DecodeDocumentReceipt(out)
+}
+
+// NewPlainDocumentExperiment is SPEC-0057 research only. Production constructors
+// and the older fixed-corpus experiment retain strict JSON and four images.
+func NewPlainDocumentExperiment(member GroupMembership, grant ExperimentGrant, key string, client HTTPDoer) (*OpenRouterProvider, *ModelGroups, error) {
+	if member.MaxImages != 5 {
+		return nil, nil, errors.New("experiment_not_authorized")
+	}
+	groups, e := newExperimentGroups(member, grant, key, client, 5)
+	if e != nil {
+		return nil, nil, e
+	}
+	provider, e := NewGroupedOpenRouterProvider(key, groups, client)
+	if e != nil {
+		return nil, nil, e
+	}
+	provider.plainDocumentExperiment = true
+	return provider, groups, nil
 }
