@@ -8,18 +8,16 @@ main CI40132897197/5 и Delivery40133674626/4, локальные post-merge gat
 8 публичных документов через actual grouped adapter; [AC/evidence](0056-qualification-evidence.md).
 Q4.2 завершён REJECT/protocol,1POST/6GET/$0.005183, grant CONSUMED;
 [execution evidence](0056-q42-execution-evidence.md).
-Принят [S: evidence alignment и серия](0056-evidence-alignment-series.md):
-согласовать Schema/prompt с прежним validator, затем до3 новых попыток/$2 суммарно
-на той же модели/8документах/неизменных критериях. Реализация интегрирована PR129/maina49542e, CI5/5 PASS;
-[AC/evidence](0056-evidence-alignment-evidence.md). Попытка1/3 Q4.3 дала HTTP400/
-INCONCLUSIVE, unknownBills1, reserve$0.030329; серия frozen.
-[T](0056-q43-billing-reconciliation-candidate.md) исполнен: stored correlation отсутствует,
-переданный Activity ID не совпал по времени. Затем принят [U](0056-q43-owner-activity-reconciliation-candidate.md):
-один bound reserve закрыт0 по owner Activity+policy, directMetadataVerified=false;
-[AC/evidence](0056-q43-owner-activity-reconciliation-evidence.md). Серия открыта для
-оставшихся2из3, contingency$0.030329 сохранён внутри $2; inline compatibility v3
-интегрирован PR130/a875202, exact-head CI40222097044/5 PASS. Новый dispatch после
-clean integrated source/CI5/5/manifest/receipt, live PASS пока не получен.
+Принят [S: evidence alignment и серия](0056-evidence-alignment-series.md), до3/$2
+на прежней модели/8 документах/критериях. V3 inline contract интегрирован PR130/a875202,
+source main CI40223309245/5 PASS; [AC/evidence](0056-evidence-alignment-evidence.md).
+Q4.3 reserve30329micros закрыт0 по отдельно принятому [U](0056-q43-owner-activity-reconciliation-candidate.md),
+PR131/200e719, basis owner Activity+policy/directMetadataVerified=false;
+contingency$0.030329 сохранён. Затем [Q4.4](0056-q44-execution-evidence.md) снова дал
+INCONCLUSIVE/HTTP400/INVALID_ARGUMENT,1POST/6GET,unknown bill/reserve$0.032023.
+Серия **frozen2/3**, последняя1попытка BLOCKED. Отдельный [draft V](0056-last-attempt-portable-evidence-candidate.md)
+предлагает portable shape schema с неизменными Go checks, bounded policy accounting
+и только последний Q4.5; **V ещё не принят, implementation/новыеPOST NOT_STARTED**.
 Production activation/import этим не открываются.
 
 Текущая работа Statement AI, результаты E6/Q6 и следующий gate собраны на

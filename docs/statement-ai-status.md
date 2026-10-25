@@ -1,23 +1,39 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено 2026-10-25 Asia/Yekaterinburg. S1.22 V1–V3 принят и интегрирован
-PR120/main `e9d02b2`; main CI40118781180/all5 и Delivery40119558599/all4 PASS.
-Реальное качество чтения ещё UNVERIFIED.
+Обновлено 2026-10-26, Asia/Yekaterinburg. **Последний Q4.4 INCONCLUSIVE;
+серия frozen2/3, последняя1попытка BLOCKED. PASS_SYNTHETIC не получен.**
 
-**Текущая работа:** по прямому поручению владельца подготовлена
-[SPEC-0056](specs/0056-openrouter-document-reading.md), **accepted G1–G4 / accepted implementation / integrated PR122**, main10a0059:
-main CI40132897197/5, Delivery40133674626/4 и локальные post-merge gates PASS;
-всё LLM-взаимодействие через OpenRouter, группы моделей по capabilities,
-пользовательское чтение фото/PDF и проверка изображения перед импортом.
-Владелец принял G1–G4 и разрешил интеграцию контракта и локальную реализацию. Прямой OpenAI V4 не запускается;
-платная проверка и production rollout не открыты.
-[Локальная реализация и AC/evidence](specs/0056-evidence.md): OpenRouter groups,
-actual renderer, image_review и прежний confirmation проверены fake/integration.
-Следующий пакет для рассмотрения: [Q1–Q3 offline-подготовка](specs/0056-openrouter-document-qualification.md),
-**accepted Q1–Q3 / offline implementation pending acceptance**
-([AC/evidence](specs/0056-qualification-evidence.md)). Подготовлены8 публичных документов; отдельный Q4
-≤8POST/6GET/$2.00; модель/тариф пока не выбраны, запуск NOT_AUTHORIZED.
-[История](specs/0055-development-history.md); [полный S1.20 пакет](specs/0055-s120-clock-reject-diagnosis.md).
+[SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md) и Q1–Q3
+интегрированы PR122/123: общий OpenRouter, actual renderer, image_review и прежний
+confirmation. Выбрана google/gemini-3.1-flash-lite/canonical20260507,
+provider google-vertex/eu; research ≤8POST/6GET/$2, fresh identity/pricing gates.
+Q4.2 получил model output, REJECT/protocol, $0.005183 settled.
+
+Принят [S](specs/0056-evidence-alignment-series.md): evidence repair и до3 новых
+попыток/$2 суммарно. Q4.3 получил HTTP400/no generation/no usage. По отдельно
+принятому [U](specs/0056-q43-owner-activity-reconciliation-candidate.md) его один
+reserve закрыт0 на основании owner Activity+policy, directMetadataVerified=false;
+contingency$0.030329 сохранён. U интегрирован PR131/main200e719,
+main CI40225076873/5, PR CI40224022530/5 и local gates PASS.
+
+[Q4.4/run40225129622](specs/0056-q44-execution-evidence.md): sourcea875202/
+main CI40223309245/5, опубликованный receipt до dispatch. Итог снова HTTP400/
+INVALID_ARGUMENT,1POST/6GET,641bytes/no generation/usage/cost, reserve$0.032023
+unknown. Остальные7not_sent, quality checks0. Inline refs removal не устранил
+отказ; конкретный параметр provider не назвал. [Journal](research/statement-quality/evidence-series-2026-10-25.json)
+сохраняет все original summaries и отдельное основание U. U не закрывает новый bill.
+
+Подготовлен только [draft V](specs/0056-last-attempt-portable-evidence-candidate.md):
+portable shape schema с прежними Go semantic checks/quality criteria, bounded
+policy accounting и последний Q4.5 в прежних3/$2. **V не принят; implementation/
+новый POST NOT_STARTED.** Production activation/import/deploy этим не открываются.
+[История](specs/0055-development-history.md).
+
+## Исторические S1.19–S1.22
+
+S1.22 V1–V3 интегрирован PR120/main e9d02b2; mainCI40118781180/5 и
+Delivery40119558599/4 PASS. Прямой OpenAI V4 не открывался. Данные ниже относятся
+к прежним пакетам; они не заменяют актуальное состояние SPEC-0056 выше.
 
 | Вопрос | Подтверждённое состояние |
 | --- | --- |

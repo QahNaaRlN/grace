@@ -8,10 +8,10 @@
   "model": "google/gemini-3.1-flash-lite",
   "canonical": "google/gemini-3.1-flash-lite-20260507",
   "provider": "google-vertex/eu",
-  "consumedAttempts": 1,
+  "consumedAttempts": 2,
   "knownCostMicros": 0,
-  "unknownBills": 0,
-  "status": "open_after_owner_policy_reconciliation",
+  "unknownBills": 1,
+  "status": "frozen_unknown_bill_q44",
   "attempts": [
     {
       "ordinal": 1,
@@ -36,9 +36,28 @@
         "directMetadataVerified": false,
         "evidencePath": "q43-U-settlement.json"
       }
+    },
+    {
+      "ordinal": 2,
+      "slot": "q4",
+      "runID": 40225129622,
+      "source": "a8752028463d19351c9eddcb0ee40b71fe398b47",
+      "manifestSHA256": "1639957c4398c15733643b315b7a185c82fc9fdfad2c981517c1cf2ad012f3fc",
+      "receiptCommit": "1c4e940a90ed1b4586d0dea14d16312a4c060a6b",
+      "status": "completed_frozen",
+      "maximumReserveMicros": 285232,
+      "decision": "INCONCLUSIVE",
+      "post": 1,
+      "metadataGET": 6,
+      "knownCostMicros": 0,
+      "unknownBills": 1,
+      "heldReserveMicros": 32023,
+      "summaryPath": "q44-40225129622.summary.json",
+      "reportSHA256": "21d4d71e413bc3f8631d369db1ed344e7f9fc6f13c210cc58a80f08a2a3b7963",
+      "diagnosisPath": "q44-40225129622.diagnosis.json"
     }
   ],
-  "heldReserveMicros": 0,
+  "heldReserveMicros": 32023,
   "reconciliation": {
     "acceptedSpecification": "SPEC-0056 T",
     "acceptanceCommit": "9e9bd21",
@@ -54,10 +73,10 @@
     "remainingAttempts": 2,
     "auditFileSHA256": "374579f1c99cceb90725e9450a247bf3677bd6302029249668025a652f13d332"
   },
-  "historicalUnknownBills": 1,
+  "historicalUnknownBills": 2,
   "contingencyMicros": 30329,
   "reconciledSpendMicros": 0,
-  "resumeAllowed": true,
+  "resumeAllowed": false,
   "ownerActivityReconciliation": {
     "acceptedSpecification": "SPEC-0056 U",
     "acceptanceCommit": "423e7ff",
@@ -74,5 +93,6 @@
     "auditFileSHA256": "ce361cc90481153d32d704315ffc34a5c3a5ead469d0133928e4da0eb42ea2b1",
     "evidencePath": "q43-U-settlement.json",
     "remainingAttempts": 2
-  }
+  },
+  "remainingAttempts": 1
 }
