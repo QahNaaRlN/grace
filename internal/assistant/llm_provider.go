@@ -116,14 +116,15 @@ type ReasoningProvider interface {
 	Complete(context.Context, LLMRequest) (LLMResponse, error)
 }
 type OpenRouterProvider struct {
-	apiKey            string
-	endpoint          string
-	client            HTTPDoer
-	statementDocument bool
-	screeningDocument bool
-	groups            *ModelGroups
-	readingDocument   bool
-	comparisonID      string
+	plainDocumentExperiment bool
+	apiKey                  string
+	endpoint                string
+	client                  HTTPDoer
+	statementDocument       bool
+	screeningDocument       bool
+	groups                  *ModelGroups
+	readingDocument         bool
+	comparisonID            string
 }
 
 func NewOpenRouterProvider(key string, client HTTPDoer) (*OpenRouterProvider, error) {
@@ -204,7 +205,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
 	}
-	if len(in.Messages) == 0 || len(in.Messages) > 12 || !json.Valid(in.Schema) {
+	if len(in.Messages) == 0 || len(in.Messages) > 12 || (p.plainDocumentExperiment && len(in.Schema) != 0) || (!p.plainDocumentExperiment && !json.Valid(in.Schema)) {
 		return LLMResponse{}, errors.New("provider_request")
 	}
 	if p.statementDocument {
@@ -223,8 +224,11 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		return LLMResponse{}, errors.New("provider_request")
 	}
 	body := map[string]any{"model": in.Policy.Model, "messages": in.Messages, "max_tokens": in.MaxOutputTokens, "stream": false,
-		"provider":        map[string]any{"only": []string{in.Policy.Provider}, "allow_fallbacks": false, "require_parameters": true, "data_collection": "deny", "zdr": true, "max_price": map[string]any{"prompt": microsPrice(in.Policy.InputMicrosPerMillion), "completion": microsPrice(in.Policy.OutputMicrosPerMillion)}},
-		"response_format": map[string]any{"type": "json_schema", "json_schema": map[string]any{"name": "grace_response", "strict": true, "schema": in.Schema}}}
+		"provider": map[string]any{"only": []string{in.Policy.Provider}, "allow_fallbacks": false, "require_parameters": true, "data_collection": "deny", "zdr": true, "max_price": map[string]any{"prompt": microsPrice(in.Policy.InputMicrosPerMillion), "completion": microsPrice(in.Policy.OutputMicrosPerMillion)}},
+	}
+	if !p.plainDocumentExperiment {
+		body["response_format"] = map[string]any{"type": "json_schema", "json_schema": map[string]any{"name": "grace_response", "strict": true, "schema": in.Schema}}
+	}
 	if in.DisableReasoning {
 		body["reasoning"] = map[string]any{"enabled": false}
 	}
@@ -415,7 +419,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		diagnostic.Code = reason
 		return billed, &ProviderProtocolError{Reason: reason}
 	}
-	if !json.Valid([]byte(out.Choices[0].Message.Content)) {
+	if strings.TrimSpace(out.Choices[0].Message.Content) == "" || (!p.plainDocumentExperiment && !json.Valid([]byte(out.Choices[0].Message.Content))) {
 		diagnostic.Code = "content"
 		return billed, &ProviderProtocolError{Reason: "content"}
 	}
