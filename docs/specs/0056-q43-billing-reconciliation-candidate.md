@@ -1,6 +1,8 @@
 # SPEC-0056 T: один Q4.3 billing reconcile и условное продолжение серии
 
-- Статус: **draft / awaiting owner acceptance**; ops execution NOT_STARTED.
+- Статус: **accepted T1–T3**; ops execution NOT_STARTED.
+- Приёмка владельца 2026-10-25: «Принять T и продолжить (рекомендую)»
+  в ответ на отдельный вопрос о bounded reconciliation и оставшихся 2 попытках/$2.
 - Основание: frozen S после run40204752709/attempt1, HTTP400, usage.cost отсутствует.
 - [Accepted S](0056-evidence-alignment-series.md) и [journal](../research/statement-quality/evidence-series-2026-10-25.json).
 
@@ -72,9 +74,9 @@ Journal отдельно хранит original unknown и authoritative reconcil
 Все S model/corpus/oracle/criteria/price/privacy/stop правила сохраняются.
 Новый неизвестный счёт либо исчерпание остатка снова останавливает работу.
 
-## Что требуется принять
+## Принятое разрешение
 
-Принять T и разрешить указанный bounded inspect→только VERIFIED settle→resume
+Владелец принял T и разрешил указанный bounded inspect→только VERIFIED settle→resume
 оставшихся2 попыток S/$2, без повторного запроса тех же операций. Отсутствующее
 authoritative billing evidence остаётся блокировкой; положительный исход не обещается.
 
