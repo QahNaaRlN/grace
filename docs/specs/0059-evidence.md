@@ -38,20 +38,60 @@ No prompt, receipt schema, API/DTO, financial write policy or DB migration chang
   Go, lint, generated API/build, offline Jev/corpus), `make test-production`,
   `go vet ./cmd/... ./internal/...`, `git diff --check`. External TMPDIR is needed
   because this host's `/tmp/.git` marker correctly triggers privacy guards.
-  CI/Delivery/deploy and post-merge checks are pending.
-- A5/A6 **UNVERIFIED**: no real inference has been performed. The uploaded owner
-  draft is source-only, with no extraction/reading consent or financial link;
-  shared usage has no unsettled reservations. Private baseline and comparison
-  helper are outside Git; negative controls detect an omitted free row and a
-  fractional-minor monetary mismatch. No quality result is inferred from these
-  controls or earlier PDF success.
+  Post-merge local make test/vet/diff checks also PASS on main dab06a9.
+  PR142 CI40324354649/all5, main CI40325834019/all5, Delivery40327297193/all4
+  and Deploy40327460999 succeeded for exact runtime dab06a9.
+- A5 observed: new product reading returned all9 rows and persisted/reloaded.
+  Private pre-inference reference/comparator were sealed by SHA256; comparison
+  before any manual edits gives **79/80**, with exactly one issuedAt contract
+  mismatch. All item names/quantities/prices/totals, seller, calendar date,
+  currency, fiscal document number and printed sourceText clock matched.
+  Unprinted discount/brand/package/broadGroup values remained null. The model
+  returned the correct local clock as HH:MM in issuedAt, where accepted contract
+  requires null without timezone. This is RAW_CONTRACT_MISMATCH, not full PASS.
+  No manual edits were made; current fields still equal immutable extraction.
+- A6 PASS for execution/accounting: exactly one receipt usage row, reserve29642
+  USDmicros, actual3055 USDmicros ($0.003055), settled; unsettled0.
+  Financial event/posting/receipt deltas0. Source trial closed after mismatch;
+  grant CONSUMED1/1, no retry. No claims about unrelated photos or final real
+  financial confirmation are made.
 
-## Live bounds
+## Production execution and closed grant
 
-Owner-approved grant available 1/1: same supplied photo through production UI,
-Gemini 3.1 Flash Lite / Google Vertex EU, ≤1 provider POST, ≤$0.04 total including
-reserved fees, ≤3 metadata GET for fresh receipt proof, no financial writes and no
-retry after protocol/quality failure. Only receipt membership may change;
-analysis/statement remain unchanged. Qualification is temporary ≤24h, quality
-UNVERIFIED until comparison, no automatic renewal. Unknown billing retains the
-reserve and blocks further POST; no administrative zero settlement.
+One ordinary authenticated product browser path: existing owner photo upload →
+source viewer → model/cost reading preview (one page, displayed maximum$0.0296) →
+explicit consent → one inference → extracted draft/reload. The private reference
+was never sent to the provider. Runtime API/Web/PDF helper use exact main
+`dab06a967c255ec1c3c2862aeda0e19858b1b5d1`; operator configuration changed only
+receipt membership to the accepted Gemini3.1/Google Vertex EU and fee evidence.
+Password auth, AI enable, analysis/statement groups and purchased allowance were
+preserved. Protected before-config files are retained for rollback.
+
+The standard Deploy production workflow verified a DB backup, migrations,
+internal health and public smoke before receipt configuration was applied.
+Only API was then recreated with the same SHA; public entrypoint/auth smoke PASS.
+Fresh receipt capability proof used the shared three-GET resolver and the
+actual product request retained its receipt prompt/schema and existing
+reservation/no-fallback/no-retry path. Inference ran once on 2026-10-26;
+known settlement completed at13:09:16 UTC (18:09:16 Asia/Yekaterinburg).
+
+The temporary first-test qualification was closed/expired after the raw
+contract mismatch; group revision spec0059-v1-closed. API remains healthy,
+analysis/statement unchanged. This prevents new receipt inference under the
+consumed grant. The extracted draft/photo remain available for manual review.
+
+## Discovered product gaps
+
+1. The receipt decoder accepts a clock-only issuedAt string and only the later
+   financial validator rejects it. The UI shows a date-only form, hiding the raw
+   clock; editing the date can clear it, but this is not an automatic repair.
+2. A correctly recognized free service row cannot be saved unchanged: Go draft
+   validation and receipts.ValidateCommand, OpenAPI item minima and SQL CHECKs
+   all require positive unit/line amounts. The positive overall purchase total
+   and exact sum are not the problem. The row was not silently removed.
+
+[Draft R](0059-receipt-normalization-candidate.md) proposes bounded deterministic
+candidate normalization with original evidence retained, nonnegative child item
+amounts under a positive purchase total, and verification using this saved
+response plus public SQL fixtures. It is not accepted/implemented by this report.
+No new model calls are needed or authorized by the candidate.
