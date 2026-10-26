@@ -2,7 +2,8 @@
 
 - Status: **accepted**
 - Date: 2026-10-26
-- Implementation status: **not_started**
+- Implementation status: **implementing**
+- Implementation evidence: [R verification](0059-normalization-evidence.md)
 - Owner acceptance: 2026-10-26 — «Принять R и исправить без новых расходов»;
   реализация, CI/merge/deploy и ограниченная повторная qualification разрешены.
   Новые provider POST и реальные финансовые записи: 0.

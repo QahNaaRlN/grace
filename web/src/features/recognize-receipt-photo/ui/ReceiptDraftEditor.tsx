@@ -53,7 +53,7 @@ export function ReceiptDraftEditor({
         />
       </div>
       <div>
-        <Label htmlFor="receipt-date">Дата чека · время неизвестно</Label>
+        <Label htmlFor="receipt-date">Дата чека</Label>
         <Input
           id="receipt-date"
           type="date"

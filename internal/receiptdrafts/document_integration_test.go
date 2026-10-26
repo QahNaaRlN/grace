@@ -37,6 +37,7 @@ type s56ReceiptGateway struct {
 	posts          int
 	unknown        bool
 	receiptCeiling bool
+	clockFree      bool
 	wire           string
 }
 
@@ -65,6 +66,12 @@ func (g *s56ReceiptGateway) Do(req *http.Request) (*http.Response, error) {
 		raw, _ := io.ReadAll(req.Body)
 		g.wire = string(raw)
 		fields := map[string]any{"seller": "SYNTHETIC SHOP", "issuedAt": nil, "issuedDate": "2026-10-25", "currency": "RUB", "total": "100.00", "fiscalDocumentNumber": nil, "items": []any{map[string]any{"name": "Milk", "quantity": "2", "unitPrice": "50.00", "lineTotal": "100.00", "discount": nil, "brand": nil, "package": nil, "broadGroup": nil}}, "sourceText": "SYNTHETIC SHOP\n25.10.2026\nMilk 2 x 50.00 100.00\nTOTAL RUB 100.00"}
+		if g.clockFree {
+			fields["issuedAt"] = "07:08:09"
+			fields["issuedDate"] = "2026-08-14"
+			fields["items"] = append(fields["items"].([]any), map[string]any{"name": "Complimentary", "quantity": "2", "unitPrice": "0.00", "lineTotal": "0.00", "discount": nil, "brand": nil, "package": nil, "broadGroup": nil})
+			fields["sourceText"] = "SYNTHETIC SHOP\n14.08.2026 07:08:09\nMilk 2 x 50.00 100.00\nComplimentary 2 x 0.00 0.00\nTOTAL RUB 100.00"
+		}
 		answer, _ := json.Marshal(map[string]any{"complete": true, "receiptCount": 1, "issues": []string{}, "receipt": fields})
 		usage := map[string]any{"prompt_tokens": 500, "completion_tokens": 500, "cost": 0.0001}
 		if g.unknown {
@@ -135,7 +142,7 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 		t.Fatal(e)
 	}
 	photo, jpegBytes := s56ReceiptImage(t)
-	for _, kind := range []string{"image", "pdf", "image_receipt_ceiling"} {
+	for _, kind := range []string{"image", "pdf", "image_receipt_ceiling", "image_local_clock_free"} {
 		t.Run(kind, func(t *testing.T) {
 			var owner, other, account string
 			for _, dest := range []*string{&owner, &other} {
@@ -156,7 +163,7 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 				member.MaxImages = 1
 			}
 			configuration, _ := json.Marshal([]assistant.ModelGroup{{Revision: "s56-receipt-fixture", Profile: assistant.DocumentReading, Purpose: "receipt", Members: []assistant.GroupMembership{member}}})
-			gateway := &s56ReceiptGateway{receiptCeiling: kind == "image_receipt_ceiling"}
+			gateway := &s56ReceiptGateway{receiptCeiling: kind == "image_receipt_ceiling", clockFree: kind == "image_local_clock_free"}
 			groups, e := assistant.NewModelGroups(string(configuration), "offline-receipt-key", gateway)
 			if e != nil {
 				t.Fatal(e)
@@ -260,6 +267,9 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 			if json.Unmarshal(response.Body.Bytes(), &draft) != nil || draft.Status != "extracted" || draft.Fields.Total == nil || *draft.Fields.Total != "100.00" || gateway.posts != 1 {
 				t.Fatal("reading missing", draft, gateway.posts)
 			}
+			if gateway.clockFree && (draft.Fields.IssuedAt != nil || len(draft.Fields.Items) != 2 || draft.Extractions[0].Fields.IssuedAt == nil || *draft.Extractions[0].Fields.IssuedAt != "07:08:09" || !strings.Contains(draft.Extractions[0].SourceText, "07:08:09")) {
+				t.Fatal("provider original or projected candidate corrupted")
+			}
 			response = invoke(ctx, "POST", "/"+draft.ID+"/extract", bytes.NewReader(body), "application/json", "read")
 			if response.Code != 200 || gateway.posts != 1 {
 				t.Fatal("replay charged", response.Code)
@@ -297,6 +307,12 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 			var delta int64
 			if e = tenant.QueryRow(ctx, "SELECT count(*),COALESCE(sum(CASE WHEN direction='debit' THEN -amount_minor ELSE amount_minor END),0) FROM postings WHERE account_id=$1", account).Scan(&postings, &delta); e != nil || postings != 1 || delta != -10000 {
 				t.Fatal("wrong confirmed purchase", postings, delta, e)
+			}
+			if gateway.clockFree {
+				var free int
+				if e = tenant.QueryRow(ctx, "SELECT count(*) FROM receipt_items WHERE receipt_id::text=$1 AND quantity_milli=2000 AND unit_price_minor=0 AND line_total_minor=0", *confirmed.ReceiptID).Scan(&free); e != nil || free != 1 {
+					t.Fatal("free row not saved", e)
+				}
 			}
 			if e = repo.DeletePhoto(ctx, confirmed, store); e != nil {
 				t.Fatal(e)
