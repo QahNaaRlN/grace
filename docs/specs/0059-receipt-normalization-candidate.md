@@ -2,7 +2,7 @@
 
 - Status: **accepted**
 - Date: 2026-10-26
-- Implementation status: **implementing**
+- Implementation status: **integrated PR145 / deployed da621d9 / R1–R6 verified**
 - Implementation evidence: [R verification](0059-normalization-evidence.md)
 - Owner acceptance: 2026-10-26 — «Принять R и исправить без новых расходов»;
   реализация, CI/merge/deploy и ограниченная повторная qualification разрешены.
