@@ -27,3 +27,17 @@ Accepted SPEC-0058 A8 requires readiness of the actual configured profile. Repai
 `TestGroupedReadinessUsesProductProfileWithoutInference` PASS: fresh metadata and positive ceiling accepted for plain; strict missing request price, missing image modality, no ZDR and expired qualification rejected, POST=0. `go test ./cmd/statement-admin ./internal/assistant -count=1` and full `make test` PASS; diff-check PASS. A separate read-only/non-root/cap-drop verifier on VPS with actual operator groups returned `plain_document_reading`, `spec0058-p-v1`, policyVerified=true, maximumMicros35655; 3 metadata GET/0 POST. Initial isolated probes used the internal backend network without egress; switching the probe to API's existing edge network resolved the probe's network error, no production network protections changed. Runtime performs its own fresh proof; the per-proof bound remains3 GET.
 
 No paid product call yet. Deploy retry follows exact repaired commit's CI/Delivery; one PDF call permission remains unused.
+
+## A6: настоящий product consent выявил JSONB/hash дефект до inference
+
+Readiness repair PR138 merged `b59ceb6`; exact main CI40305434447/all5 и Delivery40307005484/all4 PASS. Deploy40307175906 SUCCESS: API/Web/PDF-helper exact `b59ceb6`, healthy, grouped readiness/public auth smoke PASS. Локальный post-merge make test/diff-check PASS.
+
+Через production browser в действующей owner session загружен предоставленный пятистраничный PDF на соответствующий счёт. Все страницы визуально содержат текст. Product preview выбрал ту же модель/Google Vertex EU, 1 call/$0.0357 maximum, images-only. После просмотра всех страниц и согласия обычный UI получил отказ: source revision1, preview1, consent0, attempts0, calls0, usage0 у нового источника; глобальный usageCount27 и financial events153/postings162 не изменились. Это NOT_SENT, не model quality REJECT и не потраченное разрешение на provider POST.
+
+Локальное read-only воспроизведение сохранённого preview подтвердило причину: после JSONB persisted plan hash не совпадает; восстановление typed ModelPolicy serialization возвращает исходный hash. PostgreSQL меняет порядок ключей вложенного RawMessage. Однопольный SQL mock `{fixture:true}` скрывал дефект реального полного policy snapshot.
+
+Исправление в принятом A2/A6 scope: только plain snapshot канонизируется перед preview/сравнением актуальной policy и после чтения из SQL. UseNumber сохраняет точные целые. Новый planner `document-pages.0058.v2` требует свежего плана/согласия; global Hash, strict legacy plans, старые записи и verdicts не переписываются. Реальные изменения содержимого по-прежнему отклоняются. Stale/changed preview сообщает о необходимости подготовить новый план.
+
+`TestPlainSnapshotHashIgnoresJSONBKeyOrderWithoutRounding` PASS: перестановка nested keys не меняет canonical hash, число9007199254740993 не округлено, изменение значения меняет hash, invalid/non-object snapshot отклоняется. Усиленный `TestS58FivePageProductAttempt` с полным nested policy snapshot прошёл PostgreSQL: changed-price negative consent до POST, восстановленный неизменный план → consent → один fake call → idempotent replay; остальные S58 lifecycle guards сохранены. Полный `./scripts/test-document-reading.sh` PASS, live provider calls0. Private diagnosis содержит только локальные данные, они не публикуются.
+
+Окончательные make test/CI/Delivery/deploy этого repair отмечаются далее. Разрешённый один реальный provider POST ещё не выполнен.

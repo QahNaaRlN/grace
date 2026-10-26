@@ -48,7 +48,7 @@ func documentPlanValid(p Plan) bool {
 	plain := p.Policy.Document != nil && p.Policy.Document.Profile == "plain_document_reading"
 	profile, prompt, planner, schema, maxPages := "document_reading", DocumentPromptVersion, "document-pages.0056.v1", Hash(statementdata.VisualSchema()), 4
 	if plain {
-		profile, prompt, planner, schema, maxPages = "plain_document_reading", PlainPromptVersion, "document-pages.0058.v1", Hash(PlainPromptVersion), 5
+		profile, prompt, planner, schema, maxPages = "plain_document_reading", PlainPromptVersion, PlainPlannerVersion, Hash(PlainPromptVersion), 5
 	}
 	expectedLimits := PlanLimits{MaxInputBytes: 12 << 20, InputTokens: 30000, OutputTokens: 16000, MaxSpans: 0, CallTimeoutSeconds: 180, AttemptTimeoutSeconds: 210}
 	if p.PlannerVersion != planner || p.AliasVersion != "none.direct-reading.v1" || p.Limits != expectedLimits || len(p.Atoms) != 0 || len(p.Aliases) != 0 || p.Document == nil || p.Policy.Document == nil {
@@ -101,7 +101,7 @@ func (s *Service) previewDocument(ctx context.Context, id string, in PreviewInpu
 	if plain {
 		plan.PromptVersion = PlainPromptVersion
 		plan.SchemaHash = Hash(PlainPromptVersion)
-		plan.PlannerVersion = "document-pages.0058.v1"
+		plan.PlannerVersion = PlainPlannerVersion
 		plan.Document.TextSHA256 = documentdata.Hash(nil)
 	}
 	tx, e := s.begin(ctx)

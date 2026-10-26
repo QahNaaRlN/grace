@@ -5,6 +5,8 @@ package statementextract_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/QahNaaRlN/grace/internal/documentdata"
 	"github.com/QahNaaRlN/grace/internal/imports"
@@ -21,6 +23,9 @@ type s58Reader struct{ s56Reader }
 func (r *s58Reader) PlainPolicy(ctx context.Context, n int) (statementextract.DocumentPolicy, error) {
 	p, e := r.CurrentDocumentPolicy(ctx, n)
 	p.Profile = "plain_document_reading"
+	// Match a full operator snapshot, including nested object ordering. A one-key
+	// fixture cannot expose JSONB reordering that broke the real product consent.
+	p.Snapshot = json.RawMessage(`{"model":"fixture/plain","provider":"fixture/eu","providerName":"Fixture","inputMicrosPerMillion":100000,"outputMicrosPerMillion":100000,"imageTokenUpperBound":1000,"vision":true,"selection":{"profile":"plain_document_reading","purpose":"statement","groupRevision":"s58-v1","maxImages":5}}`)
 	return p, e
 }
 func (r *s58Reader) PreparePlain(_ context.Context, _ statementextract.DocumentPolicy, d documentdata.Document) error {
@@ -88,6 +93,18 @@ func TestS58FivePageProductAttempt(t *testing.T) {
 	}
 	if preview.Plan.PromptVersion != statementextract.PlainPromptVersion || len(preview.Plan.Document.Pages) != 5 || preview.Plan.Document.TextSHA256 != documentdata.Hash(nil) {
 		t.Fatal("wrong plain plan")
+	}
+	// Key-order normalization must never authorize changed policy contents.
+	if _, e = pool.Exec(ctx, `UPDATE statement_extraction_previews SET plan=jsonb_set(plan,'{policy,document,snapshot,inputMicrosPerMillion}','100001'::jsonb) WHERE id=$1`, preview.ID); e != nil {
+		t.Fatal(e)
+	}
+	_, e = service.Consent(ctx, source.ID, "s58-tampered-consent", statementextract.ConsentInput{ExpectedRevision: source.Revision, PreviewID: preview.ID, PreviewHash: preview.Hash})
+	var changed *statementextract.Fault
+	if !errors.As(e, &changed) || changed.Code != "preview_changed" || reader.calls != 0 {
+		t.Fatal("changed price authorized", e)
+	}
+	if _, e = pool.Exec(ctx, `UPDATE statement_extraction_previews SET plan=jsonb_set(plan,'{policy,document,snapshot,inputMicrosPerMillion}','100000'::jsonb) WHERE id=$1`, preview.ID); e != nil {
+		t.Fatal(e)
 	}
 	consent, e := service.Consent(ctx, source.ID, "s58-consent", statementextract.ConsentInput{ExpectedRevision: source.Revision, PreviewID: preview.ID, PreviewHash: preview.Hash})
 	if e != nil {

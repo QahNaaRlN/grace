@@ -84,6 +84,9 @@ func reply(w http.ResponseWriter, v any, e error) {
 	if code == "statement_atomic_block_limit" || code == "statement_document_span_limit" {
 		message = "Документ слишком велик для AI. Загрузите выписку за меньший период или используйте ручную подготовку строк."
 	}
+	if code == "preview_changed" || code == "preview_expired" {
+		message = "План распознавания устарел. Подготовьте AI-распознавание заново и проверьте данные перед отправкой."
+	}
 	if code == "blank_document" {
 		message = "Подготовленные страницы пусты. Проверьте исходник и изображения; данные не отправлены."
 	}
