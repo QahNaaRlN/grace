@@ -86,7 +86,7 @@ Helper имеет ограниченный tmpfs 32 MiB для исходник�
 ## Конфигурация оператора
 
 `GRACE_AI_MODEL_GROUPS` — JSON-массив групп с назначением `analysis`, `receipt`
-или `statement`. Профили: `text_reasoning`, `document_reading`.
+или `statement`. Профили: `text_reasoning`, `document_reading`, `plain_document_reading` (только statement).
 Это список квалифицированных оператором участников; каталог не добавляет
 модели автоматически. Само наличие image input не доказывает качество чтения.
 Ниже схема примера, **не рабочая квалификация и не инструкция активации**:
@@ -142,7 +142,7 @@ request/image fees — за запрос/изображение. Резерв к
 30 000 input, 16 000 output и максимальное число изображений участника.
 Для photo bounds оператор подтверждает imageTokenUpperBound конкретного
 endpoint. Endpoint metadata должны явно показывать даже нулевые flat fees;
-отсутствующая цена не считается бесплатной. Общий allowance не увеличен.
+отсутствующая цена не считается бесплатной. Для принятого [SPEC-0058 P](specs/0058-production-price-ceiling-candidate.md) только plain statement допускает явный `requestFeeEvidence=plain_router_ceiling_only`: отсутствующий ключ request price при положительном ceiling ≤1000 micros. Полный ceiling входит в резерв и `provider.max_price.request`; присутствующее некорректное значение отклоняется. Остальные профили остаются строгими, experiment-only режим не используется. Общий allowance не увеличен.
 
 Если новой конфигурации нет, старые analysis/receipt policies преобразуются
 в явные группы с тем же model/provider, максимум одним изображением для чека
