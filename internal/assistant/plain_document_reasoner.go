@@ -32,7 +32,9 @@ func plainRequest(policy statementextract.DocumentPolicy, doc documentdata.Docum
 	if e != nil || maximum != policy.MaximumMicros || p.Model != policy.Model || p.Provider != policy.Provider || p.Selection.ProofSHA256 != policy.ProofSHA256 {
 		return LLMRequest{}, errors.New("policy_changed")
 	}
-	return DocumentRequest(p, doc, fmt.Sprintf(statementextract.PlainPrompt, len(doc.Pages)), nil, 16000)
+	request, err := DocumentRequest(p, doc, fmt.Sprintf(statementextract.PlainPrompt, len(doc.Pages)), nil, 16000)
+	request.DisableReasoning = true
+	return request, err
 }
 func (r *DocumentReasoner) PreparePlain(ctx context.Context, p statementextract.DocumentPolicy, doc documentdata.Document) error {
 	request, e := plainRequest(p, doc)

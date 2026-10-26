@@ -49,6 +49,10 @@ func TestPlainProductWireFivePagesWithoutEtalonOrSchema(t *testing.T) {
 		t.Fatal(out, bill, e)
 	}
 	wire, _ := json.Marshal(f.wire)
+	reasoning, ok := f.wire["reasoning"].(map[string]any)
+	if !ok || reasoning["enabled"] != false {
+		t.Fatal("plain request did not preserve disabled reasoning from the successful prototype")
+	}
 	if strings.Contains(string(wire), "ETALON") || f.wire["response_format"] != nil || f.wire["tools"] != nil || strings.Count(string(wire), "data:image/") != 5 || f.posts != 1 || f.gets != 3 {
 		t.Fatal("wrong product wire", f.posts, f.gets)
 	}
