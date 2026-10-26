@@ -35,11 +35,9 @@ func (r *Repository) MaterializePlainInTx(ctx context.Context, tx pgx.Tx, id str
 		return s, fault("plain_draft_invalid", 422)
 	}
 	state := statementdata.PlainState{SourceSHA256: s.SHA256, Candidate: p, Original: p}
-	if s.Plain != nil {
+	if s.Plain != nil && origin != "model" {
 		state.Original = s.Plain.Original
-		if origin != "model" {
-			state.Candidate.RawAnswer = s.Plain.Candidate.RawAnswer
-		}
+		state.Candidate.RawAnswer = s.Plain.Candidate.RawAnswer
 	} else if origin != "model" {
 		state.Candidate.RawAnswer = ""
 		state.Original.RawAnswer = ""

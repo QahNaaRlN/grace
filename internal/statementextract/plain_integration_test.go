@@ -30,7 +30,7 @@ func (r *s58Reader) CompletePlain(_ context.Context, _ statementextract.Document
 	r.calls++
 	raw := "| Дата операции | Дата списания | Сумма операции | Сумма карты | Описание | Карта |\n| --- | --- | --- | --- | --- | --- |\n"
 	for i := range d.Pages {
-		raw += fmt.Sprintf("| 19.10.2026 12:%02d | 19.10.2026 13:%02d | -12,34 RUB | -12,34 RUB | Public fixture page %d | 1234 |\n", i, i, i+1)
+		raw += fmt.Sprintf("| 19.10.2026 12:%02d | 19.10.2026 13:%02d | -12,34 RUB | -12,34 RUB | Public fixture page %d attempt %d | 1234 |\n", i, i, i+1, r.calls)
 	}
 	raw += "Итог пополнений: 0,00 RUB\nИтог списаний: 61,70 RUB"
 	return statementdata.ParsePlain(raw), &statementextract.Billing{GenerationID: "plain-fixture", CostMicros: 100, InputTokens: 500, OutputTokens: 500}, nil
@@ -110,5 +110,36 @@ func TestS58FivePageProductAttempt(t *testing.T) {
 		if !strings.Contains(row.OperationDate.Local, fmt.Sprintf("12:%02d", i)) || len(row.Evidence) != 0 {
 			t.Fatal("time lost or fake evidence")
 		}
+	}
+
+	// Manual edits cannot forge the raw reply; a fresh model attempt owns a new original.
+	firstRaw := source.Plain.Candidate.RawAnswer
+	candidate := source.Plain.Candidate
+	candidate.RawAnswer = "forged manual reply"
+	source, e = repo.ManualStatementDraft(ctx, source.ID, "s58-manual", imports.StatementManualDraft{ExpectedRevision: source.Revision, SourceSHA256: source.SHA256, Plain: &candidate, Reason: "Verify immutable raw reply"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if source.Plain.Candidate.RawAnswer != firstRaw || source.Plain.Original.RawAnswer != firstRaw {
+		t.Fatal("manual draft forged raw reply")
+	}
+	next, e := service.Preview(ctx, source.ID, statementextract.PreviewInput{ExpectedRevision: source.Revision})
+	if e != nil {
+		t.Fatal(e)
+	}
+	nextConsent, e := service.Consent(ctx, source.ID, "s58-consent-2", statementextract.ConsentInput{ExpectedRevision: source.Revision, PreviewID: next.ID, PreviewHash: next.Hash})
+	if e != nil {
+		t.Fatal(e)
+	}
+	nextAttempt, e := service.Extract(ctx, source.ID, "s58-extract-2", statementextract.ExtractionInput{ExpectedRevision: source.Revision, PreviewID: next.ID, PreviewHash: next.Hash, ConsentID: nextConsent.ID})
+	if e != nil || nextAttempt.Status != "completed" {
+		t.Fatal("second explicit attempt failed", e)
+	}
+	source, e = repo.Statement(ctx, source.ID)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if reader.calls != 2 || source.Plain.Original.RawAnswer != source.Plain.Candidate.RawAnswer || source.Plain.Original.RawAnswer == firstRaw {
+		t.Fatal("new draft displays stale first-attempt reply")
 	}
 }
