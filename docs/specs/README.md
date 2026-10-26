@@ -1,12 +1,6 @@
 Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
-Новая принятая работа: [SPEC-0058 — реальная выписка до подтверждённого импорта](0058-real-document-import.md),
-**accepted / offline implementation verified**, source `c2db56c`, [AC/evidence](0058-evidence.md). Разбирает ошибки прежней проверки и задаёт
-продуктовый путь: простой images-only запрос → редактируемая таблица → сверка →
-preview/confirmation. Положительный опыт одного реального PDF находится в
-[PR134](https://github.com/QahNaaRlN/grace/pull/134): 96 строк/768 совпадений с локальным
-черновым эталоном; это research success, не включённая функция. Новых live вызовов,
-production activation или импорта данное принятие реализации не разрешает.
+Текущая [SPEC-0058 — реальная выписка](0058-real-document-import.md): **accepted / integrated PR135,137–139 / deployed `db1d63d`**. Принятый [P](0058-production-price-ceiling-candidate.md) выполнен: один новый paid product call через production UI,96 строк, raw767/768, header6/6; одна проверенная правка дефиса → candidate768/768, сверка/reload PASS. Actual$0.013741 settled, financial writes0, grant CONSUMED1/1. [Итог/CI/deploy evidence](0058-production-evidence.md). Photo/scan live quality и независимое owner approval эталона остаются UNVERIFIED; это не PASS закрытой SPEC-0056 серии. Отдельный research [PR134](https://github.com/QahNaaRlN/grace/pull/134) — прежний результат, не новый product run.
 
 По новому поручению владельца подготовлена [SPEC-0056: единый OpenRouter и
 чтение фото/PDF по возможностям модели](0056-openrouter-document-reading.md),

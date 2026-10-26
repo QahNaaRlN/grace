@@ -3,7 +3,7 @@
 - Статус: **accepted**
 - Дата: 2026-10-26
 - Acceptance record: владелец отменил предыдущий отказ и поручил выбрать другой вариант — «Я выбрал неправильно, выбери вариант другой». Принят вариант «Принять P и довести до production-прогона».
-- Implementation status: not_started
+- Implementation status: integrated PR137–139 / deployed `db1d63d`; paid grant CONSUMED 1/1; [итог](0058-production-evidence.md)
 - Родитель: [принятый SPEC-0058](0058-real-document-import.md)
 
 ## Найденная ошибка

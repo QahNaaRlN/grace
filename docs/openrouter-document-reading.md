@@ -1,14 +1,17 @@
 # OpenRouter и чтение документов — SPEC-0056
 
-Реализация G1–G4 принята и интегрирована PR122/main10a0059. Production не переключён;
-обобщённое качество модели на документах Grace остаётся **UNVERIFIED**.
+Реализация G1–G4 принята и интегрирована PR122/main10a0059. В production включён ограниченный plain statement профиль SPEC-0058 P;
+обобщённое качество на photo/scan документах остаётся **UNVERIFIED**.
 Один реальный PDF успешно прочитан в research SPEC-0057; статус продукта ниже.
 Контракт: [SPEC-0056](specs/0056-openrouter-document-reading.md).
 
 ## SPEC-0058: простая таблица выписки
 
 Принята [SPEC-0058](specs/0058-real-document-import.md), реализация в ветке
-`codex/real-document-import`; production activation этим не выполнялась.
+`codex/real-document-import`; production `db1d63d` подтверждён по принятому P.
+[Live evidence](specs/0058-production-evidence.md): один новый product call,96 строк, raw767/768, после одной UI-правки768/768; $0.013741 settled, financial writes0.
+Разрешение на этот прогон CONSUMED1/1; qualification до02.11.2026 14:59 Asia/Yekaterinburg.
+При заданных groups readiness проверяет действующую statement group, без inference. Новый plain planner0058.v2 стабилен после JSONB roundtrip; устаревший preview требует новой подготовки/согласия.
 Для новых загрузок Web выбирает `plain_review`: PDF до пяти страниц или одно фото,
 200 операций, один RUB debit-счёт. Старые источники сохраняют прежний режим;
 кнопка перехода отменяет их прежние согласие, сверку и preview до нового чтения.
