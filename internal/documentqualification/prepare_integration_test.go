@@ -37,6 +37,23 @@ func TestQActualRendererCorpus(t *testing.T) {
 		return
 	}
 	saved, e := Load(root)
+	// SPEC-0058 fixes missing fallback fonts. Keep the historical blank-image corpus
+	// immutable and pin the two changed complete cases separately after visual review.
+	repaired := map[string]string{
+		"cards":   "cbf89e181c39c9c6f60607602e0dddb3597454f543c164fa0a4081cb462e922a",
+		"columns": "3d25eaa437e494ad3f94b8a9ed9fbe2f3beec9741f6411f74627d7f866c8603f",
+	}
+	if e == nil {
+		for i, item := range c.Cases {
+			if expected, ok := repaired[item.ID]; ok {
+				if documentdata.Digest(item) != expected || item.Document.CheckReadable() != nil {
+					t.Fatalf("font-repaired case %s differs or is blank", item.ID)
+				}
+				saved.Cases[i] = item
+			}
+		}
+	}
+
 	if e != nil || saved.Hash() != c.Hash() {
 		if e == nil {
 			for i, item := range c.Cases {

@@ -280,13 +280,15 @@ paths:
       - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
-          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          description: Owner-scoped result; no financial writes before explicit import
+            confirmation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatementUploadResult'
         '201':
-          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          description: Owner-scoped result; no financial writes before explicit import
+            confirmation.
           content:
             application/json:
               schema:
@@ -326,8 +328,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
-            available.
+          description: Extractor or approved AI policy/provider is unavailable or disabled.
+            Manual review remains available.
           content:
             application/json:
               schema:
@@ -348,6 +350,10 @@ paths:
                 file:
                   type: string
                   format: binary
+                readingMode:
+                  type: string
+                  enum:
+                  - plain_review
   /api/imports/statements/{statementId}:
     get:
       operationId: getBankStatement
@@ -3715,13 +3721,15 @@ paths:
       - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
-          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          description: Owner-scoped result; no financial writes before explicit import
+            confirmation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatementUploadResult'
         '201':
-          description: Owner-scoped result; no financial writes before explicit import confirmation.
+          description: Owner-scoped result; no financial writes before explicit import
+            confirmation.
           content:
             application/json:
               schema:
@@ -3761,8 +3769,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: Extractor or approved AI policy/provider is unavailable or disabled. Manual review remains
-            available.
+          description: Extractor or approved AI policy/provider is unavailable or disabled.
+            Manual review remains available.
           content:
             application/json:
               schema:
@@ -3783,7 +3791,10 @@ paths:
                 file:
                   type: string
                   format: binary
-
+                readingMode:
+                  type: string
+                  enum:
+                  - plain_review
   /api/imports/statements/{statementId}/pages/{page}:
     parameters:
     - name: statementId
@@ -3959,6 +3970,39 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /api/imports/statements/{statementId}/plain-reviews:
+    parameters:
+    - name: statementId
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: reviewPlainBankStatement
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlainStatementReviewInput'
+      responses:
+        '200':
+          description: Owner-scoped result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatement'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
 components:
   securitySchemes:
     SessionCookie:
@@ -4060,6 +4104,126 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    PlainStatementRow:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - raw
+      - operationDate
+      - bookingDate
+      - transactionAmount
+      - accountAmount
+      - description
+      - cardLast4
+      - issues
+      properties:
+        id: &id001
+          type: string
+        raw:
+          type: object
+          additionalProperties:
+            type: string
+          maxProperties: 8
+        operationDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        bookingDate:
+          anyOf:
+          - $ref: '#/components/schemas/StatementLocalDate'
+          - type: 'null'
+        transactionAmount:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        accountAmount:
+          anyOf:
+          - $ref: '#/components/schemas/StatementMoney'
+          - type: 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        cardLast4:
+          type:
+          - string
+          - 'null'
+        issues:
+          type: array
+          items: *id001
+    PlainStatementReading:
+      type: object
+      additionalProperties: false
+      required:
+      - version
+      - rawAnswer
+      - parseStatus
+      - rows
+      - header
+      properties:
+        version:
+          type: string
+          const: statement.plain.0058.v1
+        rawAnswer:
+          type: string
+          maxLength: 262144
+        parseStatus:
+          type: string
+          enum:
+          - parsed
+          - parse_error
+          - manual
+        rows:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/PlainStatementRow'
+        header:
+          type: object
+          additionalProperties: *id001
+          maxProperties: 7
+    PlainStatementState:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceSHA256
+      - candidate
+      - original
+      - digest
+      - reviewedDigest
+      properties:
+        sourceSHA256: *id001
+        candidate:
+          $ref: '#/components/schemas/PlainStatementReading'
+        original:
+          $ref: '#/components/schemas/PlainStatementReading'
+        digest: *id001
+        reviewedDigest: *id001
+    PlainStatementReviewInput:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedRevision
+      - sourceSHA256
+      - draftDigest
+      - reviewedPages
+      - rolesConfirmed
+      properties:
+        expectedRevision:
+          type: integer
+        sourceSHA256: *id001
+        draftDigest: *id001
+        reviewedPages:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 5
+          maxItems: 5
+          uniqueItems: true
+        rolesConfirmed:
+          type: boolean
     StatementDocument:
       type: object
       additionalProperties: false
@@ -4883,12 +5047,15 @@ components:
           enum:
           - native_text
           - image_review
+          - plain_review
         pages:
           type: array
           items:
             $ref: '#/components/schemas/DocumentPage'
         visual:
           $ref: '#/components/schemas/VisualState'
+        plain:
+          $ref: '#/components/schemas/PlainStatementState'
     StatementEdit:
       type: object
       additionalProperties: false
@@ -4917,6 +5084,12 @@ components:
             type: integer
         reason:
           type: string
+        readingMode:
+          type: string
+          enum:
+          - native_text
+          - image_review
+          - plain_review
     StatementManualDraft:
       type: object
       additionalProperties: false
@@ -4934,18 +5107,35 @@ components:
           $ref: '#/components/schemas/VisualReading'
         sourceSHA256:
           type: string
+        plain:
+          $ref: '#/components/schemas/PlainStatementReading'
       oneOf:
       - required:
         - proposal
         not:
-          required:
-          - reading
+          anyOf:
+          - required:
+            - reading
+          - required:
+            - plain
       - required:
         - reading
         - sourceSHA256
         not:
-          required:
-          - proposal
+          anyOf:
+          - required:
+            - proposal
+          - required:
+            - plain
+      - required:
+        - plain
+        - sourceSHA256
+        not:
+          anyOf:
+          - required:
+            - proposal
+          - required:
+            - reading
     StatementDelete:
       type: object
       additionalProperties: false
@@ -7898,6 +8088,7 @@ components:
           type: string
           enum:
           - document_reading
+          - plain_document_reading
         groupRevision:
           type: string
         proofSHA256:

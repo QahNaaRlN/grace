@@ -10,7 +10,7 @@ import (
 	_ "image/png"
 )
 
-const MaxPages = 4
+const MaxPages = 5
 const MaxPageBytes = 8 << 20
 const MaxBundleBytes = 26 << 20
 

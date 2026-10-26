@@ -6,3 +6,6 @@ export { StatementAI } from './ui/StatementAI'
 
 export { StatementVisualDraft } from './ui/StatementVisualDraft'
 export { StatementPages } from './ui/StatementPages'
+
+export { StatementPlainDraft } from './ui/StatementPlainDraft'
+export { StatementReadingMode } from './ui/StatementReadingMode'

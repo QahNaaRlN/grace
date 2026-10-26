@@ -5,7 +5,8 @@
 - Дата: 2026-10-26
 - Acceptance owner: владелец Grace
 - Acceptance record: 2026-10-26, прямое поручение владельца «Приступить к реализации этой спеки»
-- Implementation branch / commit: отсутствуют
+- Implementation branch: `codex/real-document-import`
+- Implementation commit: будет записан в evidence после проверок
 - Spec branch: `codex/real-document-import-spec`
 
 ## Проблема и пользовательский результат

@@ -220,3 +220,14 @@ import preview/confirmation; LLM не является финансовым writ
 API-контракт и UI поддерживают приватные страницы и ручную сверку.
 Production не активирован, реальное качество модели UNVERIFIED.
 [Конфигурация и пользовательский путь](openrouter-document-reading.md).
+
+## Простая таблица банковской выписки — SPEC-0058
+
+Принятый контракт добавляет отдельный `plain_review`, а не ослабляет legacy
+span/visual evidence. `assistant.DocumentReasoner` отправляет до пяти изображений
+без native text/эталона/JSON Schema по plain-профилю. `statementdata` разбирает
+обычную таблицу и суммы/даты кодом; `imports` хранит исходный ответ, черновик и
+сверку конкретного digest. Одна сверка документа открывает прежний batch
+preview/confirmation; AI не пишет финансовые события. Raw answer и изображения
+удаляются с оригиналом. Production профиль ещё не активирован; наличие кода
+и один исследовательский успех не означают deployed readiness.

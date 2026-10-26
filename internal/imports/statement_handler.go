@@ -18,6 +18,7 @@ func (h *Handler) statementRoutes(r chi.Router) {
 	r.Post("/statements/images", h.UploadStatementImage)
 	r.Get("/statements/{statementId}/pages/{page}", h.StatementPage)
 	r.Post("/statements/{statementId}/visual-reviews", h.VisualReview)
+	r.Post("/statements/{statementId}/plain-reviews", h.PlainReview)
 	r.Get("/statements/{statementId}", h.Statement)
 	r.Patch("/statements/{statementId}", h.EditStatement)
 	r.Post("/statements/{statementId}/manual-drafts", h.ManualStatementDraft)
@@ -41,7 +42,7 @@ func (h *Handler) uploadStatementSource(w http.ResponseWriter, r *http.Request, 
 	if r.MultipartForm != nil {
 		defer r.MultipartForm.RemoveAll()
 	}
-	if len(r.MultipartForm.File) != 1 || len(r.MultipartForm.File["file"]) != 1 || len(r.MultipartForm.Value) != 1 || len(r.MultipartForm.Value["accountId"]) != 1 {
+	if len(r.MultipartForm.File) != 1 || len(r.MultipartForm.File["file"]) != 1 || (len(r.MultipartForm.Value) != 1 && !(len(r.MultipartForm.Value) == 2 && len(r.MultipartForm.Value["readingMode"]) == 1)) || len(r.MultipartForm.Value["accountId"]) != 1 {
 		web.WriteError(w, 400, "invalid_pdf_upload", "Ожидаются один PDF и счёт.")
 		return
 	}
@@ -66,7 +67,7 @@ func (h *Handler) uploadStatementSource(w http.ResponseWriter, r *http.Request, 
 		web.WriteError(w, 415, "invalid_request", "Тип файла не соответствует содержимому.")
 		return
 	}
-	s, created, e := upload(r.Context(), raw, r.FormValue("accountId"), header.Filename, key(r))
+	s, created, e := upload(r.Context(), raw, r.FormValue("accountId"), header.Filename, key(r), r.FormValue("readingMode"))
 	result := StatementUploadResult{Statement: s, Document: StatementDocument{ID: s.DocumentID, FileName: s.FileName, SHA256: s.SHA256, SizeBytes: s.SizeBytes, ContentType: detected}, BatchID: s.BatchID}
 	if e == nil && created {
 		web.WriteJSON(w, 201, result)

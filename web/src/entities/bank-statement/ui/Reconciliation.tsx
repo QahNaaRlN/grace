@@ -9,6 +9,7 @@ import { Money } from '@/shared/ui/money'
 
 const statusLabels: Record<string, string> = {
   matched: 'Совпало',
+  owner_reviewed: 'Сверено по изображениям',
   mismatch: 'Расхождение',
   incomplete: 'Неполные данные',
   not_provided: 'Нет в документе',
@@ -109,7 +110,13 @@ export function StatementReconciliation({
         </div>
       )}
       {r.warnings.length > 0 && (
-        <p>Есть непроверенные итоги. Проверьте каждую строку перед подтверждением.</p>
+        <p>
+          {r.warnings.includes('turnover_not_checked')
+            ? 'Напечатанные обороты не удалось проверить полностью.'
+            : r.warnings.includes('book_balance_not_checked')
+              ? 'Бухгалтерские остатки не проверены: в документе может не быть этих данных.'
+              : 'Сверьте исходные данные и назначение операций перед подтверждением.'}
+        </p>
       )}
     </div>
   )

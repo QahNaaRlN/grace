@@ -1,6 +1,23 @@
 # Statement AI: текущее состояние и следующее решение
 
-Обновлено 2026-10-26, Asia/Yekaterinburg. **Последний Q4.5: REJECT по качеству.
+Обновлено 2026-10-26, Asia/Yekaterinburg.
+
+Текущая работа — [SPEC-0058](specs/0058-real-document-import.md), **accepted /
+implementation in progress**: простой запрос → редактируемая таблица → единая
+сверка → прежний preview/confirmation. Ветка `codex/real-document-import`.
+Research SPEC-0057 дал 96 строк/768 совпадений на одном реальном PDF; новый Go parser
+повторил эти проверки offline по сохранённому ответу. Эталон остаётся черновым.
+Новых платных вызовов, production activation и записей в реальные финансы нет.
+Photo/scan live quality и deployed usability не подтверждены.
+
+Обнаружен и воспроизведён дефект helper image: отсутствие fallback-шрифтов
+давало белые страницы для PDF без встроенных шрифтов. Исправление добавляет
+закреплённый DejaVu; tests проверяют реальную непустую картинку. Старые verdicts
+не пересчитываются автоматически: потеря времени в ответе остаётся отдельным фактом.
+
+## Историческая закрытая серия SPEC-0056
+
+**Последний Q4.5: REJECT по качеству.
 Серия закрыта3/3,remaining0. PASS_SYNTHETIC не получен.**
 
 [SPEC-0056 G1–G4](specs/0056-openrouter-document-reading.md) и Q1–Q3

@@ -69,11 +69,11 @@ func reply(w http.ResponseWriter, v any, e error) {
 		}
 	} else {
 		switch e.Error() {
-		case "document_limit", "incomplete_reading", "source_binding_failed":
+		case "blank_document", "document_limit", "incomplete_reading", "source_binding_failed":
 			code, status = e.Error(), 422
 		case "policy_changed":
 			code, status = e.Error(), 409
-		case "ai_disabled", "price_unknown", "provider_unavailable", "no_eligible_model", "capability_unverified":
+		case "plain_profile_unavailable", "plain_reader_required", "ai_disabled", "price_unknown", "provider_unavailable", "no_eligible_model", "capability_unverified":
 			code, status = e.Error(), 503
 		}
 	}
@@ -83,6 +83,9 @@ func reply(w http.ResponseWriter, v any, e error) {
 	message := "Распознавание не завершено. Проверьте согласие, состояние выписки и доступность AI; ручная проверка остаётся доступна."
 	if code == "statement_atomic_block_limit" || code == "statement_document_span_limit" {
 		message = "Документ слишком велик для AI. Загрузите выписку за меньший период или используйте ручную подготовку строк."
+	}
+	if code == "blank_document" {
+		message = "Подготовленные страницы пусты. Проверьте исходник и изображения; данные не отправлены."
 	}
 	web.WriteError(w, status, code, message)
 }

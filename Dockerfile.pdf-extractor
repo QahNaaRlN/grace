@@ -9,7 +9,8 @@ COPY internal/statementdata ./internal/statementdata
 RUN CGO_ENABLED=0 go build -trimpath -o /out/grace-pdf-extractor ./cmd/pdf-extractor
 
 FROM alpine:3.22
-RUN apk add --no-cache poppler-utils=25.04.0-r0 && \
+ENV XDG_CACHE_HOME=/tmp/font-cache
+RUN apk add --no-cache poppler-utils=25.04.0-r0 font-dejavu=2.37-r6 && \
     addgroup -S -g 10001 grace && adduser -S -u 10001 grace -G grace && \
     mkdir -p /run/grace-pdf && chown grace:grace /run/grace-pdf
 COPY --from=build /out/grace-pdf-extractor /usr/local/bin/grace-pdf-extractor

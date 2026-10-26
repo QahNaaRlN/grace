@@ -33,8 +33,14 @@ func NewGroupedOpenRouterProvider(key string, groups *ModelGroups, client HTTPDo
 }
 func DocumentRequest(policy ModelPolicy, doc documentdata.Document, prompt string, schema json.RawMessage, output int) (LLMRequest, error) {
 	fail := errors.New("document_limit")
-	if doc.Validate() != nil || policy.Selection == nil || policy.Selection.Profile != DocumentReading || len(doc.Pages) > policy.Selection.MaxImages || output < 1 || output > 16000 || len(prompt) > 10000 || !json.Valid(schema) {
+	if doc.Validate() != nil || policy.Selection == nil || !documentProfile(policy.Selection.Profile) || len(doc.Pages) > policy.Selection.MaxImages || output < 1 || output > 16000 || len(prompt) > 10000 || (!json.Valid(schema) && !(policy.Selection != nil && policy.Selection.Profile == PlainDocumentReading && len(schema) == 0)) || (policy.Selection != nil && policy.Selection.Profile == DocumentReading && len(doc.Pages) > 4) {
 		return LLMRequest{}, fail
+	}
+	if policy.Selection.Profile == PlainDocumentReading {
+		doc.Text = ""
+		if e := doc.CheckReadable(); e != nil {
+			return LLMRequest{}, e
+		}
 	}
 	content := []any{map[string]any{"type": "text", "text": prompt}}
 	bound := len(prompt) + len(doc.Text) + len(schema) + 2048
@@ -122,7 +128,7 @@ func (p *OpenRouterProvider) checkGroupRequest(in LLMRequest) error {
 			textBytes += len(content)
 		}
 	}
-	if len(raw) > 12<<20 || in.Policy.Selection.Profile == DocumentReading && (images < 1 || textBytes+images*in.Policy.ImageTokenUpperBound > in.InputTokenUpperBound) {
+	if len(raw) > 12<<20 || documentProfile(in.Policy.Selection.Profile) && (images < 1 || textBytes+images*in.Policy.ImageTokenUpperBound > in.InputTokenUpperBound) {
 		return errors.New("provider_request")
 	}
 	if images > in.Policy.Selection.MaxImages || in.Policy.Selection.Profile == TextReasoning && images != 0 || images*in.Policy.ImageTokenUpperBound > in.InputTokenUpperBound {

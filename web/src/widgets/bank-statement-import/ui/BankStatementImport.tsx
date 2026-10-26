@@ -16,6 +16,8 @@ import {
   StatementAI,
   StatementOwnerReview,
   StatementUpload,
+  StatementPlainDraft,
+  StatementReadingMode,
 } from '@/features/import/bank-statement'
 import { env } from '@/shared/config'
 import { Button } from '@/shared/ui/button'
@@ -72,7 +74,10 @@ export function BankStatementImport() {
                 mapping={s.draftMapping}
               />
             )}
-            <StatementOwnerReview key={`owner:${s.id}`} statement={s} />
+            {s.readingMode !== 'plain_review' && (
+              <StatementOwnerReview key={`owner:${s.id}`} statement={s} />
+            )}
+            <StatementReadingMode statement={s} />
             {!s.deletedAt && (
               <Button asChild variant="outline">
                 <a href={`${env.VITE_API_BASE_URL}/api/imports/statements/${s.id}/original`}>
@@ -103,7 +108,9 @@ export function BankStatementImport() {
                   .join('; ')}
               </p>
             )}
-            {s.readingMode === 'image_review' ? (
+            {s.readingMode === 'plain_review' ? (
+              <StatementPlainDraft key={`plain:${s.id}`} statement={s} />
+            ) : s.readingMode === 'image_review' ? (
               <StatementVisualDraft key={`visual:${s.id}`} statement={s} />
             ) : (
               <>

@@ -24,7 +24,7 @@ type DocumentPolicy struct {
 }
 
 func (p DocumentPolicy) Valid() bool {
-	return p.Model != "" && p.Provider != "" && p.Profile == "document_reading" && p.GroupRevision != "" && len(p.ProofSHA256) == 64 && p.MaximumMicros > 0 && p.MaximumMicros <= 10000000 && json.Valid(p.Snapshot)
+	return p.Model != "" && p.Provider != "" && (p.Profile == "document_reading" || p.Profile == "plain_document_reading") && p.GroupRevision != "" && len(p.ProofSHA256) == 64 && p.MaximumMicros > 0 && p.MaximumMicros <= 10000000 && json.Valid(p.Snapshot)
 }
 func (p DocumentPolicy) Policy() Policy {
 	return Policy{Model: p.Model, Provider: p.Provider, ProviderName: p.ProviderName, InputMicrosPerMillion: p.InputMicrosPerMillion, OutputMicrosPerMillion: p.OutputMicrosPerMillion, Document: &p}
@@ -45,18 +45,27 @@ type DocumentReasoner interface {
 
 func (s *Service) SetDocumentReasoner(r DocumentReasoner) { s.document = r }
 func documentPlanValid(p Plan) bool {
+	plain := p.Policy.Document != nil && p.Policy.Document.Profile == "plain_document_reading"
+	profile, prompt, planner, schema, maxPages := "document_reading", DocumentPromptVersion, "document-pages.0056.v1", Hash(statementdata.VisualSchema()), 4
+	if plain {
+		profile, prompt, planner, schema, maxPages = "plain_document_reading", PlainPromptVersion, "document-pages.0058.v1", Hash(PlainPromptVersion), 5
+	}
 	expectedLimits := PlanLimits{MaxInputBytes: 12 << 20, InputTokens: 30000, OutputTokens: 16000, MaxSpans: 0, CallTimeoutSeconds: 180, AttemptTimeoutSeconds: 210}
-	if p.PlannerVersion != "document-pages.0056.v1" || p.AliasVersion != "none.direct-reading.v1" || p.Limits != expectedLimits || len(p.Atoms) != 0 || len(p.Aliases) != 0 {
+	if p.PlannerVersion != planner || p.AliasVersion != "none.direct-reading.v1" || p.Limits != expectedLimits || len(p.Atoms) != 0 || len(p.Aliases) != 0 || p.Document == nil || p.Policy.Document == nil {
 		return false
 	}
-	if p.Policy.Document != nil && (p.Policy.Model != p.Policy.Document.Model || p.Policy.Provider != p.Policy.Document.Provider || p.Policy.ProviderName != p.Policy.Document.ProviderName || p.Policy.InputMicrosPerMillion != p.Policy.Document.InputMicrosPerMillion || p.Policy.OutputMicrosPerMillion != p.Policy.Document.OutputMicrosPerMillion) {
+	policy := p.Policy.Document
+	if !policy.Valid() || p.Policy.Model != policy.Model || p.Policy.Provider != policy.Provider || p.Policy.ProviderName != policy.ProviderName || p.Policy.InputMicrosPerMillion != policy.InputMicrosPerMillion || p.Policy.OutputMicrosPerMillion != policy.OutputMicrosPerMillion || policy.Profile != profile {
 		return false
 	}
-	if p.Document == nil || p.Policy.Document == nil || !p.Policy.Document.Valid() || p.PromptVersion != DocumentPromptVersion || p.SchemaHash != Hash(json.RawMessage(statementdata.VisualSchema())) || p.RedactionVersion != "full-pages.explicit-consent.v1" || len(p.Document.Pages) < 1 || len(p.Document.Pages) > 4 || len(p.Chunks) != 1 || p.MaximumMicros != p.Policy.Document.MaximumMicros || p.Document.SnapshotSHA256 != Hash(p.Policy.Document.Snapshot) || p.Document.Profile != "document_reading" || p.Document.SourceSHA256 != p.DocumentHash {
+	if p.PromptVersion != prompt || p.SchemaHash != schema || p.RedactionVersion != "full-pages.explicit-consent.v1" || len(p.Document.Pages) < 1 || len(p.Document.Pages) > maxPages || len(p.Chunks) != 1 || p.MaximumMicros != policy.MaximumMicros || p.Document.SnapshotSHA256 != Hash(policy.Snapshot) || p.Document.Profile != profile || p.Document.SourceSHA256 != p.DocumentHash {
+		return false
+	}
+	if plain && p.Document.TextSHA256 != documentdata.Hash(nil) {
 		return false
 	}
 	for i, page := range p.Document.Pages {
-		if page.Number != i+1 || len(page.SHA256) != 64 || len(page.Data) != 0 {
+		if page.Number != i+1 || len(page.SHA256) != 64 || len(page.Data) != 0 || page.Width < 1 || page.Height < 1 || page.Width > 2048 || page.Height > 2048 {
 			return false
 		}
 	}
@@ -77,17 +86,24 @@ func (s *Service) previewDocument(ctx context.Context, id string, in PreviewInpu
 	if len(in.VisibleSpanIDs) > 0 {
 		return out, fault("full_page_consent_required", 422)
 	}
-	policy, e := s.document.CurrentDocumentPolicy(ctx, len(source.Rendered.Pages))
+	plain := source.ReadingMode == "plain_review"
+	policy, e := s.readingPolicy(ctx, len(source.Rendered.Pages), plain)
 	if e != nil {
 		return out, e
 	}
 	if !policy.Valid() {
 		return out, fault("price_unknown", 503)
 	}
-	if e = s.document.PrepareDocument(ctx, policy, source.Rendered); e != nil {
+	if e = s.prepareReading(ctx, policy, source.Rendered, plain); e != nil {
 		return out, e
 	}
 	plan := Plan{PlannerVersion: "document-pages.0056.v1", AliasVersion: "none.direct-reading.v1", Atoms: [][]string{}, Aliases: map[string]string{}, Limits: PlanLimits{MaxInputBytes: 12 << 20, InputTokens: 30000, OutputTokens: 16000, MaxSpans: 0, CallTimeoutSeconds: 180, AttemptTimeoutSeconds: 210}, DocumentHash: source.SHA256, Policy: policy.Policy(), PromptVersion: DocumentPromptVersion, SchemaHash: Hash(json.RawMessage(statementdata.VisualSchema())), RedactionVersion: "full-pages.explicit-consent.v1", MaximumMicros: policy.MaximumMicros, Chunks: []Chunk{{Index: 1, Context: []RedactedSpan{}, Spans: []RedactedSpan{}}}, Document: &DocumentPlan{Profile: policy.Profile, SourceSHA256: source.SHA256, TextSHA256: documentdata.Hash([]byte(source.Rendered.Text)), Pages: source.Rendered.Manifest().Pages, SnapshotSHA256: Hash(policy.Snapshot)}}
+	if plain {
+		plan.PromptVersion = PlainPromptVersion
+		plan.SchemaHash = Hash(PlainPromptVersion)
+		plan.PlannerVersion = "document-pages.0058.v1"
+		plan.Document.TextSHA256 = documentdata.Hash(nil)
+	}
 	tx, e := s.begin(ctx)
 	if e != nil {
 		return out, e
