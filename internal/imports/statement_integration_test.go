@@ -57,6 +57,22 @@ func TestStatementOfflineLifecycle(t *testing.T) {
 	if e != nil || !created {
 		t.Fatal(s, e)
 	}
+	// A request recorded by the pre-0058 binary must replay after this deployment.
+	legacyTx, err := r.begin(ctx, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacyPayload := struct{ SHA256, AccountID string }{hashBytes([]byte("%PDF-synthetic-lifecycle")), accountID}
+	if err = remember(ctx, legacyTx, "statement-upload", "legacy-pre0058", legacyPayload, struct{ ID string }{s.ID}); err != nil {
+		t.Fatal(err)
+	}
+	if err = legacyTx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	legacyReplay, legacyCreated, err := r.UploadStatement(ctx, []byte("%PDF-synthetic-lifecycle"), accountID, "legacy.pdf", "legacy-pre0058")
+	if err != nil || legacyCreated || legacyReplay.ID != s.ID {
+		t.Fatal("legacy upload replay changed", err)
+	}
 	retry, created, e := r.UploadStatement(ctx, []byte("%PDF-synthetic-lifecycle"), accountID, "renamed.pdf", "pdf-upload")
 	if e != nil || created || retry.ID != s.ID {
 		t.Fatal("upload replay", e)

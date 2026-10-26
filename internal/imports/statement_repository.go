@@ -133,7 +133,7 @@ func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, acco
 	}
 	payload := struct {
 		SHA256, AccountID string
-		Plain             bool
+		Plain             bool `json:"Plain,omitempty"`
 	}{hashBytes(raw), account, plain}
 	// Check replay/dedup before expensive local extraction, then check again under
 	// the common owner writer lock before inserting either source or document.
