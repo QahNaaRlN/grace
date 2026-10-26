@@ -3,7 +3,8 @@
 Принятый контракт: [SPEC-0058](0058-real-document-import.md).
 Принятие владельцем «Приступить к реализации этой спеки» зафиксировано
 2026-10-26 в `cb4f100` до production-кода и интегрировано в локальный main.
-Implementation source: `e52f3cb97e5f3c1126db92b89f17701a71134845`,
+Implementation source: `83b075354ead90e2aa96c620440fd2d13d9b0ec3` (основной срез `e52f3cb`,
+дополнен проверенной совместимостью pre-0058 upload replay),
 ветка `codex/real-document-import`.
 
 Состояние: **offline implementation verified / ready for review**.
@@ -34,7 +35,7 @@ schema старых режимов сохраняются. Миграция 31 a
 | A5: финансовая запись | VERIFIED SQL/browser | `TestStatementPlainReviewConfirmAndInvalidation`: unreviewed/forged digest/incomplete pages/stale preview отвергаются, правка отменяет review, confirm replay не дублирует Posting, raw state исчезает при retention. В браузере public fixture прошёл review → решение purchase → preview → confirm → reload. В отдельной QA базе events=1/postings=1/publishedImportRows=1/aiUsage=0; реальные операции владельца не опубликованы |
 | A6: один новый product call на реальном файле | **PENDING LIVE AUTHORIZATION** | Browser проверил загрузку/редактирование/review реального PDF с сохранённым ответом, а writer — на публичном synthetic документе. Новый платный вызов через продукт и независимое принятие эталона владельцем не выполнялись |
 | A7: форматы | PARTIAL / live quality UNVERIFIED | Локальные renderer/normalizer/fake-provider контракты для PDF/photo/scan проходят. Реальные photo/scan quality examples по новому plain path отсутствуют; успех одного native PDF на них не переносится |
-| A8: выпуск | PENDING CI/RELEASE | Локальные gates ниже PASS. Remote PR/CI отмечаются отдельно. Production flags, groups, budget allowance и service release не менялись; post-merge/deploy smoke ещё не выполнены |
+| A8: выпуск | RELEASE PENDING; CI отдельно | Локальные gates ниже PASS. Remote PR/CI отмечаются отдельно. Production flags, groups, budget allowance и service release не менялись; post-merge/deploy smoke ещё не выполнены |
 
 ## Найденная причина белого изображения
 
@@ -60,6 +61,10 @@ memory/pid/tmpfs bounds. Версия пакета проверена в
 - `./scripts/test-bank-statements.sh` — повторный PASS после последней правки
   detail projection: plain не получает native locator workflow.
 - `go vet ./cmd/... ./internal/...`, `git diff --check` — PASS.
+- `TMPDIR=/var/tmp/grace0058-tests make test-production` — PASS, только offline
+  guards/production-bundle tests; deployment/live SSH/model calls=0.
+- Pre-0058 upload idempotency: `TestStatementOfflineLifecycle` записывает прежнюю
+  форму request hash и успешно воспроизводит её новым бинарником; SQL suite PASS.
 - Private replay: `GRACE_PLAIN_SAVED_ANSWER=<private> GRACE_PLAIN_REFERENCE=<private>
   go test ./internal/statementdata -run '^TestPlainPrivateSavedAnswer$' -count=1 -v`
   — PASS, 96/768, provider calls=0. CI без этих env явно SKIP только private replay,
@@ -82,3 +87,6 @@ Compose project с AI disabled, реальные финансовые запис
 merge; live-приёмка в пределах предложенного в спеке лимита и production rollout
 остаются явно неисполненными. Согласие на передачу и финансовое подтверждение
 в приложении остаются действиями пользователя.
+
+Локальный QA Compose project, его volumes с копией документа и Vite-процесс
+остановлены/удалены после проверки. Исходный файл владельца не менялся.

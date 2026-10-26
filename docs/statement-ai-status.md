@@ -4,7 +4,7 @@
 
 Текущая работа — [SPEC-0058](specs/0058-real-document-import.md), **accepted /
 offline implementation verified**: простой запрос → редактируемая таблица → единая
-сверка → прежний preview/confirmation. Ветка `codex/real-document-import`, source `e52f3cb`; [AC/evidence](specs/0058-evidence.md).
+сверка → прежний preview/confirmation. Ветка `codex/real-document-import`, source `83b0753`; [AC/evidence](specs/0058-evidence.md).
 Research SPEC-0057 дал 96 строк/768 совпадений на одном реальном PDF; новый Go parser
 повторил эти проверки offline по сохранённому ответу. Эталон остаётся черновым.
 Новых платных вызовов, production activation и записей в реальные финансы нет.
