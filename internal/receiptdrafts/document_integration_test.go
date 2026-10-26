@@ -34,9 +34,10 @@ import (
 )
 
 type s56ReceiptGateway struct {
-	posts   int
-	unknown bool
-	wire    string
+	posts          int
+	unknown        bool
+	receiptCeiling bool
+	wire           string
 }
 
 func (g *s56ReceiptGateway) Do(req *http.Request) (*http.Response, error) {
@@ -45,6 +46,9 @@ func (g *s56ReceiptGateway) Do(req *http.Request) (*http.Response, error) {
 	}
 	params := []string{"structured_outputs", "response_format", "max_tokens"}
 	endpoint := map[string]any{"model_id": "fixture/receipt", "tag": "fixture/eu", "provider_name": "Fixture", "status": 0, "context_length": 100000, "max_completion_tokens": 16000, "supported_parameters": params, "pricing": map[string]any{"prompt": "0.0000001", "completion": "0.0000001", "image": "0", "request": "0"}}
+	if g.receiptCeiling {
+		delete(endpoint["pricing"].(map[string]any), "request")
+	}
 	var body any
 	switch req.URL.Path {
 	case "/api/v1/models":
@@ -131,7 +135,7 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 		t.Fatal(e)
 	}
 	photo, jpegBytes := s56ReceiptImage(t)
-	for _, kind := range []string{"image", "pdf"} {
+	for _, kind := range []string{"image", "pdf", "image_receipt_ceiling"} {
 		t.Run(kind, func(t *testing.T) {
 			var owner, other, account string
 			for _, dest := range []*string{&owner, &other} {
@@ -145,8 +149,14 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 				t.Fatal(e)
 			}
 			member := assistant.GroupMembership{Policy: assistant.ModelPolicy{Model: "fixture/receipt", Provider: "fixture/eu", ProviderName: "Fixture", InputMicrosPerMillion: 100000, OutputMicrosPerMillion: 100000, ImageTokenUpperBound: 1000, Vision: true}, Canonical: "fixture/receipt-v1", MaxImages: 4, MaxImageSide: 2048, Region: "eu", Qualification: "public synthetic receipt control", QualifiedUntil: time.Now().Add(time.Hour)}
+			if kind == "image_receipt_ceiling" {
+				member.RequestFeeEvidence = assistant.ReceiptRequestFeeRouterCeilingOnly
+				member.Policy.RequestFeeMicros = 1000
+				member.Policy.ImageFeeMicros = 1
+				member.MaxImages = 1
+			}
 			configuration, _ := json.Marshal([]assistant.ModelGroup{{Revision: "s56-receipt-fixture", Profile: assistant.DocumentReading, Purpose: "receipt", Members: []assistant.GroupMembership{member}}})
-			gateway := &s56ReceiptGateway{}
+			gateway := &s56ReceiptGateway{receiptCeiling: kind == "image_receipt_ceiling"}
 			groups, e := assistant.NewModelGroups(string(configuration), "offline-receipt-key", gateway)
 			if e != nil {
 				t.Fatal(e)
@@ -293,6 +303,19 @@ func TestS56ReceiptDocumentLifecycle(t *testing.T) {
 			}
 			if w := invoke(ctx, "GET", "/"+draft.ID+"/pages/1", nil, "", ""); w.Code == 200 {
 				t.Fatal("deleted receipt image visible")
+			}
+			if kind == "image_receipt_ceiling" {
+				var reserved int64
+				if e = tenant.QueryRow(ctx, "SELECT reserved_micros FROM ai_usage WHERE purpose='receipt' ORDER BY created_at DESC LIMIT 1").Scan(&reserved); e != nil || reserved != plan.MaximumMicros || reserved <= 1001 {
+					t.Fatal("receipt ceiling not reserved", reserved, plan.MaximumMicros, e)
+				}
+				var wire map[string]any
+				if e = json.Unmarshal([]byte(gateway.wire), &wire); e != nil {
+					t.Fatal(e)
+				}
+				if wire["provider"].(map[string]any)["max_price"].(map[string]any)["request"] != 0.001 {
+					t.Fatal("receipt request ceiling not sent")
+				}
 			}
 			var bill string
 			if e = tenant.QueryRow(ctx, "SELECT actual_micros::text FROM ai_usage WHERE purpose='receipt' ORDER BY created_at DESC LIMIT 1").Scan(&bill); e != nil || bill != strconv.Itoa(100) {

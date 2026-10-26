@@ -34,6 +34,10 @@ const RequestFeeRouterCeilingOnly = "router_ceiling_only"
 // accepted SPEC-0058 P product profile. The full positive cap remains reserved.
 const PlainRequestFeeRouterCeilingOnly = "plain_router_ceiling_only"
 
+// ReceiptRequestFeeRouterCeilingOnly is the explicit SPEC-0059 opt-in for
+// single-image receipt reading. The omitted request rate stays unknown.
+const ReceiptRequestFeeRouterCeilingOnly = "receipt_router_ceiling_only"
+
 // GroupMembership is operator configuration, never model or upload input.
 // Qualification attests task suitability; the catalog only attests capabilities.
 type GroupMembership struct {
@@ -260,8 +264,16 @@ func (m GroupMembership) plainRequestCeiling(g ModelGroup) bool {
 		m.RequestFeeEvidence == PlainRequestFeeRouterCeilingOnly &&
 		m.Policy.RequestFeeMicros > 0 && m.Policy.RequestFeeMicros <= 1000
 }
+func (m GroupMembership) receiptRequestCeiling(g ModelGroup) bool {
+	return g.Purpose == "receipt" && g.Profile == DocumentReading && m.MaxImages == 1 &&
+		m.RequestFeeEvidence == ReceiptRequestFeeRouterCeilingOnly &&
+		m.Policy.RequestFeeMicros > 0 && m.Policy.RequestFeeMicros <= 1000
+}
+func (m GroupMembership) productRequestCeiling(g ModelGroup) bool {
+	return m.plainRequestCeiling(g) || m.receiptRequestCeiling(g)
+}
 func (m GroupMembership) validRequestFeeEvidenceFor(g ModelGroup, experiment bool) bool {
-	return m.validRequestFeeEvidence(experiment) || (!experiment && m.plainRequestCeiling(g))
+	return m.validRequestFeeEvidence(experiment) || (!experiment && m.productRequestCeiling(g))
 }
 
 func requestPriceFits(raw json.RawMessage, m GroupMembership, experiment bool) bool {
@@ -366,10 +378,10 @@ func (g *ModelGroups) refresh(ctx context.Context, group ModelGroup, now time.Ti
 			if (ep.Model != p.Model && ep.Model != m.Canonical) || ep.Tag != p.Provider || ep.Name != p.DisplayProvider() || ep.Status == nil || *ep.Status != 0 || ep.Context < input+output || ep.Output < output || (ep.Input != nil && *ep.Input < input) || !parametersFitProfile(ep.Parameters, group.Profile) || !nonnegativePriceWithin(ep.Pricing.Prompt, p.InputMicrosPerMillion, true) || !nonnegativePriceWithin(ep.Pricing.Completion, p.OutputMicrosPerMillion, true) {
 				continue
 			}
-			// Only explicit experiment or accepted plain-product evidence can use
+			// Only explicit experiment or accepted product evidence can use
 			// a positive reserved router ceiling for an omitted request rate.
 			// Present invalid rates and unpriced images still fail closed.
-			if !(requestPriceFits(ep.Pricing.Request, m, g.experiment) || (!g.experiment && len(ep.Pricing.Request) == 0 && m.plainRequestCeiling(group))) || ep.Pricing.Image == "" || !nonnegativePriceWithin(ep.Pricing.Image, p.ImageFeeMicros, false) {
+			if !(requestPriceFits(ep.Pricing.Request, m, g.experiment) || (!g.experiment && len(ep.Pricing.Request) == 0 && m.productRequestCeiling(group))) || ep.Pricing.Image == "" || !nonnegativePriceWithin(ep.Pricing.Image, p.ImageFeeMicros, false) {
 				continue
 			}
 			matches++

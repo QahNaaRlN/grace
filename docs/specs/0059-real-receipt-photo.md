@@ -3,7 +3,8 @@
 - Status: **accepted**
 - Acceptance record: 2026-10-26 владелец ответил «Принять SPEC-0059 и выполнить прогон» на явный вопрос о реализации/CI/merge/deploy, передаче этого фото через OpenRouter/Google EU, ≤1POST/≤$0.04 и нулевых финансовых записях.
 - Date: 2026-10-26
-- Implementation status: **not_started**
+- Implementation status: **verified locally; integration/deploy/live pending**
+- Offline evidence: [0059-evidence.md](0059-evidence.md)
 - Worktree: `receipt-photo-reading-spec`, branch `codex/receipt-photo-reading-spec`
 - Основание: владелец предоставил реальное фото, подтвердил расшифровку и поручил продолжить проверку через Grace.
 - Родители: принятые SPEC-0026/SPEC-0056; исключение SPEC-0058 P остаётся только statement/plain.
