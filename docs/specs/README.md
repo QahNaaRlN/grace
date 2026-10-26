@@ -1,7 +1,7 @@
 Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
 Новая принятая работа: [SPEC-0058 — реальная выписка до подтверждённого импорта](0058-real-document-import.md),
-**accepted / offline implementation verified**, source `0dad84f`, [AC/evidence](0058-evidence.md). Разбирает ошибки прежней проверки и задаёт
+**accepted / offline implementation verified**, source `c2db56c`, [AC/evidence](0058-evidence.md). Разбирает ошибки прежней проверки и задаёт
 продуктовый путь: простой images-only запрос → редактируемая таблица → сверка →
 preview/confirmation. Положительный опыт одного реального PDF находится в
 [PR134](https://github.com/QahNaaRlN/grace/pull/134): 96 строк/768 совпадений с локальным
