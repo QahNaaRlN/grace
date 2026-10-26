@@ -82,6 +82,18 @@ func main() {
 	if e != nil || !cfg.AIEnabled || cfg.OpenRouterAPIKey == "" {
 		fail("global_ai_or_key_unavailable")
 	}
+	// Product statement extraction uses operator groups, not the retired text seed.
+	if *mode == "check" && cfg.AIModelGroups != "" {
+		if !cfg.StatementAIEnabled {
+			fail("statement_ai_disabled")
+		}
+		result, err := groupedReadiness(ctx, cfg.AIModelGroups, cfg.OpenRouterAPIKey, nil)
+		if err != nil {
+			fail("statement_group_" + err.Error())
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(result)
+		return
+	}
 	seed := assistant.ModelPolicy{Model: "google/gemini-2.5-flash", Provider: "google-vertex/eu", ProviderName: "Google", InputMicrosPerMillion: 300000, OutputMicrosPerMillion: 2500000, VerifiedAt: time.Unix(1, 0).UTC()}
 	if *mode == "check" {
 		if !cfg.StatementAIEnabled || json.Unmarshal([]byte(cfg.StatementAIPolicy), &seed) != nil {
