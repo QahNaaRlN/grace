@@ -36,12 +36,13 @@ export function useStatementMutations(statementId: string) {
       const form = new FormData()
       form.append('file', file)
       form.append('accountId', accountId)
+      form.append('readingMode', 'plain_review')
       const { data, error } = await apiClient.POST(
         file.type.startsWith('image/')
           ? '/api/imports/statements/images'
           : '/api/imports/statements/pdf',
         {
-          body: { file: '', accountId },
+          body: { file: '', accountId, readingMode: 'plain_review' },
           bodySerializer: () => form,
           params: { header: { 'Idempotency-Key': key } },
         },

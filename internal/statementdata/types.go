@@ -1,5 +1,6 @@
-// Package statementdata validates bank statement evidence without AI, SQL or
-// financial writes. A proposal selects source spans; it never supplies money.
+// Package statementdata validates source evidence and owner-reviewed statement
+// readings without AI, SQL or financial writes. Span proposals retain their
+// locator-only contract; plain drafts preserve model values for explicit review.
 package statementdata
 
 const (

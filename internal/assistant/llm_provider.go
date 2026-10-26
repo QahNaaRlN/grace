@@ -63,7 +63,7 @@ func (p ModelPolicy) Valid(now time.Time) bool {
 
 func (p ModelPolicy) ReservationMicros(inputBound, outputBound int) (int64, error) {
 	maxInput, maxOutput := 10000, 2000
-	if p.Selection != nil && p.Selection.Profile == DocumentReading {
+	if p.Selection != nil && documentProfile(p.Selection.Profile) {
 		maxInput, maxOutput = 30000, 16000
 	}
 	if !p.Valid(time.Now()) || inputBound < 1 || inputBound > maxInput || outputBound < 1 || outputBound > maxOutput {
@@ -168,6 +168,9 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 			result.CostMicros = 0
 		}
 	}()
+	if in.Policy.Selection != nil && in.Policy.Selection.Profile == PlainDocumentReading && (p.groups == nil || len(in.Schema) != 0) {
+		return LLMResponse{}, errors.New("provider_request")
+	}
 	if e := p.checkGroupRequest(in); e != nil {
 		return LLMResponse{}, e
 	}
@@ -204,7 +207,7 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	if _, err := p.reservation(in.Policy, in.InputTokenUpperBound, in.MaxOutputTokens); err != nil {
 		return LLMResponse{}, err
 	}
-	if len(in.Messages) == 0 || len(in.Messages) > 12 || !json.Valid(in.Schema) {
+	if len(in.Messages) == 0 || len(in.Messages) > 12 || !json.Valid(in.Schema) && !(in.Policy.Selection != nil && in.Policy.Selection.Profile == PlainDocumentReading && len(in.Schema) == 0) {
 		return LLMResponse{}, errors.New("provider_request")
 	}
 	if p.statementDocument {
@@ -225,6 +228,9 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 	body := map[string]any{"model": in.Policy.Model, "messages": in.Messages, "max_tokens": in.MaxOutputTokens, "stream": false,
 		"provider":        map[string]any{"only": []string{in.Policy.Provider}, "allow_fallbacks": false, "require_parameters": true, "data_collection": "deny", "zdr": true, "max_price": map[string]any{"prompt": microsPrice(in.Policy.InputMicrosPerMillion), "completion": microsPrice(in.Policy.OutputMicrosPerMillion)}},
 		"response_format": map[string]any{"type": "json_schema", "json_schema": map[string]any{"name": "grace_response", "strict": true, "schema": in.Schema}}}
+	if in.Policy.Selection != nil && in.Policy.Selection.Profile == PlainDocumentReading {
+		delete(body, "response_format")
+	}
 	if in.DisableReasoning {
 		body["reasoning"] = map[string]any{"enabled": false}
 	}
@@ -414,6 +420,13 @@ func (p *OpenRouterProvider) Complete(ctx context.Context, in LLMRequest) (resul
 		}
 		diagnostic.Code = reason
 		return billed, &ProviderProtocolError{Reason: reason}
+	}
+	if in.Policy.Selection != nil && in.Policy.Selection.Profile == PlainDocumentReading {
+		if strings.TrimSpace(out.Choices[0].Message.Content) == "" {
+			return billed, &ProviderProtocolError{Reason: "content"}
+		}
+		billed.Content = json.RawMessage(out.Choices[0].Message.Content)
+		return billed, nil
 	}
 	if !json.Valid([]byte(out.Choices[0].Message.Content)) {
 		diagnostic.Code = "content"

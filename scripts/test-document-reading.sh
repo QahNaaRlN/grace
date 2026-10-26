@@ -33,6 +33,14 @@ docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 1
  -e TEST_S56_DOCUMENTS=true -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
  -e TEST_DATABASE_URL=postgres://grace:grace@postgres:5432/grace?sslmode=disable \
  -w /src/internal/statementextract alpine:3.22 /run/statement.test -test.run '^TestS56' -test.v
+# SPEC-0058 uses a separate database: the preceding unknown-bill control intentionally freezes its ledger.
+compose exec -T postgres createdb -U grace plain_documents
+compose run --rm migrate -path=/migrations -database=postgres://grace:grace@postgres:5432/plain_documents?sslmode=disable up
+docker run --rm --network="${COMPOSE_PROJECT_NAME}_default" --read-only --user 10001:10001 --cap-drop=ALL --security-opt=no-new-privileges:true --memory=512m --pids-limit=32 \
+ -v "$work/statement.test:/run/statement.test:ro" -v "$PWD:/src:ro" -v "$volume:/run/grace-pdf:ro" \
+ -e TEST_S56_DOCUMENTS=true -e TEST_PDF_EXTRACTOR_SOCKET=/run/grace-pdf/extractor.sock \
+ -e TEST_DATABASE_URL=postgres://grace:grace@postgres:5432/plain_documents?sslmode=disable \
+ -w /src/internal/statementextract alpine:3.22 /run/statement.test -test.run '^TestS58' -test.v
 # Separate fresh database: unknown-billing controls cannot contaminate another suite.
 compose exec -T postgres createdb -U grace receipt_documents
 compose run --rm migrate -path=/migrations -database=postgres://grace:grace@postgres:5432/receipt_documents?sslmode=disable up

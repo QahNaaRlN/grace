@@ -1953,10 +1953,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/imports/statements/{statementId}/plain-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reviewPlainBankStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        PlainStatementRow: {
+            id: string;
+            raw: {
+                [key: string]: string;
+            };
+            operationDate: components["schemas"]["StatementLocalDate"] | null;
+            bookingDate: components["schemas"]["StatementLocalDate"] | null;
+            transactionAmount: components["schemas"]["StatementMoney"] | null;
+            accountAmount: components["schemas"]["StatementMoney"] | null;
+            description: string | null;
+            cardLast4: string | null;
+            issues: string[];
+        };
+        PlainStatementReading: {
+            /** @constant */
+            version: "statement.plain.0058.v1";
+            rawAnswer: string;
+            /** @enum {string} */
+            parseStatus: "parsed" | "parse_error" | "manual";
+            rows: components["schemas"]["PlainStatementRow"][];
+            header: {
+                [key: string]: string;
+            };
+        };
+        PlainStatementState: {
+            sourceSHA256: string;
+            candidate: components["schemas"]["PlainStatementReading"];
+            original: components["schemas"]["PlainStatementReading"];
+            digest: string;
+            reviewedDigest: string;
+        };
+        PlainStatementReviewInput: {
+            expectedRevision: number;
+            sourceSHA256: string;
+            draftDigest: string;
+            reviewedPages: number[];
+            rolesConfirmed: boolean;
+        };
         StatementDocument: {
             id: string;
             fileName: string;
@@ -2213,9 +2269,10 @@ export interface components {
             /** @enum {string} */
             sourceKind?: "pdf" | "image";
             /** @enum {string} */
-            readingMode?: "native_text" | "image_review";
+            readingMode?: "native_text" | "image_review" | "plain_review";
             pages?: components["schemas"]["DocumentPage"][];
             visual?: components["schemas"]["VisualState"];
+            plain?: components["schemas"]["PlainStatementState"];
         };
         StatementEdit: {
             expectedRevision: number;
@@ -2225,6 +2282,8 @@ export interface components {
             rolesConfirmed: boolean;
             reviewedPages: number[];
             reason: string;
+            /** @enum {string} */
+            readingMode?: "native_text" | "image_review" | "plain_review";
         };
         StatementManualDraft: {
             expectedRevision: number;
@@ -2232,7 +2291,8 @@ export interface components {
             reason: string;
             reading?: components["schemas"]["VisualReading"];
             sourceSHA256?: string;
-        } & (unknown | unknown);
+            plain?: components["schemas"]["PlainStatementReading"];
+        } & (unknown | unknown | unknown);
         StatementDelete: {
             expectedRevision: number;
         };
@@ -4265,7 +4325,7 @@ export interface components {
             provider: string;
             providerName: string;
             /** @enum {string} */
-            profile: "document_reading";
+            profile: "document_reading" | "plain_document_reading";
             groupRevision: string;
             proofSHA256: string;
             maximumMicros: number;
@@ -4762,6 +4822,8 @@ export interface operations {
                     accountId: string;
                     /** Format: binary */
                     file: string;
+                    /** @enum {string} */
+                    readingMode?: "plain_review";
                 };
             };
         };
@@ -9747,6 +9809,8 @@ export interface operations {
                     accountId: string;
                     /** Format: binary */
                     file: string;
+                    /** @enum {string} */
+                    readingMode?: "plain_review";
                 };
             };
         };
@@ -9977,6 +10041,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReceiptReadingPlan"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    reviewPlainBankStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description CSRF token from GET /api/auth/me, required with the exact browser Origin for mutations. */
+                "X-CSRF-Token": components["parameters"]["CSRF"];
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlainStatementReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Owner-scoped result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatement"];
                 };
             };
             404: components["responses"]["NotFound"];

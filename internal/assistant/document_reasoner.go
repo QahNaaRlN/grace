@@ -38,6 +38,9 @@ func (r *DocumentReasoner) CompleteDocument(ctx context.Context, policy statemen
 	if e != nil || maximum != policy.MaximumMicros {
 		return statementdata.VisualReading{}, &statementextract.Billing{GenerationID: "not_sent"}, errors.New("price_unknown")
 	}
+	if p.Selection.Profile == PlainDocumentReading {
+		return statementdata.VisualReading{}, nil, errors.New("plain_reader_required")
+	}
 	request, e := DocumentRequest(p, doc, statementextract.DocumentPrompt, statementdata.VisualSchema(), 16000)
 	if e != nil {
 		return statementdata.VisualReading{}, &statementextract.Billing{GenerationID: "not_sent"}, e
@@ -67,6 +70,9 @@ func (r *DocumentReasoner) PrepareDocument(ctx context.Context, policy statement
 	var p ModelPolicy
 	if r == nil || r.Groups == nil || !policy.Valid() || json.Unmarshal(policy.Snapshot, &p) != nil || !r.Groups.check(p) {
 		return errors.New("policy_changed")
+	}
+	if p.Selection == nil || p.Selection.Profile != DocumentReading {
+		return errors.New("plain_reader_required")
 	}
 	_, e := DocumentRequest(p, doc, statementextract.DocumentPrompt, statementdata.VisualSchema(), 16000)
 	return e

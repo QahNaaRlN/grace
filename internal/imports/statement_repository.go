@@ -19,12 +19,12 @@ import (
 func (r *Repository) SetPDFExtractor(e PDFExtractor) { r.extractor = e }
 func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statement, error) {
 	var s Statement
-	var layout, review, pages, mapping, rendered, visual []byte
-	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,s.mapping_snapshot,s.source_kind,s.reading_mode,s.rendered_pages,s.visual_state,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
+	var layout, review, pages, mapping, rendered, visual, plain []byte
+	query := `SELECT s.id::text,s.document_id::text,s.account_id::text,s.batch_id::text,s.revision,d.filename,d.sha256,s.status,s.retention,s.expires_at,s.deleted_at,s.created_at,s.roles_confirmed,s.reviewed_pages,s.review,s.layout,s.page_count,s.original_size_bytes,s.mapping_snapshot,s.source_kind,s.reading_mode,s.rendered_pages,s.visual_state,s.plain_state,(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published),(SELECT count(*) FROM import_records r WHERE r.batch_id=s.batch_id AND r.published AND r.decision->>'action'='exclude') FROM statement_sources s JOIN documents d ON d.id=s.document_id AND d.owner_id=s.owner_id WHERE s.id=$1`
 	if lock {
 		query += " FOR UPDATE OF s"
 	}
-	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &mapping, &s.SourceKind, &s.ReadingMode, &rendered, &visual, &s.PublishedRows, &s.ExcludedRows)
+	e := tx.QueryRow(ctx, query, id).Scan(&s.ID, &s.DocumentID, &s.AccountID, &s.BatchID, &s.Revision, &s.FileName, &s.SHA256, &s.Status, &s.Retention, &s.ExpiresAt, &s.DeletedAt, &s.CreatedAt, &s.RolesConfirmed, &pages, &review, &layout, &s.PageCount, &s.SizeBytes, &mapping, &s.SourceKind, &s.ReadingMode, &rendered, &visual, &plain, &s.PublishedRows, &s.ExcludedRows)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return s, ErrNotFound
 	}
@@ -54,6 +54,12 @@ func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statem
 			return s, e
 		}
 	}
+	if len(plain) > 0 {
+		if e = json.Unmarshal(plain, &s.Plain); e != nil {
+			return s, e
+		}
+		s.Plain.Digest = s.Plain.CurrentDigest()
+	}
 	s.Pages = s.Rendered.Manifest().Pages
 	if s.Visual != nil {
 		s.Visual.RowDigests = map[string]string{}
@@ -63,7 +69,9 @@ func loadStatement(ctx context.Context, tx pgx.Tx, id string, lock bool) (Statem
 			s.Visual.RowDigests[statementdata.VisualRowID(i)] = s.Visual.RowDigest(i)
 		}
 	}
-	s.DraftMapping = statementdata.MappingFor(s.Layout, s.Review, mapping, s.Revision)
+	if s.ReadingMode != "plain_review" {
+		s.DraftMapping = statementdata.MappingFor(s.Layout, s.Review, mapping, s.Revision)
+	}
 	return s, nil
 }
 func statementAccount(ctx context.Context, tx pgx.Tx, id string) error {
@@ -106,20 +114,27 @@ func (r *Repository) Statement(ctx context.Context, id string) (Statement, error
 	applyStatementFlags(&s)
 	return s, nil
 }
-func (r *Repository) UploadStatement(ctx context.Context, raw []byte, account, name, key string) (Statement, bool, error) {
-	return r.uploadStatementSource(ctx, raw, account, name, key, "pdf")
+func (r *Repository) UploadStatement(ctx context.Context, raw []byte, account, name, key string, mode ...string) (Statement, bool, error) {
+	return r.uploadStatementSource(ctx, raw, account, name, key, "pdf", mode...)
 }
-func (r *Repository) UploadStatementImage(ctx context.Context, raw []byte, account, name, key string) (Statement, bool, error) {
-	return r.uploadStatementSource(ctx, raw, account, name, key, "image")
+func (r *Repository) UploadStatementImage(ctx context.Context, raw []byte, account, name, key string, mode ...string) (Statement, bool, error) {
+	return r.uploadStatementSource(ctx, raw, account, name, key, "image", mode...)
 }
-func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, account, name, key, kind string) (Statement, bool, error) {
+func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, account, name, key, kind string, requested ...string) (Statement, bool, error) {
+	plain := len(requested) == 1 && requested[0] == "plain_review"
+	if len(requested) > 1 || len(requested) == 1 && requested[0] != "" && !plain {
+		return Statement{}, false, fault("invalid_reading_mode", 422)
+	}
 	if len(raw) > statementdata.MaxPDFBytes {
 		return Statement{}, false, fault("pdf_size_limit", 413)
 	}
 	if kind == "pdf" && (len(raw) < 5 || !bytes.HasPrefix(raw, []byte("%PDF-"))) {
 		return Statement{}, false, fault("invalid_pdf", 422)
 	}
-	payload := struct{ SHA256, AccountID string }{hashBytes(raw), account}
+	payload := struct {
+		SHA256, AccountID string
+		Plain             bool `json:"Plain,omitempty"`
+	}{hashBytes(raw), account, plain}
 	// Check replay/dedup before expensive local extraction, then check again under
 	// the common owner writer lock before inserting either source or document.
 	check, e := r.begin(ctx, false)
@@ -161,7 +176,7 @@ func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, acco
 			layout, e = r.extractor.Extract(ctx, raw)
 			if renderer, ok := r.extractor.(interface {
 				Render(context.Context, []byte) (pdfextract.Rendered, error)
-			}); ok && (e != nil && e.Error() == "pdf_text_required" || e == nil && len(layout.Pages) <= 4) {
+			}); ok && (e != nil && e.Error() == "pdf_text_required" || e == nil && len(layout.Pages) <= 5) {
 				rendered, renderErr := renderer.Render(ctx, raw)
 				if renderErr == nil {
 					prepared = rendered.Document
@@ -182,7 +197,13 @@ func (r *Repository) uploadStatementSource(ctx context.Context, raw []byte, acco
 		if e != nil {
 			return Statement{}, false, fault(e.Error(), 422)
 		}
-		if mode == "image_review" {
+		if plain {
+			if prepared.Validate() != nil {
+				return Statement{}, false, fault("document_limit", 422)
+			}
+			mode = "plain_review"
+		}
+		if mode == "image_review" || mode == "plain_review" {
 			if len(layout.Spans) == 0 {
 				layout = statementdata.Document{Extractor: statementdata.ExtractorVersion, Pages: []statementdata.Page{}, Spans: []statementdata.Span{}}
 				for _, p := range prepared.Pages {
@@ -306,6 +327,12 @@ func statementRecord(s Statement, row statementdata.Row) importreview.Record {
 	return importreview.Record{ID: fmt.Sprintf("pdf-%s-%d", s.ID, row.Ordinal), SourceKind: kind, PDF: &importreview.PDFSource{StatementID: s.ID, DocumentID: s.DocumentID, AccountID: s.AccountID, Ordinal: row.Ordinal, Row: row}, Domain: "transaction", Normalized: n, Issues: issues, Raw: map[string]importreview.Cell{}}
 }
 func (r *Repository) ManualStatementDraft(ctx context.Context, id, key string, in StatementManualDraft) (Statement, error) {
+	if in.Plain != nil {
+		if in.Reading != nil || !reflect.DeepEqual(in.Proposal, statementdata.Proposal{}) {
+			return Statement{}, fault("invalid_request", 400)
+		}
+		return r.PlainDraft(ctx, id, key, in)
+	}
 	if in.Reading != nil {
 		if !reflect.DeepEqual(in.Proposal, statementdata.Proposal{}) {
 			return Statement{}, fault("invalid_request", 400)
@@ -351,7 +378,9 @@ func applyStatementFlags(s *Statement) {
 	if s.Review == nil {
 		return
 	}
-	if s.ReadingMode == "image_review" {
+	if s.ReadingMode == "plain_review" {
+		applyPlainFlags(s)
+	} else if s.ReadingMode == "image_review" {
 		applyVisualFlags(s)
 	} else {
 		statementdata.ApplyTurnoverRoleChecks(s.Layout, s.Review)
@@ -374,7 +403,7 @@ func applyStatementFlags(s *Statement) {
 		pages[p] = true
 	}
 	required := s.PageCount
-	if s.ReadingMode == "image_review" && len(pages) == required && required > 0 {
+	if (s.ReadingMode == "image_review" || s.ReadingMode == "plain_review") && len(pages) == required && required > 0 {
 		s.Review.Reconciliation.RowCoverage = statementdata.Check{Status: "owner_reviewed", Reasons: []string{}}
 	}
 	if len(pages) != required || required == 0 {
@@ -516,6 +545,25 @@ func (r *Repository) EditStatement(ctx context.Context, id, key string, in State
 		// Function has a closed JSON patch and explicit owner checks; the ordinary
 		// financial role never receives generic UPDATE access to source evidence.
 		if _, e = tx.Exec(ctx, "SELECT grace_statement_rebind($1,$2)", s.ID, in.AccountID); e != nil {
+			return s, e
+		}
+	}
+	if in.ReadingMode != "" && in.ReadingMode != s.ReadingMode {
+		if in.ReadingMode != "plain_review" && in.ReadingMode != "image_review" && in.ReadingMode != "native_text" {
+			return s, fault("invalid_reading_mode", 422)
+		}
+		if s.PublishedRows > 0 || s.Rendered.Validate() != nil {
+			return s, fault("document_limit", 422)
+		}
+		if _, e = tx.Exec(ctx, "UPDATE statement_sources SET reading_mode=$2,plain_state=NULL,visual_state=NULL,review=NULL,mapping_snapshot=NULL,roles_confirmed=false,reviewed_pages='[]',revision=revision+1 WHERE id=$1", id, in.ReadingMode); e != nil {
+			return s, e
+		}
+		in.RolesConfirmed = false
+		in.ReviewedPages = nil
+	} else if s.ReadingMode == "plain_review" {
+		in.RolesConfirmed = false
+		in.ReviewedPages = nil
+		if _, e = tx.Exec(ctx, "UPDATE statement_sources SET plain_state=plain_state-'reviewedDigest' WHERE id=$1", id); e != nil {
 			return s, e
 		}
 	}

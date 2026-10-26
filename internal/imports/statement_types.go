@@ -12,6 +12,7 @@ type PDFExtractor interface {
 	Extract(context.Context, []byte) (statementdata.Document, error)
 }
 type Statement struct {
+	Plain          *statementdata.PlainState   `json:"plain,omitempty"`
 	SourceKind     string                      `json:"sourceKind"`
 	ReadingMode    string                      `json:"readingMode"`
 	Pages          []documentdata.Page         `json:"pages"`
@@ -40,6 +41,7 @@ type Statement struct {
 	Layout         *statementdata.Document     `json:"layout,omitempty"`
 }
 type StatementManualDraft struct {
+	Plain            *statementdata.PlainReading  `json:"plain,omitempty"`
 	Reading          *statementdata.VisualReading `json:"reading,omitempty"`
 	SourceSHA256     string                       `json:"sourceSHA256,omitempty"`
 	ExpectedRevision int64                        `json:"expectedRevision"`
@@ -47,6 +49,7 @@ type StatementManualDraft struct {
 	Reason           string                       `json:"reason"`
 }
 type StatementEdit struct {
+	ReadingMode      string `json:"readingMode,omitempty"`
 	ExpectedRevision int64  `json:"expectedRevision"`
 	AccountID        string `json:"accountId"`
 	Retention        string `json:"retention"`

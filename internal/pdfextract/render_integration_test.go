@@ -33,7 +33,7 @@ func TestS56RealRenderNativeAndScan(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if out.Document.Validate() != nil || out.Document.SourceSHA256 != documentdata.Hash(raw) || len(out.Document.Pages) < 1 {
+			if out.Document.CheckReadable() != nil || out.Document.SourceSHA256 != documentdata.Hash(raw) || len(out.Document.Pages) < 1 {
 				t.Fatal("invalid source render")
 			}
 			if tc.scan {
@@ -52,7 +52,7 @@ func TestS56RealRenderNativeAndScan(t *testing.T) {
 	}
 }
 
-func TestS56RealRendererRefusesFifthPage(t *testing.T) {
+func TestS56RealRendererRefusesSixthPage(t *testing.T) {
 	socket := os.Getenv("TEST_PDF_EXTRACTOR_SOCKET")
 	if socket == "" {
 		t.Skip("isolated helper required")
@@ -61,8 +61,8 @@ func TestS56RealRendererRefusesFifthPage(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	objects := []string{`<< /Type /Catalog /Pages 2 0 R >>`, `<< /Type /Pages /Count 5 /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R] >>`}
-	for i := 0; i < 5; i++ {
+	objects := []string{`<< /Type /Catalog /Pages 2 0 R >>`, `<< /Type /Pages /Count 6 /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R 8 0 R] >>`}
+	for i := 0; i < 6; i++ {
 		objects = append(objects, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 800] >>`)
 	}
 	var pdf bytes.Buffer
@@ -79,6 +79,6 @@ func TestS56RealRendererRefusesFifthPage(t *testing.T) {
 	}
 	fmt.Fprintf(&pdf, "trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n", len(offsets), xref)
 	if _, e = client.Render(context.Background(), pdf.Bytes()); e == nil || e.Error() != "document_limit" {
-		t.Fatal("fifth page was rendered/truncated", e)
+		t.Fatal("sixth page was rendered/truncated", e)
 	}
 }

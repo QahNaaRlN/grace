@@ -16,6 +16,15 @@ import (
 
 const TextReasoning = "text_reasoning"
 const DocumentReading = "document_reading"
+const PlainDocumentReading = "plain_document_reading"
+
+func documentProfile(p string) bool { return p == DocumentReading || p == PlainDocumentReading }
+func profileImageLimit(p string) int {
+	if p == PlainDocumentReading {
+		return 5
+	}
+	return 4
+}
 
 // RequestFeeRouterCeilingOnly is an explicit experiment-only evidence mode.
 // An omitted request rate remains unknown; the positive cap is reserved and sent.
@@ -72,7 +81,7 @@ func newModelGroups(raw, key string, client HTTPDoer, experiment bool) (*ModelGr
 	}
 	seen := map[string]bool{}
 	for _, g := range groups {
-		if seen[g.Purpose] || g.Revision == "" || len(g.Revision) > 100 || len(g.Members) < 1 || len(g.Members) > 8 || (g.Purpose != "analysis" && g.Purpose != "receipt" && g.Purpose != "statement") || (g.Profile != TextReasoning && g.Profile != DocumentReading) || (g.Purpose != "analysis" && g.Profile != DocumentReading) {
+		if seen[g.Purpose] || g.Revision == "" || len(g.Revision) > 100 || len(g.Members) < 1 || len(g.Members) > 8 || (g.Purpose != "analysis" && g.Purpose != "receipt" && g.Purpose != "statement") || (g.Profile != TextReasoning && !documentProfile(g.Profile)) || (g.Purpose != "analysis" && !documentProfile(g.Profile)) || (g.Profile == PlainDocumentReading && g.Purpose != "statement") {
 			return nil, errors.New("no_eligible_model")
 		}
 		seen[g.Purpose] = true
@@ -81,7 +90,7 @@ func newModelGroups(raw, key string, client HTTPDoer, experiment bool) (*ModelGr
 			p := m.Policy
 			p.VerifiedAt = time.Now()
 			id := p.Model + "/" + p.Provider
-			if !m.validRequestFeeEvidence(experiment) || ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || (!experiment && strings.HasPrefix(strings.ToLower(m.Qualification), "experiment_only:")) || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (g.Profile == DocumentReading && (!p.Vision || m.MaxImages < 1 || m.MaxImages > 4 || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
+			if !m.validRequestFeeEvidence(experiment) || ids[id] || !concreteModelID(p.Model) || !concreteModelID(m.Canonical) || !p.Valid(time.Now()) || strings.Count(m.Canonical, "/") != 1 || strings.ContainsAny(m.Canonical, ": ?#\r\n") || m.Qualification == "" || (!experiment && strings.HasPrefix(strings.ToLower(m.Qualification), "experiment_only:")) || m.QualifiedUntil.IsZero() || (m.Region != "" && !strings.HasSuffix(p.Provider, "/"+m.Region)) || p.Selection != nil || (documentProfile(g.Profile) && (!p.Vision || m.MaxImages < 1 || m.MaxImages > profileImageLimit(g.Profile) || m.MaxImageSide < 16 || m.MaxImageSide > 2048)) {
 				return nil, errors.New("capability_unverified")
 			}
 			ids[id] = true
@@ -129,7 +138,7 @@ func (g *ModelGroups) Resolve(ctx context.Context, purpose string, images int) (
 			break
 		}
 	}
-	if group == nil || images < 0 || images > 4 {
+	if group == nil || images < 0 || images > profileImageLimit(group.Profile) {
 		return ModelPolicy{}, errors.New("no_eligible_model")
 	}
 	policies := g.checked[purpose]
@@ -253,6 +262,12 @@ func requestPriceFits(raw json.RawMessage, m GroupMembership, experiment bool) b
 	return nonnegativePriceWithin(price, m.Policy.RequestFeeMicros, false)
 }
 
+func parametersFitProfile(parameters []string, profile string) bool {
+	if profile == PlainDocumentReading {
+		return slices.Contains(parameters, "max_tokens")
+	}
+	return parametersFit(parameters)
+}
 func parametersFit(parameters []string) bool {
 	return slices.Contains(parameters, "structured_outputs") && slices.Contains(parameters, "response_format") && slices.Contains(parameters, "max_tokens")
 }
@@ -303,7 +318,7 @@ func (g *ModelGroups) refresh(ctx context.Context, group ModelGroup, now time.Ti
 		p := m.Policy
 		matches := 0
 		for _, model := range catalog.Data {
-			if model.ID == p.Model && model.Canonical == m.Canonical && slices.Contains(model.Architecture.Input, "text") && slices.Contains(model.Architecture.Output, "text") && parametersFit(model.Parameters) && (group.Profile != DocumentReading || slices.Contains(model.Architecture.Input, "image")) {
+			if model.ID == p.Model && model.Canonical == m.Canonical && slices.Contains(model.Architecture.Input, "text") && slices.Contains(model.Architecture.Output, "text") && parametersFitProfile(model.Parameters, group.Profile) && (!documentProfile(group.Profile) || slices.Contains(model.Architecture.Input, "image")) {
 				matches++
 			}
 		}
@@ -330,12 +345,12 @@ func (g *ModelGroups) refresh(ctx context.Context, group ModelGroup, now time.Ti
 			continue
 		}
 		input, output := 10000, 2000
-		if group.Profile == DocumentReading {
+		if documentProfile(group.Profile) {
 			input, output = 30000, 16000
 		}
 		matches = 0
 		for _, ep := range endpoints.Data.Endpoints {
-			if (ep.Model != p.Model && ep.Model != m.Canonical) || ep.Tag != p.Provider || ep.Name != p.DisplayProvider() || ep.Status == nil || *ep.Status != 0 || ep.Context < input+output || ep.Output < output || (ep.Input != nil && *ep.Input < input) || !parametersFit(ep.Parameters) || !nonnegativePriceWithin(ep.Pricing.Prompt, p.InputMicrosPerMillion, true) || !nonnegativePriceWithin(ep.Pricing.Completion, p.OutputMicrosPerMillion, true) {
+			if (ep.Model != p.Model && ep.Model != m.Canonical) || ep.Tag != p.Provider || ep.Name != p.DisplayProvider() || ep.Status == nil || *ep.Status != 0 || ep.Context < input+output || ep.Output < output || (ep.Input != nil && *ep.Input < input) || !parametersFitProfile(ep.Parameters, group.Profile) || !nonnegativePriceWithin(ep.Pricing.Prompt, p.InputMicrosPerMillion, true) || !nonnegativePriceWithin(ep.Pricing.Completion, p.OutputMicrosPerMillion, true) {
 				continue
 			}
 			// Only an explicitly authorized experiment can rely on a positive

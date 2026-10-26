@@ -72,12 +72,12 @@ func TestDocumentRejectsPageTruncationAndTampering(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	for len(doc.Pages) < 5 {
+	for len(doc.Pages) < 6 {
 		p := doc.Pages[0]
 		p.Number = len(doc.Pages) + 1
 		doc.Pages = append(doc.Pages, p)
 	}
 	if doc.Validate() == nil {
-		t.Fatal("5-page document accepted")
+		t.Fatal("6-page document accepted")
 	}
 }

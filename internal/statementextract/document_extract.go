@@ -41,10 +41,11 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 	if source.Rendered.Validate() != nil {
 		return out, fault("document_limit", 422)
 	}
-	docPolicy, e := s.document.CurrentDocumentPolicy(ctx, len(source.Rendered.Pages))
+	plain := source.ReadingMode == "plain_review"
+	docPolicy, e := s.readingPolicy(ctx, len(source.Rendered.Pages), plain)
 	policy := docPolicy.Policy()
 	if e == nil {
-		e = s.document.PrepareDocument(ctx, docPolicy, source.Rendered)
+		e = s.prepareReading(ctx, docPolicy, source.Rendered, plain)
 	}
 	if e != nil {
 		return out, e
@@ -124,6 +125,7 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 	defer close(watchDone)
 	go s.watchSource(attemptCtx, cancel, watchDone, id, in.ExpectedRevision)
 	var reading statementdata.VisualReading
+	var plainReading statementdata.PlainReading
 	actual := int64(0)
 	unknown := false
 	code := ""
@@ -133,9 +135,16 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 			break
 		}
 		callCtx, callCancel := context.WithTimeout(attemptCtx, 180*time.Second)
-		resultReading, billing, callErr := s.document.CompleteDocument(callCtx, docPolicy, source.Rendered)
+		var resultReading statementdata.VisualReading
+		var billing *Billing
+		var callErr error
+		if plain {
+			plainReading, billing, callErr = s.document.(PlainReasoner).CompletePlain(callCtx, docPolicy, source.Rendered)
+		} else {
+			resultReading, billing, callErr = s.document.CompleteDocument(callCtx, docPolicy, source.Rendered)
+		}
 		callCancel()
-		if callErr == nil {
+		if callErr == nil && !plain {
 			callErr = resultReading.Validate(source.PageCount)
 		}
 		if billing == nil || billing.GenerationID == "" || len(billing.GenerationID) > 200 || billing.CostMicros < 0 || billing.CostMicros > docPolicy.MaximumMicros || billing.InputTokens < 0 || billing.InputTokens > 30000 || billing.OutputTokens < 0 || billing.OutputTokens > 16000 {
@@ -158,7 +167,7 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 		reading = resultReading
 	}
 	var proposal statementdata.Proposal
-	if code == "" {
+	if code == "" && !plain {
 		if source.ReadingMode != "image_review" {
 			if source.Layout == nil {
 				e = fault("statement_original_gone", 410)
@@ -212,7 +221,9 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 				if e != nil {
 					return out, e
 				}
-				if source.ReadingMode == "image_review" {
+				if plain {
+					_, e = s.imports.MaterializePlainInTx(persist, nested, id, in.ExpectedRevision, plainReading, "model", "Owner authorized plain reading", out.ID)
+				} else if source.ReadingMode == "image_review" {
 					_, e = s.imports.MaterializeVisualInTx(persist, nested, id, in.ExpectedRevision, reading, "model", "Owner-authorized image reading", out.ID)
 				} else {
 					_, e = s.imports.MaterializeStatementInTx(persist, nested, id, in.ExpectedRevision, proposal, "model", "Owner-authorized statement extraction", out.ID)
@@ -224,6 +235,10 @@ func (s *Service) extractDocument(ctx context.Context, id, key string, in Extrac
 					return out, e
 				} else {
 					status = "completed"
+					if plain && plainReading.ParseStatus == "parse_error" {
+						status = "failed"
+						code = "parse_error"
+					}
 				}
 			}
 		}
