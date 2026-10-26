@@ -104,13 +104,13 @@ func normalizeAndValidate(request *createRequest) (int64, time.Time, bool) {
 		item := &request.Items[index]
 		item.Name = strings.TrimSpace(item.Name)
 		if item.Name == "" || len(item.Name) > 300 || item.QuantityMilli <= 0 ||
-			item.UnitPriceMinor <= 0 || item.LineTotalMinor <= 0 ||
+			item.UnitPriceMinor < 0 || item.LineTotalMinor < 0 ||
 			total > math.MaxInt64-item.LineTotalMinor {
 			return 0, time.Time{}, false
 		}
 		total += item.LineTotalMinor
 	}
-	return total, issuedAt, true
+	return total, issuedAt, total > 0
 }
 
 func hashRequest(request createRequest) string {

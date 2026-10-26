@@ -95,7 +95,8 @@ statement_compose exec -T postgres createdb -U grace statement_restore
 statement_compose exec -T postgres psql -U grace -d statement_restore -v ON_ERROR_STOP=1 < /tmp/grace-statement-restore-$$.sql >/dev/null
 TEST_DATABASE_URL="postgres://grace:grace@localhost:${postgres_port}/statement_restore?sslmode=disable" \
  TEST_STATEMENT_RESTORE=true go test -tags=integration ./internal/imports -run TestStatementRestoredEvidence -count=1 -v
-if statement_compose run --rm migrate -path=/migrations -database="$database_url" down 1; then
+# Pin the statement retention gate; later unrelated migrations may roll back safely.
+if statement_compose run --rm migrate -path=/migrations -database="$database_url" goto 30; then
  echo 'Statement evidence/tombstones were discarded by downgrade' >&2; exit 1
 fi
 echo 'SPEC-0055 bank statement database checks passed'

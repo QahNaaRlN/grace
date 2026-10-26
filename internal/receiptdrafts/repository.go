@@ -56,6 +56,7 @@ func load(ctx context.Context, db interface {
 			return d, errors.New("invalid_draft")
 		}
 	}
+	projectExtractedCandidate(&d)
 	d.Warnings = []string{}
 	if _, err := Validate(d.Fields); err != nil {
 		d.Warnings = append(d.Warnings, err.Error())
@@ -208,7 +209,7 @@ func (r *Repository) FinishExtraction(ctx context.Context, id, key string, out *
 	history := d.Extractions
 	if out != nil {
 		status = "extracted"
-		fields = out.Fields
+		fields = normalizeExtractedFields(out.Fields)
 		history = append(history, *out)
 	}
 	if len(history) > 10 {

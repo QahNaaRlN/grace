@@ -82,11 +82,11 @@ func Validate(f Fields) (Validated, error) {
 			return Validated{}, errors.New("invalid_quantity")
 		}
 		unit, err := ParseScaled(*i.UnitPrice, 2)
-		if err != nil || unit <= 0 {
+		if err != nil || unit < 0 {
 			return Validated{}, errors.New("invalid_amount")
 		}
 		line, err := ParseScaled(*i.LineTotal, 2)
-		if err != nil || line <= 0 {
+		if err != nil || line < 0 {
 			return Validated{}, errors.New("invalid_amount")
 		}
 		discount := int64(0)

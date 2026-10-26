@@ -8,7 +8,7 @@ import (
 )
 
 func ValidateCommand(c Command) error {
-	if c.PurchaseEventID == "" || strings.TrimSpace(c.Seller) == "" || len(c.Seller) > 200 || len(c.FiscalDocumentNumber) > 160 || c.IdempotencyKey == "" || len(c.IdempotencyKey) > 160 || c.RequestHash == "" || len(c.Items) < 1 || len(c.Items) > 200 {
+	if c.TotalMinor <= 0 || c.PurchaseEventID == "" || strings.TrimSpace(c.Seller) == "" || len(c.Seller) > 200 || len(c.FiscalDocumentNumber) > 160 || c.IdempotencyKey == "" || len(c.IdempotencyKey) > 160 || c.RequestHash == "" || len(c.Items) < 1 || len(c.Items) > 200 {
 		return ErrInvalid
 	}
 	if c.IssuedDate != "" {
@@ -20,7 +20,7 @@ func ValidateCommand(c Command) error {
 	}
 	var total int64
 	for _, i := range c.Items {
-		if strings.TrimSpace(i.Name) == "" || len(i.Name) > 300 || i.QuantityMilli <= 0 || i.UnitPriceMinor <= 0 || i.LineTotalMinor <= 0 || total > math.MaxInt64-i.LineTotalMinor {
+		if strings.TrimSpace(i.Name) == "" || len(i.Name) > 300 || i.QuantityMilli <= 0 || i.UnitPriceMinor < 0 || i.LineTotalMinor < 0 || total > math.MaxInt64-i.LineTotalMinor {
 			return ErrInvalid
 		}
 		total += i.LineTotalMinor

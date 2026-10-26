@@ -59,6 +59,69 @@ beforeEach(() => {
   }))
 })
 describe('receipt photo confirmation boundary', () => {
+  it('keeps original recognition text separate from local and saved edits', async () => {
+    const originalText = 'SYNTHETIC SHOP\n07:08:09\nComplimentary 2 x 0.00 = 0.00'
+    const extractions = [
+      {
+        fields: { ...fields, issuedAt: '07:08:09' },
+        sourceText: originalText,
+        model: 'fixture',
+        provider: 'fixture',
+        costMicros: '100',
+      },
+    ]
+    mocked.POST.mockResolvedValueOnce({ data: { ...draft, status: 'extracted', extractions } })
+    mocked.PATCH.mockResolvedValue({
+      data: {
+        ...draft,
+        revision: 2,
+        status: 'reviewed',
+        fields: { ...fields, seller: 'Owner edit' },
+        extractions,
+      },
+    })
+    mocked.POST.mockResolvedValue({
+      data: {
+        id: 'preview',
+        hash: 'hash',
+        revision: 2,
+        action: 'create',
+        amountMinor: '18000',
+        accountId: '',
+        candidates: [],
+        warnings: [],
+      },
+    })
+    render(<ReceiptPhoto />)
+    await userEvent.upload(
+      await screen.findByLabelText('Фото или PDF чека'),
+      new File(['synthetic'], 'receipt.jpg', { type: 'image/jpeg' }),
+    )
+    const summary = await screen.findByText('Исходный текст распознавания')
+    await userEvent.click(summary)
+    const original = screen.getByText(
+      (_, node) => node?.tagName === 'P' && node.textContent === originalText,
+    )
+    expect(screen.getByLabelText('Дата чека')).toHaveValue('2026-09-12')
+    expect(screen.queryByText(/время неизвестно/)).not.toBeInTheDocument()
+    await userEvent.clear(screen.getByLabelText('Магазин'))
+    await userEvent.type(screen.getByLabelText('Магазин'), 'Owner edit')
+    expect(original.textContent).toBe(originalText)
+    await userEvent.click(screen.getByRole('button', { name: 'Проверить и показать результат' }))
+    await waitFor(() => expect(mocked.PATCH).toHaveBeenCalledOnce())
+    await screen.findByRole('button', { name: 'Подтвердить расход' })
+    expect(
+      screen.getByText((_, node) => node?.tagName === 'P' && node.textContent === originalText)
+        .textContent,
+    ).toBe(originalText)
+    expect(mocked.PATCH.mock.calls[0][1].body.fields.seller).toBe('Owner edit')
+    expect(
+      mocked.POST.mock.calls.some(
+        ([path]) => path.includes('/extract') || path.includes('/confirmations'),
+      ),
+    ).toBe(false)
+  })
+
   it('does not turn a foreign or unknown currency into RUB when the amount is edited', async () => {
     mocked.POST.mockResolvedValue({ data: { ...draft, fields: { ...fields, currency: 'USD' } } })
     render(<ReceiptPhoto />)

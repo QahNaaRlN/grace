@@ -2876,6 +2876,7 @@ export interface components {
             package: string | null;
             broadGroup: string | null;
         };
+        /** @description Editable candidate. AI local HH:MM or HH:MM:SS with a valid issuedDate becomes date-only (issuedAt null); no timezone is inferred. Original extraction fields remain unchanged. Manual edits are not normalized. */
         ReceiptDraftFields: {
             seller: string | null;
             issuedAt: string | null;
@@ -2890,6 +2891,7 @@ export interface components {
             candidateReason: string;
             items: components["schemas"]["ReceiptDraftItem"][];
         };
+        /** @description Immutable original provider fields and source text, separate from the editable draft candidate. */
         ReceiptExtraction: {
             fields: components["schemas"]["ReceiptDraftFields"];
             sourceText: string;

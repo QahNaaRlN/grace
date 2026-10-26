@@ -120,6 +120,7 @@ export function ReceiptPhoto() {
     ) : (
       <LoadingSkeleton label="Проверяем распознавание чеков…" />
     )
+  const sourceText = draft?.extractions.at(-1)?.sourceText
   const editable =
     draft && !['confirmed', 'cancelled', 'expired', 'extracting'].includes(draft.status)
   return (
@@ -208,6 +209,14 @@ export function ReceiptPhoto() {
             />
           )}
         </div>
+        {sourceText && (
+          <details className="rounded-lg border p-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Исходный текст распознавания
+            </summary>
+            <p className="mt-3 whitespace-pre-wrap break-words text-sm">{sourceText}</p>
+          </details>
+        )}
         {preview && (
           <div className="space-y-3 rounded-lg border p-4">
             <p className="font-medium">

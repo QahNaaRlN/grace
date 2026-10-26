@@ -6022,6 +6022,7 @@ components:
         package: { type: [string, "null"] }
         broadGroup: { type: [string, "null"] }
     ReceiptDraftFields:
+      description: Editable candidate. AI local HH:MM or HH:MM:SS with a valid issuedDate becomes date-only (issuedAt null); no timezone is inferred. Original extraction fields remain unchanged. Manual edits are not normalized.
       type: object
       additionalProperties: false
       required: [seller, issuedAt, issuedDate, currency, total, fiscalDocumentNumber, categoryId, accountId, action, existingEventId, candidateReason, items]
@@ -6039,6 +6040,7 @@ components:
         candidateReason: { type: string }
         items: { type: array, items: { $ref: '#/components/schemas/ReceiptDraftItem' } }
     ReceiptExtraction:
+      description: Immutable original provider fields and source text, separate from the editable draft candidate.
       type: object
       additionalProperties: false
       required: [fields, sourceText, model, provider, costMicros]
@@ -7590,8 +7592,8 @@ components:
         position: { type: integer, minimum: 1 }
         name: { type: string }
         quantityMilli: { type: integer, format: int64, minimum: 1 }
-        unitPriceMinor: { type: integer, format: int64, minimum: 1 }
-        lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        unitPriceMinor: { type: integer, format: int64, minimum: 0 }
+        lineTotalMinor: { type: integer, format: int64, minimum: 0 }
         brand: { type: [string, "null"], maxLength: 300 }
         package: { type: [string, "null"], maxLength: 300 }
         broadGroup: { type: [string, "null"], maxLength: 300 }
@@ -7621,8 +7623,8 @@ components:
       properties:
         name: { type: string, minLength: 1, maxLength: 300 }
         quantityMilli: { type: integer, format: int64, minimum: 1 }
-        unitPriceMinor: { type: integer, format: int64, minimum: 1 }
-        lineTotalMinor: { type: integer, format: int64, minimum: 1 }
+        unitPriceMinor: { type: integer, format: int64, minimum: 0 }
+        lineTotalMinor: { type: integer, format: int64, minimum: 0 }
         brand: { type: [string, "null"], maxLength: 300 }
         package: { type: [string, "null"], maxLength: 300 }
         broadGroup: { type: [string, "null"], maxLength: 300 }
