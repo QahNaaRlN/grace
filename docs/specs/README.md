@@ -1,6 +1,6 @@
 Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
-[SPEC-0060 — текущий интерфейс Grace в Figma](0060-current-interface-figma.md): **draft / not_started**. Новый Design-файл «Grace — текущий интерфейс» для комментариев: все 15 routes, формы/состояния, mobile/desktop и light/dark; editable layers, synthetic data, без редизайна и production действий. Ожидает принятия; Figma-файл ещё не создан.
+[SPEC-0060 — текущий интерфейс Grace в Figma](0060-current-interface-figma.md): **accepted / not_started**. Новый Design-файл «Grace — текущий интерфейс» для комментариев: все 15 routes, формы/состояния, mobile/desktop и light/dark; editable layers, synthetic data, без редизайна и production действий. Принята владельцем 2026-10-26 («приступить»); Figma-файл ещё не создан.
 
 [SPEC-0059 — реальный чек](0059-real-receipt-photo.md): **accepted / initial grant CONSUMED1/1**, actual$0.003055 settled. [R](0059-receipt-normalization-candidate.md) — **accepted / integrated PR145 / deployed da621d9 / verified**: saved response candidate80/80, original79/80 retained, free items supported, new providerPOST0 and financial deltas0. Same receipt route qualified until2026-11-02 22:55 Asia/Yekaterinburg, separate consent/confirmation; no automatic renewal. [R evidence](0059-normalization-evidence.md).
 

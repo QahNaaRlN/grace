@@ -1,10 +1,10 @@
 # SPEC-0060: текущий интерфейс Grace в Figma для комментариев
 
-- Status: **draft**
+- Status: **accepted**
 - Date: 2026-10-26
 - Author: Codex
 - Acceptance owner: владелец Grace
-- Acceptance record: отсутствует; требуется принятие этой спецификации
+- Acceptance record: 2026-10-26 — владелец ответил «приступить» после передачи SPEC-0060; принятие и исполнение разрешены.
 - Implementation status: **not_started**
 - Specification branch: `codex/current-design-figma-spec`
 - Implementation branch / commit: отсутствуют
@@ -302,8 +302,7 @@ Coverage не хранит секреты или реальные capture payloa
 ## Открытые решения и следующий шаг
 
 Назначение нового файла подтверждено. Mobile/desktop, обе темы и synthetic
-данные предложены этим draft как часть полного переноса. Спецификация ожидает
-принятия владельцем; реализация не начата. После принятия — интеграция accepted
+данные предложены этим draft как часть полного переноса. Спецификация принята владельцем; реализация ещё не начата. Далее — интеграция accepted
 контракта, отдельный implementation worktree и перенос с coverage по A1–A8.
 Редизайн и разбор замечаний владельца — следующая отдельная спецификация.
 
