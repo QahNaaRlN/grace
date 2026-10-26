@@ -133,6 +133,12 @@ func loadPreview(ctx context.Context, tx pgx.Tx, id, statement string) (Preview,
 	if e = json.Unmarshal(encoded, &out.Plan); e != nil {
 		return out, e
 	}
+	if out.Plan.Policy.Document != nil && out.Plan.Policy.Document.Profile == "plain_document_reading" {
+		out.Plan.Policy.Document.Snapshot, e = canonicalPlainSnapshot(out.Plan.Policy.Document.Snapshot)
+		if e != nil {
+			return out, fault("preview_changed", 409)
+		}
+	}
 	if Hash(out.Plan) != out.Hash || !currentPlanContract(out.Plan) {
 		return out, fault("preview_changed", 409)
 	}
