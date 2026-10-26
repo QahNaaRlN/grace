@@ -6,7 +6,7 @@
 - Acceptance owner: владелец Grace
 - Acceptance record: 2026-10-26, прямое поручение владельца «Приступить к реализации этой спеки»
 - Implementation branch: `codex/real-document-import`
-- Implementation commit: `83b0753`, [AC/evidence](0058-evidence.md); offline verified, live/release pending
+- Implementation commit: `0dad84f`, [AC/evidence](0058-evidence.md); offline verified, live/release pending
 - Spec branch: `codex/real-document-import-spec`
 
 ## Проблема и пользовательский результат

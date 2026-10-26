@@ -3,8 +3,8 @@
 Принятый контракт: [SPEC-0058](0058-real-document-import.md).
 Принятие владельцем «Приступить к реализации этой спеки» зафиксировано
 2026-10-26 в `cb4f100` до production-кода и интегрировано в локальный main.
-Implementation source: `83b075354ead90e2aa96c620440fd2d13d9b0ec3` (основной срез `e52f3cb`,
-дополнен проверенной совместимостью pre-0058 upload replay),
+Implementation source: `0dad84f9347ec9b1ae7864c36d77463db8b108a5` (основной срез `e52f3cb`,
+дополнен проверенной совместимостью pre-0058 upload replay и привязкой raw reply к текущей попытке),
 ветка `codex/real-document-import`.
 
 Состояние: **offline implementation verified / ready for review**.
@@ -16,7 +16,7 @@ main, production configuration/deployment и владелец-приёмщик �
 ## Что реализовано
 
 Отдельные `plain_document_reading` и `plain_review`: пять изображений без native
-text/эталона/schema, исходный ответ отдельно от draft, серверный parser signed
+text/эталона/schema, исходный ответ текущей попытки отдельно от draft, серверный parser signed
 minor units и дат/времени, редактирование/reload, единая сверка документа с
 source/draft digest, существующий batch writer с preview/confirmation.
 OpenAPI и сгенерированные TypeScript-типы обновлены. Новых финансовых writers нет.
@@ -31,7 +31,7 @@ schema старых режимов сохраняются. Миграция 31 a
 | A1: вход | VERIFIED offline | `go test ./internal/documentdata`; `TestS56RealRenderNativeAndScan`, `TestS56RealRendererRefusesSixthPage`, `TestS58FivePageProductAttempt` через networkless helper. Пять страниц настоящего PDF прошли Web upload и доступны в browser; просмотрены 1–5. Полностью белый input/hash tamper отвергаются до POST |
 | A2: actual wire | VERIFIED offline, provider fake | `go test ./internal/assistant -run TestPlainProductWireFivePagesWithoutEtalonOrSchema`: production constructor/DocumentReasoner, пять изображений, один POST/3 metadata GET, schema/native text/эталон/tools отсутствуют; нет structured-output requirements для plain, старый профиль требует их и максимум четыре изображения. SQL attempt/reserve/replay — `TestS58FivePageProductAttempt` |
 | A3: parser | VERIFIED offline | `go test ./internal/statementdata -run TestPlain`; private saved-answer replay: 96 строк/768 checks PASS, итоги согласованы. Сверка — с независимой локальной расшифровкой текстовых колонок реального PDF; статус эталона остаётся draft. Негативы: переставленные колонки, обрезанная/лишняя строка, pipe, потеря времени без восстановления часов, неоднозначные суммы/валюты, forged typed values |
-| A4: draft/UI | VERIFIED offline/browser | `StatementPlainDraft.test.tsx`, `StatementAI.test.tsx`: общий review, page viewing, stale edit, escaped raw text. В локальном Web реальный файл дал пять страниц; сохранённый ответ воспроизведён через **manual-drafts**, 96 строк показаны, правка пережила reload, единая сверка сохранена. Это replay, не новая product inference |
+| A4: draft/UI | VERIFIED offline/browser | `StatementPlainDraft.test.tsx`, `StatementAI.test.tsx`: общий review, page viewing, stale edit, escaped raw text. В локальном Web реальный файл дал пять страниц; сохранённый ответ воспроизведён через **manual-drafts**, 96 строк показаны, правка пережила reload, единая сверка сохранена. SQL дополнительно подтверждает: manual edit не подменяет raw answer, а следующая явно согласованная попытка показывает свой ответ вместо старого. Это replay, не новая product inference |
 | A5: финансовая запись | VERIFIED SQL/browser | `TestStatementPlainReviewConfirmAndInvalidation`: unreviewed/forged digest/incomplete pages/stale preview отвергаются, правка отменяет review, confirm replay не дублирует Posting, raw state исчезает при retention. В браузере public fixture прошёл review → решение purchase → preview → confirm → reload. В отдельной QA базе events=1/postings=1/publishedImportRows=1/aiUsage=0; реальные операции владельца не опубликованы |
 | A6: один новый product call на реальном файле | **PENDING LIVE AUTHORIZATION** | Browser проверил загрузку/редактирование/review реального PDF с сохранённым ответом, а writer — на публичном synthetic документе. Новый платный вызов через продукт и независимое принятие эталона владельцем не выполнялись |
 | A7: форматы | PARTIAL / live quality UNVERIFIED | Локальные renderer/normalizer/fake-provider контракты для PDF/photo/scan проходят. Реальные photo/scan quality examples по новому plain path отсутствуют; успех одного native PDF на них не переносится |
