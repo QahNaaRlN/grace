@@ -1,6 +1,6 @@
 Актуализация: **2026-10-26**, Asia/Yekaterinburg.
 
-[SPEC-0059 — реальный чек](0059-real-receipt-photo.md): **accepted / not_started**. Владелец принял ограниченное исправление receipt readiness, CI/merge/deploy и один production-прогон предоставленного фото через OpenRouter/Google EU; ≤1POST/≤$0.04, финансовых записей0. Качество до вызова UNVERIFIED; старые серии не возобновляются.
+[SPEC-0059 — реальный чек](0059-real-receipt-photo.md): **accepted / verified locally, integration/deploy/live pending**. [Offline evidence](0059-evidence.md). Владелец принял ограниченное исправление receipt readiness, CI/merge/deploy и один production-прогон предоставленного фото через OpenRouter/Google EU; ≤1POST/≤$0.04, финансовых записей0. Качество до вызова UNVERIFIED; старые серии не возобновляются.
 
 Текущая [SPEC-0058 — реальная выписка](0058-real-document-import.md): **accepted / integrated PR135,137–139 / deployed `db1d63d`**. Принятый [P](0058-production-price-ceiling-candidate.md) выполнен: один новый paid product call через production UI,96 строк, raw767/768, header6/6; одна проверенная правка дефиса → candidate768/768, сверка/reload PASS. Actual$0.013741 settled, financial writes0, grant CONSUMED1/1. [Итог/CI/deploy evidence](0058-production-evidence.md). Photo/scan live quality и независимое owner approval эталона остаются UNVERIFIED; это не PASS закрытой SPEC-0056 серии. Отдельный research [PR134](https://github.com/QahNaaRlN/grace/pull/134) — прежний результат, не новый product run.
 
