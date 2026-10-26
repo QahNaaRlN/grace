@@ -1,5 +1,9 @@
 # SPEC-0058 P: production verification
 
+Текущее состояние: **deployed / product PDF flow verified with one manual correction**.
+Release `db1d63ddc664cd11626ec71a9bf843aba55ab0c5`, [Deploy40311400541](https://github.com/QahNaaRlN/grace/actions/runs/40311400541).
+Один разрешённый paid provider POST выполнен, grant **CONSUMED 1/1**. Raw OCR767/768, все даты/время/суммы/валюты/карты верны; одна пунктуационная правка через UI дала candidate768/768. Это не заявление о безошибочном OCR или photo readiness.
+
 Принятый контракт: [SPEC-0058 P](0058-production-price-ceiling-candidate.md), acceptance `d89199b`, интеграция PR136 `d1c4adb` до изменения production code. Владелец отменил первоначальный отказ и явно выбрал принятие P/продолжение. Основная реализация SPEC-0058 интегрирована PR135 `c09027c`; rollout и один новый product call отдельно разрешены владельцем.
 
 ## P: исполнение критериев
@@ -32,7 +36,7 @@ No paid product call yet. Deploy retry follows exact repaired commit's CI/Delive
 
 Readiness repair PR138 merged `b59ceb6`; exact main CI40305434447/all5 и Delivery40307005484/all4 PASS. Deploy40307175906 SUCCESS: API/Web/PDF-helper exact `b59ceb6`, healthy, grouped readiness/public auth smoke PASS. Локальный post-merge make test/diff-check PASS.
 
-Через production browser в действующей owner session загружен предоставленный пятистраничный PDF на соответствующий счёт. Все страницы визуально содержат текст. Product preview выбрал ту же модель/Google Vertex EU, 1 call/$0.0357 maximum, images-only. После просмотра всех страниц и согласия обычный UI получил отказ: source revision1, preview1, consent0, attempts0, calls0, usage0 у нового источника; глобальный usageCount27 и financial events153/postings162 не изменились. Это NOT_SENT, не model quality REJECT и не потраченное разрешение на provider POST.
+Через production browser в действующей owner session загружен предоставленный пятистраничный PDF на соответствующий счёт. Все страницы визуально содержат текст. Product preview выбрал ту же модель/Google Vertex EU, 1 call/$0.0357 maximum, images-only. После просмотра всех страниц и согласия обычный UI получил отказ: source revision1, preview1, consent0, attempts0, calls0, usage0 у нового источника; глобальный usageCount27 и financial event/posting counters unchanged не изменились. Это NOT_SENT, не model quality REJECT и не потраченное разрешение на provider POST.
 
 Локальное read-only воспроизведение сохранённого preview подтвердило причину: после JSONB persisted plan hash не совпадает; восстановление typed ModelPolicy serialization возвращает исходный hash. PostgreSQL меняет порядок ключей вложенного RawMessage. Однопольный SQL mock `{fixture:true}` скрывал дефект реального полного policy snapshot.
 
@@ -41,3 +45,21 @@ Readiness repair PR138 merged `b59ceb6`; exact main CI40305434447/all5 и Delive
 `TestPlainSnapshotHashIgnoresJSONBKeyOrderWithoutRounding` PASS: перестановка nested keys не меняет canonical hash, число9007199254740993 не округлено, изменение значения меняет hash, invalid/non-object snapshot отклоняется. Усиленный `TestS58FivePageProductAttempt` с полным nested policy snapshot прошёл PostgreSQL: changed-price negative consent до POST, восстановленный неизменный план → consent → один fake call → idempotent replay; остальные S58 lifecycle guards сохранены. Полный `./scripts/test-document-reading.sh` PASS, live provider calls0. Private diagnosis содержит только локальные данные, они не публикуются.
 
 Окончательные make test/CI/Delivery/deploy этого repair отмечаются далее. Разрешённый один реальный provider POST ещё не выполнен.
+
+## Итог нового product run — 2026-10-26
+
+Consent repair PR139 integrated `db1d63d`. Exact-main [CI40309616197](https://github.com/QahNaaRlN/grace/actions/runs/40309616197)/all5 и [Delivery40311263833](https://github.com/QahNaaRlN/grace/actions/runs/40311263833)/all4 PASS; local `TMPDIR=/var/tmp/grace0058-tests make test`/diff-check и полный document-reading SQL PASS. Deploy40311400541 SUCCESS, API/Web/PDF-helper работают на exact release, healthy; grouped readiness и public authentication smoke PASS.
+
+Новый browser flow: тот же сохранённый PDF → новый planner0058.v2 → отображены пять страниц и model/provider/cost → явное согласие → один product inference → сохранённая таблица96 строк. Передавались изображения всех страниц, без native text/эталона/schema. Предыдущий отказ на v1 был до consent и provider call; новой серии или второго inference не было.
+
+Billing: одна completed attempt, один completed call, одна settled AI-usage row. Reserve35655 micros, actual13741 micros ($0.013741 в точности ledger, округление вверх до integer USDmicros), input5595/output7395; неизвестных списаний0. Исходный response сохранён отдельно; budget allowance, ключ и предыдущие settlements не менялись. Разрешение P **израсходовано1/1**, автоматический повтор не открыт.
+
+Private Go comparison нового неизменённого ответа с зафиксированным независимым local reference: 96 строк, **767/768 полей совпало**, header6/6. Единственное расхождение — пропущенный trailing ASCII hyphen в описании строки17. Даты и оба времени, обе signed amounts/currencies и все card suffixes совпали. Raw exact-match критерий не объявляется PASS: private `TestPlainPrivateSavedAnswer` честно сообщил одну description mismatch. Старый сохранённый research answer не использовался вместо нового ответа.
+
+Дефис подтверждён визуально на исходной странице2 read-only PDF crop. В обычном UI исправлено одно описание и нажато сохранение; server candidate помечен manual. Deep comparison подтвердил только эту правку (raw+typed representation одного поля) и manual marker: остальные значения, header и immutable original model answer не изменились. После правки current candidate **768/768 + header6/6**. Reload сохранил96 строк и исправление. Затем Codex через делегированную owner session просмотрел5/5 страниц, сохранил техническую сверку текущего digest и проверил её после reload. Это browser execution агента, не независимое принятие эталона человеком.
+
+Финансовый результат: publishedRows0, financialEventDelta0/postingDelta0. Семантические решения строк и запись реальных операций не выполнялись. Соответствующая часть A6 подтверждалась ранее только изолированным public fixture, не этим production документом. Реальная photo/scan quality A7 и независимое owner approval эталона остаются UNVERIFIED. Закрытая серия SPEC-0056 не переименована и не возобновлена.
+
+Операторская доступность: statement/plain, тот же Gemini/Google Vertex EU, отдельный явный P request ceiling, срок квалификации **02.11.2026 14:59 Asia/Yekaterinburg**; дальнейшее продление требует новой операторской проверки, не происходит автоматически. Fresh proof по-прежнему не дольше24ч, per-proof metadata≤3GET; inference без fallback/retry. Analysis/receipt memberships сохранены, их новые live quality tests не выполнялись.
+
+Rollback: предыдущий автоматический rollback был до появления plain data; после этого документа нужны сохранение schema/evidence, отключение Statement AI либо совместимая версия plain API. Migration31 down намеренно отвергает существующие plain sources; destructive rollback на production не выполнялся. Private config backup сохранён; временный metadata verifier удалён. PDF, response, etalon, generation/session/key data и реальные строки в GitHub не включены.

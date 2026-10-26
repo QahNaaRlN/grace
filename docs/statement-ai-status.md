@@ -2,13 +2,9 @@
 
 Обновлено 2026-10-26, Asia/Yekaterinburg.
 
-Текущая работа — [SPEC-0058](specs/0058-real-document-import.md), **accepted /
-offline implementation verified**: простой запрос → редактируемая таблица → единая
-сверка → прежний preview/confirmation. Ветка `codex/real-document-import`, source `c2db56c`; [AC/evidence](specs/0058-evidence.md).
-Research SPEC-0057 дал 96 строк/768 совпадений на одном реальном PDF; новый Go parser
-повторил эти проверки offline по сохранённому ответу. Эталон остаётся черновым.
-Новых платных вызовов, production activation и записей в реальные финансы нет.
-Photo/scan live quality и deployed usability не подтверждены.
+[SPEC-0058](specs/0058-real-document-import.md) **accepted / integrated PR135,137–139 / deployed `db1d63d`**. Новый production browser run по принятому [P](specs/0058-production-price-ceiling-candidate.md) завершён:96 строк, raw767/768 и header6/6; одна подтверждённая правка дефиса через UI → current candidate768/768. Таблица и техническая сверка5 страниц сохранены и проверены после reload. Один provider POST, actual$0.013741 settled, unknown0, financial writes0; grant CONSUMED1/1. [CI/deploy/AC/evidence](specs/0058-production-evidence.md).
+
+Все денежные поля, даты/время и карты нового raw ответа совпали с локальным эталоном; безошибочный raw OCR не заявляется. Независимое owner approval эталона и real photo/scan quality UNVERIFIED. Profile qualification действует до02.11.2026 14:59 Asia/Yekaterinburg. Сохранение реальных финансовых операций не выполнялось.
 
 Обнаружен и воспроизведён дефект helper image: отсутствие fallback-шрифтов
 давало белые страницы для PDF без встроенных шрифтов. Исправление добавляет
