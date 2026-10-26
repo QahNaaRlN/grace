@@ -3,8 +3,8 @@
 - Status: **accepted**
 - Acceptance record: 2026-10-26 владелец ответил «Принять SPEC-0059 и выполнить прогон» на явный вопрос о реализации/CI/merge/deploy, передаче этого фото через OpenRouter/Google EU, ≤1POST/≤$0.04 и нулевых финансовых записях.
 - Date: 2026-10-26
-- Implementation status: **verified locally; integration/deploy/live pending**
-- Offline evidence: [0059-evidence.md](0059-evidence.md)
+- Implementation status: **integrated PR142 / deployed dab06a9; one product call completed, raw contract79/80; grant CONSUMED1/1**
+- Evidence: [0059-evidence.md](0059-evidence.md)
 - Worktree: `receipt-photo-reading-spec`, branch `codex/receipt-photo-reading-spec`
 - Основание: владелец предоставил реальное фото, подтвердил расшифровку и поручил продолжить проверку через Grace.
 - Родители: принятые SPEC-0026/SPEC-0056; исключение SPEC-0058 P остаётся только statement/plain.
@@ -114,3 +114,11 @@ analysis, финансовые записи и retained drafts, не откат�
 
 Открытых решений по этому scope нет. Принятие записано до кода и изменения
 операторской конфигурации. На момент acceptance paid POST=0; слот доступен 1/1.
+
+## Итог однократного прогона
+
+Все9 строк распознаны, raw79/80: одно верно прочитанное локальное время помещено
+в issuedAt без RFC3339/timezone. Actual$0.003055 settled, reserve$0.029642,
+financial deltas0. Trial закрыт, повтор не открыт. [Полный отчёт](0059-evidence.md).
+[Уточнение R](0059-receipt-normalization-candidate.md) — отдельный draft; код по
+нему не реализован, новых платных вызовов он не подразумевает.
