@@ -95,3 +95,19 @@ candidate normalization with original evidence retained, nonnegative child item
 amounts under a positive purchase total, and verification using this saved
 response plus public SQL fixtures. It is not accepted/implemented by this report.
 No new model calls are needed or authorized by the candidate.
+
+
+## Accepted R follow-up — integrated and deployed
+
+The candidate R referenced above was subsequently accepted by the owner and
+integrated in PR144 before implementation. PR145/main `da621d9` repairs only the
+deterministic candidate/receipt rules and source text display. The existing real
+response replays as candidate80/80 while its original79/80 extraction remains
+unchanged. All9rows are retained, including the free row. No new provider POST,
+AI usage or real financial writes were performed. The original inference grant
+remains consumed and its known settlement is unchanged.
+
+The same receipt route is qualified until2026-11-02 22:55 Asia/Yekaterinburg under
+accepted R, with previous ceilings and separate per-reading consent/financial
+confirmation; no automatic renewal. [Final R verification](0059-normalization-evidence.md)
+records exact-SHA CI/Delivery/deploy, backup, migration32, UI and SQL evidence.
