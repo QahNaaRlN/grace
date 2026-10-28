@@ -1,0 +1,12 @@
+{
+  "version": "document-reading.q42.readonly-snapshots.v1",
+  "readOnlySSHSessions": 2,
+  "providerCalls": 0,
+  "sqlCalls": 0,
+  "persistentWritesRequested": 0,
+  "snapshotUnchangedBetweenSessions": true,
+  "firstReaderSHA256": "3a8c90bce65853d371e055252966234a3e9b3d0be82a8ddbd183090dc106a1a2",
+  "finalReaderSHA256": "760c358fd8b35e4fabf7ea706771a3c28f8ff47036f54369eb7d64fc95f2af74",
+  "reportFileSHA256": "34110e191f6f34c2137c520ad55751151a42fe272c9c736ac9af77f10b0c28b6",
+  "markerFileSHA256": "74bd1c301c9bccc5506e8406d9d5dd8db2eb69ccce46650db42303c525f1dc81"
+}

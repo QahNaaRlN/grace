@@ -1,0 +1,33 @@
+{
+  "actualVisualSchema": {
+    "anchorMinItemsDeclared": false,
+    "boxCoordinateMaximumDeclared": false,
+    "boxCoordinateMinimumDeclared": false,
+    "nonNullFieldEvidenceMinItemsDeclared": false
+  },
+  "integerBoxesAllFieldsCited": {
+    "directJSONPassed": true,
+    "visualValidationPassed": false
+  },
+  "integerBoxesAndUncitedFields": {
+    "directJSONPassed": true,
+    "visualValidationPassed": false
+  },
+  "providerCalls": 0,
+  "scaledBoxesAllFieldsCited": {
+    "directJSONPassed": true,
+    "visualValidationPassed": true
+  },
+  "scaledBoxesUncitedFields": {
+    "directJSONPassed": true,
+    "visualValidationPassed": false
+  },
+  "scaledBoxesUncitedFieldsNull": {
+    "directJSONPassed": true,
+    "visualValidationPassed": true
+  },
+  "scope": "synthetic structural controls, not private response replay or quality scoring",
+  "sqlCalls": 0,
+  "usesPrivatePayload": false,
+  "version": "document-reading.q42.offline-structural-probe.v1"
+}
